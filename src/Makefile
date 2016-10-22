@@ -70,6 +70,7 @@ prefetch = no
 popcnt = no
 sse = no
 pext = no
+lcov = no
 
 ### 2.2 Architecture specific
 
@@ -227,6 +228,14 @@ else
 	profile_clean = gcc-profile-clean
 endif
 
+ifeq ($(lcov),yes)
+        lcov_generate = lcov-gen
+        gcc-profile-make-flags = -fprofile-generate -ftest-coverage
+else
+        lcov_generate = lcov-clean	
+        gcc-profile-make-flags = -fprofile-generate
+endif
+
 ifeq ($(KERNEL),Darwin)
 	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.9
 	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.9
@@ -365,7 +374,6 @@ ifeq ($(OS), Android)
 	LDFLAGS += -fPIE -pie
 endif
 
-
 ### ==========================================================================
 ### Section 4. Public targets
 ### ==========================================================================
@@ -424,21 +432,24 @@ build:
 profile-build:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
 	@echo ""
-	@echo "Step 0/4. Preparing for profile build."
+	@echo "Step 0/5. Preparing for profile build."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_prepare)
 	@echo ""
-	@echo "Step 1/4. Building executable for benchmark ..."
+	@echo "Step 1/5. Building executable for benchmark ..."
 	@touch *.cpp *.h syzygy/*.cpp syzygy/*.h
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
-	@echo "Step 2/4. Running benchmark for pgo-build ..."
+	@echo "Step 2/5. Running benchmark for pgo-build ..."
 	$(PGOBENCH) > /dev/null
 	@echo ""
-	@echo "Step 3/4. Building final executable ..."
+	@echo "Step 3/5. generating coverage info and directory ... $(lcov) "
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(lcov_generate)
+	@echo ""
+	@echo "Step 4/5. Building final executable ..."
 	@touch *.cpp *.h syzygy/*.cpp syzygy/*.h
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
 	@echo ""
-	@echo "Step 4/4. Deleting profile data ..."
+	@echo "Step 5/5. Deleting profile data ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_clean)
 
 strip:
@@ -449,8 +460,8 @@ install:
 	-cp $(EXE) $(BINDIR)
 	-strip $(BINDIR)/$(EXE)
 
-clean:
-	$(RM) $(EXE) $(EXE).exe *.o .depend *~ core bench.txt *.gcda ./syzygy/*.o ./syzygy/*.gcda
+clean: lcov-clean gcc-profile-clean icc-profile-clean
+	@rm -f $(EXE) $(EXE).exe *.o .depend *~ core ./syzygy/*.o
 
 default:
 	help
@@ -501,7 +512,7 @@ gcc-profile-prepare:
 
 gcc-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate' \
+	EXTRACXXFLAGS="$(gcc-profile-make-flags)" \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
@@ -510,6 +521,14 @@ gcc-profile-use:
 	EXTRACXXFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' \
 	EXTRALDFLAGS='-lgcov' \
 	all
+
+lcov-clean:
+	@rm -rf coverage.info coveragedir
+
+lcov-gen: lcov-clean
+	@lcov --capture --directory . --output-file coverage.info > /dev/null
+	@genhtml coverage.info --output-directory coveragedir > /dev/null
+	@echo "Generated coveragedir/index.html"
 
 gcc-profile-clean:
 	@rm -rf *.gcda *.gcno syzygy/*.gcda syzygy/*.gcno bench.txt
