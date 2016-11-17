@@ -195,7 +195,7 @@ namespace {
   const Score ThreatByHangingPawn = S(71, 61);
   const Score LooseEnemies        = S( 0, 25);
   const Score WeakQueen           = S(35,  0);
-  const Score Hanging             = S(48, 27);
+  const Score Hanging             = S(55, 24);
   const Score ThreatByPawnPush    = S(38, 22);
   const Score Unstoppable         = S( 0, 20);
   const Score PawnlessFlank       = S(20, 80);
