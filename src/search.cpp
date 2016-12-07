@@ -174,6 +174,9 @@ namespace {
   void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, Value bonus);
   void check_time();
 
+  int param = 582;
+  TUNE(SetRange(-382,782),param,Search::init);
+
 } // namespace
 
 
@@ -185,7 +188,7 @@ void Search::init() {
       for (int imp = 0; imp <= 1; ++imp)
           for (int d = 1; d < 64; ++d)
               for (int mc = 1; mc < 64; ++mc)
-                  Reductions[pv][imp][d][mc] = int(1+log(d)*log(mc*(0.582+1-imp)/(0.582+pv)))/2;
+                  Reductions[pv][imp][d][mc] = int(1+log(d)*log(mc*(param/1000.0+1-imp)/(param/1000.0+pv)))/2;
 
   for (int d = 0; d < 16; ++d)
   {
