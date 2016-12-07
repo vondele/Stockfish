@@ -181,19 +181,11 @@ namespace {
 
 void Search::init() {
 
-  for (int imp = 0; imp <= 1; ++imp)
-      for (int d = 1; d < 64; ++d)
-          for (int mc = 1; mc < 64; ++mc)
-          {
-              double r = log(d) * log(mc) / 2;
-
-              Reductions[NonPV][imp][d][mc] = int(std::round(r));
-              Reductions[PV][imp][d][mc] = std::max(Reductions[NonPV][imp][d][mc] - 1, 0);
-
-              // Increase reduction for non-PV nodes when eval is not improving
-              if (!imp && Reductions[NonPV][imp][d][mc] >= 2)
-                Reductions[NonPV][imp][d][mc]++;
-          }
+  for (int pv = 0; pv <=1; ++pv)
+      for (int imp = 0; imp <= 1; ++imp)
+          for (int d = 1; d < 64; ++d)
+              for (int mc = 1; mc < 64; ++mc)
+                  Reductions[pv][imp][d][mc] = int(1+log(d)*log(mc*(0.582+1-imp)/(0.582+pv)))/2;
 
   for (int d = 0; d < 16; ++d)
   {
