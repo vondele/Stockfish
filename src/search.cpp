@@ -175,7 +175,7 @@ namespace {
   void check_time();
 
   int param = 582;
-  TUNE(SetRange(-382,782),param,Search::init);
+  TUNE(SetRange(382,820),param,Search::init);
 
 } // namespace
 
