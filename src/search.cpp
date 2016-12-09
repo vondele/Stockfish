@@ -185,7 +185,7 @@ void Search::init() {
       for (int imp = 0; imp <= 1; ++imp)
           for (int d = 1; d < 64; ++d)
               for (int mc = 1; mc < 64; ++mc)
-                  Reductions[pv][imp][d][mc] = int(1+log(d)*log(mc*(1.546-imp)*(1.546-pv)))/2;
+                  Reductions[pv][imp][d][mc] = int(1+log(d)*log(mc*(1.57-imp)*(1.47-pv)))/2;
 
   for (int d = 0; d < 16; ++d)
   {
