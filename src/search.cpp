@@ -174,6 +174,10 @@ namespace {
   void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, Value bonus);
   void check_time();
 
+  int param0 = 0;
+  int param1 = 0;
+  TUNE(SetRange(-32,32),param0,param1,Search::init);
+
 } // namespace
 
 
@@ -185,9 +189,7 @@ void Search::init() {
       for (int d = 1; d < 64; ++d)
           for (int mc = 1; mc < 64; ++mc)
           {
-              double r = log(d) * log(mc) / 2;
-
-              Reductions[NonPV][imp][d][mc] = int(std::round(r));
+              Reductions[NonPV][imp][d][mc] = log(1+pow(d-1,(35+param0)/64.0)*pow(mc-1,(35+param1)/64.0));
               Reductions[PV][imp][d][mc] = std::max(Reductions[NonPV][imp][d][mc] - 1, 0);
 
               // Increase reduction for non-PV nodes when eval is not improving
