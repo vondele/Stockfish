@@ -176,7 +176,8 @@ namespace {
 
   int param0 = 0;
   int param1 = 0;
-  TUNE(SetRange(-32,32),param0,param1,Search::init);
+  int param2 = 0;
+  TUNE(SetRange(-64,64),param0,param1,param2,Search::init);
 
 } // namespace
 
@@ -189,7 +190,7 @@ void Search::init() {
       for (int d = 1; d < 64; ++d)
           for (int mc = 1; mc < 64; ++mc)
           {
-              Reductions[NonPV][imp][d][mc] = log(1+pow(d-1,(37+param0)/64.0)*pow(mc-1,(56+param1)/64.0));
+              Reductions[NonPV][imp][d][mc] = 0.5+(32+param0)/128.0*log(d)+(32+param1)/128.0*log(mc)+((32+param2)/128.0)*log(d)*log(mc);
               Reductions[PV][imp][d][mc] = std::max(Reductions[NonPV][imp][d][mc] - 1, 0);
 
               // Increase reduction for non-PV nodes when eval is not improving
