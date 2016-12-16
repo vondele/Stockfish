@@ -64,8 +64,8 @@ namespace {
   enum NodeType { NonPV, PV };
 
   // Razoring and futility margin based on depth
-  const int razor_margin[4] = { 483, 570, 603, 554 };
-  Value futility_margin(Depth d) { return Value(150 * d / ONE_PLY); }
+  Value razor_margin(Depth depth)    { int d = depth / ONE_PLY ; return Value(-34 * d * d + 126 * d + 482); }
+  Value futility_margin(Depth depth) { int d = depth / ONE_PLY ; return Value(              150 * d      ); }
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
@@ -718,12 +718,12 @@ namespace {
     if (   !PvNode
         &&  depth < 4 * ONE_PLY
         &&  ttMove == MOVE_NONE
-        &&  eval + razor_margin[depth / ONE_PLY] <= alpha)
+        &&  eval <= alpha - razor_margin(depth))
     {
         if (depth <= ONE_PLY)
             return qsearch<NonPV, false>(pos, ss, alpha, beta, DEPTH_ZERO);
 
-        Value ralpha = alpha - razor_margin[depth / ONE_PLY];
+        Value ralpha = alpha - razor_margin(depth);
         Value v = qsearch<NonPV, false>(pos, ss, ralpha, ralpha+1, DEPTH_ZERO);
         if (v <= ralpha)
             return v;
