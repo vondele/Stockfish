@@ -153,6 +153,11 @@ namespace {
     {1, 0, 0, 0, 0, 1, 1 ,1},
   };
 
+  int param0=0;
+  TUNE(SetRange(-220,220),param0);
+
+  Value hsc(int moveCount) { return Value(-(220-param0)*(moveCount-1)); }
+
   Value bonus(Depth depth)   { int d = depth / ONE_PLY ; return  Value(d * d + 2 * d - 2); }
   Value penalty(Depth depth) { int d = depth / ONE_PLY ; return -Value(d * d + 4 * d + 1); }
 
@@ -918,9 +923,9 @@ moves_loop: // When in check search starts from here
 
               // Countermoves based pruning
               if (   lmrDepth < 3
-                  && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-                  && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-                  && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO || (cmh && fmh)))
+                  && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < hsc(moveCount))
+                  && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < hsc(moveCount))
+                  && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < hsc(moveCount) || (cmh && fmh)))
                   continue;
 
               // Futility pruning: parent node
