@@ -498,7 +498,7 @@ void Thread::search() {
               double unstablePvFactor = 1 + mainThread->bestMoveChanges;
 
               // opportunity bonus if the eval is around 50 +- 50 cp
-              int opportunity = 100+20*(PawnValueEg - std::min(int(PawnValueEg),std::abs(2*bestValue-PawnValueEg)));
+              int opportunity = 100*PawnValueEg+20*(PawnValueEg - std::min(int(PawnValueEg),std::abs(2*bestValue-PawnValueEg)));
 
               bool doEasyMove =   rootMoves[0].pv[0] == easyMove
                                && mainThread->bestMoveChanges < 0.03
