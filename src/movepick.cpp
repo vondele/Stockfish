@@ -111,7 +111,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th)
 
   stage = PROBCUT;
 
-  // In ProbCut we generate captures with SEE higher than the given threshold
+  // In ProbCut we generate captures with SEE higher than or equal to the given threshold
   ttMove =   ttm
           && pos.pseudo_legal(ttm)
           && pos.capture(ttm)
