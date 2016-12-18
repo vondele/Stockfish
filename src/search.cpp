@@ -153,7 +153,7 @@ namespace {
     {1, 0, 0, 0, 0, 1, 1 ,1},
   };
 
-  Value history_shift(int moveCount) { return Value(-208*(moveCount-1)); }
+  Value history_shift(int moveCount) { return Value(-104*(moveCount-1)); }
   Value bonus(Depth depth)   { int d = depth / ONE_PLY ; return  Value(d * d + 2 * d - 2); }
   Value penalty(Depth depth) { int d = depth / ONE_PLY ; return -Value(d * d + 4 * d + 1); }
 
