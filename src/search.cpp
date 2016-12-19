@@ -1293,7 +1293,7 @@ moves_loop: // When in check search starts from here
       // Don't search moves with negative SEE values
       if (  (!InCheck || evasionPrunable)
           &&  type_of(move) != PROMOTION
-          &&  !pos.see_ge(move, VALUE_ZERO))
+          &&  !pos.see_ge(move, PawnValueEg * (depth / ONE_PLY) / 4))
           continue;
 
       // Speculative prefetch as early as possible
