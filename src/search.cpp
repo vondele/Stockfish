@@ -69,10 +69,11 @@ namespace {
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
-  int Reductions[2][64][64];  // [improving][depth][moveNumber]
+  int log256[256];               // an approximate log for integers: log256[i]=0.5+256*log(i)
 
-   Depth reduction(bool i, Depth d, int mn) {
-    return Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] * ONE_PLY;
+  Depth reduction(bool imp, Depth depth, int mc) {
+    int r = (log256[depth / ONE_PLY]*log256[mc]+256*256-1)/(256*256*2); // approx. log(d)*log(mc)/2
+    return (!imp && r>=2 ? r+1 : r)*ONE_PLY;
   }
 
   // Skill structure is used to implement strength limit
@@ -181,18 +182,8 @@ namespace {
 
 void Search::init() {
 
-  for (int imp = 0; imp <= 1; ++imp)
-      for (int d = 1; d < 64; ++d)
-          for (int mc = 1; mc < 64; ++mc)
-          {
-              double r = log(d) * log(mc) / 2;
-
-              Reductions[imp][d][mc] = int(std::round(r));
-            
-              // Increase reduction for non-PV nodes when eval is not improving
-              if (!imp && Reductions[imp][d][mc] >= 2)
-                Reductions[imp][d][mc]++;
-          }
+  for (int i = 1; i<256; ++i)
+      log256[i]=0.5+256*log(i);
 
   for (int d = 0; d < 16; ++d)
   {
