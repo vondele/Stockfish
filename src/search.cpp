@@ -69,10 +69,10 @@ namespace {
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
-  int Reductions[2][2][64][64];  // [pv][improving][depth][moveNumber]
+  int Reductions[2][64][64];  // [improving][depth][moveNumber]
 
-  template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    return Reductions[PvNode][i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] * ONE_PLY;
+   Depth reduction(bool i, Depth d, int mn) {
+    return Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] * ONE_PLY;
   }
 
   // Skill structure is used to implement strength limit
@@ -187,12 +187,11 @@ void Search::init() {
           {
               double r = log(d) * log(mc) / 2;
 
-              Reductions[NonPV][imp][d][mc] = int(std::round(r));
-              Reductions[PV][imp][d][mc] = std::max(Reductions[NonPV][imp][d][mc] - 1, 0);
-
+              Reductions[imp][d][mc] = int(std::round(r));
+            
               // Increase reduction for non-PV nodes when eval is not improving
-              if (!imp && Reductions[NonPV][imp][d][mc] >= 2)
-                Reductions[NonPV][imp][d][mc]++;
+              if (!imp && Reductions[imp][d][mc] >= 2)
+                Reductions[imp][d][mc]++;
           }
 
   for (int d = 0; d < 16; ++d)
@@ -914,7 +913,7 @@ moves_loop: // When in check search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
+              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning
               if (   lmrDepth < 3
@@ -962,12 +961,14 @@ moves_loop: // When in check search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount);
+          Depth r = reduction(improving, depth, moveCount);
 
           if (captureOrPromotion)
-              r -= r ? ONE_PLY : DEPTH_ZERO;
+              r -=ONE_PLY;
           else
           {
+              if (PvNode)
+                  r -= 2 * ONE_PLY;
               // Increase reduction for cut nodes
               if (cutNode)
                   r += 2 * ONE_PLY;
@@ -994,9 +995,9 @@ moves_loop: // When in check search starts from here
                   r += ONE_PLY;
 
               // Decrease/increase reduction for moves with a good/bad history
-              r = std::max(DEPTH_ZERO, (r / ONE_PLY - ss->history / 20000) * ONE_PLY);
+              r -= int(ss->history / 20000) * ONE_PLY;
           }
-
+          r = std::max(r, DEPTH_ZERO);
           Depth d = std::max(newDepth - r, ONE_PLY);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true, false);
