@@ -156,6 +156,9 @@ namespace {
   Value bonus(Depth depth)   { int d = depth / ONE_PLY ; return  Value(d * d + 2 * d - 2); }
   Value penalty(Depth depth) { int d = depth / ONE_PLY ; return -Value(d * d + 4 * d + 1); }
 
+  int pruneTval = -250;
+  TUNE(SetRange(-500,0),pruneTval);
+
   const size_t HalfDensitySize = std::extent<decltype(HalfDensity)>::value;
 
   EasyMoveManager EasyMove;
@@ -923,9 +926,9 @@ moves_loop: // When in check search starts from here
 
               // Countermoves based pruning
               if (   lmrDepth < 3
-                  && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-                  && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-                  && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO || (cmh && fmh)))
+                  && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < pruneTval)
+                  && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < pruneTval)
+                  && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < pruneTval || (cmh && fmh)))
                   continue;
 
               // Futility pruning: parent node
