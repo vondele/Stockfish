@@ -132,34 +132,12 @@ namespace {
     Move pv[3];
   };
 
-  // Set of rows with half bits set to 1 and half to 0. It is used to allocate
-  // the search depths across the threads.
-  typedef std::vector<int> Row;
-
-  const Row HalfDensity[] = {
-    {0, 1},
-    {1, 0},
-    {0, 0, 1, 1},
-    {0, 1, 1, 0},
-    {1, 1, 0, 0},
-    {1, 0, 0, 1},
-    {0, 0, 0, 1, 1, 1},
-    {0, 0, 1, 1, 1, 0},
-    {0, 1, 1, 1, 0, 0},
-    {1, 1, 1, 0, 0, 0},
-    {1, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 1, 1},
-    {0, 0, 0, 0, 1, 1, 1, 1},
-    {0, 0, 0, 1, 1, 1, 1, 0},
-    {0, 0, 1, 1, 1, 1, 0 ,0},
-    {0, 1, 1, 1, 1, 0, 0 ,0},
-    {1, 1, 1, 1, 0, 0, 0 ,0},
-    {1, 1, 1, 0, 0, 0, 0 ,1},
-    {1, 1, 0, 0, 0, 0, 1 ,1},
-    {1, 0, 0, 0, 0, 1, 1 ,1},
-  };
-
-  const size_t HalfDensitySize = std::extent<decltype(HalfDensity)>::value;
+  // skip half of the plies in blocks depending on the thread id.
+  bool skip_ply(int idx, int ply) {
+    int ones=0;
+    while (ones*(ones+1)<idx) ones++;
+    return ones==0 ? false : ((ply+idx-1)/ones-ones)%2==0;
+  }
 
   EasyMoveManager EasyMove;
   Value DrawValue[COLOR_NB];
@@ -379,14 +357,8 @@ void Thread::search() {
          && !Signals.stop
          && (!Limits.depth || Threads.main()->rootDepth / ONE_PLY <= Limits.depth))
   {
-      // Set up the new depths for the helper threads skipping on average every
-      // 2nd ply (using a half-density matrix).
-      if (!mainThread)
-      {
-          const Row& row = HalfDensity[(idx - 1) % HalfDensitySize];
-          if (row[(rootDepth / ONE_PLY + rootPos.game_ply()) % row.size()])
-             continue;
-      }
+      // skip plies for helper threads
+      if (skip_ply(idx, rootDepth / ONE_PLY + rootPos.game_ply())) continue;
 
       // Age out PV variability metric
       if (mainThread)
