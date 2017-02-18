@@ -134,10 +134,9 @@ namespace {
 
   // skip half of the plies in blocks depending on the thread id.
   bool skip_ply(int idx, int ply) {
-    idx = idx == 0 ? 0 : (idx - 1) % 20 + 1; // cycle after 20 threads.
     int ones=0;
     while (ones*(ones+1)<idx) ones++;
-    return ones==0 ? false : ((ply+idx-1)/ones-ones)%2==0;
+    return ones==0 ? false : ((ply+idx)/ones)%2==0;
   }
 
   EasyMoveManager EasyMove;
