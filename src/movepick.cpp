@@ -142,16 +142,19 @@ void MovePicker::score<QUIETS>() {
 
   const HistoryStats& history = pos.this_thread()->history;
 
-  const CounterMoveStats* cmh = (ss-1)->counterMoves;
-  const CounterMoveStats* fmh = (ss-2)->counterMoves;
-  const CounterMoveStats* fmh2 = (ss-4)->counterMoves;
+  const CounterMoveStats* cmh  = (ss-1)->counterMoves ?
+                                 (ss-1)->counterMoves : &pos.this_thread()->cmhSentinel;
+  const CounterMoveStats* fmh  = (ss-2)->counterMoves ?
+                                 (ss-2)->counterMoves : &pos.this_thread()->cmhSentinel;
+  const CounterMoveStats* fmh2 = (ss-4)->counterMoves ?
+                                 (ss-4)->counterMoves : &pos.this_thread()->cmhSentinel;
 
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
-      m.value =  (cmh  ?  (*cmh)[pos.moved_piece(m)][to_sq(m)] : VALUE_ZERO)
-               + (fmh  ?  (*fmh)[pos.moved_piece(m)][to_sq(m)] : VALUE_ZERO)
-               + (fmh2 ? (*fmh2)[pos.moved_piece(m)][to_sq(m)] : VALUE_ZERO)
+      m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
+               +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
+               + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
 }
 

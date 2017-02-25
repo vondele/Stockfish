@@ -832,9 +832,14 @@ namespace {
 
 moves_loop: // When in check search starts from here
 
-    const CounterMoveStats* cmh  = (ss-1)->counterMoves;
-    const CounterMoveStats* fmh  = (ss-2)->counterMoves;
-    const CounterMoveStats* fmh2 = (ss-4)->counterMoves;
+    const CounterMoveStats* cmh  = (ss-1)->counterMoves ?
+                                   (ss-1)->counterMoves : &pos.this_thread()->cmhSentinel;
+    const CounterMoveStats* fmh  = (ss-2)->counterMoves ?
+                                   (ss-2)->counterMoves : &pos.this_thread()->cmhSentinel;
+    const CounterMoveStats* fmh2 = (ss-4)->counterMoves ?
+                                   (ss-4)->counterMoves : &pos.this_thread()->cmhSentinel;
+
+    bool  cmh_has_both = (ss-1)->counterMoves && (ss-2)->counterMoves ? true : false;
 
     MovePicker mp(pos, ttMove, depth, ss);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
@@ -934,9 +939,9 @@ moves_loop: // When in check search starts from here
 
               // Countermoves based pruning
               if (   lmrDepth < 3
-                  && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-                  && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-                  && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO || (cmh && fmh)))
+                  && ((*cmh )[moved_piece][to_sq(move)] <= VALUE_ZERO)
+                  && ((*fmh )[moved_piece][to_sq(move)] <= VALUE_ZERO)
+                  && ((*fmh2)[moved_piece][to_sq(move)] <= VALUE_ZERO || cmh_has_both ))
                   continue;
 
               // Futility pruning: parent node
@@ -996,9 +1001,9 @@ moves_loop: // When in check search starts from here
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move)),  VALUE_ZERO))
                   r -= 2 * ONE_PLY;
 
-              ss->history =  (cmh  ? (*cmh )[moved_piece][to_sq(move)] : VALUE_ZERO)
-                           + (fmh  ? (*fmh )[moved_piece][to_sq(move)] : VALUE_ZERO)
-                           + (fmh2 ? (*fmh2)[moved_piece][to_sq(move)] : VALUE_ZERO)
+              ss->history =  (*cmh )[moved_piece][to_sq(move)]
+                           + (*fmh )[moved_piece][to_sq(move)]
+                           + (*fmh2)[moved_piece][to_sq(move)]
                            + thisThread->history.get(~pos.side_to_move(), move)
                            - 4000; // Correction factor
 

@@ -72,6 +72,7 @@ public:
   MoveStats counterMoves;
   HistoryStats history;
   CounterMoveHistoryStats counterMoveHistory;
+  const CounterMoveStats cmhSentinel = CounterMoveStats();
 };
 
 
