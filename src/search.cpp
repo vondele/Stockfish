@@ -839,7 +839,7 @@ moves_loop: // When in check search starts from here
     const CounterMoveStats* fmh2 = (ss-4)->counterMoves ?
                                    (ss-4)->counterMoves : &pos.this_thread()->cmhSentinel;
 
-    bool  cmh_has_both = (ss-1)->counterMoves && (ss-2)->counterMoves ? true : false;
+    bool  cmh_has_both = (ss-1)->counterMoves && (ss-2)->counterMoves;
 
     MovePicker mp(pos, ttMove, depth, ss);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
@@ -939,9 +939,9 @@ moves_loop: // When in check search starts from here
 
               // Countermoves based pruning
               if (   lmrDepth < 3
-                  && ((*cmh )[moved_piece][to_sq(move)] <= VALUE_ZERO)
-                  && ((*fmh )[moved_piece][to_sq(move)] <= VALUE_ZERO)
-                  && ((*fmh2)[moved_piece][to_sq(move)] <= VALUE_ZERO || cmh_has_both ))
+                  && ((*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
+                  && ((*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
+                  && ((*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO || cmh_has_both ))
                   continue;
 
               // Futility pruning: parent node
