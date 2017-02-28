@@ -781,8 +781,7 @@ namespace {
         Depth rdepth = depth - 4 * ONE_PLY;
 
         assert(rdepth >= ONE_PLY);
-        assert((ss-1)->currentMove != MOVE_NONE);
-        assert((ss-1)->currentMove != MOVE_NULL);
+        assert(is_ok((ss-1)->currentMove));
 
         MovePicker mp(pos, ttMove, rbeta - ss->staticEval);
 
@@ -816,6 +815,9 @@ moves_loop: // When in check search starts from here
     const CounterMoveStats* cmh  = (ss-1)->counterMoves;
     const CounterMoveStats* fmh  = (ss-2)->counterMoves;
     const CounterMoveStats* fmh2 = (ss-4)->counterMoves;
+    const bool cm_ok = is_ok((ss-1)->currentMove);
+    const bool fm_ok = is_ok((ss-2)->currentMove);
+    const bool fm2_ok = is_ok((ss-4)->currentMove);
 
     MovePicker mp(pos, ttMove, depth, ss);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
@@ -915,10 +917,9 @@ moves_loop: // When in check search starts from here
 
               // Countermoves based pruning
               if (   lmrDepth < 3
-                  && (((*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO) ||     ss->currentMove == MOVE_NULL)
-                  && (((*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO) || (ss-1)->currentMove == MOVE_NULL)
-                  && (((*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO) ||
-                      ((ss-1)->currentMove != MOVE_NULL && ss->currentMove != MOVE_NULL)))
+                  && (((*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO) || !cm_ok)
+                  && (((*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO) || !fm_ok)
+                  && (((*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO) || !fm2_ok || (cm_ok && fm_ok)))
                   continue;
 
               // Futility pruning: parent node
@@ -1123,7 +1124,7 @@ moves_loop: // When in check search starts from here
     // Bonus for prior countermove that caused the fail low
     else if (    depth >= 3 * ONE_PLY
              && !pos.captured_piece()
-             && is_ok((ss-1)->currentMove))
+             && cm_ok)
         update_cm_stats(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth));
 
     tte->save(posKey, value_to_tt(bestValue, ss->ply),
@@ -1383,9 +1384,14 @@ moves_loop: // When in check search starts from here
 
   void update_cm_stats(Stack* ss, Piece pc, Square s, Value bonus) {
 
-    (ss-1)->counterMoves->update(pc, s, bonus);
-    (ss-2)->counterMoves->update(pc, s, bonus);
-    (ss-4)->counterMoves->update(pc, s, bonus);
+    if (is_ok((ss-1)->currentMove))
+        (ss-1)->counterMoves->update(pc, s, bonus);
+
+    if (is_ok((ss-2)->currentMove))
+        (ss-2)->counterMoves->update(pc, s, bonus);
+
+    if (is_ok((ss-4)->currentMove))
+        (ss-4)->counterMoves->update(pc, s, bonus);
   }
 
 
@@ -1405,8 +1411,11 @@ moves_loop: // When in check search starts from here
     thisThread->history.update(c, move, bonus);
     update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
-    Square prevSq = to_sq((ss-1)->currentMove);
-    thisThread->counterMoves.update(pos.piece_on(prevSq), prevSq, move);
+    if (is_ok((ss-1)->currentMove))
+    {
+        Square prevSq = to_sq((ss-1)->currentMove);
+        thisThread->counterMoves.update(pos.piece_on(prevSq), prevSq, move);
+    }
 
     // Decrease all the other played quiet moves
     for (int i = 0; i < quietsCnt; ++i)
