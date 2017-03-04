@@ -79,8 +79,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
   stage += (ttMove == MOVE_NONE);
 }
 
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Square s)
-           : pos(p) {
+MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Square s, Search::Stack* sss)
+           : pos(p), ss(sss) {
 
   assert(d <= DEPTH_ZERO);
 
@@ -140,33 +140,28 @@ void MovePicker::score<CAPTURES>() {
 template<>
 void MovePicker::score<QUIETS>() {
 
-  const HistoryStats& history = pos.this_thread()->history;
-
   const CounterMoveStats* cmh = (ss-1)->counterMoves;
   const CounterMoveStats* fmh = (ss-2)->counterMoves;
   const CounterMoveStats* fmh2 = (ss-4)->counterMoves;
-
-  Color c = pos.side_to_move();
 
   for (auto& m : *this)
       m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
-               + history.get(c, m);
+               + (*(ss)->counterMoves)[pos.moved_piece(m)][to_sq(m)];
+
 }
 
 template<>
 void MovePicker::score<EVASIONS>() {
-  // Try captures ordered by MVV/LVA, then non-captures ordered by stats heuristics
-  const HistoryStats& history = pos.this_thread()->history;
-  Color c = pos.side_to_move();
 
+  // Try captures ordered by MVV/LVA, then non-captures ordered by stats heuristics
   for (auto& m : *this)
       if (pos.capture(m))
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                   - Value(type_of(pos.moved_piece(m))) + HistoryStats::Max;
+                   - Value(type_of(pos.moved_piece(m))) + Value(1 << 28);
       else
-          m.value = history.get(c, m);
+          m.value = (*(ss)->counterMoves)[pos.moved_piece(m)][to_sq(m)];
 }
 
 

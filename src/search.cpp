@@ -201,7 +201,6 @@ void Search::clear() {
   for (Thread* th : Threads)
   {
       th->counterMoves.clear();
-      th->history.clear();
       th->counterMoveHistory.clear();
       th->resetCalls = true;
   }
@@ -966,7 +965,6 @@ moves_loop: // When in check search starts from here
               ss->history =  (*cmh )[moved_piece][to_sq(move)]
                            + (*fmh )[moved_piece][to_sq(move)]
                            + (*fmh2)[moved_piece][to_sq(move)]
-                           + thisThread->history.get(~pos.side_to_move(), move)
                            - 4000; // Correction factor
 
               // Decrease/increase reduction by comparing opponent's stat score
@@ -1139,6 +1137,7 @@ moves_loop: // When in check search starts from here
     }
 
     ss->currentMove = bestMove = MOVE_NONE;
+    ss->counterMoves = &pos.this_thread()->counterMoveHistory[NO_PIECE][0];
     ss->ply = (ss-1)->ply + 1;
 
     // Check for an instant draw or if the maximum ply has been reached
@@ -1212,7 +1211,7 @@ moves_loop: // When in check search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    MovePicker mp(pos, ttMove, depth, to_sq((ss-1)->currentMove));
+    MovePicker mp(pos, ttMove, depth, to_sq((ss-1)->currentMove), ss);
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
     while ((move = mp.next_move()) != MOVE_NONE)
@@ -1265,6 +1264,7 @@ moves_loop: // When in check search starts from here
           continue;
 
       ss->currentMove = move;
+      ss->counterMoves = &pos.this_thread()->counterMoveHistory[pos.moved_piece(move)][to_sq(move)];
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
@@ -1380,8 +1380,6 @@ moves_loop: // When in check search starts from here
                 }
 
                 Value bonus = stat_bonus(depth);
-                Color c = pos.side_to_move();
-                thisThread->history.update(c, move, bonus);
                 update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
                 if (prevOK)
@@ -1389,10 +1387,7 @@ moves_loop: // When in check search starts from here
 
                 // Decrease all the other played quiet moves.
                 for (int i = 0; i < quietsCnt; ++i)
-                {
-                    thisThread->history.update(c, quiets[i], -bonus);
                     update_cm_stats(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
-                }
             }
             // Extra penalty for a quiet move in previous ply when it gets refuted.
             if ((ss-1)->moveCount == 1 && !pos.captured_piece())
@@ -1400,11 +1395,7 @@ moves_loop: // When in check search starts from here
         }
         // Penalty for a quiet (TT) move that fails low.
         else if (!pos.capture_or_promotion(move))
-        {
-            Value penalty = -stat_bonus(depth + ONE_PLY);
-            thisThread->history.update(pos.side_to_move(), move, penalty);
-            update_cm_stats(ss, pos.moved_piece(move), to_sq(move), penalty);
-        }
+            update_cm_stats(ss, pos.moved_piece(move), to_sq(move), -stat_bonus(depth + ONE_PLY));
     } 
     // Bonus for prior countermove that caused the fail low.
     else if (isBest && prevOK && depth >= 3 * ONE_PLY && !pos.captured_piece())

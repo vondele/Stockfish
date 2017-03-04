@@ -29,31 +29,6 @@
 #include "types.h"
 
 
-/// HistoryStats records how often quiet moves have been successful or unsuccessful
-/// during the current search, and is used for reduction and move ordering decisions.
-struct HistoryStats {
-
-  static const Value Max = Value(1 << 28);
-
-  Value get(Color c, Move m) const { return table[c][from_sq(m)][to_sq(m)]; }
-  void clear() { std::memset(table, 0, sizeof(table)); }
-  void update(Color c, Move m, Value v) {
-
-    if (abs(int(v)) >= 324)
-        return;
-
-    Square from = from_sq(m);
-    Square to = to_sq(m);
-
-    table[c][from][to] -= table[c][from][to] * abs(int(v)) / 324;
-    table[c][from][to] += int(v) * 32;
-  }
-
-private:
-  Value table[COLOR_NB][SQUARE_NB][SQUARE_NB];
-};
-
-
 /// A template struct, used to generate MoveStats and CounterMoveHistoryStats:
 /// MoveStats store the move that refute a previous one.
 /// CounterMoveHistoryStats is like HistoryStats, but with two consecutive moves.
@@ -98,7 +73,7 @@ public:
   MovePicker& operator=(const MovePicker&) = delete;
 
   MovePicker(const Position&, Move, Value);
-  MovePicker(const Position&, Move, Depth, Square);
+  MovePicker(const Position&, Move, Depth, Square, Search::Stack*);
   MovePicker(const Position&, Move, Depth, Search::Stack*);
 
   Move next_move();
