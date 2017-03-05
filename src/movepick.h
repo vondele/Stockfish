@@ -46,7 +46,7 @@ struct Stats {
     if (abs(int(v)) >= 324)
         return;
 
-    table[pc][to] -= table[pc][to] * abs(int(v)) / 512;
+    table[pc][to] -= table[pc][to] * abs(int(v)) / 324;
     table[pc][to] += int(v) * 32;
   }
 
