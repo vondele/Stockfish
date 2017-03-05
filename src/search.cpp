@@ -1381,6 +1381,7 @@ moves_loop: // When in check search starts from here
                 }
 
                 Value bonus = stat_bonus(depth);
+                ss->counterMoves->update(pos.moved_piece(move), to_sq(move), bonus);
                 update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
                 if (prevOK)
@@ -1388,7 +1389,10 @@ moves_loop: // When in check search starts from here
 
                 // Decrease all the other played quiet moves.
                 for (int i = 0; i < quietsCnt; ++i)
+                {
+                    ss->counterMoves->update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
                     update_cm_stats(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
+                }
             }
             // Extra penalty for a quiet move in previous ply when it gets refuted.
             if ((ss-1)->moveCount == 1 && !pos.captured_piece())
@@ -1396,7 +1400,11 @@ moves_loop: // When in check search starts from here
         }
         // Penalty for a quiet (TT) move that fails low.
         else if (!pos.capture_or_promotion(move))
-            update_cm_stats(ss, pos.moved_piece(move), to_sq(move), -stat_bonus(depth + ONE_PLY));
+        {
+            Value penalty = -stat_bonus(depth + ONE_PLY);
+            ss->counterMoves->update(pos.moved_piece(move), to_sq(move), penalty);
+            update_cm_stats(ss, pos.moved_piece(move), to_sq(move), penalty);
+        }
     } 
     // Bonus for prior countermove that caused the fail low.
     else if (isBest && prevOK && depth >= 3 * ONE_PLY && !pos.captured_piece())
