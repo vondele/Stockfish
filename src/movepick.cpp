@@ -146,9 +146,8 @@ void MovePicker::score<QUIETS>() {
 
   for (auto& m : *this)
       m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
-               +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
-               + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
-               + (*(ss)->counterMoves)[pos.moved_piece(m)][to_sq(m)];
+               + 2*(*fmh)[pos.moved_piece(m)][to_sq(m)]
+               + (*fmh2)[pos.moved_piece(m)][to_sq(m)];
 
 }
 
@@ -161,7 +160,7 @@ void MovePicker::score<EVASIONS>() {
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                    - Value(type_of(pos.moved_piece(m))) + Value(1 << 28);
       else
-          m.value = (*(ss)->counterMoves)[pos.moved_piece(m)][to_sq(m)];
+          m.value = (*(ss-2)->counterMoves)[pos.moved_piece(m)][to_sq(m)];
 }
 
 

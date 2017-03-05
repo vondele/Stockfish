@@ -963,9 +963,8 @@ moves_loop: // When in check search starts from here
                   r -= 2 * ONE_PLY;
 
               ss->history =  (*cmh )[moved_piece][to_sq(move)]
-                           + (*fmh )[moved_piece][to_sq(move)]
+                           + 2*(*fmh )[moved_piece][to_sq(move)]
                            + (*fmh2)[moved_piece][to_sq(move)]
-                           + (*(ss)->counterMoves)[moved_piece][to_sq(move)]
                            - 4000; // Correction factor
 
               // Decrease/increase reduction by comparing opponent's stat score
@@ -1381,7 +1380,6 @@ moves_loop: // When in check search starts from here
                 }
 
                 Value bonus = stat_bonus(depth);
-                // ss->counterMoves->update(pos.moved_piece(move), to_sq(move), bonus);
                 update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
                 if (prevOK)
@@ -1390,7 +1388,6 @@ moves_loop: // When in check search starts from here
                 // Decrease all the other played quiet moves.
                 for (int i = 0; i < quietsCnt; ++i)
                 {
-                    // ss->counterMoves->update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
                     update_cm_stats(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
                 }
             }
@@ -1402,7 +1399,6 @@ moves_loop: // When in check search starts from here
         else if (!pos.capture_or_promotion(move))
         {
             Value penalty = -stat_bonus(depth + ONE_PLY);
-            ss->counterMoves->update(pos.moved_piece(move), to_sq(move), penalty);
             update_cm_stats(ss, pos.moved_piece(move), to_sq(move), penalty);
         }
     } 
