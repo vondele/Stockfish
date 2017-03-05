@@ -962,8 +962,8 @@ moves_loop: // When in check search starts from here
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move)),  VALUE_ZERO))
                   r -= 2 * ONE_PLY;
 
-              ss->history =  (*cmh )[moved_piece][to_sq(move)]
-                           + 2*(*fmh )[moved_piece][to_sq(move)]
+              ss->history =  2*(*cmh )[moved_piece][to_sq(move)]
+                           + (*fmh )[moved_piece][to_sq(move)]
                            + (*fmh2)[moved_piece][to_sq(move)]
                            - 4000; // Correction factor
 
