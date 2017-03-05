@@ -33,8 +33,6 @@
 /// during the current search, and is used for reduction and move ordering decisions.
 struct HistoryStats {
 
-  static const Value Max = Value(1 << 28);
-
   Value get(Color c, Move m) const { return table[c][from_sq(m)][to_sq(m)]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
   void update(Color c, Move m, Value v) {

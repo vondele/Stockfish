@@ -157,16 +157,13 @@ void MovePicker::score<QUIETS>() {
 
 template<>
 void MovePicker::score<EVASIONS>() {
-  // Try captures ordered by MVV/LVA, then non-captures ordered by stats heuristics
+
   const HistoryStats& history = pos.this_thread()->history;
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
-      if (pos.capture(m))
-          m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                   - Value(type_of(pos.moved_piece(m))) + HistoryStats::Max;
-      else
-          m.value = history.get(c, m);
+       m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
+                - PieceValue[MG][pos.moved_piece(m)] + history.get(c, m)/128;
 }
 
 
