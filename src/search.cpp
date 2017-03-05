@@ -1381,7 +1381,7 @@ moves_loop: // When in check search starts from here
                 }
 
                 Value bonus = stat_bonus(depth);
-                ss->counterMoves->update(pos.moved_piece(move), to_sq(move), bonus);
+                // ss->counterMoves->update(pos.moved_piece(move), to_sq(move), bonus);
                 update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
                 if (prevOK)
@@ -1390,7 +1390,7 @@ moves_loop: // When in check search starts from here
                 // Decrease all the other played quiet moves.
                 for (int i = 0; i < quietsCnt; ++i)
                 {
-                    ss->counterMoves->update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
+                    // ss->counterMoves->update(pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
                     update_cm_stats(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
                 }
             }
