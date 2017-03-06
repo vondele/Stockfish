@@ -900,7 +900,7 @@ moves_loop: // When in check search starts from here
       if (  !rootNode
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
-          if (   !captureOrPromotion
+          if (   (!captureOrPromotion || mp.stage_after(Movepick::QUIET))
               && !givesCheck
               && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= 5000))
           {

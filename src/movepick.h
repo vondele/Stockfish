@@ -83,6 +83,18 @@ typedef Stats<Move> MoveStats;
 typedef Stats<Value> CounterMoveStats;
 typedef Stats<CounterMoveStats> CounterMoveHistoryStats;
 
+namespace Movepick {
+
+  enum Stages {
+    MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, KILLERS, COUNTERMOVE, QUIET_INIT, QUIET, BAD_CAPTURES,
+    EVASION, EVASIONS_INIT, ALL_EVASIONS,
+    PROBCUT, PROBCUT_INIT, PROBCUT_CAPTURES,
+    QSEARCH_WITH_CHECKS, QCAPTURES_1_INIT, QCAPTURES_1, QCHECKS,
+    QSEARCH_NO_CHECKS, QCAPTURES_2_INIT, QCAPTURES_2,
+    QSEARCH_RECAPTURES, QRECAPTURES
+  };
+
+}
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
 /// current position. The most important method is next_move(), which returns a
@@ -102,6 +114,9 @@ public:
   MovePicker(const Position&, Move, Depth, Search::Stack*);
 
   Move next_move();
+
+  // careful with the meaning: a move is returned, and stage points to what is next
+  bool stage_after(Movepick::Stages stg){ return stage > stg; };
 
 private:
   template<GenType> void score();

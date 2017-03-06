@@ -23,16 +23,7 @@
 #include "movepick.h"
 #include "thread.h"
 
-namespace {
-
-  enum Stages {
-    MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, KILLERS, COUNTERMOVE, QUIET_INIT, QUIET, BAD_CAPTURES,
-    EVASION, EVASIONS_INIT, ALL_EVASIONS,
-    PROBCUT, PROBCUT_INIT, PROBCUT_CAPTURES,
-    QSEARCH_WITH_CHECKS, QCAPTURES_1_INIT, QCAPTURES_1, QCHECKS,
-    QSEARCH_NO_CHECKS, QCAPTURES_2_INIT, QCAPTURES_2,
-    QSEARCH_RECAPTURES, QRECAPTURES
-  };
+namespace Movepick {
 
   // Our insertion sort, which is guaranteed to be stable, as it should be
   void insertion_sort(ExtMove* begin, ExtMove* end)
@@ -59,6 +50,7 @@ namespace {
 
 } // namespace
 
+using namespace Movepick;
 
 /// Constructors of the MovePicker class. As arguments we pass information
 /// to help it to return the (presumably) good moves first, to decide which
