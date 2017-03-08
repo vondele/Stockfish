@@ -57,7 +57,7 @@ namespace {
       return *begin;
   }
 
-  int piece_usage[PIECE_TYPE_NB]={0, 163, 130, 101, 119, 107, 193, 0};
+  int piece_usage[PIECE_TYPE_NB]={0, 5, 4, 1, 3, 2, 6, 0};
 
 } // namespace
 
