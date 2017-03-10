@@ -36,7 +36,7 @@
 
 struct StateInfo {
 
-  // Copied when making a move
+  // Copied when making a move, these fields must be first in the struct
   Key    pawnKey;
   Key    materialKey;
   Value  nonPawnMaterial[COLOR_NB];
@@ -46,14 +46,14 @@ struct StateInfo {
   Score  psq;
   Square epSquare;
 
-  // Not copied when making a move (will be recomputed anyhow)
+  // Not copied when making a move, must start with key as an offsetof argument in do_move.
   Key        key;
-  Bitboard   checkersBB;
-  Piece      capturedPiece;
   StateInfo* previous;
+  Bitboard   checkersBB;
   Bitboard   blockersForKing[COLOR_NB];
   Bitboard   pinnersForKing[COLOR_NB];
   Bitboard   checkSquares[PIECE_TYPE_NB];
+  Piece      capturedPiece;
 };
 
 // In a std::deque references to elements are unaffected upon resizing
@@ -175,20 +175,20 @@ private:
   void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
 
   // Data members
-  Piece board[SQUARE_NB];
-  Bitboard byTypeBB[PIECE_TYPE_NB];
-  Bitboard byColorBB[COLOR_NB];
-  int pieceCount[PIECE_NB];
-  Square pieceList[PIECE_NB][16];
-  int index[SQUARE_NB];
-  int castlingRightsMask[SQUARE_NB];
-  Square castlingRookSquare[CASTLING_RIGHT_NB];
-  Bitboard castlingPath[CASTLING_RIGHT_NB];
-  uint64_t nodes;
-  int gamePly;
-  Color sideToMove;
   Thread* thisThread;
   StateInfo* st;
+  Bitboard byTypeBB[PIECE_TYPE_NB];
+  Bitboard byColorBB[COLOR_NB];
+  Bitboard castlingPath[CASTLING_RIGHT_NB];
+  uint64_t nodes;
+  int pieceCount[PIECE_NB];
+  int index[SQUARE_NB];
+  int castlingRightsMask[SQUARE_NB];
+  Piece board[SQUARE_NB];
+  Square pieceList[PIECE_NB][16];
+  Square castlingRookSquare[CASTLING_RIGHT_NB];
+  int gamePly;
+  Color sideToMove;
   bool chess960;
 };
 

@@ -127,8 +127,8 @@ namespace {
       }
     }
 
-    int stableCnt;
     Key expectedPosKey;
+    int stableCnt;
     Move pv[3];
   };
 

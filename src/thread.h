@@ -43,11 +43,6 @@
 
 class Thread {
 
-  std::thread nativeThread;
-  Mutex mutex;
-  ConditionVariable sleepCondition;
-  bool exit, searching;
-
 public:
   Thread();
   virtual ~Thread();
@@ -64,14 +59,21 @@ public:
   int maxPly, callsCnt;
   uint64_t tbHits;
 
+  MoveStats counterMoves;
+  HistoryStats history;
+  CounterMoveHistoryStats counterMoveHistory;
   Position rootPos;
   Search::RootMoves rootMoves;
   Depth rootDepth;
   Depth completedDepth;
   std::atomic_bool resetCalls;
-  MoveStats counterMoves;
-  HistoryStats history;
-  CounterMoveHistoryStats counterMoveHistory;
+
+private:
+
+  std::thread nativeThread;
+  Mutex mutex;
+  ConditionVariable sleepCondition;
+  bool exit, searching;
 };
 
 
@@ -80,9 +82,9 @@ public:
 struct MainThread : public Thread {
   virtual void search();
 
-  bool easyMovePlayed, failedLow;
   double bestMoveChanges;
   Value previousScore;
+  bool failedLow, easyMovePlayed;
 };
 
 

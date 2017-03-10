@@ -65,7 +65,6 @@ struct Entry {
   Value shelter_storm(const Position& pos, Square ksq);
 
   Key key;
-  Score score;
   Bitboard passedPawns[COLOR_NB];
   Bitboard pawnAttacks[COLOR_NB];
   Bitboard pawnAttacksSpan[COLOR_NB];
@@ -74,6 +73,7 @@ struct Entry {
   int castlingRights[COLOR_NB];
   int semiopenFiles[COLOR_NB];
   int pawnsOnSquares[COLOR_NB][COLOR_NB]; // [color][light/dark squares]
+  Score score;
   int asymmetry;
   int openFiles;
 };
