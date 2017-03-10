@@ -57,6 +57,8 @@ namespace {
       return *begin;
   }
 
+  int piece_usage[PIECE_TYPE_NB]={0, 163, 130, 101, 119, 107, 193, 0};
+
 } // namespace
 
 
@@ -152,7 +154,8 @@ void MovePicker::score<QUIETS>() {
       m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
-               + history.get(c, m);
+               + history.get(c, m)
+               + piece_usage[type_of(pos.moved_piece(m))];
 }
 
 template<>
