@@ -23,6 +23,10 @@
 #include "movepick.h"
 #include "thread.h"
 
+namespace PSQT {
+  extern Score psq[PIECE_NB][SQUARE_NB];
+}
+
 namespace {
 
   enum Stages {
@@ -149,10 +153,16 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
+  {
       m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
+      int i = mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)])
+             -mg_value(PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
+      i = c ? i : -i;
+      m.value += i/2;
+  }
 }
 
 template<>
