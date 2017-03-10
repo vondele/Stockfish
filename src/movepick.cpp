@@ -57,7 +57,8 @@ namespace {
       return *begin;
   }
 
-  int piece_usage[PIECE_TYPE_NB]={0, 5, 4, 1, 3, 2, 6, 0};
+  int piece_usage[PIECE_TYPE_NB]={0, 0, 0, 0, 0, 0, 0, 0};
+  TUNE(SetRange(-96,96),piece_usage);
 
 } // namespace
 
