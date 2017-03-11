@@ -58,7 +58,7 @@ namespace {
     
     /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows experimentally obtained function.
     
-    double incUsage = std::min(80, 4 * mn);
+    double incUsage = 54 + 60 * exp(-(mn-19) * (mn-19) / 400.0);
     double ratio = std::min(1.0, TRatio * (1.0 + incUsage * myInc / (myTime * sd)));
     int hypMyTime = std::max(0, myTime - moveOverhead);
 
