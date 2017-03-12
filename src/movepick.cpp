@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <cmath>
 
 #include "movepick.h"
 #include "thread.h"
@@ -59,10 +60,10 @@ namespace {
 
   int piece_usage[PIECE_TYPE_NB]={0, 4, 5, -4, 3, 0, 1, 0};
   int piece_usage_slope[PIECE_TYPE_NB]={0, 64, 64, 64, 64, 64, 64, 0};
-  int piece_usage_exp[PIECE_TYPE_NB]={0, 0, 0, 0, 0, 0, 0, 0};
+  int piece_usage_exp[PIECE_TYPE_NB]={0, 0, 0, 1, -1, -1, -1, 0};
   void init_slope() {
        for(int i=0;i<PIECE_TYPE_NB;i++)
-          piece_usage_slope[i]=64*pow(1.05,piece_usage_exp[i]);
+          piece_usage_slope[i]=64*pow(1.05,float(piece_usage_exp[i]));
   }
   TUNE(SetRange(-32,32),piece_usage_exp,init_slope);
 
