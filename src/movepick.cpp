@@ -57,8 +57,14 @@ namespace {
       return *begin;
   }
 
-  int piece_usage[PIECE_TYPE_NB]={0, 0, 0, 0, 0, 0, 0, 0};
-  TUNE(SetRange(-96,96),piece_usage);
+  int piece_usage[PIECE_TYPE_NB]={0, 4, 5, -4, 3, 0, 1, 0};
+  int piece_usage_slope[PIECE_TYPE_NB]={0, 64, 64, 64, 64, 64, 64, 0};
+  int piece_usage_exp[PIECE_TYPE_NB]={0, 0, 0, 0, 0, 0, 0, 0};
+  void init_slope() {
+       for(int i=0;i<PIECE_TYPE_NB;i++)
+          piece_usage_slope[i]=64*pow(1.05,piece_usage_exp[i]);
+  }
+  TUNE(SetRange(-32,32),piece_usage_exp,init_slope);
 
 } // namespace
 
@@ -152,11 +158,14 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
+  {
       m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
-               + history.get(c, m)
+               + history.get(c, m);
+      m.value  = piece_usage_slope[type_of(pos.moved_piece(m))]*m.value/64
                + piece_usage[type_of(pos.moved_piece(m))];
+  }
 }
 
 template<>
