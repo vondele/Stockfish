@@ -57,7 +57,8 @@ namespace {
       return *begin;
   }
 
-  int piece_usage[PIECE_TYPE_NB]={0, 4, 5, -4, 3, 0, 1, 0};
+  const int piece_usage[PIECE_TYPE_NB][2]={{0,  0}, {4, 62}, {5, 60}, {-4, 74},
+                                           {3, 57}, {0, 58}, {1, 65}, { 0,  0}};
 
 } // namespace
 
@@ -151,11 +152,14 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
+  {
       m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
-               + history.get(c, m)
-               + piece_usage[type_of(pos.moved_piece(m))];
+               + history.get(c, m);
+      m.value =  piece_usage[type_of(pos.moved_piece(m))][1]*m.value/64
+               + piece_usage[type_of(pos.moved_piece(m))][0];
+  }
 }
 
 template<>
