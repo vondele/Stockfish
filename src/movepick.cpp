@@ -160,7 +160,7 @@ void MovePicker::score<QUIETS>() {
                + history.get(c, m);
       int i = mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)])
              -mg_value(PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
-      i = c ? i : -i;
+      i = c == WHITE ? i : -i;
       m.value += i/2;
   }
 }
