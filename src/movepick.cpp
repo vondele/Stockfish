@@ -34,20 +34,6 @@ namespace {
     QSEARCH_RECAPTURES, QRECAPTURES
   };
 
-  // Our insertion sort, which is guaranteed to be stable, as it should be
-  void insertion_sort(ExtMove* begin, ExtMove* end)
-  {
-    ExtMove tmp, *p, *q;
-
-    for (p = begin + 1; p < end; ++p)
-    {
-        tmp = *p;
-        for (q = p; q != begin && *(q-1) < tmp; --q)
-            *q = *(q-1);
-        *q = tmp;
-    }
-  }
-
   // pick_best() finds the best move in the range (begin, end) and moves it to
   // the front. It's faster than sorting all the moves in advance when there
   // are few moves, e.g., the possible captures.
@@ -138,24 +124,6 @@ void MovePicker::score<CAPTURES>() {
 }
 
 template<>
-void MovePicker::score<QUIETS>() {
-
-  const HistoryStats& history = pos.this_thread()->history;
-
-  const CounterMoveStats* cmh = (ss-1)->counterMoves;
-  const CounterMoveStats* fmh = (ss-2)->counterMoves;
-  const CounterMoveStats* fmh2 = (ss-4)->counterMoves;
-
-  Color c = pos.side_to_move();
-
-  for (auto& m : *this)
-      m.value =   (*cmh)[pos.moved_piece(m)][to_sq(m)]
-               +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
-               + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
-               + history.get(c, m);
-}
-
-template<>
 void MovePicker::score<EVASIONS>() {
   // Try captures ordered by MVV/LVA, then non-captures ordered by stats heuristics
   const HistoryStats& history = pos.this_thread()->history;
@@ -237,14 +205,6 @@ Move MovePicker::next_move() {
   case QUIET_INIT:
       cur = endBadCaptures;
       endMoves = generate<QUIETS>(pos, cur);
-      score<QUIETS>();
-      if (depth < 3 * ONE_PLY)
-      {
-          ExtMove* goodQuiet = std::partition(cur, endMoves, [](const ExtMove& m)
-                                             { return m.value > VALUE_ZERO; });
-          insertion_sort(cur, goodQuiet);
-      } else
-          insertion_sort(cur, endMoves);
       ++stage;
 
   case QUIET:
