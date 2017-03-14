@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "movepick.h"
 #include "thread.h"
@@ -158,10 +159,12 @@ void MovePicker::score<QUIETS>() {
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
-      int i = mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)])
-             -mg_value(PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
-      i = c == WHITE ? i : -i;
-      m.value += i/4;
+      if (m.value <= VALUE_ZERO) {
+         int i = mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)])
+                -mg_value(PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
+         i = c == WHITE ? i : -i;
+         m.value += i;
+      }
   }
 }
 
