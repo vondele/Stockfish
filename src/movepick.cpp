@@ -159,12 +159,10 @@ void MovePicker::score<QUIETS>() {
                +  (*fmh)[pos.moved_piece(m)][to_sq(m)]
                + (*fmh2)[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
-      if (m.value <= VALUE_ZERO) {
-         int i = mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)])
-                -mg_value(PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
-         i = c == WHITE ? i : -i;
-         m.value += i;
-      }
+      int i = mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)])
+             -mg_value(PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
+      i = c == WHITE ? i : -i;
+      m.value += 4*i;
   }
 }
 
