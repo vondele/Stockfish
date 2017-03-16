@@ -1357,6 +1357,9 @@ moves_loop: // When in check search starts from here
   template<bool isBest>
   void update_all_stats(const Position& pos, Stack* ss, Move move,
                         Move* quiets, int quietsCnt, Depth depth, bool failsLow) {
+
+    if (depth > 17)
+        return;
  
     Square prevSq = to_sq((ss-1)->currentMove);
     bool prevOK = is_ok((ss-1)->currentMove);
