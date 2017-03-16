@@ -1358,7 +1358,7 @@ moves_loop: // When in check search starts from here
   void update_all_stats(const Position& pos, Stack* ss, Move move,
                         Move* quiets, int quietsCnt, Depth depth, bool failsLow) {
 
-    if (depth > 17)
+    if (depth > 16)
         return;
  
     Square prevSq = to_sq((ss-1)->currentMove);
