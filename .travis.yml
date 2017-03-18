@@ -73,3 +73,7 @@ script:
   #
   # use g++-6 as a proxy for having sanitizers, might need revision as they become available for more recent versions of clang/gcc
   - if [[ "$COMPILER" == "g++-6" ]]; then make clean && make ARCH=x86-64 sanitize=yes build > /dev/null && ../tests/instrumented.sh --sanitizer; fi
+  #
+  # arasan benchmark performance
+  #
+  - make clean && make ARCH=x86-64 build > /dev/null && ../tests/arasan.sh --nodes 1000000
