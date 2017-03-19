@@ -46,7 +46,7 @@ namespace {
         if (mn <= 40)
             TRatio *= (0.45 + 0.064 * mn * exp(-0.052 * mn));
         else
-            TRatio *= 1.3;
+            TRatio *= 1.5;
     }
     else
     {
