@@ -42,7 +42,7 @@ namespace {
  
     if (movesToGo)
     {
-        TRatio = (T == OptimumTime ? 0.9 : 5.6) / movesToGo;
+        TRatio = (T == OptimumTime ? 1.0 : 6.0) / movesToGo;
         if (mn <= 40)
             TRatio *= (0.45 + 0.064 * mn * exp(-0.052 * mn));
         else
@@ -56,9 +56,9 @@ namespace {
         TRatio = (T == OptimumTime ? 0.018 : 0.074) * sd;
     }
     
-    /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows experimentally obtained function.
+    /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows normal distribution with the maximum at move 19.
     
-    double incUsage = 54 + 60 * exp(-(mn-19) * (mn-19) / 400.0);
+    double incUsage = 54 + 44 * exp(-(mn-19) * (mn-19) / 405.0);
     double ratio = std::min(1.0, TRatio * (1.0 + incUsage * myInc / (myTime * sd)));
     int hypMyTime = std::max(0, myTime - moveOverhead);
 
