@@ -100,7 +100,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
   assert(d > DEPTH_ZERO);
 
   Square prevSq = to_sq((ss-1)->currentMove);
-  countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
+  countermove = pos.this_thread()->counterMoves[pos.side_to_move()][pos.piece_on(prevSq)][prevSq];
 
   stage = pos.checkers() ? EVASION : MAIN_SEARCH;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;

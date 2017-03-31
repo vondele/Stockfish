@@ -189,7 +189,8 @@ void Search::clear() {
 
   for (Thread* th : Threads)
   {
-      th->counterMoves.clear();
+      th->counterMoves[WHITE].clear();
+      th->counterMoves[BLACK].clear();
       th->history[WHITE].clear();
       th->history[BLACK].clear();
       th->counterMoveHistory.clear();
@@ -1402,14 +1403,15 @@ moves_loop: // When in check search starts from here
     }
 
     Thread* thisThread = pos.this_thread();
-    HistoryStats& history = thisThread->history[pos.side_to_move()];
+    Color c = pos.side_to_move();
+    HistoryStats& history = thisThread->history[c];
     history.update(from_sq(move), to_sq(move), bonus);
     update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     if (is_ok((ss-1)->currentMove))
     {
         Square prevSq = to_sq((ss-1)->currentMove);
-        thisThread->counterMoves.update(pos.piece_on(prevSq), prevSq, move);
+        thisThread->counterMoves[c].update(pos.piece_on(prevSq), prevSq, move);
     }
 
     // Decrease all the other played quiet moves

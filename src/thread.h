@@ -69,7 +69,7 @@ public:
   Depth rootDepth;
   Depth completedDepth;
   std::atomic_bool resetCalls;
-  MoveStats counterMoves;
+  MoveStats counterMoves[COLOR_NB];
   HistoryStats history[COLOR_NB];
   CounterMoveHistoryStats counterMoveHistory;
 };
