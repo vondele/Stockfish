@@ -168,7 +168,7 @@ void MovePicker::score<CAPTURES>() {
 template<>
 void MovePicker::score<QUIETS>() {
 
-  const HistoryStats& history = pos.this_thread()->history[pos.side_to_move()];
+  const HistoryStats& history = pos.this_thread()->history;
   const CounterMoveStats& cmh = *(ss-1)->counterMoves;
   const CounterMoveStats& fmh = *(ss-2)->counterMoves;
   const CounterMoveStats& fm2 = *(ss-4)->counterMoves;
@@ -184,7 +184,7 @@ void MovePicker::score<QUIETS>() {
 template<>
 void MovePicker::score<EVASIONS>() {
   // Try captures ordered by MVV/LVA, then non-captures ordered by stats heuristics
-  const HistoryStats& history = pos.this_thread()->history[pos.side_to_move()];
+  const HistoryStats& history = pos.this_thread()->history;
 
   for (auto& m : *this)
       if (pos.capture(m))

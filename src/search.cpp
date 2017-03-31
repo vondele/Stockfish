@@ -190,8 +190,7 @@ void Search::clear() {
   for (Thread* th : Threads)
   {
       th->counterMoves.clear();
-      th->history[WHITE].clear();
-      th->history[BLACK].clear();
+      th->history.clear();
       th->counterMoveHistory.clear();
       th->resetCalls = true;
   }
@@ -637,7 +636,7 @@ namespace {
             else if (!pos.capture_or_promotion(ttMove))
             {
                 Value penalty = -stat_bonus(depth + ONE_PLY);
-                thisThread->history[pos.side_to_move()].update(from_sq(ttMove), to_sq(ttMove), penalty);
+                thisThread->history.update(from_sq(ttMove), to_sq(ttMove), penalty);
                 update_cm_stats(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -813,7 +812,7 @@ moves_loop: // When in check search starts from here
     const CounterMoveStats& cmh = *(ss-1)->counterMoves;
     const CounterMoveStats& fmh = *(ss-2)->counterMoves;
     const CounterMoveStats& fm2 = *(ss-4)->counterMoves;
-    const HistoryStats& history = thisThread->history[pos.side_to_move()];
+    const HistoryStats& history = thisThread->history;
     const bool cm_ok = is_ok((ss-1)->currentMove);
     const bool fm_ok = is_ok((ss-2)->currentMove);
     const bool f2_ok = is_ok((ss-4)->currentMove);
@@ -1402,7 +1401,7 @@ moves_loop: // When in check search starts from here
     }
 
     Thread* thisThread = pos.this_thread();
-    HistoryStats& history = thisThread->history[pos.side_to_move()];
+    HistoryStats& history = thisThread->history;
     history.update(from_sq(move), to_sq(move), bonus);
     update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
