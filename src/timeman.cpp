@@ -33,9 +33,12 @@ namespace {
   enum TimeType { OptimumTime, MaxTime };
 
   template<TimeType T>
-  int remaining(int myTime, int myInc, int moveOverhead, int movesToGo, int ply)
+  int remaining(int myTime, int myInc, int moveOverhead, int movesToGo, int ply, Value npm)
   {
     double TRatio, sd = 8.5;
+    Value inpm = 4 * (KnightValueMg + BishopValueMg + RookValueMg) + 2 * QueenValueMg; // initial non_pawn_material
+    double complexity = 0.2 + double(std::min(npm, inpm)) / inpm;
+
     int mn = (ply + 1) / 2; // current move number for any side
 
     /// In movestogo case we distribute time according to an experimentally obtained function with the maximum around move 19 for 40 moves in y minutes case.
@@ -43,6 +46,7 @@ namespace {
     if (movesToGo)
     {
         TRatio = (T == OptimumTime ? 1.0 : 6.0) / movesToGo;
+        TRatio *= complexity;
         if (mn <= 40)
             TRatio *= (0.45 + 0.064 * mn * exp(-0.052 * mn));
         else
@@ -54,6 +58,7 @@ namespace {
 
         sd = 1.0 + 15.0 * mn / (500.0 + mn);
         TRatio = (T == OptimumTime ? 0.018 : 0.074) * sd;
+        TRatio *= complexity;
     }
     
     /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows normal distribution with the maximum at move 19.
@@ -77,7 +82,7 @@ namespace {
 ///  inc >  0 && movestogo == 0 means: x basetime + z increment
 ///  inc >  0 && movestogo != 0 means: x moves in y minutes + z increment
 
-void TimeManagement::init(Search::LimitsType& limits, Color us, int ply)
+void TimeManagement::init(Search::LimitsType& limits, Color us, int ply, Value npm)
 {
   int moveOverhead    = Options["Move Overhead"];
   int npmsec          = Options["nodestime"];
@@ -99,8 +104,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply)
 
   startTime = limits.startTime;
 
-      optimumTime = remaining<OptimumTime>(limits.time[us], limits.inc[us], moveOverhead, limits.movestogo, ply);
-      maximumTime = remaining<MaxTime    >(limits.time[us], limits.inc[us], moveOverhead, limits.movestogo, ply);
+      optimumTime = remaining<OptimumTime>(limits.time[us], limits.inc[us], moveOverhead, limits.movestogo, ply, npm);
+      maximumTime = remaining<MaxTime    >(limits.time[us], limits.inc[us], moveOverhead, limits.movestogo, ply, npm);
 
   if (Options["Ponder"])
       optimumTime += optimumTime / 4;
