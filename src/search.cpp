@@ -190,8 +190,10 @@ void Search::clear() {
   for (Thread* th : Threads)
   {
       th->counterMoves.clear();
-      th->history.clear();
-      th->counterMoveHistory.clear();
+      for (int c = 0; c < Thread::pcSize; ++c) {
+          th->history[c].clear();
+          th->counterMoveHistory[c].clear();
+      }
       th->resetCalls = true;
   }
 
@@ -326,7 +328,7 @@ void Thread::search() {
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for(int i = 4; i > 0; i--)
-     (ss-i)->counterMoves = &this->counterMoveHistory[NO_PIECE][0]; // Use as sentinel
+     (ss-i)->counterMoves = &this->counterMoveHistory[0][NO_PIECE][0]; // Use as sentinel
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
@@ -598,7 +600,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     ss->currentMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
-    ss->counterMoves = &thisThread->counterMoveHistory[NO_PIECE][0];
+    ss->counterMoves = &thisThread->counterMoveHistory[0][NO_PIECE][0];
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
 
@@ -611,6 +613,9 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->PVIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
+
+    int piecesCount = pos.count<ALL_PIECES>();
+    int pcIndex = piecesCount % Thread::pcSize;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -636,7 +641,7 @@ namespace {
             else if (!pos.capture_or_promotion(ttMove))
             {
                 Value penalty = -stat_bonus(depth + ONE_PLY);
-                thisThread->history.update(pos.side_to_move(), ttMove, penalty);
+                thisThread->history[pcIndex].update(pos.side_to_move(), ttMove, penalty);
                 update_cm_stats(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -646,8 +651,6 @@ namespace {
     // Step 4a. Tablebase probe
     if (!rootNode && TB::Cardinality)
     {
-        int piecesCount = pos.count<ALL_PIECES>();
-
         if (    piecesCount <= TB::Cardinality
             && (piecesCount <  TB::Cardinality || depth >= TB::ProbeDepth)
             &&  pos.rule50_count() == 0
@@ -741,7 +744,7 @@ namespace {
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
         ss->currentMove = MOVE_NULL;
-        ss->counterMoves = &thisThread->counterMoveHistory[NO_PIECE][0];
+        ss->counterMoves = &thisThread->counterMoveHistory[0][NO_PIECE][0];
 
         pos.do_null_move(st);
         Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV, false>(pos, ss+1, -beta, -beta+1)
@@ -785,7 +788,7 @@ namespace {
             if (pos.legal(move))
             {
                 ss->currentMove = move;
-                ss->counterMoves = &thisThread->counterMoveHistory[pos.moved_piece(move)][to_sq(move)];
+                ss->counterMoves = &thisThread->counterMoveHistory[pcIndex][pos.moved_piece(move)][to_sq(move)];
 
                 pos.do_move(move, st);
                 value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, rdepth, !cutNode, false);
@@ -949,7 +952,7 @@ moves_loop: // When in check search starts from here
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->counterMoves = &thisThread->counterMoveHistory[moved_piece][to_sq(move)];
+      ss->counterMoves = &thisThread->counterMoveHistory[pcIndex][moved_piece][to_sq(move)];
 
       // Step 14. Make the move
       pos.do_move(move, st, givesCheck);
@@ -980,7 +983,7 @@ moves_loop: // When in check search starts from here
               ss->history =  cmh[moved_piece][to_sq(move)]
                            + fmh[moved_piece][to_sq(move)]
                            + fm2[moved_piece][to_sq(move)]
-                           + thisThread->history.get(~pos.side_to_move(), move)
+                           + thisThread->history[pcIndex].get(~pos.side_to_move(), move)
                            - 4000; // Correction factor
 
               // Decrease/increase reduction by comparing opponent's stat score
@@ -1400,9 +1403,12 @@ moves_loop: // When in check search starts from here
         ss->killers[0] = move;
     }
 
+    int piecesCount = pos.count<ALL_PIECES>();
+    int pcIndex = piecesCount % Thread::pcSize;
+
     Color c = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    thisThread->history.update(c, move, bonus);
+    thisThread->history[pcIndex].update(c, move, bonus);
     update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     if (is_ok((ss-1)->currentMove))
@@ -1414,7 +1420,7 @@ moves_loop: // When in check search starts from here
     // Decrease all the other played quiet moves
     for (int i = 0; i < quietsCnt; ++i)
     {
-        thisThread->history.update(c, quiets[i], -bonus);
+        thisThread->history[pcIndex].update(c, quiets[i], -bonus);
         update_cm_stats(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
     }
   }

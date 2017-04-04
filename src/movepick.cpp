@@ -140,7 +140,10 @@ void MovePicker::score<CAPTURES>() {
 template<>
 void MovePicker::score<QUIETS>() {
 
-  const HistoryStats& history = pos.this_thread()->history;
+  int piecesCount = pos.count<ALL_PIECES>();
+  int pcIndex = piecesCount % Thread::pcSize;
+
+  const HistoryStats& history = pos.this_thread()->history[pcIndex];
 
   const CounterMoveStats& cmh = *(ss-1)->counterMoves;
   const CounterMoveStats& fmh = *(ss-2)->counterMoves;
@@ -158,7 +161,9 @@ void MovePicker::score<QUIETS>() {
 template<>
 void MovePicker::score<EVASIONS>() {
   // Try captures ordered by MVV/LVA, then non-captures ordered by stats heuristics
-  const HistoryStats& history = pos.this_thread()->history;
+  int piecesCount = pos.count<ALL_PIECES>();
+  int pcIndex = piecesCount % Thread::pcSize;
+  const HistoryStats& history = pos.this_thread()->history[pcIndex];
   Color c = pos.side_to_move();
 
   for (auto& m : *this)

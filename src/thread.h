@@ -70,8 +70,9 @@ public:
   Depth completedDepth;
   std::atomic_bool resetCalls;
   MoveStats counterMoves;
-  HistoryStats history;
-  CounterMoveHistoryStats counterMoveHistory;
+  static const int pcSize = 4;
+  HistoryStats history[pcSize];
+  CounterMoveHistoryStats counterMoveHistory[pcSize];
 };
 
 
