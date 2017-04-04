@@ -81,8 +81,8 @@ namespace {
 
   // History and stats update bonus, based on depth
   Value stat_bonus(Depth depth) {
-    int d = std::min(17, depth / ONE_PLY);
-    return Value(16 * d * d + 8 * d * msb(d * d) + 125 * d - 19);
+    int d = depth / ONE_PLY;
+    return d > 17 ? VALUE_ZERO : Value(16 * d * d + 8 * d * msb(d * d) + 125 * d - 19);
   }
 
   // Skill structure is used to implement strength limit
