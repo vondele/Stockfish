@@ -42,7 +42,7 @@ struct HistoryStats {
     Square from = from_sq(m);
     Square to = to_sq(m);
 
-    const int denom = 10313;
+    const int denom = 10340;
 
     assert(abs(int(v)) <= denom); // Needed for stability.
 
@@ -69,7 +69,7 @@ struct Stats {
   void update(Piece pc, Square to, Move m) { table[pc][to] = m; }
   void update(Piece pc, Square to, Value v) {
 
-    const int denom = 30764;
+    const int denom = 30358;
 
     assert(abs(int(v)) <= denom); // Needed for stability.
 
