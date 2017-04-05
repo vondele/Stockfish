@@ -1112,7 +1112,7 @@ moves_loop: // When in check search starts from here
     else if (bestMove)
     {
 
-        Depth bonusDepth = diffValue > 200 ? depth + ONE_PLY : depth;
+        Depth bonusDepth = diffValue > 50 ? depth + ONE_PLY : depth;
 
         // Quiet best move: update move sorting heuristics
         if (!pos.capture_or_promotion(bestMove))
