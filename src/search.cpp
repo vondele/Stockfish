@@ -540,7 +540,7 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, ttValue, eval, diffValue;
+    Value bestValue, value, ttValue, eval, diffValue, origAlpha;
     bool ttHit, inCheck, givesCheck, singularExtensionNode, improving;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets;
     Piece moved_piece;
@@ -807,6 +807,8 @@ namespace {
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
 
+    origAlpha = alpha;
+
 moves_loop: // When in check search starts from here
 
     const CounterMoveStats& cmh = *(ss-1)->counterMoves;
@@ -1072,7 +1074,7 @@ moves_loop: // When in check search starts from here
           if (value > alpha)
           {
               bestMove = move;
-              diffValue = value - alpha;
+              diffValue = value - origAlpha;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
