@@ -1113,7 +1113,7 @@ moves_loop: // When in check search starts from here
     else if (bestMove)
     {
         int d = depth / ONE_PLY < 4 ? 4 : depth / ONE_PLY;
-        int threshold = 1800 / (d * d);
+        int threshold = 300 / d;
         Depth bonusDepth = diffValue > Value(threshold) ? depth + ONE_PLY : depth;
 
         // Quiet best move: update move sorting heuristics
