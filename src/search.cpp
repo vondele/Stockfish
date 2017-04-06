@@ -1112,8 +1112,9 @@ moves_loop: // When in check search starts from here
                    :     inCheck ? mated_in(ss->ply) : DrawValue[pos.side_to_move()];
     else if (bestMove)
     {
-
-        Depth bonusDepth = diffValue > 75 ? depth + ONE_PLY : depth;
+        int d = depth / ONE_PLY < 4 ? 4 : depth / ONE_PLY;
+        int threshold = 1200 / (d * d);
+        Depth bonusDepth = diffValue > Value(threshold) ? depth + ONE_PLY : depth;
 
         // Quiet best move: update move sorting heuristics
         if (!pos.capture_or_promotion(bestMove))
