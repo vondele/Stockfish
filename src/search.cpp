@@ -527,7 +527,6 @@ namespace {
 
     const bool PvNode = NT == PV;
     const bool rootNode = PvNode && (ss-1)->ply == 0;
-    const int origAlpha = alpha;
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
@@ -1073,7 +1072,7 @@ moves_loop: // When in check search starts from here
           if (value > alpha)
           {
               bestMove = move;
-              diffValue = value - origAlpha;
+              diffValue = value - alpha;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
@@ -1113,7 +1112,7 @@ moves_loop: // When in check search starts from here
     else if (bestMove)
     {
         int d = depth / ONE_PLY < 4 ? 4 : depth / ONE_PLY;
-        int threshold = 300 / d;
+        int threshold = 1200 / (d * d);
         Depth bonusDepth = diffValue > Value(threshold) ? depth + ONE_PLY : depth;
 
         // Quiet best move: update move sorting heuristics
