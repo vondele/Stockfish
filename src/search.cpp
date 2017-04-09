@@ -983,7 +983,7 @@ moves_loop: // When in check search starts from here
                            + fmh[moved_piece][to_sq(move)]
                            + fm2[moved_piece][to_sq(move)]
                            + thisThread->history.get(~pos.side_to_move(), move)
-                           - 4000; // Correction factor
+                           - 4083; // Correction factor
 
               // Decrease/increase reduction by comparing opponent's stat score
               if (ss->history > VALUE_ZERO && (ss-1)->history < VALUE_ZERO)
@@ -1114,7 +1114,7 @@ moves_loop: // When in check search starts from here
     else if (bestMove)
     {
 
-        Depth bonusDepth = diffValue > 75 && origAlpha > -VALUE_INFINITE ? depth + ONE_PLY : depth;
+        Depth bonusDepth = diffValue > 27 && origAlpha > -VALUE_INFINITE ? depth + ONE_PLY : depth;
 
         // Quiet best move: update move sorting heuristics
         if (!pos.capture_or_promotion(bestMove))
