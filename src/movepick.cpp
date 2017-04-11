@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "movepick.h"
 #include "thread.h"
@@ -228,9 +229,12 @@ Move MovePicker::next_move(bool skipQuiets) {
       {
           ExtMove* goodQuiet = std::partition(cur, endMoves, [](const ExtMove& m)
                                              { return m.value > VALUE_ZERO; });
-          std::stable_sort(cur, goodQuiet);
-      } else
-          std::stable_sort(cur, endMoves);
+          std::stable_sort(cur, goodQuiet, [](const ExtMove& a, const ExtMove& b)
+                                             { return a.value > b.value; });
+      } else 
+          std::stable_sort(cur, endMoves, [](const ExtMove& a, const ExtMove& b)
+                                             { return a.value > b.value; });
+        
       ++stage;
 
   case QUIET:
