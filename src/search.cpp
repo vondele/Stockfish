@@ -1114,7 +1114,10 @@ moves_loop: // When in check search starts from here
     else if (bestMove)
     {
 
-        Depth bonusDepth = diffValue > 27 && origAlpha > -VALUE_INFINITE ? depth + ONE_PLY : depth;
+        int d = depth / ONE_PLY < 4 ? 4 : depth / ONE_PLY;
+        int threshold = 211 / (d * d);
+        Depth bonusDepth = diffValue > threshold && origAlpha > -VALUE_INFINITE ? depth + ONE_PLY : depth;
+
 
         // Quiet best move: update move sorting heuristics
         if (!pos.capture_or_promotion(bestMove))
