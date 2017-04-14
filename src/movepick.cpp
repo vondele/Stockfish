@@ -34,12 +34,12 @@ namespace {
     QSEARCH_RECAPTURES, QRECAPTURES
   };
 
-  // a stable insertion sort, which sorts moves in descending order up to a given limit.
+  // a stable insertion sort, which sorts moves in descending order up to and including a given limit.
   void partial_insertion_sort(ExtMove* begin, ExtMove* end, Value limit)
   {
       ExtMove* sortedEnd = begin + 1;
       for (ExtMove* p = begin + 1; p < end; ++p)
-          if (p->value > limit)
+          if (p->value >= limit)
           {
               ExtMove tmp = *p, *q;
               *p = *sortedEnd;
