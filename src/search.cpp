@@ -708,12 +708,12 @@ namespace {
     // Step 6. Razoring (skipped when in check)
     if (   !PvNode
         &&  depth < 4 * ONE_PLY
-        &&  eval  <= alpha - Value(570))
+        &&  eval  <= alpha - Value(560))
     {
         if (depth <= ONE_PLY)
             return qsearch<NonPV, false>(pos, ss, alpha, alpha+1);
 
-        Value ralpha = alpha - Value(570);
+        Value ralpha = alpha - Value(560);
         Value v = qsearch<NonPV, false>(pos, ss, ralpha, ralpha+1);
         if (v <= ralpha)
             return v;
