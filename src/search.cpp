@@ -708,7 +708,7 @@ namespace {
 
     // Step 6. Razoring (skipped when in check)
     if (   !PvNode
-        &&  depth < 6 * ONE_PLY
+        &&  depth < 5 * ONE_PLY
         &&  eval <= alpha - razor_margin(depth))
     {
         if (depth <= ONE_PLY)
