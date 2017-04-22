@@ -60,6 +60,13 @@ namespace {
     return *begin;
   }
 
+  // For plies > rootDepth/2 threads might swap, depending on the bit pattern of idx.
+  bool thread_should_swap(size_t idx, int ply, Depth rootDepth)
+  {
+      int i = ply - rootDepth / (2 * ONE_PLY);
+      return (i >= 0 && i <= 31) ? bool(idx & (1U << i)) : false;
+  }
+
 } // namespace
 
 
@@ -248,6 +255,11 @@ Move MovePicker::next_move(bool skipQuiets) {
       endMoves = generate<QUIETS>(pos, cur);
       score<QUIETS>();
       partial_insertion_sort(cur, endMoves, -4000 * depth / ONE_PLY);
+
+      if (   cur + 1 < endMoves
+          && thread_should_swap(pos.this_thread()->idx, ss->ply, pos.this_thread()->rootDepth))
+          std::swap(*cur, *(cur + 1));
+
       ++stage;
       /* fallthrough */
 
