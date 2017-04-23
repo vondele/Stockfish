@@ -113,7 +113,9 @@ private:
 
   const Position& pos;
   const Search::Stack* ss;
+  Move killers[2];
   Move countermove;
+
   Depth depth;
   Move ttMove;
   Square recaptureSquare;
