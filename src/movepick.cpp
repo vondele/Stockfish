@@ -64,7 +64,6 @@ namespace {
   bool thread_should_swap(size_t idx, int ply, Depth rootDepth)
   {
       int i = ply - rootDepth / (2 * ONE_PLY);
-      i /= 2;
       return (i >= 0 && i <= 31) ? bool(idx & (1U << i)) : false;
   }
 
@@ -84,6 +83,15 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
 
   Square prevSq = to_sq((ss-1)->currentMove);
   countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
+
+  if (thread_should_swap(pos.this_thread()->idx, ss->ply, pos.this_thread()->rootDepth))
+  {
+      killers[1]=ss->killers[0];
+      killers[0]=ss->killers[1];
+  } else {
+      killers[0]=ss->killers[0];
+      killers[1]=ss->killers[1];
+  }
 
   stage = pos.checkers() ? EVASION : MAIN_SEARCH;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
@@ -218,7 +226,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       }
 
       ++stage;
-      move = ss->killers[0];  // First killer move
+      move = killers[0];  // First killer move
       if (    move != MOVE_NONE
           &&  move != ttMove
           &&  pos.pseudo_legal(move)
@@ -227,7 +235,7 @@ Move MovePicker::next_move(bool skipQuiets) {
 
   case KILLERS:
       ++stage;
-      move = ss->killers[1]; // Second killer move
+      move = killers[1]; // Second killer move
       if (    move != MOVE_NONE
           &&  move != ttMove
           &&  pos.pseudo_legal(move)
@@ -239,8 +247,8 @@ Move MovePicker::next_move(bool skipQuiets) {
       move = countermove;
       if (    move != MOVE_NONE
           &&  move != ttMove
-          &&  move != ss->killers[0]
-          &&  move != ss->killers[1]
+          &&  move != killers[0]
+          &&  move != killers[1]
           &&  pos.pseudo_legal(move)
           && !pos.capture(move))
           return move;
@@ -253,10 +261,6 @@ Move MovePicker::next_move(bool skipQuiets) {
       partial_insertion_sort(cur, endMoves,
                              depth < 3 * ONE_PLY ? VALUE_ZERO : Value(INT_MIN));
 
-      if (   cur + 1 < endMoves
-          && thread_should_swap(pos.this_thread()->idx, ss->ply, pos.this_thread()->rootDepth))
-          std::swap(*cur, *(cur + 1));
-
       ++stage;
 
   case QUIET:
@@ -266,8 +270,8 @@ Move MovePicker::next_move(bool skipQuiets) {
           move = *cur++;
 
           if (   move != ttMove
-              && move != ss->killers[0]
-              && move != ss->killers[1]
+              && move != killers[0]
+              && move != killers[1]
               && move != countermove)
               return move;
       }
