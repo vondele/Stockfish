@@ -64,6 +64,7 @@ namespace {
   bool thread_should_swap(size_t idx, int ply, Depth rootDepth)
   {
       int i = ply - rootDepth / (2 * ONE_PLY);
+      i /= 2;
       return (i >= 0 && i <= 31) ? bool(idx & (1U << i)) : false;
   }
 
