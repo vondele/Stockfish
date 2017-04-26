@@ -40,6 +40,7 @@ struct Stack {
   Move* pv;
   CounterMoveStats* counterMoves;
   int ply;
+  int quietply;
   Move currentMove;
   Move excludedMove;
   Move killers[2];

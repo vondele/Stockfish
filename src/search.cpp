@@ -548,6 +548,7 @@ namespace {
     ss->history = 0;
     bestValue = -VALUE_INFINITE;
     ss->ply = (ss-1)->ply + 1;
+    ss->quietply = (ss-1)->quietply;
 
     // Check for the available remaining time
     if (thisThread->resetCalls.load(std::memory_order_relaxed))
