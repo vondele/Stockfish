@@ -74,11 +74,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
 
   assert(d > DEPTH_ZERO);
 
-  Square prevSq = to_sq((ss-1)->currentMove);
-  countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
-  killers[0] = ss->killers[0];
-  killers[1] = ss->killers[1];
-
   stage = pos.checkers() ? EVASION : MAIN_SEARCH;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
@@ -183,6 +178,7 @@ void MovePicker::score<EVASIONS>() {
 Move MovePicker::next_move(bool skipQuiets) {
 
   Move move;
+  Square prevSq;
 
   switch (stage) {
 
@@ -212,6 +208,8 @@ Move MovePicker::next_move(bool skipQuiets) {
       }
 
       ++stage;
+      killers[0] = ss->killers[0];
+      killers[1] = ss->killers[1];
       move = killers[0];  // First killer move
       if (    move != MOVE_NONE
           &&  move != ttMove
@@ -230,6 +228,8 @@ Move MovePicker::next_move(bool skipQuiets) {
 
   case COUNTERMOVE:
       ++stage;
+      prevSq = to_sq((ss-1)->currentMove);
+      countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
       move = countermove;
       if (    move != MOVE_NONE
           &&  move != ttMove
