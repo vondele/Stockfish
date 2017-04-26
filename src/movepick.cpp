@@ -26,7 +26,7 @@
 namespace {
 
   enum Stages {
-    MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, KILLERS, COUNTERMOVE, QUIET_INIT, QUIET, BAD_CAPTURES,
+    MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, QUIET_INIT, QUIET, BAD_CAPTURES,
     EVASION, EVASIONS_INIT, ALL_EVASIONS,
     PROBCUT, PROBCUT_INIT, PROBCUT_CAPTURES,
     QSEARCH_WITH_CHECKS, QCAPTURES_1_INIT, QCAPTURES_1, QCHECKS,
@@ -73,11 +73,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
            : pos(p), ss(s), depth(d) {
 
   assert(d > DEPTH_ZERO);
-
-  Square prevSq = to_sq((ss-1)->currentMove);
-  countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
-  killers[0] = ss->killers[0];
-  killers[1] = ss->killers[1];
 
   stage = pos.checkers() ? EVASION : MAIN_SEARCH;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
@@ -150,14 +145,24 @@ void MovePicker::score<QUIETS>() {
   const CounterMoveStats& cmh = *(ss-1)->counterMoves;
   const CounterMoveStats& fmh = *(ss-2)->counterMoves;
   const CounterMoveStats& fm2 = *(ss-4)->counterMoves;
+  const Move k0 = ss->killers[0];
+  const Move k1 = ss->killers[1];
+  Square prevSq = to_sq((ss-1)->currentMove);
+  const Move cm = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
 
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
+  {
       m.value =  cmh[pos.moved_piece(m)][to_sq(m)]
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
+      // Promote eventual killers and countermoves to the top of list.
+      if (m==k0) m.value += 4*HistoryStats::Max;
+      if (m==k1) m.value += 2*HistoryStats::Max;
+      if (m==cm) m.value += 1*HistoryStats::Max;
+  }
 }
 
 template<>
@@ -212,32 +217,6 @@ Move MovePicker::next_move(bool skipQuiets) {
       }
 
       ++stage;
-      move = killers[0];  // First killer move
-      if (    move != MOVE_NONE
-          &&  move != ttMove
-          &&  pos.pseudo_legal(move)
-          && !pos.capture(move))
-          return move;
-
-  case KILLERS:
-      ++stage;
-      move = killers[1]; // Second killer move
-      if (    move != MOVE_NONE
-          &&  move != ttMove
-          &&  pos.pseudo_legal(move)
-          && !pos.capture(move))
-          return move;
-
-  case COUNTERMOVE:
-      ++stage;
-      move = countermove;
-      if (    move != MOVE_NONE
-          &&  move != ttMove
-          &&  move != killers[0]
-          &&  move != killers[1]
-          &&  pos.pseudo_legal(move)
-          && !pos.capture(move))
-          return move;
 
   case QUIET_INIT:
       cur = endBadCaptures;
@@ -252,10 +231,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       {
           move = *cur++;
 
-          if (   move != ttMove
-              && move != killers[0]
-              && move != killers[1]
-              && move != countermove)
+          if (move != ttMove)
               return move;
       }
       ++stage;
