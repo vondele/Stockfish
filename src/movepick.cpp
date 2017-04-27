@@ -76,6 +76,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
 
   Square prevSq = to_sq((ss-1)->currentMove);
   countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
+  killers[0] = MOVE_NONE;
+  killers[1] = MOVE_NONE;
 
   stage = pos.checkers() ? EVASION : MAIN_SEARCH;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
@@ -215,7 +217,10 @@ Move MovePicker::next_move(bool skipQuiets) {
           &&  move != ttMove
           &&  pos.pseudo_legal(move)
           && !pos.capture(move))
+      {
+          killers[0] = move;
           return move;
+      }
 
   case KILLERS:
       ++stage;
@@ -224,18 +229,28 @@ Move MovePicker::next_move(bool skipQuiets) {
           &&  move != ttMove
           &&  pos.pseudo_legal(move)
           && !pos.capture(move))
+      {
+          killers[1] = move;
+          if (killers[1] == killers[0]) abort();
           return move;
+      }
 
   case COUNTERMOVE:
       ++stage;
       move = countermove;
       if (    move != MOVE_NONE
           &&  move != ttMove
-          &&  move != ss->killers[0]
-          &&  move != ss->killers[1]
           &&  pos.pseudo_legal(move)
           && !pos.capture(move))
-          return move;
+      {
+          if (move != ss->killers[0] && move != ss->killers[1])
+          {
+             if (move == killers[0] || move == killers[1]) abort();
+             return move;
+          } else {
+             if (move != killers[0] && move != killers[1]) abort();
+          }
+      }
 
   case QUIET_INIT:
       cur = endBadCaptures;
@@ -254,7 +269,15 @@ Move MovePicker::next_move(bool skipQuiets) {
               && move != ss->killers[0]
               && move != ss->killers[1]
               && move != countermove)
-              return move;
+          {
+              if (move != ss->killers[0] && move != ss->killers[1])
+              {
+                 if (move == killers[0] || move == killers[1]) abort();
+                 return move;
+              } else {
+                 if (move != killers[0] && move != killers[1]) abort();
+              }
+          }
       }
       ++stage;
       cur = moves; // Point to beginning of bad captures
