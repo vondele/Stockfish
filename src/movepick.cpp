@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "movepick.h"
 #include "thread.h"
@@ -63,7 +64,7 @@ namespace {
   // For plies > rootDepth/8 threads might swap, depending on the bit pattern of idx.
   bool thread_should_swap(size_t idx, int ply, Depth rootDepth)
   {
-      int i = ply - rootDepth / (8 * ONE_PLY);
+      int i = ply - rootDepth / (4 * ONE_PLY);
       return (i >= 0 && i <= 31) ? bool(idx & (1U << i)) : false;
   }
 
@@ -256,10 +257,12 @@ Move MovePicker::next_move(bool skipQuiets) {
       score<QUIETS>();
       partial_insertion_sort(cur, endMoves, -4000 * depth / ONE_PLY);
 
-      ss->quietply = (ss-1)->quietply+1;
-      if (   cur + 1 < endMoves
-          && thread_should_swap(pos.this_thread()->idx, ss->quietply, pos.this_thread()->rootDepth))
-          std::swap(*cur, *(cur + 1));
+      if (cur + 1 < endMoves)
+      {
+          ss->quietply = (ss-1)->quietply+1;
+          if (thread_should_swap(pos.this_thread()->idx, ss->quietply, pos.this_thread()->rootDepth))
+              std::swap(*cur, *(cur + 1));
+      }
 
       ++stage;
       /* fallthrough */
