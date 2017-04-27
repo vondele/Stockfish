@@ -363,6 +363,14 @@ void Thread::search() {
       if (mainThread)
           mainThread->bestMoveChanges *= 0.505, mainThread->failedLow = false;
 
+      // sync search
+      if (!mainThread)
+      {
+         std::memcpy(&this->counterMoves, &Threads.main()->counterMoves, sizeof(MoveStats));
+         std::memcpy(&this->history, &Threads.main()->history, sizeof(HistoryStats));
+         std::memcpy(&this->counterMoveHistory, &Threads.main()->counterMoveHistory, sizeof(CounterMoveHistoryStats));
+      }
+
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
       for (RootMove& rm : rootMoves)
