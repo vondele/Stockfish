@@ -378,7 +378,11 @@ void Thread::search() {
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
       for (RootMove& rm : rootMoves)
+      {
+          std::cout << "copy: " << UCI::move(rm.pv[0], rootPos.is_chess960()) << " score "  << rm.score << " on previous score " << rm.previousScore << std::endl;
+          //if (rm.score != -VALUE_INFINITE)
           rm.previousScore = rm.score;
+      }
 
       // MultiPV loop. We perform a full root search for each PV line
       for (PVIdx = 0; PVIdx < multiPV && !Signals.stop; ++PVIdx)
@@ -854,7 +858,7 @@ moves_loop: // When in check search starts from here
 
       ss->moveCount = ++moveCount;
 
-      if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+      if (rootNode && thisThread == Threads.main() && Time.elapsed() > -1)
           sync_cout << "info depth " << depth / ONE_PLY
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->PVIdx << sync_endl;
@@ -1065,10 +1069,13 @@ moves_loop: // When in check search starts from here
                   ++static_cast<MainThread*>(thisThread)->bestMoveChanges;
           }
           else
+          {
+              std::cout << "Resetting to -Inf: movecount: " << moveCount << " move " << UCI::move(move, pos.is_chess960()) << std::endl;
               // All other moves but the PV are set to the lowest value: this is
               // not a problem when sorting because the sort is stable and the
               // move position in the list is preserved - just the PV is pushed up.
               rm.score = -VALUE_INFINITE;
+          }
       }
 
       if (value > bestValue)
@@ -1508,6 +1515,9 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
       if (depth == ONE_PLY && !updated)
           continue;
+
+
+      std::cout << UCI::move(rootMoves[i].pv[0], pos.is_chess960()) <<" Updated? " << updated << " " << rootMoves[i].score << " " << rootMoves[i].previousScore << std::endl;
 
       Depth d = updated ? depth : depth - ONE_PLY;
       Value v = updated ? rootMoves[i].score : rootMoves[i].previousScore;

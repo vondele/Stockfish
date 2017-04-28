@@ -1,0 +1,5 @@
+position fen 8/8/8/5K2/1r3p2/6k1/R7/8 w - - 4 75
+setoption name MultiPV value 2
+ucinewgame
+isready
+go nodes 1100000
