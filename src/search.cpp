@@ -986,7 +986,8 @@ moves_loop: // When in check search starts from here
               ss->history =  cmh[moved_piece][to_sq(move)]
                            + fmh[moved_piece][to_sq(move)]
                            + fm2[moved_piece][to_sq(move)]
-                           + thisThread->history.get(~pos.side_to_move(), move);
+                           + thisThread->history.get(~pos.side_to_move(), move)
+                           - 4000; // Correction factor
 
               // Decrease/increase reduction by comparing opponent's stat score
               if (ss->history > 0 && (ss-1)->history < 0)
@@ -996,7 +997,7 @@ moves_loop: // When in check search starts from here
                   r += ONE_PLY;
 
               // Decrease/increase reduction for moves with a good/bad history
-              r = std::max(0, (r / ONE_PLY - (ss->history - 4000) / (8000 + 2000 * depth / ONE_PLY))) * ONE_PLY;
+              r = std::max(0, (r / ONE_PLY - ss->history / (8000 + 3000 * depth / ONE_PLY))) * ONE_PLY;
           }
 
           Depth d = std::max(newDepth - r, ONE_PLY);
