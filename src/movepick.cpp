@@ -154,10 +154,14 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
+  {
       m.value =  cmh[pos.moved_piece(m)][to_sq(m)]
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
+      if (m == (ss-2)->killers[0]) m.value += 4096;
+      if (m == (ss-2)->killers[1]) m.value += 4096;
+  }
 }
 
 template<>
