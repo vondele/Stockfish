@@ -154,10 +154,14 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
+  {
       m.value =  cmh[pos.moved_piece(m)][to_sq(m)]
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
+      m.value+=std::abs(m.value)*(8-distance(to_sq(m),to_sq((ss-1)->currentMove)))/8;
+  }
+
 }
 
 template<>
