@@ -19,7 +19,6 @@
 */
 
 #include <cassert>
-#include <iostream>
 
 #include "movepick.h"
 #include "thread.h"
@@ -160,7 +159,7 @@ void MovePicker::score<QUIETS>() {
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
-      m.value -= 256 * distance(to_sq(m),to_sq((ss-2)->currentMove));
+      m.value -= 64 * distance(to_sq(m),to_sq((ss-2)->currentMove));
   }
 
 }
