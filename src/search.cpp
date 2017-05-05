@@ -996,10 +996,14 @@ moves_loop: // When in check search starts from here
               else if (ss->history < 0 && (ss-1)->history > 0)
                   r += ONE_PLY;
 
-              if (   moveCount > 4
-                  && is_ok((ss-2)->currentMove)
-                  && distance(to_sq(move),to_sq((ss-2)->currentMove)) > 2)
-                  r += ONE_PLY;
+              if (is_ok((ss-2)->currentMove) && ss->history < 0)
+              {
+                  int dist = distance(to_sq(move),to_sq((ss-2)->currentMove));
+                  if (dist > 2)
+                      r += ONE_PLY;
+                  else if (dist < 2)
+                      r -= ONE_PLY;
+              }
 
               // Decrease/increase reduction for moves with a good/bad history
               r = std::max(DEPTH_ZERO, (r / ONE_PLY - ss->history / 20000) * ONE_PLY);
