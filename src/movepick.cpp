@@ -150,6 +150,7 @@ void MovePicker::score<QUIETS>() {
   const CounterMoveStats& cmh = *(ss-1)->counterMoves;
   const CounterMoveStats& fmh = *(ss-2)->counterMoves;
   const CounterMoveStats& fm2 = *(ss-4)->counterMoves;
+  bool fmOK = is_ok((ss-2)->currentMove);
 
   Color c = pos.side_to_move();
 
@@ -159,7 +160,8 @@ void MovePicker::score<QUIETS>() {
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
-      m.value -= 64 * distance(to_sq(m),to_sq((ss-2)->currentMove));
+      if (fmOK)
+          m.value -= 256 * distance(to_sq(m),to_sq((ss-2)->currentMove));
   }
 
 }
