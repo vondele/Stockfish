@@ -27,6 +27,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <array>
 
 #include "material.h"
 #include "movepick.h"
@@ -72,6 +73,7 @@ public:
   MoveStats counterMoves;
   HistoryStats history;
   CounterMoveHistoryStats counterMoveHistory;
+  std::array<std::array<Move, 2>, MAX_PLY + 2> killers;
 };
 
 

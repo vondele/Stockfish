@@ -111,7 +111,7 @@ private:
 
   const Position& pos;
   const Search::Stack* ss;
-  Move killers[2];
+  std::array<Move, 2> killers;
   Move countermove;
   Depth depth;
   Move ttMove;

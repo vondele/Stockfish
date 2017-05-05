@@ -200,6 +200,7 @@ void Search::clear() {
       CounterMoveStats& cm = th->counterMoveHistory[NO_PIECE][0];
       int* t = &cm[NO_PIECE][0];
       std::fill(t, t + sizeof(cm), CounterMovePruneThreshold - 1);
+      th->killers.fill({MOVE_NONE, MOVE_NONE});
   }
 
   Threads.main()->previousScore = VALUE_INFINITE;
@@ -607,7 +608,6 @@ namespace {
 
     ss->currentMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
     ss->counterMoves = &thisThread->counterMoveHistory[NO_PIECE][0];
-    (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
 
     // Step 4. Transposition table lookup. We don't want the score of a partial
@@ -1401,14 +1401,12 @@ moves_loop: // When in check search starts from here
   void update_stats(const Position& pos, Stack* ss, Move move,
                     Move* quiets, int quietsCnt, int bonus) {
 
-    if (ss->killers[0] != move)
-    {
-        ss->killers[1] = ss->killers[0];
-        ss->killers[0] = move;
-    }
+    Thread* thisThread = pos.this_thread();
+    auto &k=thisThread->killers[ss->ply];
+    if (k[0] != move)
+        k = { move, k[0] };
 
     Color c = pos.side_to_move();
-    Thread* thisThread = pos.this_thread();
     thisThread->history.update(c, move, bonus);
     update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
