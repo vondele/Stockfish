@@ -370,6 +370,7 @@ void Thread::search() {
          std::memcpy(&this->counterMoves, &Threads.main()->counterMoves, sizeof(MoveStats));
          std::memcpy(&this->history, &Threads.main()->history, sizeof(HistoryStats));
          std::memcpy(&this->counterMoveHistory, &Threads.main()->counterMoveHistory, sizeof(CounterMoveHistoryStats));
+         std::memcpy(&this->killers, &Threads.main()->killers, sizeof(std::array<std::array<Move, 2>, MAX_PLY + 2>));
       }
 
       // Save the last iteration's scores before first PV line is searched and
