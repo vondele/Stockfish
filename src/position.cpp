@@ -31,6 +31,7 @@
 #include "thread.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "tt.h"
 
 using std::string;
 
@@ -952,6 +953,7 @@ void Position::do_null_move(StateInfo& newSt) {
   }
 
   st->key ^= Zobrist::side;
+  prefetch(TT.first_entry(st->key));
 
   ++st->rule50;
   st->pliesFromNull = 0;
