@@ -27,6 +27,10 @@
 #include "position.h"
 #include "types.h"
 
+/// Map the FromTo moves to the legal moves (and MOVE_NONE and MOVE_NULL)
+const int FROMTO_NB = 1794;
+extern int FromToMap[4096];
+
 
 /// HistoryStats records how often quiet moves have been successful or unsuccessful
 /// during the current search, and is used for reduction and move ordering decisions.
@@ -34,23 +38,22 @@ struct HistoryStats {
 
   static const int Max = 1 << 28;
 
-  int get(Color c, Move m) const { return table[c][from_sq(m)][to_sq(m)]; }
+  int get(Color c, Move m) const { return table[c][FromToMap[from_to_bits(m)]]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
-  void update(Color c, Move m, int v) {
+  void update(Color c, Move m, int16_t v) {
 
-    Square from = from_sq(m);
-    Square to = to_sq(m);
+    int fromto = FromToMap[from_to_bits(m)];
 
-    const int D = 324;
+    const int16_t D = 324;
 
-    assert(abs(int(v)) <= D); // Consistency check for below formula
+    assert(abs(int16_t(v)) <= D); // Consistency check for below formula
 
-    table[c][from][to] -= table[c][from][to] * abs(int(v)) / D;
-    table[c][from][to] += int(v) * 32;
+    table[c][fromto] -= int(table[c][fromto]) * abs(v) / D;
+    table[c][fromto] += v * int16_t(32);
   }
 
 private:
-  int table[COLOR_NB][SQUARE_NB][SQUARE_NB];
+  int16_t table[COLOR_NB][FROMTO_NB];
 };
 
 
@@ -62,26 +65,28 @@ private:
 /// considered identical.
 template<typename T>
 struct Stats {
-  const T* operator[](Piece pc) const { return table[pc]; }
-  T* operator[](Piece pc) { return table[pc]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
-  void update(Piece pc, Square to, Move m) { table[pc][to] = m; }
-  void update(Piece pc, Square to, int v) {
+  T&   operator[](Move m) {return table[FromToMap[from_to_bits(m)]]; }
+  const T& operator[](Move m) const {return table[FromToMap[from_to_bits(m)]]; }
+  void update(Move m1, Move m) { table[FromToMap[from_to_bits(m1)]] = m; }
+  void update(Move m, int16_t v) {
 
-    const int D = 936;
+    const int16_t D = 936;
 
-    assert(abs(int(v)) <= D); // Consistency check for below formula
+    int fromto = FromToMap[from_to_bits(m)];
 
-    table[pc][to] -= table[pc][to] * abs(int(v)) / D;
-    table[pc][to] += int(v) * 32;
+    assert(abs(int16_t(v)) <= D); // Consistency check for below formula
+
+    table[fromto] -= int(table[fromto]) * abs(v) / D;
+    table[fromto] += v * int16_t(32);
   }
 
 private:
-  T table[PIECE_NB][SQUARE_NB];
+  T table[FROMTO_NB];
 };
 
 typedef Stats<Move> MoveStats;
-typedef Stats<int> CounterMoveStats;
+typedef Stats<int16_t> CounterMoveStats;
 typedef Stats<CounterMoveStats> CounterMoveHistoryStats;
 
 

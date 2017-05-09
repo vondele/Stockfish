@@ -23,6 +23,8 @@
 #include "movepick.h"
 #include "thread.h"
 
+int FromToMap[4096];
+
 namespace {
 
   enum Stages {
@@ -72,8 +74,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
 
   assert(d > DEPTH_ZERO);
 
-  Square prevSq = to_sq((ss-1)->currentMove);
-  countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
+  countermove = pos.this_thread()->counterMoves[(ss-1)->currentMove];
   killers[0] = ss->killers[0];
   killers[1] = ss->killers[1];
 
@@ -152,10 +153,7 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
-      m.value =  cmh[pos.moved_piece(m)][to_sq(m)]
-               + fmh[pos.moved_piece(m)][to_sq(m)]
-               + fm2[pos.moved_piece(m)][to_sq(m)]
-               + history.get(c, m);
+      m.value =  cmh[m] + fmh[m] + fm2[m] + history.get(c, m);
 }
 
 template<>
