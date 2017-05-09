@@ -84,9 +84,9 @@ namespace {
   }
 
   // History and stats update bonus, based on depth
-  int stat_bonus(Depth depth) {
-    int d = depth / ONE_PLY ;
-    return d > 17 ? 0 : d * d + 2 * d - 2;
+  int16_t stat_bonus(Depth depth) {
+    int16_t d = depth / ONE_PLY ;
+    return d > int16_t(17) ? 0 : d * d + int16_t(2) * d - int16_t(2);
   }
 
   // Skill structure is used to implement strength limit
@@ -152,8 +152,8 @@ namespace {
   Value value_to_tt(Value v, int ply);
   Value value_from_tt(Value v, int ply);
   void update_pv(Move* pv, Move move, Move* childPv);
-  void update_cm_stats(Stack* ss, Piece pc, Square s, int bonus);
-  void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
+  void update_cm_stats(Stack* ss, Piece pc, Square s, int16_t bonus);
+  void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int16_t bonus);
   void check_time();
 
 } // namespace
@@ -210,8 +210,8 @@ void Search::clear() {
       th->counterMoveHistory.clear();
       th->resetCalls = true;
       CounterMoveStats& cm = th->counterMoveHistory[NO_PIECE][0];
-      int* t = &cm[NO_PIECE][0];
-      std::fill(t, t + sizeof(cm), CounterMovePruneThreshold - 1);
+      int16_t* t = &cm[NO_PIECE][0];
+      std::fill(t, t + sizeof(cm), int16_t(CounterMovePruneThreshold - 1));
   }
 
   Threads.main()->previousScore = VALUE_INFINITE;
@@ -1400,7 +1400,7 @@ moves_loop: // When in check search starts from here
 
   // update_cm_stats() updates countermove and follow-up move history
 
-  void update_cm_stats(Stack* ss, Piece pc, Square s, int bonus) {
+  void update_cm_stats(Stack* ss, Piece pc, Square s, int16_t bonus) {
 
     for (int i : {1, 2, 4})
         if (is_ok((ss-i)->currentMove))
@@ -1411,7 +1411,7 @@ moves_loop: // When in check search starts from here
   // update_stats() updates move sorting heuristics when a new quiet best move is found
 
   void update_stats(const Position& pos, Stack* ss, Move move,
-                    Move* quiets, int quietsCnt, int bonus) {
+                    Move* quiets, int quietsCnt, int16_t bonus) {
 
     if (ss->killers[0] != move)
     {
