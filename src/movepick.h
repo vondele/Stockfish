@@ -36,21 +36,21 @@ struct HistoryStats {
 
   int get(Color c, Move m) const { return table[c][from_sq(m)][to_sq(m)]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
-  void update(Color c, Move m, int v) {
+  void update(Color c, Move m, int16_t v) {
 
     Square from = from_sq(m);
     Square to = to_sq(m);
 
-    const int D = 324;
+    const int16_t D = 324;
 
-    assert(abs(int(v)) <= D); // Consistency check for below formula
+    assert(abs(int16_t(v)) <= D); // Consistency check for below formula
 
-    table[c][from][to] -= table[c][from][to] * abs(int(v)) / D;
-    table[c][from][to] += int(v) * 32;
+    table[c][from][to] -= int(table[c][from][to]) * abs(int16_t(v)) / D;
+    table[c][from][to] += int16_t(v) * int16_t(32);
   }
 
 private:
-  int table[COLOR_NB][SQUARE_NB][SQUARE_NB];
+  int16_t table[COLOR_NB][SQUARE_NB][SQUARE_NB];
 };
 
 
@@ -66,14 +66,14 @@ struct Stats {
   T* operator[](Piece pc) { return table[pc]; }
   void clear() { std::memset(table, 0, sizeof(table)); }
   void update(Piece pc, Square to, Move m) { table[pc][to] = m; }
-  void update(Piece pc, Square to, int v) {
+  void update(Piece pc, Square to, int16_t v) {
 
-    const int D = 936;
+    const int16_t D = 936;
 
-    assert(abs(int(v)) <= D); // Consistency check for below formula
+    assert(abs(int16_t(v)) <= D); // Consistency check for below formula
 
-    table[pc][to] -= table[pc][to] * abs(int(v)) / D;
-    table[pc][to] += int(v) * 32;
+    table[pc][to] -= int(table[pc][to]) * abs(int16_t(v)) / D;
+    table[pc][to] += int16_t(v) * int16_t(32);
   }
 
 private:
@@ -81,7 +81,7 @@ private:
 };
 
 typedef Stats<Move> MoveStats;
-typedef Stats<int> CounterMoveStats;
+typedef Stats<int16_t> CounterMoveStats;
 typedef Stats<CounterMoveStats> CounterMoveHistoryStats;
 
 
