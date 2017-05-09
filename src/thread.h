@@ -22,7 +22,7 @@
 #define THREAD_H_INCLUDED
 
 #include <atomic>
-#include <bitset>
+// #include <bitset>
 #include <condition_variable>
 #include <mutex>
 #include <thread>

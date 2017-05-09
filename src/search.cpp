@@ -177,6 +177,18 @@ void Search::init() {
                 Reductions[NonPV][imp][d][mc]++;
           }
 
+  int counter=0;
+  for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+      for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
+          {
+             if ((PseudoAttacks[QUEEN][s1] | PseudoAttacks[KNIGHT][s1]) & SquareBB[s2])
+             {
+                counter++;
+                std::cout << counter << " " << UCI::move(make_move(s1,s2), false) << std::endl;
+             }
+          }
+  std::cout << sizeof(CounterMoveHistoryStats) << " " << PIECE_NB << std::endl;
+
   for (int d = 0; d < 16; ++d)
   {
       FutilityMoveCounts[0][d] = int(2.4 + 0.74 * pow(d, 1.78));
