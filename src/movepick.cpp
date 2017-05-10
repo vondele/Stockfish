@@ -156,6 +156,11 @@ void MovePicker::score<QUIETS>() {
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history.get(c, m);
+
+  std::swap(*begin(), *std::max_element(begin(), end()));
+  int bonus = begin()->value / 16;
+  for (auto& m : *this)
+      m.value += to_sq(m) == to_sq(*begin()) ? bonus : 0;
 }
 
 template<>
