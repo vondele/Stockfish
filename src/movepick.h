@@ -22,6 +22,7 @@
 #define MOVEPICK_H_INCLUDED
 
 #include <cstring>   // For std::memset
+#include <limits>
 
 #include "movegen.h"
 #include "position.h"
@@ -38,19 +39,20 @@ struct HistoryStats {
   void clear() { std::memset(table, 0, sizeof(table)); }
   void update(Color c, Move m, int v) {
 
-    Square from = from_sq(m);
-    Square to = to_sq(m);
+    Square from = from_sq(m), to = to_sq(m);
 
     const int D = 324;
 
     assert(abs(v) <= D); // Consistency check for below formula
 
-    table[c][from][to] -= table[c][from][to] * abs(v) / D;
-    table[c][from][to] += v * 32;
+    // Use int for arithmetic to deal with rare overflows
+    int res = int(table[c][from][to]) - int(table[c][from][to]) * abs(v) / D + v * 32;
+    table[c][from][to] = int16_t(std::max(std::min(res,int(std::numeric_limits<int16_t>::max())),
+                                          int(std::numeric_limits<int16_t>::min())));
   }
 
 private:
-  int table[COLOR_NB][SQUARE_NB][SQUARE_NB];
+  int16_t table[COLOR_NB][SQUARE_NB][SQUARE_NB];
 };
 
 
@@ -72,8 +74,10 @@ struct Stats {
 
     assert(abs(v) <= D); // Consistency check for below formula
 
-    table[pc][to] -= table[pc][to] * abs(v) / D;
-    table[pc][to] += v * 32;
+    // Use int for arithmetic to deal with rare overflows
+    int res = int(table[pc][to]) - int(table[pc][to]) * abs(v) / D + v * 32;
+    table[pc][to] = int16_t(std::max(std::min(res,int(std::numeric_limits<int16_t>::max())),
+                                     int(std::numeric_limits<int16_t>::min())));
   }
 
 private:
@@ -81,7 +85,7 @@ private:
 };
 
 typedef Stats<Move> MoveStats;
-typedef Stats<int> CounterMoveStats;
+typedef Stats<int16_t> CounterMoveStats;
 typedef Stats<CounterMoveStats> CounterMoveHistoryStats;
 
 
