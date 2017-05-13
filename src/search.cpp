@@ -314,7 +314,7 @@ void MainThread::search() {
 
 //      std::cerr << "elapsed1 " << elapsed << std::endl;
 
-      int64_t microsec = elapsed * 1000 * slowdown / 100; // slowdown is in percent
+      int64_t microsec = elapsed * 1000 * slowdown / 1000; // slowdown is in promille
 
       // Use a loop because std::this_thread::sleep_for is not precise
       bool waiting = true;
