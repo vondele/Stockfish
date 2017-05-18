@@ -7,8 +7,10 @@ race:TTEntry::eval
 
 race:TranspositionTable::probe
 race:TranspositionTable::generation
+race:TranspositionTable::new_search
 race:TranspositionTable::hashfull
 
-race:ThreadPool::nodes_searched
-race:ThreadPool::tb_hits
+#race:ThreadPool::nodes_searched
+#race:Position::do_move
+#race:ThreadPool::tb_hits
 race:check_time

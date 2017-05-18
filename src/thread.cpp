@@ -162,7 +162,7 @@ void ThreadPool::read_uci_options() {
 uint64_t ThreadPool::nodes_searched() const {
   uint64_t nodes = 0;
   for (Thread* th : *this)
-      nodes += th->rootPos.nodes_searched();  // RACE HERE
+      nodes += th->rootPos.nodes_searched();
   return nodes;
 }
 
@@ -172,7 +172,7 @@ uint64_t ThreadPool::nodes_searched() const {
 uint64_t ThreadPool::tb_hits() const {
   uint64_t hits = 0;
   for (Thread* th : *this)
-      hits += th->tbHits;  // RACE HERE
+      hits += th->tbHits;
   return hits;
 }
 
