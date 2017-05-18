@@ -359,7 +359,7 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
 
   // Iterative deepening loop until requested to stop or the target depth is reached
-  while (   (rootDepth += ONE_PLY) < DEPTH_MAX
+  while (   (rootDepth = rootDepth + ONE_PLY) < DEPTH_MAX
          && !Signals.stop
          && (!Limits.depth || Threads.main()->rootDepth / ONE_PLY <= Limits.depth))
   {
@@ -1472,7 +1472,7 @@ moves_loop: // When in check search starts from here
 
     if (tick - lastInfoTime >= 1000)
     {
-        lastInfoTime = tick;
+        lastInfoTime = tick;  // RACE HERE
         dbg_print();
     }
 
