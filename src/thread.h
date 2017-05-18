@@ -61,11 +61,11 @@ public:
   Endgames endgames;
   size_t idx, PVIdx;
   int maxPly, callsCnt;
-  uint64_t tbHits;
+  std::atomic<uint64_t> tbHits;
 
   Position rootPos;
   Search::RootMoves rootMoves;
-  Depth rootDepth;
+  std::atomic<Depth> rootDepth;
   Depth completedDepth;
   std::atomic_bool resetCalls;
   MoveStats counterMoves;
@@ -105,5 +105,15 @@ private:
 };
 
 extern ThreadPool Threads;
+
+/// increment an atomic variable in a relaxed way, providing an efficient way to update a counter
+
+inline void increment_relaxed(std::atomic<uint64_t>& counter) {
+
+  atomic_store_explicit(&counter,
+                        atomic_load_explicit(&counter, std::memory_order_relaxed) + 1,
+                        std::memory_order_relaxed);
+}
+
 
 #endif // #ifndef THREAD_H_INCLUDED

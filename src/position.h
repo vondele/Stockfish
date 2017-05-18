@@ -21,6 +21,7 @@
 #ifndef POSITION_H_INCLUDED
 #define POSITION_H_INCLUDED
 
+#include <atomic>
 #include <cassert>
 #include <deque>
 #include <memory> // For std::unique_ptr
@@ -184,7 +185,7 @@ private:
   int castlingRightsMask[SQUARE_NB];
   Square castlingRookSquare[CASTLING_RIGHT_NB];
   Bitboard castlingPath[CASTLING_RIGHT_NB];
-  uint64_t nodes;
+  std::atomic<uint64_t> nodes;
   int gamePly;
   Color sideToMove;
   Thread* thisThread;
