@@ -262,8 +262,8 @@ endif
 
 ### 3.2.2 Debugging with undefined behavior sanitizers
 ifeq ($(sanitize),yes)
-        CXXFLAGS += -g3 -fsanitize=undefined
-        LDFLAGS += -fsanitize=undefined
+        CXXFLAGS += -g3 -fsanitize=thread
+        LDFLAGS += -fsanitize=thread
 endif
 
 ### 3.3 Optimization

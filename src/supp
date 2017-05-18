@@ -1,0 +1,14 @@
+race:TTEntry::move
+race:TTEntry::depth
+race:TTEntry::bound
+race:TTEntry::save
+race:TTEntry::value
+race:TTEntry::eval
+
+race:TranspositionTable::probe
+race:TranspositionTable::generation
+race:TranspositionTable::hashfull
+
+race:ThreadPool::nodes_searched
+race:ThreadPool::tb_hits
+race:check_time
