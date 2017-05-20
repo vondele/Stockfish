@@ -1466,14 +1466,14 @@ moves_loop: // When in check search starts from here
 
   void check_time() {
 
-    static TimePoint lastInfoTime = now();
+    static std::atomic<TimePoint> lastInfoTime = { now() };
 
     int elapsed = Time.elapsed();
     TimePoint tick = Limits.startTime + elapsed;
 
-    if (tick - lastInfoTime >= 1000)
+    if (tick - atomic_load_explicit(&lastInfoTime, std::memory_order_relaxed) >= 1000)
     {
-        lastInfoTime = tick;  // RACE HERE
+        lastInfoTime = tick;
         dbg_print();
     }
 
