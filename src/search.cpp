@@ -360,7 +360,7 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
 
   // Iterative deepening loop until requested to stop or the target depth is reached
-  while (   (rootDepth = rootDepth + ONE_PLY) < DEPTH_MAX
+  while (   increment_relaxed(rootDepth, ONE_PLY) < DEPTH_MAX
          && !Signals.stop
          && (!Limits.depth || Threads.main()->rootDepth / ONE_PLY <= Limits.depth))
   {
@@ -667,7 +667,7 @@ namespace {
 
             if (err != TB::ProbeState::FAIL)
             {
-                increment_relaxed(thisThread->tbHits);
+                increment_relaxed(thisThread->tbHits, 1UL);
 
                 int drawScore = TB::UseRule50 ? 1 : 0;
 

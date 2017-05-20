@@ -163,7 +163,7 @@ uint64_t ThreadPool::nodes_searched() const {
 
   uint64_t nodes = 0;
   for (Thread* th : *this)
-      nodes += th->rootPos.nodes_searched();
+      nodes += atomic_load_explicit(&th->nodes, std::memory_order_relaxed);
   return nodes;
 }
 
@@ -174,7 +174,7 @@ uint64_t ThreadPool::tb_hits() const {
 
   uint64_t hits = 0;
   for (Thread* th : *this)
-      hits += th->tbHits;
+      hits += atomic_load_explicit(&th->tbHits, std::memory_order_relaxed);
   return hits;
 }
 
@@ -212,6 +212,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   {
       th->maxPly = 0;
       th->tbHits = 0;
+      th->nodes = 0;
       th->rootDepth = DEPTH_ZERO;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);
