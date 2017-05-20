@@ -68,6 +68,7 @@ public:
   std::atomic<Depth> rootDepth;
   Depth completedDepth;
   std::atomic_bool resetCalls;
+  std::atomic<uint64_t> nodes;
   MoveStats counterMoves;
   HistoryStats history;
   CounterMoveHistoryStats counterMoveHistory;
@@ -106,13 +107,15 @@ private:
 
 extern ThreadPool Threads;
 
-/// increment an atomic variable in a relaxed way, providing an efficient way to update a counter
+/// Increment an atomic variable in a relaxed way,
+/// providing an efficient way to update an atomic counter.
 
-inline void increment_relaxed(std::atomic<uint64_t>& counter) {
+template<class T>
+inline T increment_relaxed(std::atomic<T>& counter, T increment) {
 
-  atomic_store_explicit(&counter,
-                        atomic_load_explicit(&counter, std::memory_order_relaxed) + 1,
-                        std::memory_order_relaxed);
+  T res = atomic_load_explicit(&counter, std::memory_order_relaxed) + increment;
+  atomic_store_explicit(&counter, res, std::memory_order_relaxed);
+  return res;
 }
 
 
