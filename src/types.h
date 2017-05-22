@@ -44,6 +44,8 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include <atomic>
+
 #if defined(_MSC_VER)
 // Disable some silly and noisy warning from MSVC compiler
 #pragma warning(disable: 4127) // Conditional expression is constant
@@ -93,8 +95,10 @@ const bool HasPext = false;
 
 #ifdef IS_64BIT
 const bool Is64Bit = true;
+typedef std::atomic<uint64_t> MayBeAtomic64;
 #else
 const bool Is64Bit = false;
+typedef uint64_t MayBeAtomic64;
 #endif
 
 typedef uint64_t Key;

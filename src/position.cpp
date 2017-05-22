@@ -691,7 +691,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(is_ok(m));
   assert(&newSt != st);
 
-  increment_relaxed(thisThread->nodes, 1UL);
+  increment_relaxed(thisThread->nodes);
   Key k = st->key ^ Zobrist::side;
 
   // Copy some fields of the old state to our new StateInfo object except the

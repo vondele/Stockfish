@@ -667,7 +667,7 @@ namespace {
 
             if (err != TB::ProbeState::FAIL)
             {
-                increment_relaxed(thisThread->tbHits, 1UL);
+                increment_relaxed(thisThread->tbHits);
 
                 int drawScore = TB::UseRule50 ? 1 : 0;
 

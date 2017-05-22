@@ -61,14 +61,14 @@ public:
   Endgames endgames;
   size_t idx, PVIdx;
   int maxPly, callsCnt;
-  std::atomic<uint64_t> tbHits;
+  MayBeAtomic64 tbHits;
 
   Position rootPos;
   Search::RootMoves rootMoves;
   std::atomic<Depth> rootDepth;
   Depth completedDepth;
   std::atomic_bool resetCalls;
-  std::atomic<uint64_t> nodes;
+  MayBeAtomic64 nodes;
   MoveStats counterMoves;
   HistoryStats history;
   CounterMoveHistoryStats counterMoveHistory;
@@ -111,12 +111,23 @@ extern ThreadPool Threads;
 /// providing an efficient way to update an atomic counter.
 
 template<class T>
-inline T increment_relaxed(std::atomic<T>& counter, T increment) {
+inline T increment_relaxed(std::atomic<T>& counter, T increment = 1) {
 
   T res = atomic_load_explicit(&counter, std::memory_order_relaxed) + increment;
   atomic_store_explicit(&counter, res, std::memory_order_relaxed);
   return res;
 }
 
+template<class T>
+inline T increment_relaxed(T& counter, T increment = 1) {
+
+  counter += increment;
+  return counter;
+}
+
+template< class T >
+inline T atomic_load_explicit( const T* obj, std::memory_order) {
+  return (*obj);
+}
 
 #endif // #ifndef THREAD_H_INCLUDED
