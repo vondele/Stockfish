@@ -360,7 +360,7 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
 
   // Iterative deepening loop until requested to stop or the target depth is reached
-  while (   (rootDepth += ONE_PLY) < DEPTH_MAX
+  while (   (rootDepth = rootDepth + ONE_PLY) < DEPTH_MAX
          && !Signals.stop
          && (!Limits.depth || Threads.main()->rootDepth / ONE_PLY <= Limits.depth))
   {
@@ -398,6 +398,9 @@ void Thread::search() {
           while (true)
           {
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+
+              this->tbHits = rootPos.tbHits;
+              this->nodes = rootPos.nodes;
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -567,6 +570,9 @@ namespace {
     {
         thisThread->resetCalls = false;
 
+        thisThread->tbHits = pos.tbHits;
+        thisThread->nodes = pos.nodes;
+
         // At low node count increase the checking rate to about 0.1% of nodes
         // otherwise use a default value.
         thisThread->callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024))
@@ -667,7 +673,7 @@ namespace {
 
             if (err != TB::ProbeState::FAIL)
             {
-                thisThread->tbHits++;
+                pos.tbHits++;
 
                 int drawScore = TB::UseRule50 ? 1 : 0;
 
@@ -1473,7 +1479,7 @@ moves_loop: // When in check search starts from here
 
   void check_time() {
 
-    static TimePoint lastInfoTime = now();
+    static std::atomic<TimePoint> lastInfoTime = { now() };
 
     int elapsed = Time.elapsed();
     TimePoint tick = Limits.startTime + elapsed;
