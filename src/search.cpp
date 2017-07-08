@@ -289,7 +289,7 @@ void MainThread::search() {
       if (th != this)
           th->wait_for_search_finished();
 
-  // Check if there are threads with a better score than main thread
+  // Check if there are threads with a deeper search or a better score than main thread
   Thread* bestThread = this;
   if (   !this->easyMovePlayed
       &&  Options["MultiPV"] == 1
@@ -302,7 +302,7 @@ void MainThread::search() {
           Depth depthDiff = th->completedDepth - bestThread->completedDepth;
           Value scoreDiff = th->rootMoves[0].score - bestThread->rootMoves[0].score;
 
-          if (scoreDiff > 0 && depthDiff >= 0)
+          if ((scoreDiff > 0 && depthDiff == 0) || depthDiff > 0)
               bestThread = th;
       }
   }
