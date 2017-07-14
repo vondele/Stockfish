@@ -76,7 +76,7 @@
 #  include <immintrin.h> // Header for _pext_u64() intrinsic
 #  define pext(b, m) _pext_u64(b, m)
 #else
-#  define pext(b, m) (0)
+#  define pext(b, m) 0
 #endif
 
 #ifdef USE_POPCNT
@@ -184,10 +184,10 @@ enum Value : int {
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
   PawnValueMg   = 188,   PawnValueEg   = 248,
-  KnightValueMg = 753,   KnightValueEg = 832,
-  BishopValueMg = 814,   BishopValueEg = 890,
-  RookValueMg   = 1285,  RookValueEg   = 1371,
-  QueenValueMg  = 2513,  QueenValueEg  = 2648,
+  KnightValueMg = 764,   KnightValueEg = 848,
+  BishopValueMg = 826,   BishopValueEg = 891,
+  RookValueMg   = 1282,  RookValueEg   = 1373,
+  QueenValueMg  = 2526,  QueenValueEg  = 2646,
 
   MidgameLimit  = 15258, EndgameLimit  = 3915
 };
@@ -205,8 +205,6 @@ enum Piece {
   PIECE_NB = 16
 };
 
-const Piece Pieces[] = { W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
-                         B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING };
 extern Value PieceValue[PHASE_NB][PIECE_NB];
 
 enum Depth : int {
@@ -239,8 +237,8 @@ enum Square {
 
   NORTH =  8,
   EAST  =  1,
-  SOUTH = -8,
-  WEST  = -1,
+  SOUTH = -NORTH,
+  WEST  = -EAST,
 
   NORTH_EAST = NORTH + EAST,
   SOUTH_EAST = SOUTH + EAST,
@@ -331,6 +329,7 @@ inline Score operator/(Score s, int i) {
 
 /// Multiplication of a Score by an integer. We check for overflow in debug mode.
 inline Score operator*(Score s, int i) {
+
   Score result = Score(int(s) * i);
 
   assert(eg_value(result) == (i * eg_value(s)));
@@ -420,6 +419,10 @@ inline Square from_sq(Move m) {
 
 inline Square to_sq(Move m) {
   return Square(m & 0x3F);
+}
+
+inline int from_to(Move m) {
+ return m & 0xFFF;
 }
 
 inline MoveType type_of(Move m) {

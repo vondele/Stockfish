@@ -110,14 +110,6 @@ Endgames::Endgames() {
 }
 
 
-template<EndgameType E, typename T>
-void Endgames::add(const string& code) {
-  StateInfo st;
-  map<T>()[Position().set(code, WHITE, &st).material_key()] = std::unique_ptr<EndgameBase<T>>(new Endgame<E>(WHITE));
-  map<T>()[Position().set(code, BLACK, &st).material_key()] = std::unique_ptr<EndgameBase<T>>(new Endgame<E>(BLACK));
-}
-
-
 /// Mate with KX vs K. This function is used to evaluate positions with
 /// king and plenty of material vs a lone king. It simply gives the
 /// attacking side a bonus for driving the defending king towards the edge
@@ -606,7 +598,7 @@ ScaleFactor Endgame<KPsK>::operator()(const Position& pos) const {
 
   // If all pawns are ahead of the king, on a single rook file and
   // the king is within one file of the pawns, it's a draw.
-  if (   !(pawns & ~in_front_bb(weakSide, rank_of(ksq)))
+  if (   !(pawns & ~forward_ranks_bb(weakSide, ksq))
       && !((pawns & ~FileABB) && (pawns & ~FileHBB))
       &&  distance<File>(ksq, lsb(pawns)) <= 1)
       return SCALE_FACTOR_DRAW;
@@ -652,8 +644,8 @@ ScaleFactor Endgame<KBPKB>::operator()(const Position& pos) const {
 
       if (relative_rank(strongSide, pawnSq) <= RANK_5)
           return SCALE_FACTOR_DRAW;
-      
-      Bitboard path = forward_bb(strongSide, pawnSq);
+
+      Bitboard path = forward_file_bb(strongSide, pawnSq);
 
       if (path & pos.pieces(weakSide, KING))
           return SCALE_FACTOR_DRAW;
@@ -788,7 +780,7 @@ ScaleFactor Endgame<KNPKB>::operator()(const Position& pos) const {
 
   // King needs to get close to promoting pawn to prevent knight from blocking.
   // Rules for this are very tricky, so just approximate.
-  if (forward_bb(strongSide, pawnSq) & pos.attacks_from<BISHOP>(bishopSq))
+  if (forward_file_bb(strongSide, pawnSq) & pos.attacks_from<BISHOP>(bishopSq))
       return ScaleFactor(distance(weakKingSq, pawnSq));
 
   return SCALE_FACTOR_NONE;

@@ -109,7 +109,7 @@ public:
   // Attacks to/from a given square
   Bitboard attackers_to(Square s) const;
   Bitboard attackers_to(Square s, Bitboard occupied) const;
-  Bitboard attacks_from(Piece pc, Square s) const;
+  Bitboard attacks_from(PieceType pt, Square s) const;
   template<PieceType> Bitboard attacks_from(Square s) const;
   template<PieceType> Bitboard attacks_from(Square s, Color c) const;
   Bitboard slider_blockers(Bitboard sliders, Square s, Bitboard& pinners) const;
@@ -136,7 +136,7 @@ public:
   void undo_null_move();
 
   // Static Exchange Evaluation
-  bool see_ge(Move m, Value value) const;
+  bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
 
   // Accessing hash keys
   Key key() const;
@@ -150,7 +150,6 @@ public:
   int game_ply() const;
   bool is_chess960() const;
   Thread* this_thread() const;
-  uint64_t nodes_searched() const;
   bool is_draw(int ply) const;
   int rule50_count() const;
   Score psq_score() const;
@@ -158,7 +157,7 @@ public:
   Value non_pawn_material() const;
 
   // Position consistency check, for debugging
-  bool pos_is_ok(int* failedStep = nullptr) const;
+  bool pos_is_ok() const;
   void flip();
 
 private:
@@ -184,7 +183,6 @@ private:
   int castlingRightsMask[SQUARE_NB];
   Square castlingRookSquare[CASTLING_RIGHT_NB];
   Bitboard castlingPath[CASTLING_RIGHT_NB];
-  uint64_t nodes;
   int gamePly;
   Color sideToMove;
   Thread* thisThread;
@@ -273,18 +271,19 @@ inline Square Position::castling_rook_square(CastlingRight cr) const {
 
 template<PieceType Pt>
 inline Bitboard Position::attacks_from(Square s) const {
+  assert(Pt != PAWN);
   return  Pt == BISHOP || Pt == ROOK ? attacks_bb<Pt>(s, byTypeBB[ALL_PIECES])
         : Pt == QUEEN  ? attacks_from<ROOK>(s) | attacks_from<BISHOP>(s)
-        : StepAttacksBB[Pt][s];
+        : PseudoAttacks[Pt][s];
 }
 
 template<>
 inline Bitboard Position::attacks_from<PAWN>(Square s, Color c) const {
-  return StepAttacksBB[make_piece(c, PAWN)][s];
+  return PawnAttacks[c][s];
 }
 
-inline Bitboard Position::attacks_from(Piece pc, Square s) const {
-  return attacks_bb(pc, s, byTypeBB[ALL_PIECES]);
+inline Bitboard Position::attacks_from(PieceType pt, Square s) const {
+  return attacks_bb(pt, s, byTypeBB[ALL_PIECES]);
 }
 
 inline Bitboard Position::attackers_to(Square s) const {
@@ -346,10 +345,6 @@ inline int Position::game_ply() const {
 
 inline int Position::rule50_count() const {
   return st->rule50;
-}
-
-inline uint64_t Position::nodes_searched() const {
-  return nodes;
 }
 
 inline bool Position::opposite_bishops() const {

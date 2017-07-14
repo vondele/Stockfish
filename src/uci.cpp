@@ -18,6 +18,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cassert>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -27,6 +28,7 @@
 #include "position.h"
 #include "search.h"
 #include "thread.h"
+#include "tt.h"
 #include "timeman.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
@@ -136,6 +138,15 @@ namespace {
     Threads.start_thinking(pos, States, limits);
   }
 
+  // On ucinewgame following steps are needed to reset the state
+  void newgame() {
+
+    TT.resize(Options["Hash"]);
+    Search::clear();
+    Tablebases::init(Options["SyzygyPath"]);
+    Time.availableNodes = 0;
+  }
+
 } // namespace
 
 
@@ -149,6 +160,8 @@ void UCI::loop(int argc, char* argv[]) {
 
   Position pos;
   string token, cmd;
+
+  newgame(); // Implied ucinewgame before the first position command
 
   pos.set(StartFEN, false, &States->back(), Threads.main());
 
@@ -165,15 +178,15 @@ void UCI::loop(int argc, char* argv[]) {
       is >> skipws >> token;
 
       // The GUI sends 'ponderhit' to tell us to ponder on the same move the
-      // opponent has played. In case Signals.stopOnPonderhit is set we are
+      // opponent has played. In case Threads.stopOnPonderhit is set we are
       // waiting for 'ponderhit' to stop the search (for instance because we
       // already ran out of time), otherwise we should continue searching but
       // switching from pondering to normal search.
       if (    token == "quit"
           ||  token == "stop"
-          || (token == "ponderhit" && Search::Signals.stopOnPonderhit))
+          || (token == "ponderhit" && Threads.stopOnPonderhit))
       {
-          Search::Signals.stop = true;
+          Threads.stop = true;
           Threads.main()->start_searching(true); // Could be sleeping
       }
       else if (token == "ponderhit")
@@ -184,12 +197,7 @@ void UCI::loop(int argc, char* argv[]) {
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
 
-      else if (token == "ucinewgame")
-      {
-          Search::clear();
-          Tablebases::init(Options["SyzygyPath"]);
-          Time.availableNodes = 0;
-      }
+      else if (token == "ucinewgame") newgame();
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;
       else if (token == "go")         go(pos, is);
       else if (token == "position")   position(pos, is);
@@ -228,6 +236,8 @@ void UCI::loop(int argc, char* argv[]) {
 ///           use negative values for y.
 
 string UCI::value(Value v) {
+
+  assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
 
