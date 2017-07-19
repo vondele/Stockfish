@@ -66,9 +66,9 @@ namespace {
 /// search captures, promotions, and some checks) and how important good move
 /// ordering is at the current node.
 
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Move cm, Move kllrs[2],
-                       const HistoryContainer* hc_p)
-           : pos(p), depth(d), hc(hc_p), killers{kllrs[0],kllrs[1]}, countermove(cm){
+MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryContainer* hc_p,
+                       Move cm, Move* killers_p)
+           : pos(p), killers{killers_p[0], killers_p[1]}, countermove(cm), hc(hc_p), depth(d){
 
   assert(d > DEPTH_ZERO);
 

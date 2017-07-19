@@ -807,7 +807,7 @@ moves_loop: // When in check search starts from here
     HistoryContainer hc(&thisThread->history, (ss-1)->history, (ss-2)->history, (ss-4)->history);
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
-    MovePicker mp(pos, ttMove, depth, countermove, ss->killers, &hc);
+    MovePicker mp(pos, ttMove, depth, &hc, countermove, ss->killers);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     improving =   ss->staticEval >= (ss-2)->staticEval
             /* || ss->staticEval == VALUE_NONE Already implicit in the previous condition */

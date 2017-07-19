@@ -91,27 +91,22 @@ public:
     HistoryContainer(const ButterflyHistory* history_p, const PieceToHistory* cmh_p,
                      const PieceToHistory* fmh_p, const PieceToHistory* fm2_p) :
                      history(history_p), cmh(cmh_p), fmh(fmh_p), fm2(fm2_p) {};
+
+    int eval(Color c, Move m) const { return (*history)[c][from_to(m)]; }
+
     int eval(Color c, Piece pc, Move m) const {
 
-        return   (*cmh)[pc][to_sq(m)]
-               + (*fmh)[pc][to_sq(m)]
-               + (*fm2)[pc][to_sq(m)]
-               + (*history)[c][from_to(m)];
+        return   (*cmh)[pc][to_sq(m)] + (*fmh)[pc][to_sq(m)]
+               + (*fm2)[pc][to_sq(m)] + (*history)[c][from_to(m)];
     }
-    int eval(Color c, Move m) const {
 
-        return (*history)[c][from_to(m)];
-    }
     bool should_prune(Piece pc, Move m, int threshold) const {
 
-        return    ((*cmh)[pc][to_sq(m)] < threshold)
-               && ((*fmh)[pc][to_sq(m)] < threshold);
+        return (*cmh)[pc][to_sq(m)] < threshold && (*fmh)[pc][to_sq(m)] < threshold;
     }
 private:
     const ButterflyHistory* history;
-    const PieceToHistory* cmh;
-    const PieceToHistory* fmh;
-    const PieceToHistory* fm2;
+    const PieceToHistory *cmh, *fmh, *fm2;
 };
 
 
@@ -129,7 +124,7 @@ public:
 
   MovePicker(const Position&, Move, Value);
   MovePicker(const Position&, Move, Depth, const HistoryContainer*, Square);
-  MovePicker(const Position&, Move, Depth, Move, Move kllrs[2], const HistoryContainer* );
+  MovePicker(const Position&, Move, Depth, const HistoryContainer*, Move, Move*);
 
   Move next_move(bool skipQuiets = false);
 
@@ -139,15 +134,15 @@ private:
   ExtMove* end() { return endMoves; }
 
   const Position& pos;
-  Depth depth;
-  const HistoryContainer* hc;
+  Move ttMove;
   Move killers[2];
   Move countermove;
-  Move ttMove;
+  const HistoryContainer* hc;
+  ExtMove *cur, *endMoves, *endBadCaptures;
+  int stage;
   Square recaptureSquare;
   Value threshold;
-  int stage;
-  ExtMove *cur, *endMoves, *endBadCaptures;
+  Depth depth;
   ExtMove moves[MAX_MOVES];
 };
 
