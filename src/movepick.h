@@ -86,6 +86,34 @@ typedef StatBoards<PIECE_NB, SQUARE_NB, Move> CounterMoveStat;
 /// stores a full history (based on PieceTo boards instead of ButterflyBoards).
 typedef StatBoards<PIECE_NB, SQUARE_NB, PieceToHistory> CounterMoveHistoryStat;
 
+class HistoryContainer {
+public:
+    HistoryContainer(const ButterflyHistory* history_p, const PieceToHistory* cmh_p,
+                     const PieceToHistory* fmh_p, const PieceToHistory* fm2_p) :
+                     history(history_p), cmh(cmh_p), fmh(fmh_p), fm2(fm2_p) {};
+    int eval(Color c, Piece pc, Move m) const {
+
+        return   (*cmh)[pc][to_sq(m)]
+               + (*fmh)[pc][to_sq(m)]
+               + (*fm2)[pc][to_sq(m)]
+               + (*history)[c][from_to(m)];
+    }
+    int eval(Color c, Move m) const {
+
+        return (*history)[c][from_to(m)];
+    }
+    bool should_prune(Piece pc, Move m, int threshold) const {
+
+        return    ((*cmh)[pc][to_sq(m)] < threshold)
+               && ((*fmh)[pc][to_sq(m)] < threshold);
+    }
+private:
+    const ButterflyHistory* history;
+    const PieceToHistory* cmh;
+    const PieceToHistory* fmh;
+    const PieceToHistory* fm2;
+};
+
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
 /// current position. The most important method is next_move(), which returns a
@@ -100,9 +128,8 @@ public:
   MovePicker& operator=(const MovePicker&) = delete;
 
   MovePicker(const Position&, Move, Value);
-  MovePicker(const Position&, Move, Depth, const ButterflyHistory*, Square);
-  MovePicker(const Position&, Move, Depth, Move, Move kllrs[2], const ButterflyHistory*,
-             const PieceToHistory*, const PieceToHistory*, const PieceToHistory*);
+  MovePicker(const Position&, Move, Depth, const HistoryContainer*, Square);
+  MovePicker(const Position&, Move, Depth, Move, Move kllrs[2], const HistoryContainer* );
 
   Move next_move(bool skipQuiets = false);
 
@@ -113,10 +140,7 @@ private:
 
   const Position& pos;
   Depth depth;
-  const ButterflyHistory* history;
-  const PieceToHistory* cmh;
-  const PieceToHistory* fmh;
-  const PieceToHistory* fm2;
+  const HistoryContainer* hc;
   Move killers[2];
   Move countermove;
   Move ttMove;
