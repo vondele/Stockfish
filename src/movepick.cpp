@@ -150,7 +150,7 @@ void MovePicker::score<EVASIONS>() {
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                    - Value(type_of(pos.moved_piece(m))) + (1 << 28);
       else
-          m.value = hc->score(pos.side_to_move(), m);
+          m.value = hc->score(pos.side_to_move(), pos.moved_piece(m), m);
 }
 
 

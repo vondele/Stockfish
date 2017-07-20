@@ -1235,7 +1235,8 @@ moves_loop: // When in check search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    HistoryCollection hc(&pos.this_thread()->history, nullptr, nullptr, nullptr);
+    ss->history = &pos.this_thread()->counterMoveHistory[NO_PIECE][0];
+    HistoryCollection hc(&pos.this_thread()->history, (ss-1)->history, (ss-2)->history, (ss-4)->history);
     MovePicker mp(pos, ttMove, depth, &hc, to_sq((ss-1)->currentMove));
 
     // Loop through the moves until no moves remain or a beta cutoff occurs

@@ -93,8 +93,6 @@ public:
                      const PieceToHistory* fmh_p, const PieceToHistory* fm2_p) :
                      history(history_p), cmh(cmh_p), fmh(fmh_p), fm2(fm2_p) {};
 
-    int score(Color c, Move m) const { return (*history)[c][from_to(m)]; }
-
     int score(Color c, Piece pc, Move m) const {
 
         return   (*cmh)[pc][to_sq(m)] + (*fmh)[pc][to_sq(m)]
