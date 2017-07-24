@@ -1325,6 +1325,9 @@ moves_loop: // When in check search starts from here
                   tte->save(posKey, value_to_tt(value, ss->ply), BOUND_LOWER,
                             ttDepth, move, ss->staticEval, TT.generation());
 
+                  if (!pos.capture_or_promotion(move))
+                      update_stats(pos, ss, move, nullptr, 0, stat_bonus(ONE_PLY));
+
                   return value;
               }
           }
