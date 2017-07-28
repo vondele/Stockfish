@@ -805,7 +805,7 @@ moves_loop: // When in check search starts from here
     const PieceToHistory& fmh = *(ss-2)->history;
     const PieceToHistory& fm2 = *(ss-4)->history;
 
-    MovePicker mp(pos, ttMove, depth, ss);
+    MovePicker mp(pos, ttMove, ss);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     improving =   ss->staticEval >= (ss-2)->staticEval
             /* || ss->staticEval == VALUE_NONE Already implicit in the previous condition */

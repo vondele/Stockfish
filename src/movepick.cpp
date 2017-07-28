@@ -67,10 +67,8 @@ namespace {
 /// search captures, promotions, and some checks) and how important good move
 /// ordering is at the current node.
 
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Search::Stack* s)
-           : pos(p), ss(s), depth(d) {
-
-  assert(d > DEPTH_ZERO);
+MovePicker::MovePicker(const Position& p, Move ttm, Search::Stack* s)
+           : pos(p), ss(s) {
 
   Square prevSq = to_sq((ss-1)->currentMove);
   countermove = pos.this_thread()->counterMoves[pos.piece_on(prevSq)][prevSq];
@@ -152,10 +150,10 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
-      m.value =  cmh[pos.moved_piece(m)][to_sq(m)]
-               + fmh[pos.moved_piece(m)][to_sq(m)]
-               + fm2[pos.moved_piece(m)][to_sq(m)]
-               + history[c][from_to(m)];
+      m.value =  (cmh[pos.moved_piece(m)][to_sq(m)] + PieceToHistory_max) / 4
+               * (fmh[pos.moved_piece(m)][to_sq(m)] + PieceToHistory_max) / 32768
+               * (fm2[pos.moved_piece(m)][to_sq(m)] + PieceToHistory_max) / 131072
+               * (history[c][from_to(m)]            + BufferflyHistory_max);
 }
 
 template<>
@@ -245,7 +243,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       cur = endBadCaptures;
       endMoves = generate<QUIETS>(pos, cur);
       score<QUIETS>();
-      partial_insertion_sort(cur, endMoves, -4000 * depth / ONE_PLY);
+      partial_insertion_sort(cur, endMoves, 500000);
       ++stage;
       /* fallthrough */
 
