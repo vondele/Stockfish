@@ -151,10 +151,10 @@ void MovePicker::score<QUIETS>() {
 
   for (auto& m : *this)
   {
-      m.value =(  (  int64_t(cmh[pos.moved_piece(m)][to_sq(m)] + 16*PieceToHistory_max)
-                   * int64_t(fmh[pos.moved_piece(m)][to_sq(m)] + 16*PieceToHistory_max)   / 256)
-                * (  int64_t(fm2[pos.moved_piece(m)][to_sq(m)] + 16*PieceToHistory_max)
-                   * int64_t(history[c][from_to(m)]            + 16*BufferflyHistory_max) / 256)) / (1<<30);
+      m.value =(  (  int64_t(cmh[pos.moved_piece(m)][to_sq(m)] + 32*PieceToHistory_max)
+                   * int64_t(fmh[pos.moved_piece(m)][to_sq(m)] + 32*PieceToHistory_max)   / 512)
+                * (  int64_t(fm2[pos.moved_piece(m)][to_sq(m)] + 32*PieceToHistory_max)
+                   * int64_t(history[c][from_to(m)]            + 32*BufferflyHistory_max) / 512)) / (1<<30);
   }
 }
 
@@ -245,7 +245,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       cur = endBadCaptures;
       endMoves = generate<QUIETS>(pos, cur);
       score<QUIETS>();
-      partial_insertion_sort(cur, endMoves, 500000);
+      partial_insertion_sort(cur, endMoves, 1106000000);
       ++stage;
       /* fallthrough */
 
