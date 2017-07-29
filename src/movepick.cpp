@@ -150,10 +150,12 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
-      m.value =  (cmh[pos.moved_piece(m)][to_sq(m)] + 2*PieceToHistory_max) / 8
-               * (fmh[pos.moved_piece(m)][to_sq(m)] + 2*PieceToHistory_max) / 65536
-               * (fm2[pos.moved_piece(m)][to_sq(m)] + 2*PieceToHistory_max) / 262144
-               * (history[c][from_to(m)]            + 2*BufferflyHistory_max);
+  {
+      m.value =(  (  int64_t(cmh[pos.moved_piece(m)][to_sq(m)] + 16*PieceToHistory_max)
+                   * int64_t(fmh[pos.moved_piece(m)][to_sq(m)] + 16*PieceToHistory_max)   / 256)
+                * (  int64_t(fm2[pos.moved_piece(m)][to_sq(m)] + 16*PieceToHistory_max)
+                   * int64_t(history[c][from_to(m)]            + 16*BufferflyHistory_max) / 256)) / (1<<30);
+  }
 }
 
 template<>
