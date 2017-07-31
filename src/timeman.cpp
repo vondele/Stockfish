@@ -38,13 +38,13 @@ namespace {
     double TRatio, sd = 8.5;
     int mn = (ply + 1) / 2; // current move number for any side
 
-    /// In movestogo case we distribute time according to an experimentally obtained function with the maximum around move 19 for 40 moves in y minutes case.
+    /// In movestogo case we distribute time according to quadratic function with the maximum around move 20 for 40 moves in y minutes case.
  
     if (movesToGo)
     {
         TRatio = (T == OptimumTime ? 1.0 : 6.0) / movesToGo;
         if (mn <= 40)
-            TRatio *= (0.45 + 0.064 * mn * exp(-0.052 * mn));
+            TRatio *= (1.1 - 0.001 * (mn-20) * (mn-20));
         else
             TRatio *= 1.5;
     }
@@ -56,7 +56,7 @@ namespace {
         TRatio = (T == OptimumTime ? 0.017 : 0.07) * sd;
     }
     
-    /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows normal distribution with the maximum at move 19.
+    /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows quadratic distribution with the maximum at move 25.
     
     double incUsage = 0.0;
     if (myInc) incUsage = std::max(55.0, 120.0 - 0.12 * (mn-25) * (mn-25));
