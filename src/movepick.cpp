@@ -140,6 +140,8 @@ void MovePicker::score<CAPTURES>() {
                - Value(200 * relative_rank(pos.side_to_move(), to_sq(m)));
 }
 
+int scaling_quad = 128;
+
 template<>
 void MovePicker::score<QUIETS>() {
 
@@ -152,10 +154,18 @@ void MovePicker::score<QUIETS>() {
   Color c = pos.side_to_move();
 
   for (auto& m : *this)
-      m.value =  cmh[pos.moved_piece(m)][to_sq(m)]
+  {
+      int orig =  cmh[pos.moved_piece(m)][to_sq(m)]
                + fmh[pos.moved_piece(m)][to_sq(m)]
                + fm2[pos.moved_piece(m)][to_sq(m)]
                + history[c][from_to(m)];
+      int64_t cmhs = PieceToHistory_max + cmh[pos.moved_piece(m)][to_sq(m)];
+      int64_t fmhs = PieceToHistory_max + fmh[pos.moved_piece(m)][to_sq(m)];
+      int64_t fm2s = PieceToHistory_max + fm2[pos.moved_piece(m)][to_sq(m)];
+      int64_t s2   = PieceToHistory_max * PieceToHistory_max;
+      corr    =  scaling_quad * (cmhs * fmhs + fmhs * fm2s - 2 * s2) / (1<<30);
+      m.value = orig + corr;
+  }
 }
 
 template<>

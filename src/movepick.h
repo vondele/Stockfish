@@ -44,6 +44,12 @@ typedef StatBoards<COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> ButterflyBoards;
 /// PieceToBoards are addressed by a move's [piece][to] information
 typedef StatBoards<PIECE_NB, SQUARE_NB> PieceToBoards;
 
+const int BufferflyHistory_D = 324;
+const int PieceToHistory_D = 936;
+const int StatBoard_res = 32;
+const int BufferflyHistory_max = BufferflyHistory_D * StatBoard_res;
+const int PieceToHistory_max = PieceToHistory_D * StatBoard_res;
+
 /// ButterflyHistory records how often quiet moves have been successful or
 /// unsuccessful during the current search, and is used for reduction and move
 /// ordering decisions. It uses ButterflyBoards as backing store.
@@ -51,14 +57,13 @@ struct ButterflyHistory : public ButterflyBoards {
 
   void update(Color c, Move m, int v) {
 
-    const int D = 324;
     auto& entry = (*this)[c][from_to(m)];
 
-    assert(abs(v) <= D); // Consistency check for below formula
+    assert(abs(v) <= BufferflyHistory_D); // Consistency check for below formula
 
-    entry += v * 32 - entry * abs(v) / D;
+    entry += v * StatBoard_res - entry * abs(v) / BufferflyHistory_D;
 
-    assert(abs(entry) <= 32 * D);
+    assert(abs(entry) <= BufferflyHistory_max);
   }
 };
 
@@ -67,14 +72,13 @@ struct PieceToHistory : public PieceToBoards {
 
   void update(Piece pc, Square to, int v) {
 
-    const int D = 936;
     auto& entry = (*this)[pc][to];
 
-    assert(abs(v) <= D); // Consistency check for below formula
+    assert(abs(v) <= PieceToHistory_D); // Consistency check for below formula
 
-    entry += v * 32 - entry * abs(v) / D;
+    entry += v * StatBoard_res - entry * abs(v) / PieceToHistory_D;
 
-    assert(abs(entry) <= 32 * D);
+    assert(abs(entry) <= PieceToHistory_max);
   }
 };
 
