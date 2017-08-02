@@ -161,7 +161,7 @@ void MovePicker::score<QUIETS>() {
       int64_t fmhs = PieceToHistory_max + fmh[pos.moved_piece(m)][to_sq(m)];
       int64_t fm2s = PieceToHistory_max + fm2[pos.moved_piece(m)][to_sq(m)];
       int64_t s2   = PieceToHistory_max * PieceToHistory_max;
-      int corr     = (2 * s2 - cmhs * fmhs - fmhs * fm2s) / (1<<28);
+      int corr     = (cmhs * fmhs + fmhs * fm2s - 2 * s2) / (1<<28);
       m.value = orig + corr;
   }
 }
