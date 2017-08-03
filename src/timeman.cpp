@@ -38,7 +38,7 @@ namespace {
     double TRatio, sd = 8.5;
     int mn = (ply + 1) / 2; // current move number for any side
 
-    /// In movestogo case we distribute time according to quadratic function with the maximum around move 20 for 40 moves in y minutes case.
+    /// In movestogo case we distribute time according to quadratic function with the maximum around move 20 for 40 moves in y time case.
  
     if (movesToGo)
     {
@@ -59,11 +59,14 @@ namespace {
     /// In the case of no increment we simply have ratio = std::min(1.0, TRatio); The usage of increment follows quadratic distribution with the maximum at move 25.
     
     double incUsage = 0.0;
-    if (myInc) incUsage = std::max(55.0, 120.0 - 0.12 * (mn-25) * (mn-25));
-    double ratio = std::min(1.0, TRatio * (1.0 + incUsage * myInc / (myTime * sd)));
-    int hypMyTime = std::max(0, myTime - moveOverhead);
 
-    return int(hypMyTime * ratio); // Intel C++ asks for an explicit cast
+    if (myInc) 
+        incUsage = std::max(55.0, 120.0 - 0.12 * (mn-25) * (mn-25));
+
+    double ratio = std::min(1.0, TRatio * (1.0 + incUsage * myInc / (myTime * sd)));
+    int timeLeft = std::max(0, myTime - moveOverhead);
+
+    return int(timeLeft * ratio); // Intel C++ asks for an explicit cast
   }
 
 } // namespace
