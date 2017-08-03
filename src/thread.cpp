@@ -97,6 +97,7 @@ void Thread::idle_loop() {
   WinProcGroup::bindThisThread(idx);
 
   evalTables = new EvalTables();
+  scoreTables = new ScoreTables();
 
   while (!exit)
   {
@@ -117,6 +118,7 @@ void Thread::idle_loop() {
   }
 
   delete evalTables;
+  delete scoreTables;
 
 }
 

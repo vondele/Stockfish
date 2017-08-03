@@ -86,6 +86,11 @@ typedef StatBoards<PIECE_NB, SQUARE_NB, Move> CounterMoveStat;
 /// stores a full history (based on PieceTo boards instead of ButterflyBoards).
 typedef StatBoards<PIECE_NB, SQUARE_NB, PieceToHistory> CounterMoveHistoryStat;
 
+struct ScoreTables {
+  CounterMoveStat counterMoves;
+  ButterflyHistory history;
+  CounterMoveHistoryStat counterMoveHistory;
+};
 
 /// MovePicker class is used to pick one pseudo legal move at a time from the
 /// current position. The most important method is next_move(), which returns a

@@ -64,9 +64,7 @@ public:
   Search::RootMoves rootMoves;
   Depth rootDepth;
   Depth completedDepth;
-  CounterMoveStat counterMoves;
-  ButterflyHistory history;
-  CounterMoveHistoryStat counterMoveHistory;
+  ScoreTables* scoreTables;
 };
 
 

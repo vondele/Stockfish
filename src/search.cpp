@@ -191,14 +191,14 @@ void Search::clear() {
 
   for (Thread* th : Threads)
   {
-      th->counterMoves.fill(MOVE_NONE);
-      th->history.fill(0);
+      th->scoreTables->counterMoves.fill(MOVE_NONE);
+      th->scoreTables->history.fill(0);
 
-      for (auto& to : th->counterMoveHistory)
+      for (auto& to : th->scoreTables->counterMoveHistory)
           for (auto& h : to)
               h.fill(0);
 
-      th->counterMoveHistory[NO_PIECE][0].fill(CounterMovePruneThreshold - 1);
+      th->scoreTables->counterMoveHistory[NO_PIECE][0].fill(CounterMovePruneThreshold - 1);
   }
 
   Threads.main()->callsCnt = 0;
@@ -334,7 +334,7 @@ void Thread::search() {
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
-     (ss-i)->history = &this->counterMoveHistory[NO_PIECE][0]; // Use as sentinel
+     (ss-i)->history = &this->scoreTables->counterMoveHistory[NO_PIECE][0]; // Use as sentinel
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
@@ -591,7 +591,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     ss->currentMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
-    ss->history = &thisThread->counterMoveHistory[NO_PIECE][0];
+    ss->history = &thisThread->scoreTables->counterMoveHistory[NO_PIECE][0];
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
 
@@ -629,7 +629,7 @@ namespace {
             else if (!pos.capture_or_promotion(ttMove))
             {
                 int penalty = -stat_bonus(depth);
-                thisThread->history.update(pos.side_to_move(), ttMove, penalty);
+                thisThread->scoreTables->history.update(pos.side_to_move(), ttMove, penalty);
                 update_cm_stats(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
@@ -734,7 +734,7 @@ namespace {
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
         ss->currentMove = MOVE_NULL;
-        ss->history = &thisThread->counterMoveHistory[NO_PIECE][0];
+        ss->history = &thisThread->scoreTables->counterMoveHistory[NO_PIECE][0];
 
         pos.do_null_move(st);
         Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV, false>(pos, ss+1, -beta, -beta+1)
@@ -776,7 +776,7 @@ namespace {
             if (pos.legal(move))
             {
                 ss->currentMove = move;
-                ss->history = &thisThread->counterMoveHistory[pos.moved_piece(move)][to_sq(move)];
+                ss->history = &thisThread->scoreTables->counterMoveHistory[pos.moved_piece(move)][to_sq(move)];
 
                 assert(depth >= 5 * ONE_PLY);
                 pos.do_move(move, st);
@@ -943,7 +943,7 @@ moves_loop: // When in check search starts from here
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->history = &thisThread->counterMoveHistory[moved_piece][to_sq(move)];
+      ss->history = &thisThread->scoreTables->counterMoveHistory[moved_piece][to_sq(move)];
 
       // Step 14. Make the move
       pos.do_move(move, st, givesCheck);
@@ -978,7 +978,7 @@ moves_loop: // When in check search starts from here
               ss->statScore =  cmh[moved_piece][to_sq(move)]
                              + fmh[moved_piece][to_sq(move)]
                              + fm2[moved_piece][to_sq(move)]
-                             + thisThread->history[~pos.side_to_move()][from_to(move)]
+                             + thisThread->scoreTables->history[~pos.side_to_move()][from_to(move)]
                              - 4000; // Correction factor
 
               // Decrease/increase reduction by comparing opponent's stat score
@@ -1408,19 +1408,19 @@ moves_loop: // When in check search starts from here
 
     Color c = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    thisThread->history.update(c, move, bonus);
+    thisThread->scoreTables->history.update(c, move, bonus);
     update_cm_stats(ss, pos.moved_piece(move), to_sq(move), bonus);
 
     if (is_ok((ss-1)->currentMove))
     {
         Square prevSq = to_sq((ss-1)->currentMove);
-        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq]=move;
+        thisThread->scoreTables->counterMoves[pos.piece_on(prevSq)][prevSq]=move;
     }
 
     // Decrease all the other played quiet moves
     for (int i = 0; i < quietsCnt; ++i)
     {
-        thisThread->history.update(c, quiets[i], -bonus);
+        thisThread->scoreTables->history.update(c, quiets[i], -bonus);
         update_cm_stats(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
     }
   }
