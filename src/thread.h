@@ -27,9 +27,8 @@
 #include <thread>
 #include <vector>
 
-#include "material.h"
+#include "evaluate.h"
 #include "movepick.h"
-#include "pawns.h"
 #include "position.h"
 #include "search.h"
 #include "thread_win32.h"
@@ -56,9 +55,7 @@ public:
   void wait_for_search_finished();
   void wait(std::atomic_bool& condition);
 
-  Pawns::Table pawnsTable;
-  Material::Table materialTable;
-  Endgames endgames;
+  EvalTables* evalTables;
   size_t idx, PVIdx;
   int selDepth;
   std::atomic<uint64_t> nodes, tbHits;

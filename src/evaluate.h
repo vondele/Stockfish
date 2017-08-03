@@ -25,6 +25,16 @@
 
 #include "types.h"
 
+#include "pawns.h"
+#include "material.h"
+#include "endgame.h"
+
+struct EvalTables {
+ Pawns::Table pawnsTable;
+ Material::Table materialTable;
+ Endgames endgames;
+};
+
 class Position;
 
 namespace Eval {
