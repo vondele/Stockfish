@@ -40,6 +40,15 @@
 /// entry its life time is unlimited and we don't have to care about someone
 /// changing the entry under our feet.
 
+struct Tls {
+  CounterMoveStat counterMoves;
+  ButterflyHistory history;
+  CounterMoveHistoryStat counterMoveHistory;
+  Pawns::Table pawnsTable;
+  Material::Table materialTable;
+  Endgames endgames;
+};
+
 class Thread {
 
   std::thread nativeThread;
@@ -56,20 +65,14 @@ public:
   void wait_for_search_finished();
   void wait(std::atomic_bool& condition);
 
-  Pawns::Table pawnsTable;
-  Material::Table materialTable;
-  Endgames endgames;
-  size_t idx, PVIdx;
-  int selDepth;
   std::atomic<uint64_t> nodes, tbHits;
-
+  size_t idx, PVIdx;
   Position rootPos;
   Search::RootMoves rootMoves;
-  Depth rootDepth;
   Depth completedDepth;
-  CounterMoveStat counterMoves;
-  ButterflyHistory history;
-  CounterMoveHistoryStat counterMoveHistory;
+  Depth rootDepth;
+  int selDepth;
+  Tls* tls;
 };
 
 

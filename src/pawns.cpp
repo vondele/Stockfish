@@ -221,7 +221,7 @@ void init() {
 Entry* probe(const Position& pos) {
 
   Key key = pos.pawn_key();
-  Entry* e = pos.this_thread()->pawnsTable[key];
+  Entry* e = pos.thread_tls()->pawnsTable[key];
 
   if (e->key == key)
       return e;

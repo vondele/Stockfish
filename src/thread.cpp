@@ -96,6 +96,8 @@ void Thread::idle_loop() {
 
   WinProcGroup::bindThisThread(idx);
 
+  tls = new Tls();
+
   while (!exit)
   {
       std::unique_lock<Mutex> lk(mutex);
@@ -113,6 +115,8 @@ void Thread::idle_loop() {
       if (!exit)
           search();
   }
+
+  delete tls;
 }
 
 

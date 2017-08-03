@@ -136,7 +136,7 @@ namespace Material {
 Entry* probe(const Position& pos) {
 
   Key key = pos.material_key();
-  Entry* e = pos.this_thread()->materialTable[key];
+  Entry* e = pos.thread_tls()->materialTable[key];
 
   if (e->key == key)
       return e;
@@ -155,7 +155,7 @@ Entry* probe(const Position& pos) {
   // Let's look if we have a specialized evaluation function for this particular
   // material configuration. Firstly we look for a fixed configuration one, then
   // for a generic one if the previous search failed.
-  if ((e->evaluationFunction = pos.this_thread()->endgames.probe<Value>(key)) != nullptr)
+  if ((e->evaluationFunction = pos.thread_tls()->endgames.probe<Value>(key)) != nullptr)
       return e;
 
   for (Color c = WHITE; c <= BLACK; ++c)
@@ -169,7 +169,7 @@ Entry* probe(const Position& pos) {
   // configuration. Is there a suitable specialized scaling function?
   EndgameBase<ScaleFactor>* sf;
 
-  if ((sf = pos.this_thread()->endgames.probe<ScaleFactor>(key)) != nullptr)
+  if ((sf = pos.thread_tls()->endgames.probe<ScaleFactor>(key)) != nullptr)
   {
       e->scalingFunction[sf->strongSide] = sf; // Only strong color assigned
       return e;

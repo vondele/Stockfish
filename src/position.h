@@ -65,6 +65,7 @@ typedef std::unique_ptr<std::deque<StateInfo>> StateListPtr;
 /// do_move() and undo_move(), used by the search to update node info when
 /// traversing the search tree.
 class Thread;
+struct Tls;
 
 class Position {
 public:
@@ -149,6 +150,7 @@ public:
   int game_ply() const;
   bool is_chess960() const;
   Thread* this_thread() const;
+  Tls* thread_tls() const;
   bool is_draw(int ply) const;
   int rule50_count() const;
   Score psq_score() const;
@@ -185,6 +187,7 @@ private:
   int gamePly;
   Color sideToMove;
   Thread* thisThread;
+  Tls* threadTls;
   StateInfo* st;
   bool chess960;
 };
@@ -373,6 +376,10 @@ inline Piece Position::captured_piece() const {
 
 inline Thread* Position::this_thread() const {
   return thisThread;
+}
+
+inline Tls* Position::thread_tls() const {
+  return threadTls;
 }
 
 inline void Position::put_piece(Piece pc, Square s) {
