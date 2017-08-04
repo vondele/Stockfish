@@ -35,6 +35,8 @@ namespace {
   template<TimeType T>
   int remaining(int myTime, int myInc, int moveOverhead, int movesToGo, int ply)
   {
+    assert(myTime > 0);
+
     double TRatio, sd = 8.5;
     int mn = (ply + 1) / 2; // current move number for any side
 
