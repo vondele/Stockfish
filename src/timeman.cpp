@@ -68,7 +68,7 @@ namespace {
     if (myInc) 
         incUsage = std::max(55.0, 120.0 - 0.12 * (mn-25) * (mn-25));
 
-    TRatio = TRatio * std::min(2.0,1.0 + std::max(0.0, 0.3 * double(myTime - herTime)) / myTime);
+    TRatio = TRatio * std::min(2.0,1.0 + std::max(0.0, 0.2 * double(myTime - herTime)) / myTime);
 
     double ratio = std::min(1.0, TRatio * (1.0 + incUsage * myInc / (myTime * sd)));
     int timeLeft = std::max(0, myTime - moveOverhead);
