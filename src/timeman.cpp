@@ -34,9 +34,11 @@ namespace {
   enum TimeType { OptimumTime, MaxTime };
 
   template<TimeType T>
-  int remaining(int myTime, int myInc, int moveOverhead, int movesToGo, int ply)
+  int remaining(int myTime, int myInc, int herTime, int moveOverhead, int movesToGo, int ply)
   {
-    assert(myTime > 0);
+
+    if (myTime <= 0)
+       return 0;
 
     double TRatio, sd = 8.5;
     int mn = (ply + 1) / 2; // current move number for any side
@@ -65,6 +67,8 @@ namespace {
 
     if (myInc) 
         incUsage = std::max(55.0, 120.0 - 0.12 * (mn-25) * (mn-25));
+
+    TRatio = std::min(2.0,1.0 + std::max(0.0, double(myTime - herTime)) / myTime);
 
     double ratio = std::min(1.0, TRatio * (1.0 + incUsage * myInc / (myTime * sd)));
     int timeLeft = std::max(0, myTime - moveOverhead);
@@ -106,8 +110,10 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply)
 
   startTime = limits.startTime;
 
-      optimumTime = remaining<OptimumTime>(limits.time[us], limits.inc[us], moveOverhead, limits.movestogo, ply);
-      maximumTime = remaining<MaxTime    >(limits.time[us], limits.inc[us], moveOverhead, limits.movestogo, ply);
+  optimumTime = remaining<OptimumTime>(limits.time[us], limits.inc[us], limits.time[~us],
+                                       moveOverhead, limits.movestogo, ply);
+  maximumTime = remaining<MaxTime    >(limits.time[us], limits.inc[us], limits.time[~us],
+                                       moveOverhead, limits.movestogo, ply);
 
   if (Options["Ponder"])
       optimumTime += optimumTime / 4;
