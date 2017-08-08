@@ -72,7 +72,7 @@ namespace {
     int remainingTime = std::max(0, myTime - moveOverhead) * ratio;
 
     if (myTime - remainingTime > herTime)
-       remainingTime += (myTime - remainingTime - herTime) / (T == OptimumTime ? 10 : 3);
+       remainingTime += (myTime - remainingTime - herTime) / (T == OptimumTime ? 30 : 10);
 
     return remainingTime;
   }
