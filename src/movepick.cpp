@@ -128,6 +128,7 @@ template<GenType T> void MovePicker::score() {
           // captures are ordered by Most Valuable Victim (MVV), preferring
           // captures near our home rank.
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
+                   - Value(type_of(pos.moved_piece(m)))
                    - Value(200 * relative_rank(pos.side_to_move(), to_sq(m)))
                    + (1 << 28);
       else
