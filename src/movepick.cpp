@@ -123,22 +123,20 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th)
 /// score() assigns a numerical value to each move in a list, used for sorting.
 /// Captures are ordered by Most Valuable Victim (MVV), preferring captures
 /// near our home rank. Quiets are ordered using the histories.
-template<GenType T>
 void MovePicker::score() {
 
   for (auto& m : *this)
-      if (T == CAPTURES || (T == EVASIONS && pos.capture(m)))
-          m.value =   PieceValue[MG][pos.piece_on(to_sq(m))]
-                   - (T == EVASIONS ? Value(type_of(pos.moved_piece(m)))
-                                    : Value(200 * relative_rank(pos.side_to_move(), to_sq(m))));
-      else if (T == QUIETS)
+      if (pos.capture_or_promotion(m))
+          m.value =  (1 << 28)
+                   + PieceValue[MG][pos.piece_on(to_sq(m))]
+                   + PieceValue[MG][promotion_type(m)]
+                   - Value(type_of(pos.moved_piece(m)))
+                   - Value(200 * relative_rank(pos.side_to_move(), to_sq(m)));
+      else
           m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
                    + (*contHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    + (*contHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*contHistory[3])[pos.moved_piece(m)][to_sq(m)];
-
-      else // Quiet evasions
-          m.value = (*mainHistory)[pos.side_to_move()][from_to(m)] - (1 << 28);
 }
 
 /// next_move() is the most important method of the MovePicker class. It returns
@@ -160,7 +158,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case CAPTURES_INIT:
       endBadCaptures = cur = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      score<CAPTURES>();
+      score();
       ++stage;
       /* fallthrough */
 
@@ -212,7 +210,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case QUIET_INIT:
       cur = endBadCaptures;
       endMoves = generate<QUIETS>(pos, cur);
-      score<QUIETS>();
+      score();
       partial_insertion_sort(cur, endMoves, -4000 * depth / ONE_PLY);
       ++stage;
       /* fallthrough */
@@ -241,7 +239,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case EVASIONS_INIT:
       cur = moves;
       endMoves = generate<EVASIONS>(pos, cur);
-      score<EVASIONS>();
+      score();
       ++stage;
       /* fallthrough */
 
@@ -257,7 +255,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case PROBCUT_INIT:
       cur = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      score<CAPTURES>();
+      score();
       ++stage;
       /* fallthrough */
 
@@ -274,7 +272,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case QCAPTURES_1_INIT: case QCAPTURES_2_INIT:
       cur = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      score<CAPTURES>();
+      score();
       ++stage;
       /* fallthrough */
 
@@ -304,7 +302,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case QSEARCH_RECAPTURES:
       cur = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      score<CAPTURES>();
+      score();
       ++stage;
       /* fallthrough */
 
