@@ -168,7 +168,7 @@ Move MovePicker::next_move(bool skipQuiets) {
           move = pick_best(cur++, endMoves);
           if (move != ttMove)
           {
-              if (pos.see_ge(move))
+              if (promotion_type(move)==QUEEN || pos.see_ge(move))
                   return move;
 
               // Losing capture, move it to the beginning of the array
