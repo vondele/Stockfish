@@ -129,6 +129,7 @@ void MovePicker::score() {
   for (auto& m : *this)
       if (T != QUIETS && (T == CAPTURES || pos.capture(m)))
           m.value =  (1 << 28) + PieceValue[MG][pos.piece_on(to_sq(m))]
+                   + PieceValue[MG][promotion_type(m)]
                    - Value(type_of(pos.moved_piece(m)))
                    - Value(200 * relative_rank(pos.side_to_move(), to_sq(m)));
       else
