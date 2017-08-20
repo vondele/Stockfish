@@ -129,7 +129,7 @@ void MovePicker::score() {
       if (pos.capture_or_promotion(m))
           m.value =  (1 << 28)
                    + PieceValue[MG][pos.piece_on(to_sq(m))]
-                   + PieceValue[MG][promotion_type(m)]
+                   + (type_of(m) == PROMOTION) ? PieceValue[MG][promotion_type(m)] : 0
                    - Value(type_of(pos.moved_piece(m)))
                    - Value(200 * relative_rank(pos.side_to_move(), to_sq(m)));
       else
