@@ -1016,6 +1016,11 @@ bool Position::see_ge(Move m, Value threshold) const {
       occupied = 0;
   }
 
+  if (type_of(m) == PROMOTION) {
+     nextVictim = promotion_type(m);
+     balance += PieceValue[MG][nextVictim] - PieceValue[MG][PAWN];
+  }
+
   if (balance < threshold)
       return false;
 
