@@ -1030,6 +1030,9 @@ moves_loop: // When in check search starts from here
       // Step 17. Undo move
       pos.undo_move(move);
 
+      if (value > -2500)
+          value = value - moveCount * 5 / 8;
+
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
       // Step 18. Check for a new best move
