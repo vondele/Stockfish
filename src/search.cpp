@@ -1013,6 +1013,9 @@ moves_loop: // When in check search starts from here
                                        : -qsearch<NonPV, false>(pos, ss+1, -(alpha+1), -alpha)
                                        : - search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode, false);
 
+      if (value < 2500)
+          value = value + moveCount * 5 / 128;
+
       // For PV nodes only, do a full PV search on the first move or after a fail
       // high (in the latter case search only if value < beta), otherwise let the
       // parent node fail low with value <= alpha and try another move.
@@ -1029,9 +1032,6 @@ moves_loop: // When in check search starts from here
 
       // Step 17. Undo move
       pos.undo_move(move);
-
-      if (value > -2500)
-          value = value - moveCount * 5 / 8;
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
