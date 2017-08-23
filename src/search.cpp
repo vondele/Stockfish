@@ -879,6 +879,7 @@ moves_loop: // When in check search starts from here
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, d, cutNode, true);
           ss->excludedMove = MOVE_NONE;
+          ss->moveCount = moveCount;
 
           if (value < rBeta)
               extension = ONE_PLY;
