@@ -139,6 +139,9 @@ namespace {
     Move pv[3];
   };
 
+  int mcp1=13, mcp2=-3;
+  TUNE(SetRange(-64,64),mcp1,mcp2);
+
   EasyMoveManager EasyMove;
   Value DrawValue[COLOR_NB];
 
@@ -908,8 +911,7 @@ moves_loop: // When in check search starts from here
               }
 
               // Reduced depth of the next LMR search
-              int mch = std::max(1, moveCount - (ss-1)->moveCount / 16);
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, mch), DEPTH_ZERO) / ONE_PLY;
+              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning
               if (   lmrDepth < 3
@@ -960,7 +962,7 @@ moves_loop: // When in check search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          int mch = std::max(1, moveCount - (ss-1)->moveCount / 16);
+          int mch = std::max(1, moveCount - (mcp1 * (ss-1)->moveCount + mcp2 * (ss-2)->moveCount) / 128);
           Depth r = reduction<PvNode>(improving, depth, mch);
 
           if (captureOrPromotion)
