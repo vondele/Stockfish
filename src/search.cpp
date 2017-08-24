@@ -960,7 +960,7 @@ moves_loop: // When in check search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          int mch = std::max(1, moveCount - (ss-1)->moveCount/8 - (ss-2)->moveCount/16 - (ss-3)->moveCount/32);
+          int mch = std::max(1, moveCount - ((ss-1)->moveCount + 4 * (ss-2)->moveCount + (ss-3)->moveCount)/32);
           Depth r = reduction<PvNode>(improving, depth, mch);
 
           if (captureOrPromotion)
