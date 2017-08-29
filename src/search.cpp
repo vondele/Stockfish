@@ -238,7 +238,7 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
 
   bool expectedContinuation = lastparsedmove != MOVE_NONE && lastparsedmove == pondermove;
-  Time.init(Limits, us, rootPos.game_ply());
+  Time.init(Limits, us, rootPos.game_ply(), expectedContinuation);
   TT.new_search();
 
   int contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
