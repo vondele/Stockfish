@@ -313,10 +313,10 @@ void MainThread::search() {
 
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
-  Threads.main()->pondermove = MOVE_NONE;
+  pondermove = MOVE_NONE;
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
   {
-	  Threads.main()->pondermove = bestThread->rootMoves[0].pv[1];
+      pondermove = bestThread->rootMoves[0].pv[1];
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
   }
 
