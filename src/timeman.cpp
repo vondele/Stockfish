@@ -67,7 +67,7 @@ namespace {
         time = 5 * time / 4;
 
     if (expectedCont)
-    	time *= 0.85;
+    	time *= 0.95;
 
     return time;
   }
