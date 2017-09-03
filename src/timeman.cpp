@@ -62,7 +62,7 @@ namespace {
         ratio = (type == OptimumTime ? 0.017 : 0.07) * (k + inc / myTime);
     }
 
-    const double f = 1.03;
+    const double f = 1.05;
     ratio *= expectedCont ? (5 - 2 * f) / 3 : f;
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
