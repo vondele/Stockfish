@@ -63,7 +63,7 @@ namespace {
     }
 
     const double f = 1.03;
-    ratio *= expectedCont ? pow(f, -2.0/3.0) : f;
+    ratio *= expectedCont ? (5 - 2 * f) / 3 : f;
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
 
