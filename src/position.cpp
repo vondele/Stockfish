@@ -993,9 +993,11 @@ bool Position::see_ge(Move m, Value threshold) const {
 
   assert(is_ok(m));
 
-  // Only deal with normal moves, assume others pass a simple see
+  // Only deal with normal moves, assume others,
+  // except underpromotions, pass a simple see
   if (type_of(m) != NORMAL)
-      return VALUE_ZERO >= threshold;
+      return type_of(m) == PROMOTION ? promotion_type(m) == QUEEN
+                                     : VALUE_ZERO >= threshold;
 
   Square from = from_sq(m), to = to_sq(m);
   PieceType nextVictim = type_of(piece_on(from));
