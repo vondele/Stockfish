@@ -19,6 +19,7 @@
 */
 
 #include <algorithm>
+#include <cmath>
 
 #include "search.h"
 #include "timeman.h"
