@@ -19,6 +19,7 @@
 */
 
 #include <algorithm>
+#include <cmath>
 
 #include "search.h"
 #include "timeman.h"
@@ -30,7 +31,7 @@ namespace {
 
   enum TimeType { OptimumTime, MaxTime };
 
-  int remaining(int myTime, int myInc, int moveOverhead, int movesToGo,
+  int remaining(int myTime, int myInc, int herTime, int moveOverhead, int movesToGo,
                 int moveNum, bool ponder, TimeType type) {
 
     if (myTime <= 0)
@@ -60,6 +61,9 @@ namespace {
         double k = 1 + 20 * moveNum / (500.0 + moveNum);
         ratio = (type == OptimumTime ? 0.017 : 0.07) * (k + inc / myTime);
     }
+
+    if (type == OptimumTime)
+        ratio *= exp(0.1 * std::max(-1, std::min(1, -log(double(std::max(1, herTime)) / myTime))));
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
 
@@ -105,8 +109,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply)
   int moveNum = (ply + 1) / 2;
 
   startTime = limits.startTime;
-  optimumTime = remaining(limits.time[us], limits.inc[us], moveOverhead,
+  optimumTime = remaining(limits.time[us], limits.inc[us], limits.time[~us], moveOverhead,
                           limits.movestogo, moveNum, ponder, OptimumTime);
-  maximumTime = remaining(limits.time[us], limits.inc[us], moveOverhead,
+  maximumTime = remaining(limits.time[us], limits.inc[us], limits.time[~us], moveOverhead,
                           limits.movestogo, moveNum, ponder, MaxTime);
 }
