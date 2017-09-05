@@ -63,7 +63,7 @@ namespace {
     }
 
     if (type == OptimumTime)
-        ratio *= exp(0.1 * std::max(-1.0, std::min(1.0, -log(std::max(1.0, double(herTime)) / myTime))));
+        ratio *= exp(0.2 * std::max(-1.0, std::min(1.0, -log(std::max(1.0, double(herTime)) / myTime))));
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
 
