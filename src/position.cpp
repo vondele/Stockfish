@@ -993,10 +993,10 @@ bool Position::see_ge(Move m, Value threshold) const {
 
   assert(is_ok(m));
 
-  if (threshold < Value(-700))
+  if (threshold < Value(-900))
       return true;
 
-  if (threshold > Value(+700))
+  if (threshold > Value(+900))
       return false;
 
   // Only deal with normal moves, assume others pass a simple see
