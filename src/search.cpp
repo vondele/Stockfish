@@ -328,6 +328,8 @@ void Thread::search() {
   Value bestValue, alpha, beta, delta;
   Move easyMove = MOVE_NONE;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
+  Position searchPos;
+  std::memcpy(&searchPos, &rootPos, sizeof searchPos);
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -395,7 +397,12 @@ void Thread::search() {
           // high/low anymore.
           while (true)
           {
-              bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              try {
+                 bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              } catch (...) {
+                 // restore the rootPos if the search was terminated by exception.
+                 std::memcpy(&rootPos, &searchPos, sizeof rootPos);
+              }
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -546,17 +553,17 @@ namespace {
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture;
     Piece movedPiece;
     int moveCount, quietCount;
+    Thread* thisThread = pos.this_thread();
+
+    // periodically check if the search needs to be terminated, throwing an exception if needed.
+    if (--thisThread->callsCnt % 16 == 0)
+       thisThread->check_time();
 
     // Step 1. Initialize node
-    Thread* thisThread = pos.this_thread();
     inCheck = pos.checkers();
     moveCount = quietCount = ss->moveCount = 0;
     ss->statScore = 0;
     bestValue = -VALUE_INFINITE;
-
-    // Check for the available remaining time
-    if (thisThread == Threads.main())
-        static_cast<MainThread*>(thisThread)->check_time();
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
@@ -565,7 +572,7 @@ namespace {
     if (!rootNode)
     {
         // Step 2. Check for aborted search and immediate draw
-        if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+        if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
             return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos)
                                                   : DrawValue[pos.side_to_move()];
 
@@ -1024,13 +1031,6 @@ moves_loop: // When in check search starts from here
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
-      // Step 18. Check for a new best move
-      // Finished searching the move. If a stop occurred, the return value of
-      // the search cannot be trusted, and we return immediately without
-      // updating best move, PV and TT.
-      if (Threads.stop.load(std::memory_order_relaxed))
-          return VALUE_ZERO;
-
       if (rootNode)
       {
           RootMove& rm = *std::find(thisThread->rootMoves.begin(),
@@ -1085,14 +1085,6 @@ moves_loop: // When in check search starts from here
       if (!captureOrPromotion && move != bestMove && quietCount < 64)
           quietsSearched[quietCount++] = move;
     }
-
-    // The following condition would detect a stop only after move loop has been
-    // completed. But in this case bestValue is valid because we have fully
-    // searched our subtree, and we can anyhow save the result in TT.
-    /*
-       if (Threads.stop)
-        return VALUE_DRAW;
-    */
 
     // Step 20. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
@@ -1458,20 +1450,22 @@ moves_loop: // When in check search starts from here
 
 } // namespace
 
-  // check_time() is used to print debug info and, more importantly, to detect
-  // when we are out of available time and thus stop the search.
+  // check_time() aborts the search throwing and exception when the stop signal is set.
+  // The main thread will signal with a stop when the available time or nodes are exceeded.
+  void Thread::check_time() {
 
-  void MainThread::check_time() {
+    if (Threads.stop.load(std::memory_order_relaxed))
+        throw 42;
 
-    if (--callsCnt > 0)
+    if (callsCnt > 0)
         return;
 
-    // At low node count increase the checking rate to about 0.1% of nodes
-    // otherwise use a default value.
     callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
 
-    static TimePoint lastInfoTime = now();
+    if (this != Threads.main())
+        return;
 
+    static TimePoint lastInfoTime = now();
     int elapsed = Time.elapsed();
     TimePoint tick = Limits.startTime + elapsed;
 
@@ -1481,14 +1475,12 @@ moves_loop: // When in check search starts from here
         dbg_print();
     }
 
-    // An engine may not stop pondering until told so by the GUI
-    if (Threads.ponder)
-        return;
-
-    if (   (Limits.use_time_management() && elapsed > Time.maximum())
-        || (Limits.movetime && elapsed >= Limits.movetime)
-        || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
-            Threads.stop = true;
+    // If not pondering, check if nodes/time are exceeded and stop accorindingly.
+    if (!Threads.ponder.load(std::memory_order_relaxed)
+        && (   (Limits.use_time_management() && elapsed > Time.maximum())
+            || (Limits.movetime && elapsed >= Limits.movetime)
+            || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes)))
+        Threads.stop = true;
   }
 
 
