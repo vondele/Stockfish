@@ -328,6 +328,8 @@ void Thread::search() {
   Value bestValue, alpha, beta, delta;
   Move easyMove = MOVE_NONE;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
+  Position searchPos;
+  std::memcpy(&searchPos, &rootPos, sizeof searchPos);
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -395,7 +397,11 @@ void Thread::search() {
           // high/low anymore.
           while (true)
           {
-              bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              try {
+                 bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              } catch (...) {
+                 std::memcpy(&rootPos, &searchPos, sizeof rootPos);
+              }
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -547,17 +553,16 @@ namespace {
     Piece movedPiece;
     int moveCount, quietCount;
 
-    // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
+    if (--thisThread->callsCnt % 16 == 0)
+       thisThread->check_time();
+
+    // Step 1. Initialize node
     inCheck = pos.checkers();
     moveCount = quietCount = ss->moveCount = 0;
     ss->statScore = 0;
     bestValue = -VALUE_INFINITE;
     ss->ply = (ss-1)->ply + 1;
-
-    // Check for the available remaining time
-    if (thisThread == Threads.main())
-        static_cast<MainThread*>(thisThread)->check_time();
 
     // Used to send selDepth info to GUI
     if (PvNode && thisThread->selDepth < ss->ply)
@@ -566,7 +571,7 @@ namespace {
     if (!rootNode)
     {
         // Step 2. Check for aborted search and immediate draw
-        if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+        if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
             return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos)
                                                   : DrawValue[pos.side_to_move()];
 
@@ -1024,13 +1029,6 @@ moves_loop: // When in check search starts from here
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
-      // Step 18. Check for a new best move
-      // Finished searching the move. If a stop occurred, the return value of
-      // the search cannot be trusted, and we return immediately without
-      // updating best move, PV and TT.
-      if (Threads.stop.load(std::memory_order_relaxed))
-          return VALUE_ZERO;
-
       if (rootNode)
       {
           RootMove& rm = *std::find(thisThread->rootMoves.begin(),
@@ -1085,14 +1083,6 @@ moves_loop: // When in check search starts from here
       if (!captureOrPromotion && move != bestMove && quietCount < 64)
           quietsSearched[quietCount++] = move;
     }
-
-    // The following condition would detect a stop only after move loop has been
-    // completed. But in this case bestValue is valid because we have fully
-    // searched our subtree, and we can anyhow save the result in TT.
-    /*
-       if (Threads.stop)
-        return VALUE_DRAW;
-    */
 
     // Step 20. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
@@ -1155,6 +1145,10 @@ moves_loop: // When in check search starts from here
     bool ttHit, givesCheck, evasionPrunable;
     Depth ttDepth;
     int moveCount;
+
+    Thread* thisThread = pos.this_thread();
+    if (--thisThread->callsCnt % 16 == 0)
+       thisThread->check_time();
 
     if (PvNode)
     {
@@ -1238,7 +1232,7 @@ moves_loop: // When in check search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    MovePicker mp(pos, ttMove, depth, &pos.this_thread()->mainHistory, to_sq((ss-1)->currentMove));
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, to_sq((ss-1)->currentMove));
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
     while ((move = mp.next_move()) != MOVE_NONE)
@@ -1461,18 +1455,20 @@ moves_loop: // When in check search starts from here
 
   // check_time() is used to print debug info and, more importantly, to detect
   // when we are out of available time and thus stop the search.
+  void Thread::check_time() {
 
-  void MainThread::check_time() {
+    if (Threads.stop.load(std::memory_order_relaxed))
+        throw 42;
 
-    if (--callsCnt > 0)
+    if (callsCnt > 0)
         return;
 
-    // At low node count increase the checking rate to about 0.1% of nodes
-    // otherwise use a default value.
-    callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
+    callsCnt = Limits.nodes ? std::min(8192, int(Limits.nodes / 1024)) : 8192;
+
+    if (this != Threads.main())
+        return;
 
     static TimePoint lastInfoTime = now();
-
     int elapsed = Time.elapsed();
     TimePoint tick = Limits.startTime + elapsed;
 
