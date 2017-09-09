@@ -678,6 +678,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(&newSt != st);
 
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
+
+  // Check for the available remaining time
+  if (thisThread == Threads.main())
+      static_cast<MainThread*>(thisThread)->check_time();
+
   Key k = st->key ^ Zobrist::side;
 
   // Copy some fields of the old state to our new StateInfo object except the
