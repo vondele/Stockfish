@@ -250,7 +250,7 @@ void MainThread::search() {
   else if (Limits.use_time_management())
       targetNodes = Time.maximum() * 1500;
   // roughly 3% accuracy for small number of nodes, or every 8192 nodes for wtime 4000
-  nodesMask = std::max(std::min(16384, 1 << (msb(1 + targetNodes / 32))), 128) - 1;
+  nodesMask = std::max(std::min(16384, 1 << (msb(1 + targetNodes / 32))), 1024) - 1;
 
   TT.new_search();
 
