@@ -218,7 +218,6 @@ void Search::clear() {
   for (Thread* th : Threads)
       th->clear();
 
-  Threads.main()->callsCnt = 0;
   Threads.main()->previousScore = VALUE_INFINITE;
 }
 
@@ -237,6 +236,10 @@ void MainThread::search() {
 
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
+  // At low node count increase the checking rate to about 0.2% of nodes
+  // otherwise use a default value. The nodesMask must be pow(2, n) - 1.
+  nodesMask = Limits.nodes ? std::min(8191, (1 << msb(1 + Limits.nodes / 512)) - 1) : 8191;
+
   TT.new_search();
 
   int contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
@@ -554,10 +557,6 @@ namespace {
     ss->statScore = 0;
     bestValue = -VALUE_INFINITE;
     ss->ply = (ss-1)->ply + 1;
-
-    // Check for the available remaining time
-    if (thisThread == Threads.main())
-        static_cast<MainThread*>(thisThread)->check_time();
 
     // Used to send selDepth info to GUI
     if (PvNode && thisThread->selDepth < ss->ply)
@@ -1168,7 +1167,7 @@ moves_loop: // When in check search starts from here
     moveCount = 0;
 
     // Check for an instant draw or if the maximum ply has been reached
-    if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+    if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
         return ss->ply >= MAX_PLY && !InCheck ? evaluate(pos)
                                               : DrawValue[pos.side_to_move()];
 
@@ -1464,12 +1463,8 @@ moves_loop: // When in check search starts from here
 
   void MainThread::check_time() {
 
-    if (--callsCnt > 0)
+    if ((nodes.load(std::memory_order_relaxed) & nodesMask) != 0)
         return;
-
-    // At low node count increase the checking rate to about 0.1% of nodes
-    // otherwise use a default value.
-    callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
 
     static TimePoint lastInfoTime = now();
 
