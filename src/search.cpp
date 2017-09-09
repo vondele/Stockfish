@@ -218,7 +218,6 @@ void Search::clear() {
   for (Thread* th : Threads)
       th->clear();
 
-  Threads.main()->callsCnt = 0;
   Threads.main()->previousScore = VALUE_INFINITE;
 }
 
@@ -354,6 +353,9 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
 
+  Position searchPos;
+  std::memcpy(&searchPos, &rootPos, sizeof searchPos);
+
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
          && !Threads.stop
@@ -395,7 +397,15 @@ void Thread::search() {
           // high/low anymore.
           while (true)
           {
-              bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              // At low node count increase the checking rate to about 0.2% of nodes otherwise use a default value.
+              // The nodesMask must be pow(2, n) - 1.
+              nodesMask = Limits.nodes ? std::min(8191, (1 << msb(1 + Limits.nodes / 512)) - 1) : 8191;
+              try {
+                 bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              } catch (...) {
+                 std::memcpy(&rootPos, &searchPos, sizeof rootPos);
+              }
+              nodesMask = -1;
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -555,10 +565,6 @@ namespace {
     bestValue = -VALUE_INFINITE;
     ss->ply = (ss-1)->ply + 1;
 
-    // Check for the available remaining time
-    if (thisThread == Threads.main())
-        static_cast<MainThread*>(thisThread)->check_time();
-
     // Used to send selDepth info to GUI
     if (PvNode && thisThread->selDepth < ss->ply)
         thisThread->selDepth = ss->ply;
@@ -566,7 +572,7 @@ namespace {
     if (!rootNode)
     {
         // Step 2. Check for aborted search and immediate draw
-        if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+        if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
             return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos)
                                                   : DrawValue[pos.side_to_move()];
 
@@ -1024,13 +1030,6 @@ moves_loop: // When in check search starts from here
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
-      // Step 18. Check for a new best move
-      // Finished searching the move. If a stop occurred, the return value of
-      // the search cannot be trusted, and we return immediately without
-      // updating best move, PV and TT.
-      if (Threads.stop.load(std::memory_order_relaxed))
-          return VALUE_ZERO;
-
       if (rootNode)
       {
           RootMove& rm = *std::find(thisThread->rootMoves.begin(),
@@ -1085,14 +1084,6 @@ moves_loop: // When in check search starts from here
       if (!captureOrPromotion && move != bestMove && quietCount < 64)
           quietsSearched[quietCount++] = move;
     }
-
-    // The following condition would detect a stop only after move loop has been
-    // completed. But in this case bestValue is valid because we have fully
-    // searched our subtree, and we can anyhow save the result in TT.
-    /*
-       if (Threads.stop)
-        return VALUE_DRAW;
-    */
 
     // Step 20. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
@@ -1462,21 +1453,14 @@ moves_loop: // When in check search starts from here
   // check_time() is used to print debug info and, more importantly, to detect
   // when we are out of available time and thus stop the search.
 
-  void MainThread::check_time() {
-
-    if (--callsCnt > 0)
-        return;
-
-    // At low node count increase the checking rate to about 0.1% of nodes
-    // otherwise use a default value.
-    callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
+  void Thread::check_time() {
 
     static TimePoint lastInfoTime = now();
 
     int elapsed = Time.elapsed();
     TimePoint tick = Limits.startTime + elapsed;
 
-    if (tick - lastInfoTime >= 1000)
+    if (this == Threads.main() && tick - lastInfoTime >= 1000)
     {
         lastInfoTime = tick;
         dbg_print();
@@ -1490,6 +1474,10 @@ moves_loop: // When in check search starts from here
         || (Limits.movetime && elapsed >= Limits.movetime)
         || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
             Threads.stop = true;
+
+    if (Threads.stop)
+        throw 42;
+
   }
 
 

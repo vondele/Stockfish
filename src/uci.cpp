@@ -50,6 +50,8 @@ namespace {
 
   void position(Position& pos, istringstream& is, StateListPtr& states) {
 
+    Threads.main()->wait_for_search_finished();
+
     Move m;
     string token, fen;
 
