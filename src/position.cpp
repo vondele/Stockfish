@@ -680,7 +680,9 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
 
   // Check for the available remaining time
-  if (thisThread == Threads.main())
+  if (   thisThread == Threads.main()
+      && (  thisThread->nodes.load(std::memory_order_relaxed)
+          & static_cast<MainThread*>(thisThread)->nodesMask  ) == 0)
       static_cast<MainThread*>(thisThread)->check_time();
 
   Key k = st->key ^ Zobrist::side;

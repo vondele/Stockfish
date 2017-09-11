@@ -1463,9 +1463,6 @@ moves_loop: // When in check search starts from here
 
   void MainThread::check_time() {
 
-    if ((nodes.load(std::memory_order_relaxed) & nodesMask) != 0)
-        return;
-
     static TimePoint lastInfoTime = now();
 
     int elapsed = Time.elapsed();
