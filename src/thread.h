@@ -63,6 +63,7 @@ public:
   size_t PVIdx;
   int selDepth;
   std::atomic<uint64_t> nodes, tbHits;
+  uint64_t nodesMask;
 
   Position rootPos;
   Search::RootMoves rootMoves;
@@ -85,7 +86,6 @@ struct MainThread : public Thread {
   bool easyMovePlayed, failedLow;
   double bestMoveChanges;
   Value previousScore;
-  uint64_t nodesMask;
 };
 
 

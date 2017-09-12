@@ -236,10 +236,6 @@ void MainThread::search() {
 
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
-  // At low node count increase the checking rate to about 0.2% of nodes
-  // otherwise use a default value. The nodesMask must be pow(2, n) - 1.
-  nodesMask = Limits.nodes ? std::min(8191, (1 << msb(1 + Limits.nodes / 512)) - 1) : 8191;
-
   TT.new_search();
 
   int contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
@@ -349,6 +345,10 @@ void Thread::search() {
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
+
+  // At low node count increase the checking rate to about 0.2% of nodes otherwise use a default value.
+  // The nodesMask must be pow(2, n) - 1. On non-mainThreads the mask is all 1s, so that (nodes & mask) != 0.
+  nodesMask = !mainThread ? -1 : Limits.nodes ? std::min(8191, (1 << msb(1 + Limits.nodes / 512)) - 1) : 8191;
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
