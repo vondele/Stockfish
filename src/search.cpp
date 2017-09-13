@@ -1305,6 +1305,9 @@ moves_loop: // When in check search starts from here
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
+      if (Threads.stop.load(std::memory_order_relaxed))
+          return VALUE_ZERO;
+
       // Check for a new best move
       if (value > bestValue)
       {
