@@ -1457,23 +1457,26 @@ moves_loop: // When in check search starts from here
 
     static TimePoint lastInfoTime = now();
 
-    int elapsed = Time.elapsed();
-    TimePoint tick = Limits.startTime + elapsed;
-
-    if (this == Threads.main() && tick - lastInfoTime >= 1000)
+    if (this == Threads.main())
     {
-        lastInfoTime = tick;
-        dbg_print();
+        int elapsed = Time.elapsed();
+        TimePoint tick = Limits.startTime + elapsed;
+
+        if (tick - lastInfoTime >= 1000)
+        {
+            lastInfoTime = tick;
+            dbg_print();
+        }
+
+        // An engine may not stop pondering until told so by the GUI
+        if (Threads.ponder)
+            return;
+
+        if (   (Limits.use_time_management() && elapsed > Time.maximum())
+            || (Limits.movetime && elapsed >= Limits.movetime)
+            || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
+                Threads.stop = true;
     }
-
-    // An engine may not stop pondering until told so by the GUI
-    if (Threads.ponder)
-        return;
-
-    if (   (Limits.use_time_management() && elapsed > Time.maximum())
-        || (Limits.movetime && elapsed >= Limits.movetime)
-        || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
-            Threads.stop = true;
 
     if (Threads.stop)
         throw 42;

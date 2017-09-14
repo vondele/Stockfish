@@ -679,7 +679,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
 
-  // Check for the available remaining time, the mask only allows mainThread to pass.
+  // Check for the available remaining time, and throw an exception if a stop is needed.
   if ((thisThread->nodes.load(std::memory_order_relaxed) & thisThread->nodesMask) == 0)
       thisThread->check_time();
 
