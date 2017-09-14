@@ -56,6 +56,7 @@ Thread::~Thread() {
 
 void Thread::clear() {
 
+  nodesMask = -1;
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
 
