@@ -1478,7 +1478,7 @@ moves_loop: // When in check search starts from here
                 Threads.stop = true;
     }
 
-    if (Threads.stop)
+    if (Threads.stop.load(std::memory_order_relaxed) && ~nodesMask)
         throw 42;
 
   }
