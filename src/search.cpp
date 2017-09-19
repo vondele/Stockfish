@@ -390,6 +390,10 @@ void Thread::search() {
               beta  = std::min(rootMoves[PVIdx].previousScore + delta, VALUE_INFINITE);
           }
 
+          for (int tst=0; tst < 5; tst++)
+              if (rootDepth - 6 * ONE_PLY > DEPTH_ZERO)
+                  ::search<PV>(rootPos, ss, alpha, beta, rootDepth - 6 * ONE_PLY, false, false);
+
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we're not failing
           // high/low anymore.
