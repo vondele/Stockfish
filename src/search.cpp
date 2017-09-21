@@ -395,14 +395,10 @@ void Thread::search() {
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we're not failing
           // high/low anymore.
+          try {
           while (true)
           {
-              try {
-                 bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
-              } catch (...) {
-                 // restore the rootPos if the search was terminated by exception.
-                 std::memcpy(&rootPos, &searchPos, sizeof rootPos);
-              }
+              bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -412,18 +408,12 @@ void Thread::search() {
               // search the already searched PV lines are preserved.
               std::stable_sort(rootMoves.begin() + PVIdx, rootMoves.end());
 
-              // If search has been stopped, we break immediately. Sorting and
-              // writing PV back to TT is safe because RootMoves is still
-              // valid, although it refers to the previous iteration.
-              if (Threads.stop)
+              // In rare cases stop is set but no exception has been thrown. (since the search has not yet been affected, we can just continue)
+              if (Threads.stop || !(bestValue <= alpha || bestValue >= beta))
                   break;
 
-              // When failing high/low give some update (without cluttering
-              // the UI) before a re-search.
-              if (   mainThread
-                  && multiPV == 1
-                  && (bestValue <= alpha || bestValue >= beta)
-                  && Time.elapsed() > 3000)
+              // Give an update (without cluttering the UI) before a re-search.
+              if (mainThread && multiPV == 1 && Time.elapsed() > 3000)
                   sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
               // In case of failing low/high increase aspiration window and
@@ -439,18 +429,20 @@ void Thread::search() {
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
-                  beta = std::min(bestValue + delta, VALUE_INFINITE);
               else
-                  break;
+                  beta = std::min(bestValue + delta, VALUE_INFINITE);
 
               delta += delta / 4 + 5;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
+          } catch (...) {
+             // restore the rootPos if the search was terminated by exception.
+             std::memcpy(&rootPos, &searchPos, sizeof rootPos);
+          }
 
-          // Sort the PV lines searched so far and update the GUI
-          std::stable_sort(rootMoves.begin(), rootMoves.begin() + PVIdx + 1);
+          // Sort (all moves needed for exceptions) and update the GUI
+          std::stable_sort(rootMoves.begin(), rootMoves.end());
 
           if (    mainThread
               && (Threads.stop || PVIdx + 1 == multiPV || Time.elapsed() > 3000))
