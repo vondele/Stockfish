@@ -218,7 +218,6 @@ void Search::clear() {
   for (Thread* th : Threads)
       th->clear();
 
-  Threads.main()->callsCnt = 0;
   Threads.main()->previousScore = VALUE_INFINITE;
 }
 
@@ -491,7 +490,7 @@ void Thread::search() {
      std::memcpy(&rootPos, &searchPos, sizeof rootPos);
      std::stable_sort(rootMoves.begin(), rootMoves.end());
      if (mainThread) {
-         sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+         sync_cout << UCI::pv(rootPos, completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
          // Clear any candidate easy move that wasn't stable for the last search
          // iterations; the second condition prevents consecutive fast moves.
@@ -534,13 +533,9 @@ namespace {
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture;
     Piece movedPiece;
     int moveCount, quietCount;
-    Thread* thisThread = pos.this_thread();
-
-    // periodically check if the search needs to be terminated, throwing an exception if needed.
-    if (--thisThread->callsCnt % 16 == 0)
-       thisThread->check_time();
 
     // Step 1. Initialize node
+    Thread* thisThread = pos.this_thread();
     inCheck = pos.checkers();
     moveCount = quietCount = ss->moveCount = 0;
     ss->statScore = 0;
@@ -782,6 +777,9 @@ namespace {
     }
 
 moves_loop: // When in check search starts from here
+
+    // periodically check if the search needs to be terminated, throwing an exception if needed.
+    thisThread->check_time();
 
     const PieceToHistory* contHist[] = { (ss-1)->contHistory, (ss-2)->contHistory, nullptr, (ss-4)->contHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
@@ -1438,13 +1436,10 @@ moves_loop: // When in check search starts from here
     if (Threads.stop.load(std::memory_order_relaxed))
         throw 42;
 
-    if (callsCnt > 0)
+    if (nodes.load(std::memory_order_relaxed) < nodesTime || this != Threads.main())
         return;
 
-    callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
-
-    if (this != Threads.main())
-        return;
+    nodesTime += Limits.nodes ? std::min(8192, int(Limits.nodes / 2048)) : 8192;
 
     static TimePoint lastInfoTime = now();
     int elapsed = Time.elapsed();

@@ -64,7 +64,7 @@ public:
   size_t PVIdx;
   int selDepth;
   std::atomic<uint64_t> nodes, tbHits;
-  int callsCnt;
+  uint64_t nodesTime;
 
   Position rootPos;
   Search::RootMoves rootMoves;
