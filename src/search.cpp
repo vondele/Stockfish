@@ -85,6 +85,12 @@ namespace {
     return d > 17 ? 0 : d * d + 2 * d - 2;
   }
 
+  // break search and throw exception
+  void break_search() {
+    Threads.stop = true;
+    throw 42;
+  }
+
   // Skill structure is used to implement strength limit
   struct Skill {
     Skill(int l) : level(l) {}
@@ -439,7 +445,7 @@ void Thread::search() {
       if (   Limits.mate
           && bestValue >= VALUE_MATE_IN_MAX_PLY
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
-          Threads.stop = true;
+          break_search();
 
       if (!mainThread)
           continue;
@@ -464,6 +470,14 @@ void Thread::search() {
                            && mainThread->bestMoveChanges < 0.03
                            && Time.elapsed() > Time.optimum() * 5 / 44;
 
+          // Age out PV variability metric
+          mainThread->bestMoveChanges *= 0.505, mainThread->failedLow = false;
+
+          if (rootMoves[0].pv.size() >= 3)
+              EasyMove.update(rootPos, rootMoves[0].pv);
+          else
+              EasyMove.clear();
+
           if (   rootMoves.size() == 1
               || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628
               || (mainThread->easyMovePlayed = doEasyMove, doEasyMove))
@@ -473,16 +487,8 @@ void Thread::search() {
               if (Threads.ponder)
                   Threads.stopOnPonderhit = true;
               else
-                  Threads.stop = true;
+                  break_search();
           }
-
-          if (rootMoves[0].pv.size() >= 3)
-              EasyMove.update(rootPos, rootMoves[0].pv);
-          else
-              EasyMove.clear();
-
-          // Age out PV variability metric
-          mainThread->bestMoveChanges *= 0.505, mainThread->failedLow = false;
       }
   }
   } catch (...) {
@@ -1434,7 +1440,7 @@ moves_loop: // When in check search starts from here
   void Thread::check_time() {
 
     if (Threads.stop.load(std::memory_order_relaxed))
-        throw 42;
+        break_search();
 
     if (nodes.load(std::memory_order_relaxed) < nodesTime || this != Threads.main())
         return;
@@ -1456,7 +1462,7 @@ moves_loop: // When in check search starts from here
         && (   (Limits.use_time_management() && elapsed > Time.maximum())
             || (Limits.movetime && elapsed >= Limits.movetime)
             || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes)))
-        Threads.stop = true;
+        break_search();
   }
 
 
