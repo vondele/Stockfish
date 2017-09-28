@@ -496,7 +496,8 @@ void Thread::search() {
      std::memcpy(&rootPos, &searchPos, sizeof rootPos);
      std::stable_sort(rootMoves.begin(), rootMoves.end());
      if (mainThread) {
-         sync_cout << UCI::pv(rootPos, completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+         if (completedDepth != rootDepth)
+             sync_cout << UCI::pv(rootPos, completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
          // Clear any candidate easy move that wasn't stable for the last search
          // iterations; the second condition prevents consecutive fast moves.
@@ -1483,7 +1484,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
   {
       bool updated = (i <= PVIdx && rootMoves[i].score != -VALUE_INFINITE);
 
-      if (depth == ONE_PLY && !updated)
+      if (depth <= ONE_PLY && !updated)
           continue;
 
       Depth d = updated ? depth : depth - ONE_PLY;
