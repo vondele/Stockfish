@@ -845,7 +845,7 @@ moves_loop: // When in check search starts from here
       movedPiece = pos.moved_piece(move);
 
       givesCheck =  type_of(move) == NORMAL && !pos.discovered_check_candidates()
-                  ? pos.check_squares(type_of(pos.piece_on(from_sq(move)))) & to_sq(move)
+                  ? pos.check_squares(type_of(movedPiece)) & to_sq(move)
                   : pos.gives_check(move);
 
       moveCountPruning =   depth < 16 * ONE_PLY
@@ -937,6 +937,7 @@ moves_loop: // When in check search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->contHistory = &thisThread->contHistory[movedPiece][to_sq(move)];
+      bool exchange = type_of(movedPiece) == type_of(pos.piece_on(to_sq(move)));
 
       // Step 14. Make the move
       pos.do_move(move, st, givesCheck);
@@ -950,7 +951,7 @@ moves_loop: // When in check search starts from here
           Depth r = reduction<PvNode>(improving, depth, moveCount);
 
           if (captureOrPromotion)
-              r -= r ? ONE_PLY : DEPTH_ZERO;
+              r -= r && exchange ? ONE_PLY : DEPTH_ZERO;
           else
           {
               // Decrease reduction if opponent's move count is high
