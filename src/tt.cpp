@@ -96,6 +96,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
           >   tte[i].depth8 - ((259 + generation8 -   tte[i].genBound8) & 0xFC) * 2)
           replace = &tte[i];
 
+  replace->depth8 -= 2;
+
   return found = false, replace;
 }
 
