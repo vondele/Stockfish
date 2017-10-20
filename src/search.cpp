@@ -477,13 +477,14 @@ void Thread::search() {
               const int F[] = { mainThread->failedLow,
                                 bestValue - mainThread->previousScore };
 
-              bool isDraw = ::PVisDraw(rootPos);
+              Color us = rootPos.side_to_move();
+              bool thinkHard = ::PVisDraw(rootPos) && (Limits.time[us] > Limits.time[~us]);
 
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
-              double unstablePvFactor = isDraw ? 2 : 1 + mainThread->bestMoveChanges;
+              double unstablePvFactor = thinkHard ? 2 : 1 + mainThread->bestMoveChanges;
 
               bool doEasyMove =   rootMoves[0].pv[0] == easyMove
-                               && !isDraw
+                               && !thinkHard
                                && mainThread->bestMoveChanges < 0.03
                                && Time.elapsed() > Time.optimum() * 5 / 44;
 
