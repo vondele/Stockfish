@@ -149,6 +149,7 @@ namespace {
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
+  bool PVisDraw(Position& pos);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -476,10 +477,13 @@ void Thread::search() {
               const int F[] = { mainThread->failedLow,
                                 bestValue - mainThread->previousScore };
 
+              bool isDraw = ::PVisDraw(rootPos);
+
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
-              double unstablePvFactor = 1 + mainThread->bestMoveChanges;
+              double unstablePvFactor = isDraw ? 2 : 1 + mainThread->bestMoveChanges;
 
               bool doEasyMove =   rootMoves[0].pv[0] == easyMove
+                               && !isDraw
                                && mainThread->bestMoveChanges < 0.03
                                && Time.elapsed() > Time.optimum() * 5 / 44;
 
@@ -519,6 +523,22 @@ void Thread::search() {
 
 
 namespace {
+
+  // is the PV leading to a draw position ?
+  bool PVisDraw(Position& pos) {
+    auto& pv = pos.this_thread()->rootMoves[0].pv;
+    StateInfo st[MAX_PLY];
+
+    for (size_t i = 0; i < pv.size(); i++)
+        pos.do_move(pv[i], st[i]);
+
+    bool isDraw = pos.is_draw(pv.size());
+
+    for (size_t i = pv.size(); i > 0; i--)
+        pos.undo_move(pv[i-1]);
+
+    return isDraw;
+  }
 
   // search<>() is the main search function for both PV and non-PV nodes
 
