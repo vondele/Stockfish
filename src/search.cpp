@@ -1065,11 +1065,12 @@ moves_loop: // When in check search starts from here
               rm.score = -VALUE_INFINITE;
       }
 
-      if (value > bestValue)
+      if (value >= bestValue)
       {
           bestValue = value;
 
-          if (value > alpha)
+          if (   value > alpha
+              || (!captureOrPromotion && value == alpha && pos.capture_or_promotion(bestMove)))
           {
               bestMove = move;
 
