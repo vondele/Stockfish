@@ -149,7 +149,7 @@ namespace {
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
-  bool PVisDraw(Position& pos);
+  bool PVSimplifies(Position& pos);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -479,14 +479,14 @@ void Thread::search() {
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
 
               Color us = rootPos.side_to_move();
-              bool thinkHard =    DrawValue[us] == bestValue
+              bool thinkHard =    (bestValue - DrawValue[us]) >=  0
+                               && (bestValue - DrawValue[us]) < 120
                                && Limits.time[us] - Time.elapsed() > Limits.time[~us]
-                               && ::PVisDraw(rootPos);
+                               && ::PVSimplifies(rootPos);
 
-              double unstablePvFactor = (thinkHard ? 1.5 : 1) + mainThread->bestMoveChanges;
+              double unstablePvFactor = (thinkHard ? 1.2 : 1) + mainThread->bestMoveChanges;
 
               bool doEasyMove =   rootMoves[0].pv[0] == easyMove
-                               && !thinkHard
                                && mainThread->bestMoveChanges < 0.03
                                && Time.elapsed() > Time.optimum() * 5 / 44;
 
@@ -527,20 +527,25 @@ void Thread::search() {
 
 namespace {
 
-  // is the PV leading to a draw position ?
-  bool PVisDraw(Position& pos) {
+  // Is the PV leading to a draw or simplified position ?
+  bool PVSimplifies(Position& pos) {
     auto& pv = pos.this_thread()->rootMoves[0].pv;
     StateInfo st[MAX_PLY];
+
+    Value matValStart = pos.non_pawn_material();
 
     for (size_t i = 0; i < pv.size(); i++)
         pos.do_move(pv[i], st[i]);
 
-    bool isDraw = pos.is_draw(pv.size());
+    Value matValEnd = pos.non_pawn_material();
+
+    bool isSimplified =     pos.is_draw(pv.size())
+                        || (matValEnd - matValStart <= -2 * RookValueEg );
 
     for (size_t i = pv.size(); i > 0; i--)
         pos.undo_move(pv[i-1]);
 
-    return isDraw;
+    return isSimplified;
   }
 
   // search<>() is the main search function for both PV and non-PV nodes
