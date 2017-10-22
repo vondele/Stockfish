@@ -483,7 +483,7 @@ void Thread::search() {
                                && Limits.time[us] - Time.elapsed() > Limits.time[~us]
                                && ::PVisDraw(rootPos);
 
-              double unstablePvFactor = (thinkHard ? 2 : 1) + mainThread->bestMoveChanges;
+              double unstablePvFactor = (thinkHard ? 1.5 : 1) + mainThread->bestMoveChanges;
 
               bool doEasyMove =   rootMoves[0].pv[0] == easyMove
                                && !thinkHard
