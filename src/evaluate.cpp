@@ -35,6 +35,8 @@ namespace {
   const Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
   const Bitboard CenterFiles = FileCBB | FileDBB | FileEBB | FileFBB;
   const Bitboard KingSide    = FileEBB | FileFBB | FileGBB | FileHBB;
+  const Bitboard DCorners    = ((FileABB | FileBBB | FileCBB) & (Rank1BB | Rank2BB | Rank3BB)) | ((FileFBB | FileGBB | FileHBB) & (Rank6BB | Rank7BB | Rank8BB));
+  const Bitboard LCorners    = ((FileFBB | FileGBB | FileHBB) & (Rank1BB | Rank2BB | Rank3BB)) | ((FileABB | FileBBB | FileCBB) & (Rank6BB | Rank7BB | Rank8BB));
 
   const Bitboard KingFlank[FILE_NB] = {
     QueenSide, QueenSide, QueenSide, CenterFiles, CenterFiles, KingSide, KingSide, KingSide
@@ -228,6 +230,7 @@ namespace {
   const Score ThreatByPawnPush    = S( 38, 22);
   const Score HinderPassedPawn    = S(  7,  0);
   const Score TrappedBishopA1H1   = S( 50, 50);
+  const Score BishopColoredKing   = S(  5,  5);
 
   #undef S
   #undef V
@@ -352,6 +355,11 @@ namespace {
             {
                 // Penalty for pawns on the same color square as the bishop
                 score -= BishopPawns * pe->pawns_on_same_color_squares(Us, s);
+
+                // Bonus for opponent king in the same colored corner area as our bishop.
+                if (   ((s &  DarkSquares) && (pos.pieces(Them, KING) & DCorners))
+                    || ((s & ~DarkSquares) && (pos.pieces(Them, KING) & LCorners)))
+                    score += BishopColoredKing;
 
                 // Bonus for bishop on a long diagonal which can "see" both center squares
                 if (more_than_one(Center & (attacks_bb<BISHOP>(s, pos.pieces(PAWN)) | s)))
