@@ -443,11 +443,9 @@ void Thread::search() {
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
 
               Color us = rootPos.side_to_move();
-              bool thinkHard =    DrawValue[us] == bestValue
-                               && Limits.time[us] - Time.elapsed() > Limits.time[~us]
-                               && ::PV_is_draw(rootPos);
-
-              thinkHard = thinkHard || (lastBestMoveDepth == rootDepth);
+              bool thinkHard =   ((DrawValue[us] == bestValue && ::PV_is_draw(rootPos))
+                                   || (lastBestMoveDepth == rootDepth))
+                              && Limits.time[us] - Time.elapsed() > Limits.time[~us];
 
               double unstablePvFactor = (thinkHard ? 2 : 1) + mainThread->bestMoveChanges;
 
