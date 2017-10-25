@@ -219,6 +219,7 @@ void Search::clear() {
 
   Threads.main()->callsCnt = 0;
   Threads.main()->previousScore = VALUE_INFINITE;
+  Threads.main()->previousDepth = DEPTH_ZERO;
 }
 
 
@@ -252,8 +253,11 @@ void MainThread::search() {
   else
   {
       for (Thread* th : Threads)
+      {
+          th->previousDepth = previousDepth;
           if (th != this)
               th->start_searching();
+      }
 
       Thread::search(); // Let's start searching!
   }
@@ -303,6 +307,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
+  previousDepth = bestThread->completedDepth;
 
   // Send new PV when needed
   if (bestThread != this)
@@ -384,7 +389,7 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 5 * ONE_PLY)
           {
-              delta = Value(18);
+              delta = std::abs(rootDepth - previousDepth) < 3 ? Value(18) : Value(5);
               alpha = std::max(rootMoves[PVIdx].previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(rootMoves[PVIdx].previousScore + delta, VALUE_INFINITE);
           }

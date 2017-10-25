@@ -66,7 +66,7 @@ public:
 
   Position rootPos;
   Search::RootMoves rootMoves;
-  Depth rootDepth, completedDepth;
+  Depth rootDepth, completedDepth, previousDepth;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   ContinuationHistory contHistory;
@@ -85,6 +85,7 @@ struct MainThread : public Thread {
   bool easyMovePlayed, failedLow;
   double bestMoveChanges;
   Value previousScore;
+  Depth previousDepth;
   int callsCnt;
 };
 
