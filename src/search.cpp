@@ -181,6 +181,7 @@ void Search::clear() {
   Threads.main()->callsCnt = 0;
   Threads.main()->previousScore = VALUE_INFINITE;
   Threads.main()->previousTimeReduction = 1;
+  Threads.main()->previousDepth = DEPTH_MAX;
 }
 
 
@@ -264,6 +265,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
+  previousDepth = bestThread->completedDepth;
 
   // Send new PV when needed
   if (bestThread != this)
@@ -457,6 +459,8 @@ void Thread::search() {
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
                      timeReduction *= 1.3;
               unstablePvFactor /=  timeReduction / std::pow(mainThread->previousTimeReduction, 0.51);
+
+              unstablePvFactor *= 1.0 + std::min(std::max(double(mainThread->previousDepth - completedDepth) / 9.0, -1.0/3.0), 1.0/3.0);
 
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)

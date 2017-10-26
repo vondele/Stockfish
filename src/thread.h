@@ -85,6 +85,7 @@ struct MainThread : public Thread {
   bool failedLow;
   double bestMoveChanges, previousTimeReduction;
   Value previousScore;
+  Depth previousDepth;
   int callsCnt;
 };
 
