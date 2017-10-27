@@ -484,7 +484,7 @@ void Thread::search() {
                                && Limits.time[us] - Time.elapsed() > Limits.time[~us]
                                && ::PVSimplifies(rootPos);
 
-              double unstablePvFactor = (thinkHard ? 1.2 : 1) + mainThread->bestMoveChanges;
+              double unstablePvFactor = (thinkHard ? 1.8 : 1) + mainThread->bestMoveChanges;
 
               bool doEasyMove =   rootMoves[0].pv[0] == easyMove
                                && mainThread->bestMoveChanges < 0.03
