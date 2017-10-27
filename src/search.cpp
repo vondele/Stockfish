@@ -438,11 +438,14 @@ void Thread::search() {
       {
           if (!Threads.stop && !Threads.stopOnPonderhit)
           {
+              timeReduction = 1;
+
               // Stop the search if only one legal move is available, or if all
               // of the available time has been used
               const int F[] = { mainThread->failedLow,
                                 bestValue - mainThread->previousScore };
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
+              timeReduction /= improvingFactor / 628.0;
 
               Color us = rootPos.side_to_move();
               bool thinkHard =    DrawValue[us] == bestValue
@@ -450,21 +453,23 @@ void Thread::search() {
                                && ::PV_is_draw(rootPos);
 
               double unstablePvFactor = (thinkHard ? 2 : 1) + mainThread->bestMoveChanges;
+              timeReduction /= unstablePvFactor;
 
               // if the bestMove is stable over several iterations, reduce time for this move,
               // the longer the move has been stable, the more.
               // Use part of the gained time from a previous stable move for the current move.
-              timeReduction = 1;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
                      timeReduction *= 1.3;
 
+              // depth compensation
               timeReduction *= 1.0 - std::min(std::max(double(mainThread->previousDepth - completedDepth) / 12.0, -1.0/3.0), 1.0/3.0);
 
-              unstablePvFactor /=  timeReduction / std::pow(mainThread->previousTimeReduction, 0.51);
+              // history compensation
+              timeReduction /= std::pow(mainThread->previousTimeReduction, 0.51);
 
               if (   rootMoves.size() == 1
-                  || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
+                  || Time.elapsed() > Time.optimum() / timeReduction)
               {
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
