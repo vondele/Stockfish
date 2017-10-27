@@ -540,7 +540,7 @@ namespace {
     Value matValEnd = pos.non_pawn_material();
 
     bool isSimplified =     pos.is_draw(pv.size())
-                        || (matValEnd - matValStart <= -2 * RookValueEg );
+                        || (matValEnd - matValStart <= -2 * RookValueMg );
 
     for (size_t i = pv.size(); i > 0; i--)
         pos.undo_move(pv[i-1]);
