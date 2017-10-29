@@ -445,6 +445,16 @@ void Thread::search() {
           // Sort the PV lines searched so far and update the GUI
           std::stable_sort(rootMoves.begin(), rootMoves.begin() + PVIdx + 1);
 
+          for(auto& rm : rootMoves) {
+             StateInfo st;
+             rootPos.do_move(rm.pv[0],st);
+             bool ttHit;
+             TTEntry* tte = TT.probe(rootPos.key(), ttHit);
+             Value ttValue = ttHit ? value_from_tt(tte->value(), 1) : VALUE_NONE;
+             std::cout << "xxx " << UCI::move(rm.pv[0], false) << " " << rm.score << " " << rm.previousScore << " " << -ttValue << std::endl;
+             rootPos.undo_move(rm.pv[0]);
+          }
+
           if (    mainThread
               && (Threads.stop || PVIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
