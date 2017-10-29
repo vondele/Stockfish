@@ -1118,7 +1118,8 @@ moves_loop: // When in check search starts from here
     else if (bestMove)
     {
         // Quiet best move: update move sorting heuristics
-        if (!pos.capture_or_promotion(bestMove))
+        if (   !pos.capture_or_promotion(bestMove)
+            && bestValue != DrawValue[pos.side_to_move()])
             update_stats(pos, ss, bestMove, quietsSearched, quietCount, stat_bonus(depth));
 
         // Extra penalty for a quiet TT move in previous ply when it gets refuted
