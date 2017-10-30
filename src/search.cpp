@@ -344,15 +344,8 @@ void Thread::search() {
       mainThread->bestMoveChanges = 0;
   }
 
-  size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
-
-  // When playing with strength handicap enable MultiPV search that we will
-  // use behind the scenes to retrieve a set of possible moves.
-  if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)4);
-
-  multiPV = std::min(multiPV, rootMoves.size());
+  size_t multiPV = Options["MultiPV"];
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
@@ -366,6 +359,16 @@ void Thread::search() {
           if (((rootDepth / ONE_PLY + rootPos.game_ply() + skipPhase[i]) / skipSize[i]) % 2)
               continue;
       }
+
+      multiPV = Options["MultiPV"];
+      // at low depth do a multiPV search
+      if (Time.elapsed() * 20 < Time.optimum())
+          multiPV = std::max(multiPV, (size_t)2);
+      // When playing with strength handicap enable MultiPV search that we will
+      // use behind the scenes to retrieve a set of possible moves.
+      if (skill.enabled())
+          multiPV = std::max(multiPV, (size_t)4);
+      multiPV = std::min(multiPV, rootMoves.size());
 
       // Age out PV variability metric
       if (mainThread)
