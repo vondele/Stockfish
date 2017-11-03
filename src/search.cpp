@@ -291,6 +291,7 @@ void Thread::search() {
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
+  Color us = rootPos.side_to_move();
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -304,6 +305,8 @@ void Thread::search() {
       mainThread->failedLow = false;
       mainThread->bestMoveChanges = 0;
   }
+
+  drawIter = 0;
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
@@ -419,6 +422,12 @@ void Thread::search() {
          lastBestMoveDepth = rootDepth;
       }
 
+      if (   ::pv_is_draw(rootPos)
+          && (!Limits.use_time_management() || Limits.time[us] - Time.elapsed() >= Limits.time[~us]))
+         drawIter++;
+      else
+         drawIter=0;
+
       // Have we found a "mate in x"?
       if (   Limits.mate
           && bestValue >= VALUE_MATE_IN_MAX_PLY
@@ -443,7 +452,6 @@ void Thread::search() {
                                 bestValue - mainThread->previousScore };
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
 
-              Color us = rootPos.side_to_move();
               bool thinkHard =    DrawValue[us] == bestValue
                                && Limits.time[us] - Time.elapsed() > Limits.time[~us]
                                && ::pv_is_draw(rootPos);
@@ -686,7 +694,8 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        && (ss->staticEval >= beta - 35 * (depth / ONE_PLY - 6) || depth >= 13 * ONE_PLY)
+        && (   ss->staticEval >= beta - 35 * (depth / ONE_PLY - 6 - 2 * thisThread->drawIter)
+            || depth / ONE_PLY - 2 * thisThread->drawIter >= 13)
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
