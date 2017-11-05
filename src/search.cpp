@@ -457,7 +457,7 @@ void Thread::search() {
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
                      timeReduction *= 1.3;
-              unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.4) / timeReduction;
+              unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.6) / timeReduction;
 
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
