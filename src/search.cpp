@@ -110,7 +110,7 @@ namespace {
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCnt, int bonus);
-  bool pv_is_draw(Position& pos);
+  Key pv_is_draw(Position& pos);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -307,6 +307,7 @@ void Thread::search() {
   }
 
   drawIter = 0;
+  Key drawKey = Key(0);
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
@@ -422,10 +423,9 @@ void Thread::search() {
          lastBestMoveDepth = rootDepth;
       }
 
-      if (   ::pv_is_draw(rootPos)
+      if (   ::pv_is_draw(rootPos) == drawKey
           && (   !Limits.use_time_management()
-              || (   Limits.time[us] - Time.elapsed() >= Limits.time[~us]
-                  && Time.elapsed() * 5 <= Time.optimum())))
+              ||  Limits.time[us] - Time.elapsed() >= Limits.time[~us]))
          drawIter++;
       else
          drawIter=0;
@@ -1431,8 +1431,8 @@ moves_loop: // When in check search starts from here
   }
 
 
-  // Is the PV leading to a draw position? Assumes all pv moves are legal
-  bool pv_is_draw(Position& pos) {
+  // Return the key of the final pos of the PV if it is leading to a draw, zero otherwise. Assumes all pv moves are legal
+  Key pv_is_draw(Position& pos) {
 
     StateInfo st[MAX_PLY];
     auto& pv = pos.this_thread()->rootMoves[0].pv;
@@ -1440,7 +1440,7 @@ moves_loop: // When in check search starts from here
     for (size_t i = 0; i < pv.size(); ++i)
         pos.do_move(pv[i], st[i]);
 
-    bool isDraw = pos.is_draw(pv.size());
+    Key isDraw = pos.is_draw(pv.size()) ? pos.key() : Key(0);
 
     for (size_t i = pv.size(); i > 0; --i)
         pos.undo_move(pv[i-1]);
