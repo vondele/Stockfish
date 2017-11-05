@@ -423,7 +423,9 @@ void Thread::search() {
       }
 
       if (   ::pv_is_draw(rootPos)
-          && (!Limits.use_time_management() || Limits.time[us] - Time.elapsed() >= Limits.time[~us]))
+          && (   !Limits.use_time_management()
+              || (   Limits.time[us] - Time.elapsed() >= Limits.time[~us]
+                  && Time.elapsed() * 5 <= Time.optimum())))
          drawIter++;
       else
          drawIter=0;
