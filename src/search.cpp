@@ -425,8 +425,6 @@ void Thread::search() {
       if (   ::pv_is_draw(rootPos)
           && (!Limits.use_time_management() || Limits.time[us] - Time.elapsed() >= Limits.time[~us]))
          drawIter++;
-      else
-         drawIter=0;
 
       // Have we found a "mate in x"?
       if (   Limits.mate
