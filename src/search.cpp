@@ -60,7 +60,7 @@ using namespace Search;
 namespace {
 
   int NMPv1 = 35, NMPv2 = 210;
-  TUNE(SetRange(20,40),NMPv1,SetRange(0,400),NMPv2);
+  TUNE(SetRange(10,60),NMPv1,SetRange(-200,600),NMPv2);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
