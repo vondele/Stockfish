@@ -59,6 +59,9 @@ using namespace Search;
 
 namespace {
 
+  int NMPv1 = 35, NMPv2 = 210;
+  TUNE(SetRange(20,40),NMPv1,SetRange(0,400),NMPv2);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
@@ -686,7 +689,7 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 35 * (depth / ONE_PLY - 6)
+        &&  ss->staticEval >= beta - NMPv1 * depth / ONE_PLY + NMPv2
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
