@@ -337,6 +337,8 @@ void Thread::search() {
       for (RootMove& rm : rootMoves)
           rm.previousScore = rm.score;
 
+      bool verifySurprise = true;
+
       // MultiPV loop. We perform a full root search for each PV line
       for (PVIdx = 0; PVIdx < multiPV && !Threads.stop; ++PVIdx)
       {
@@ -386,6 +388,7 @@ void Thread::search() {
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                  delta += delta / 4 + 5;
 
                   if (mainThread)
                   {
@@ -394,11 +397,14 @@ void Thread::search() {
                   }
               }
               else if (bestValue >= beta)
+              {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-              else
+                  delta += delta / 4 + 5;
+              }
+              else if (rootMoves[0].pv[0] == lastBestMove || !verifySurprise || rootDepth <= 5 * ONE_PLY)
                   break;
-
-              delta += delta / 4 + 5;
+              else
+                  verifySurprise = false;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
