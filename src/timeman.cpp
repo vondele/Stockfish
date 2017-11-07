@@ -61,7 +61,7 @@ namespace {
     else
     {
         double k = 1 + 20 * moveNum / (500.0 + moveNum);
-        ratio = (type == OptimumTime ? 0.01785 : 0.0735) * (k + inc / myTime);
+        ratio = (type == OptimumTime ? 0.01615 : .0665) * (k + inc / myTime);
     }
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
