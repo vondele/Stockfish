@@ -686,7 +686,7 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  (1 << (2 * msb(ss->ply))) > thisThread->rootDepth
+        &&  ss->ply * ss->ply * ss->ply > thisThread->rootDepth
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
