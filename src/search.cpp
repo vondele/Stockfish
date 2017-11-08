@@ -425,6 +425,8 @@ void Thread::search() {
       if (   ::pv_is_draw(rootPos)
           && (!Limits.use_time_management() || Limits.time[us] - Time.elapsed() >= Limits.time[~us]))
          drawIter++;
+      else
+         drawIter=0;
 
       // Have we found a "mate in x"?
       if (   Limits.mate
@@ -692,8 +694,7 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        && (   ss->staticEval >= beta - 35 * (depth / ONE_PLY - 6 - 2 * thisThread->drawIter)
-            || depth / ONE_PLY - 2 * thisThread->drawIter >= 13)
+        &&  ss->staticEval >= beta - 36 * (ss->ply * ss->ply < thisThread->rootDepth ? (depth / ONE_PLY - 2 * thisThread->drawIter) : depth / ONE_PLY)  - 225
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
