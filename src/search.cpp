@@ -337,6 +337,16 @@ void Thread::search() {
       for (RootMove& rm : rootMoves)
           rm.previousScore = rm.score;
 
+      // Bubble up the thread global bestMove, in case it outperforms ours almost certainly.
+      if (Threads.bestCompletedDepth >= rootDepth && Threads.bestValue > rootMoves[0].score) {
+          Move bestMove = Threads.bestMove;
+          auto rm = std::find(rootMoves.begin(), rootMoves.end(), bestMove);
+          RootMove tmp = *rm;
+          for (; rm != rootMoves.begin(); --rm)
+              *rm = *(rm - 1);
+          *rm = tmp;
+      }
+
       // MultiPV loop. We perform a full root search for each PV line
       for (PVIdx = 0; PVIdx < multiPV && !Threads.stop; ++PVIdx)
       {
@@ -411,8 +421,10 @@ void Thread::search() {
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
       }
 
-      if (!Threads.stop)
+      if (!Threads.stop) {
           completedDepth = rootDepth;
+          Threads.update_move(rootMoves[0].pv[0], bestValue, rootDepth, idx);
+      }
 
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
@@ -562,6 +574,7 @@ namespace {
     posKey = pos.key() ^ Key(excludedMove);
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
+
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->PVIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
 

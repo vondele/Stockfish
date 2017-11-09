@@ -145,6 +145,25 @@ void ThreadPool::set(size_t requested) {
       delete back(), pop_back();
 }
 
+/// ThreadPool::update_move() allows threads to update the globally best move so far.
+/// either because this thread reported the previous best move at a lower depth,
+/// or because it has found a better score and the same or higher depth.
+
+void ThreadPool::update_move(Move move, Value value, Depth depth, size_t idx) {
+  std::lock_guard<Mutex> lock_update(mutex);
+
+  Depth depthDiff = depth - bestCompletedDepth;
+  Value scoreDiff = value - bestValue;
+
+  if (   (idx == bestIdx || scoreDiff > 0)
+      && (depthDiff >= 0 || value >= VALUE_MATE_IN_MAX_PLY))
+  {
+     bestValue = value;
+     bestMove = move;
+     bestCompletedDepth = depth;
+     bestIdx = idx;
+  }
+}
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
@@ -180,6 +199,11 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   // we need to backup and later restore setupStates->back(). Note that setupStates
   // is shared by threads but is accessed in read-only mode.
   StateInfo tmp = setupStates->back();
+
+  bestCompletedDepth = DEPTH_ZERO;
+  bestValue = -VALUE_INFINITE;
+  bestIdx = 0;
+  bestMove = rootMoves.size() > 0 ? rootMoves[0].pv[0] : MOVE_NONE;
 
   for (Thread* th : Threads)
   {
