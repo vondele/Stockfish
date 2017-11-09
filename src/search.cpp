@@ -717,7 +717,7 @@ namespace {
                                         :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
 
             if (v >= beta)
-                return nullValue;
+                return v;
         }
     }
 
