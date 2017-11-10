@@ -105,13 +105,14 @@ struct ThreadPool : public std::vector<Thread*> {
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
   void update_move(Move move, Value value, Depth depth, size_t idx);
+  void get_move(Move& move, Value& value, Depth& depth);
 
   std::atomic_bool stop, ponder, stopOnPonderhit;
 
   Mutex mutex;
-  std::atomic<Value> bestValue;
-  std::atomic<Move> bestMove;
-  std::atomic<Depth> bestCompletedDepth;
+  Value bestValue;
+  Move bestMove;
+  Depth bestCompletedDepth;
   size_t bestIdx;
 
 private:

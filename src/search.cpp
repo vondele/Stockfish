@@ -337,10 +337,15 @@ void Thread::search() {
       for (RootMove& rm : rootMoves)
           rm.previousScore = rm.score;
 
+      // get best info (atomically)
+      Move threadsBestMove;
+      Value threadsBestValue;
+      Depth threadsBestDepth;
+      Threads.get_move(threadsBestMove, threadsBestValue, threadsBestDepth);
+
       // Bubble up the thread global bestMove, in case it outperforms ours almost certainly.
-      if (Threads.bestCompletedDepth >= rootDepth && Threads.bestValue > rootMoves[0].score) {
-          Move bestMove = Threads.bestMove;
-          auto rm = std::find(rootMoves.begin(), rootMoves.end(), bestMove);
+      if (threadsBestDepth >= rootDepth && threadsBestValue > rootMoves[0].score) {
+          auto rm = std::find(rootMoves.begin(), rootMoves.end(), threadsBestMove);
           RootMove tmp = *rm;
           for (; rm != rootMoves.begin(); --rm)
               *rm = *(rm - 1);

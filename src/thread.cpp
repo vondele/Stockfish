@@ -165,6 +165,16 @@ void ThreadPool::update_move(Move move, Value value, Depth depth, size_t idx) {
   }
 }
 
+/// ThreadPool::get_move() obtains the current bestMove and associated info
+
+void ThreadPool::get_move(Move& move, Value& value, Depth& depth) {
+  std::lock_guard<Mutex> lock_update(mutex);
+
+  move = bestMove;
+  depth = bestCompletedDepth;
+  value = bestValue;
+}
+
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
 
