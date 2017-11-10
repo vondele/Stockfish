@@ -155,8 +155,12 @@ void ThreadPool::update_move(Move move, Value value, Depth depth, size_t idx) {
   Depth depthDiff = depth - bestCompletedDepth;
   Value scoreDiff = value - bestValue;
 
-  if (   (idx == bestIdx || scoreDiff > 0)
-      && (depthDiff >= 0 || value >= VALUE_MATE_IN_MAX_PLY))
+  bool cond1 = idx == bestIdx; // update from the same thread (will be at higher depth)
+  bool cond2 = move == bestMove && depthDiff > 0; // update for the same move at higher depth
+  bool cond3 = (scoreDiff > 0) && (depthDiff >= 0 || value >= VALUE_MATE_IN_MAX_PLY); // better score, for a higher or equal depth, or a proven win.
+  bool cond4 = scoreDiff == 0 && depthDiff >0;  // move with the same score, but deeper search
+
+  if (cond1 || cond2 || cond3 || cond4)
   {
      bestValue = value;
      bestMove = move;

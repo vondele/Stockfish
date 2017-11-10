@@ -275,6 +275,11 @@ void MainThread::search() {
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
+  if (Threads.bestMove != bestThread->rootMoves[0].pv[0] || Threads[Threads.bestIdx]->rootMoves[0].pv[0] !=  bestThread->rootMoves[0].pv[0]) {
+     std::cout << " internal " << UCI::move(Threads.bestMove, rootPos.is_chess960()) << " " << UCI::value(Threads.bestValue) << " " << Threads.bestCompletedDepth; 
+     std::cout << " internal bestThread " << UCI::move(Threads[Threads.bestIdx]->rootMoves[0].pv[0], false) << "  " << UCI::value(Threads[Threads.bestIdx]->rootMoves[0].score) << " " << Threads[Threads.bestIdx]->completedDepth << " " << Threads[Threads.bestIdx]->rootDepth;
+  }
+
   std::cout << sync_endl;
 }
 
@@ -344,13 +349,18 @@ void Thread::search() {
       Threads.get_move(threadsBestMove, threadsBestValue, threadsBestDepth);
 
       // Bubble up the thread global bestMove, in case it outperforms ours almost certainly.
-      if (threadsBestDepth >= rootDepth && threadsBestValue > rootMoves[0].score) {
+      if (threadsBestDepth >= rootDepth && threadsBestValue >= rootMoves[0].score) {
           auto rm = std::find(rootMoves.begin(), rootMoves.end(), threadsBestMove);
           RootMove tmp = *rm;
           for (; rm != rootMoves.begin(); --rm)
               *rm = *(rm - 1);
           *rm = tmp;
       }
+
+      if (rootMoves[0].pv[0] == threadsBestMove && threadsBestDepth >= rootDepth)
+         continue;
+
+      // sync_cout << "xxx " << UCI::move(threadsBestMove, false) << " " << threadsBestDepth << " " << threadsBestValue << " " << UCI::move(rootMoves[0].pv[0], false) << " " << rootDepth << sync_endl;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (PVIdx = 0; PVIdx < multiPV && !Threads.stop; ++PVIdx)
