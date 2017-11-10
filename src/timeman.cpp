@@ -30,6 +30,9 @@ namespace {
 
   enum TimeType { OptimumTime, MaxTime };
 
+  int var1 = 100,  var2 = 20, var3 = 100, var4 = 100;
+  TUNE(var1,var2,var3,var4);
+
   int remaining(int myTime, int myInc, int moveOverhead, int movesToGo,
                 int moveNum, bool ponder, TimeType type) {
 
@@ -60,8 +63,8 @@ namespace {
     // Otherwise we increase usage of remaining time as the game goes on
     else
     {
-        double k = 1 + 20 * moveNum / (500.0 + moveNum);
-        ratio = (type == OptimumTime ? 0.017 : 0.07) * (k + inc / myTime);
+        double k = var1/100.0 + double(var2 * moveNum) / (5 * var3 + moveNum);
+        ratio = (var4 / 100.0) * (type == OptimumTime ? 0.017 : 0.07) * (k + inc / myTime);
     }
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
