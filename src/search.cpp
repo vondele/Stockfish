@@ -198,7 +198,8 @@ void MainThread::search() {
   }
 
   Color us = rootPos.side_to_move();
-  Time.init(Limits, us, rootPos.game_ply());
+  bool firstMove = Threads.main()->previousScore == VALUE_INFINITE;
+  Time.init(Limits, us, rootPos.game_ply(), firstMove);
   TT.new_search();
 
   int contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
