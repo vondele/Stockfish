@@ -65,7 +65,7 @@ namespace {
     }
 
     if (startDeep)
-       ratio *= 2;
+       ratio *= 1.5;
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
 
