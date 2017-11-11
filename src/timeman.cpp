@@ -60,8 +60,8 @@ namespace {
     // Otherwise we increase usage of remaining time as the game goes on
     else
     {
-        double k = 1 + 20 * moveNum / (465.0 + moveNum);
-        ratio = (type == OptimumTime ? 0.017 : 0.07) * (k + inc / myTime);
+        double k = 0.9459 + 20.59 * moveNum / (444 + moveNum);
+        ratio = (type == OptimumTime ? 0.01674 : 0.06894) * (k + inc / myTime);
     }
 
     int time = int(std::min(1.0, ratio) * std::max(0, myTime - moveOverhead));
