@@ -305,6 +305,10 @@ void Thread::search() {
       mainThread->bestMoveChanges = 0;
   }
 
+  Move  mainBestMove = rootMoves[0].pv[0];
+  Value mainBestValue = -VALUE_INFINITE;
+  Depth mainBestDepth = DEPTH_ZERO;
+
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
 
@@ -336,6 +340,18 @@ void Thread::search() {
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
       for (RootMove& rm : rootMoves)
           rm.previousScore = rm.score;
+
+      // Bubble up the mainThread bestMove, in case it outperforms ours almost certainly.
+      if (mainBestDepth >= rootDepth && mainBestValue >= rootMoves[0].score) {
+          auto rm = std::find(rootMoves.begin(), rootMoves.end(), mainBestMove);
+          RootMove tmp = *rm;
+          for (; rm != rootMoves.begin(); --rm)
+              *rm = *(rm - 1);
+          *rm = tmp;
+      }
+
+      if (mainBestMove == rootMoves[0].pv[0] && mainBestDepth >= rootDepth)
+          continue;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (PVIdx = 0; PVIdx < multiPV && !Threads.stop; ++PVIdx)
@@ -411,8 +427,13 @@ void Thread::search() {
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
       }
 
-      if (!Threads.stop)
+      if (!Threads.stop) {
           completedDepth = rootDepth;
+          // set/get main bestmove info (atomically)
+          if (mainThread)
+              Threads.set_best_move(rootMoves[0].pv[0], bestValue, rootDepth);
+          Threads.get_best_move(mainBestMove, mainBestValue, mainBestDepth);
+      }
 
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];

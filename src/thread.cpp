@@ -145,6 +145,25 @@ void ThreadPool::set(size_t requested) {
       delete back(), pop_back();
 }
 
+/// ThreadPool::set_best_move() atomically update the bestMove info
+
+void ThreadPool::set_best_move(Move move, Value value, Depth depth) {
+  std::lock_guard<Mutex> lock_update(bestMutex);
+
+  bestValue = value;
+  bestMove = move;
+  bestCompletedDepth = depth;
+}
+
+/// ThreadPool::get_best_move() atomically get the bestMove info
+
+void ThreadPool::get_best_move(Move& move, Value& value, Depth& depth) {
+  std::lock_guard<Mutex> lock_update(bestMutex);
+
+  move = bestMove;
+  depth = bestCompletedDepth;
+  value = bestValue;
+}
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
@@ -180,6 +199,10 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   // we need to backup and later restore setupStates->back(). Note that setupStates
   // is shared by threads but is accessed in read-only mode.
   StateInfo tmp = setupStates->back();
+
+  bestCompletedDepth = DEPTH_ZERO;
+  bestValue = -VALUE_INFINITE;
+  bestMove = rootMoves.size() > 0 ? rootMoves[0].pv[0] : MOVE_NONE;
 
   for (Thread* th : Threads)
   {

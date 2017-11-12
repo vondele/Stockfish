@@ -104,8 +104,16 @@ struct ThreadPool : public std::vector<Thread*> {
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
+  void set_best_move(Move move, Value value, Depth depth);
+  void get_best_move(Move& move, Value& value, Depth& depth);
 
   std::atomic_bool stop, ponder, stopOnPonderhit;
+
+  // mainThread bestMove info
+  Mutex bestMutex;
+  Value bestValue;
+  Move bestMove;
+  Depth bestCompletedDepth;
 
 private:
   StateListPtr setupStates;
