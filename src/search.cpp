@@ -179,6 +179,9 @@ void Search::clear() {
   for (Thread* th : Threads)
       th->clear();
 
+  for (auto& k : Threads.threadKey)
+      k = 0;
+
   Threads.main()->callsCnt = 0;
   Threads.main()->previousScore = VALUE_INFINITE;
   Threads.main()->previousTimeReduction = 1;
@@ -523,6 +526,18 @@ namespace {
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
+ 
+    // half-way in the tree, avoid searching a subtree deep if other threads are already there.
+    if (thisThread->rootDepth / 2 == ss->ply && thisThread->rootDepth % 2 == 0)
+    {
+       size_t idx = thisThread->get_idx();
+       posKey = pos.key();
+       Threads.threadKey[idx].store(posKey,std::memory_order_relaxed);
+       for (size_t i = 0; i < idx; ++i)
+           if (Threads.threadKey[i].load(std::memory_order_relaxed) == posKey) 
+              depth -= ONE_PLY;
+       depth = depth < ONE_PLY ? ONE_PLY : depth;
+    }
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)

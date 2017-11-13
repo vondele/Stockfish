@@ -100,8 +100,9 @@ const bool Is64Bit = false;
 typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
-const int MAX_MOVES = 256;
-const int MAX_PLY   = 128;
+const int MAX_MOVES   = 256;
+const int MAX_PLY     = 128;
+const int MAX_THREADS = 512;
 
 /// A move needs 16 bits to be stored
 ///

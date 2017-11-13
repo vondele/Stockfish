@@ -52,6 +52,7 @@ public:
   explicit Thread(size_t);
   virtual ~Thread();
   virtual void search();
+  size_t get_idx() { return idx; };
   void clear();
   void idle_loop();
   void start_searching();
@@ -106,6 +107,7 @@ struct ThreadPool : public std::vector<Thread*> {
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
 
   std::atomic_bool stop, ponder, stopOnPonderhit;
+  std::atomic<Key> threadKey[MAX_THREADS];
 
 private:
   StateListPtr setupStates;
