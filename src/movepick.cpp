@@ -58,6 +58,7 @@ namespace {
   }
 
   int var1 = 648, var2 = 648;
+  TUNE(var1,var2);
 
 } // namespace
 
