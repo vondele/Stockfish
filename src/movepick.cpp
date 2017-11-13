@@ -180,7 +180,7 @@ Move MovePicker::next_move(bool skipQuiets) {
           if (move != ttMove)
           {
               int hist = (*captureHistory)[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
-              if (pos.see_ge(move, Value(-hist / 4)))
+              if (pos.see_ge(move, Value(-hist / 5)))
                   return move;
 
               // Losing capture, move it to the beginning of the array
