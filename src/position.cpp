@@ -1003,16 +1003,19 @@ bool Position::see_ge(Move m, Value threshold) const {
   Value balance; // Values of the pieces taken by us minus opponent's ones
   Bitboard occupied, stmAttackers;
 
+  Phase gamePhase = non_pawn_material(WHITE) + non_pawn_material(BLACK) < EndgameLimit ?
+                    EG : MG;
+
   // The opponent may be able to recapture so this is the best result
   // we can hope for.
-  balance = PieceValue[MG][piece_on(to)] - threshold;
+  balance = PieceValue[gamePhase][piece_on(to)] - threshold;
 
   if (balance < VALUE_ZERO)
       return false;
 
   // Now assume the worst possible result: that the opponent can
   // capture our piece for free.
-  balance -= PieceValue[MG][nextVictim];
+  balance -= PieceValue[gamePhase][nextVictim];
 
   if (balance >= VALUE_ZERO) // Always true if nextVictim == KING
       return true;
@@ -1057,7 +1060,7 @@ bool Position::see_ge(Move m, Value threshold) const {
       }
 
       // Assume the opponent can win the next piece for free and switch sides
-      balance += PieceValue[MG][nextVictim];
+      balance += PieceValue[gamePhase][nextVictim];
       opponentToMove = !opponentToMove;
 
       // If balance is negative after receiving a free piece then give up
