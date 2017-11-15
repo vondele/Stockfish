@@ -887,12 +887,14 @@ namespace {
     return (pos.side_to_move() == WHITE ? v : -v) + Eval::tempo(pos); // Side to move point of view
   }
 
+  int var1 = 0, var2 = 0;
+
 } // namespace
 
 /// position based tempo
 Value Eval::tempo(const Position& pos)
 {
-   return Value(10 + 2 * pos.non_pawn_material() / KnightValueEg);
+   return Value(20 - var1 + var2 * pos.non_pawn_material() / (9 * KnightValueEg));
 }
 
 
