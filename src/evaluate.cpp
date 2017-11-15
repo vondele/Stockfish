@@ -886,7 +886,7 @@ namespace {
     }
 
     // Just value stuff.
-    Value keepStuff = Value(pos.non_pawn_material() / KnightValueEg);
+    Value keepStuff = Value(2 * pos.non_pawn_material() / KnightValueEg);
 
     return (pos.side_to_move() == WHITE ? v : -v) + keepStuff; // Side to move point of view
   }
