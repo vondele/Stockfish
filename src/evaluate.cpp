@@ -23,7 +23,6 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
-#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -885,13 +884,16 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    // Just value stuff.
-    Value keepStuff = Value(2 * pos.non_pawn_material() / KnightValueEg);
-
-    return (pos.side_to_move() == WHITE ? v : -v) + keepStuff; // Side to move point of view
+    return (pos.side_to_move() == WHITE ? v : -v) + Eval::tempo(pos); // Side to move point of view
   }
 
 } // namespace
+
+/// position based tempo
+Value Eval::tempo(const Position& pos)
+{
+   return Value(10 + 2 * pos.non_pawn_material() / KnightValueEg);
+}
 
 
 /// evaluate() is the evaluator for the outer world. It returns a static evaluation
