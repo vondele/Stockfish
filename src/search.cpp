@@ -111,6 +111,7 @@ namespace {
   void update_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCnt, int bonus);
   bool pv_is_draw(Position& pos);
+  bool is_good_capture(Position& pos, const RootMoves& rootMoves);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -453,11 +454,16 @@ void Thread::search() {
               // if the bestMove is stable over several iterations, reduce time for this move,
               // the longer the move has been stable, the more.
               // Use part of the gained time from a previous stable move for the current move.
+              // The reduction factor is larger if the bestMove is the single estimated good capture of all rootMoves.
               timeReduction = 1;
-              for (int i : {3, 4, 5})
-                  if (lastBestMoveDepth * i < completedDepth && !thinkHard)
-                     timeReduction *= 1.3;
-              unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.51) / timeReduction;
+              if (lastBestMoveDepth * 3 < completedDepth && !thinkHard) {
+                 double reductionFactor = is_good_capture(rootPos, rootMoves) ?  1.8 : 1.3;
+                 for (int i : {3, 4, 5})
+                     if (lastBestMoveDepth * i < completedDepth)
+                        timeReduction *= reductionFactor;
+              }
+              unstablePvFactor *=  std::pow(std::min(1.3 * 1.3 * 1.3, mainThread->previousTimeReduction), 0.51)
+                                 / timeReduction;
 
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
@@ -1417,6 +1423,31 @@ moves_loop: // When in check search starts from here
     }
   }
 
+  // try to predict if the first rootMove is an obvious good capture.
+  bool is_good_capture(Position& pos, const RootMoves& rootMoves) {
+
+    if (!pos.capture(rootMoves[0].pv[0]))
+       return false;
+
+    // Only try for Knight or better
+    Value pieceValue = PieceValue[MG][pos.piece_on(to_sq(rootMoves[0].pv[0]))];
+    if (pieceValue < KnightValueMg)
+       return false;
+
+    // SEE must return at least 2/3 of the value of the piece
+    // and no other capture returns more than 1/2 of the value of the piece
+    bool good_capture = false;
+    if (pos.see_ge(rootMoves[0].pv[0], 2 * pieceValue / 3))
+    {
+       int count = 0;
+       for (auto& rm : rootMoves)
+           count += pos.capture(rm.pv[0]) && pos.see_ge(rm.pv[0], pieceValue / 2);
+       if (count == 1)
+           good_capture = true;
+    }
+
+    return good_capture;
+  }
 
   // Is the PV leading to a draw position? Assumes all pv moves are legal
   bool pv_is_draw(Position& pos) {
