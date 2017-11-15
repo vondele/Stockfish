@@ -884,10 +884,16 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo; // Side to move point of view
+    return (pos.side_to_move() == WHITE ? v : -v) + Eval::tempo(pos); // Side to move point of view
   }
 
 } // namespace
+
+/// position based tempo
+Value Eval::tempo(const Position& pos)
+{
+   return Value(26 - pos.game_ply() / 16);
+}
 
 
 /// evaluate() is the evaluator for the outer world. It returns a static evaluation
