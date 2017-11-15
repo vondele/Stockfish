@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -828,10 +829,6 @@ namespace {
     // imbalance. Score is computed internally from the white point of view.
     Score score = pos.psq_score() + me->imbalance();
 
-    // Just value stuff.
-    Value keepStuff = Value(pos.non_pawn_material() * 3 / KnightValueEg);
-    score += make_score(keepStuff, keepStuff);
-
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
     score += pe->pawns_score();
@@ -888,7 +885,10 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo; // Side to move point of view
+    // Just value stuff.
+    Value keepStuff = Value(pos.non_pawn_material() / KnightValueEg);
+
+    return (pos.side_to_move() == WHITE ? v : -v) + keepStuff; // Side to move point of view
   }
 
 } // namespace
