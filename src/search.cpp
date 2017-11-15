@@ -453,10 +453,23 @@ void Thread::search() {
               // if the bestMove is stable over several iterations, reduce time for this move,
               // the longer the move has been stable, the more.
               // Use part of the gained time from a previous stable move for the current move.
+              // The reduction factor is larger if the bestMove is the single good capture of all rootMoves.
+              double reductionFactor = 1.3;
+              if (   lastBestMoveDepth * 3 < completedDepth
+                  && rootPos.capture(rootMoves[0].pv[0])
+                  && rootPos.see_ge(rootMoves[0].pv[0], KnightValueEg/2))
+              {
+                 int count = 0;
+                 for (auto& rm : rootMoves)
+                     count += rootPos.capture(rm.pv[0]) && rootPos.see_ge(rm.pv[0], KnightValueEg/2);
+                 if (count == 1)
+                     reductionFactor = 1.8;
+              }
+
               timeReduction = 1;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
-                     timeReduction *= 1.3;
+                     timeReduction *= reductionFactor;
               unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.51) / timeReduction;
 
               if (   rootMoves.size() == 1
