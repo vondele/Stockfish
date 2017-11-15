@@ -888,6 +888,7 @@ namespace {
   }
 
   int var1 = 0, var2 = 0;
+  TUNE(SetRange(-40,40),var1,var2);
 
 } // namespace
 
