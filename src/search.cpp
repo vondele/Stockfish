@@ -461,7 +461,7 @@ void Thread::search() {
 
               // if shuffling, use less time
               int r50=rootPos.rule50_count();
-              unstablePvFactor /= 1 + std::max(0.0, (r50-10)*(90-r50)/2000.0);
+              unstablePvFactor /= 1 + std::max(0.0, (r50-10)*(90-r50)/1200.0);
 
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
