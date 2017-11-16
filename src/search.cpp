@@ -457,11 +457,11 @@ void Thread::search() {
               double reductionFactor = 1.3;
               if (   lastBestMoveDepth * 3 < completedDepth
                   && rootPos.capture(rootMoves[0].pv[0])
-                  && rootPos.see_ge(rootMoves[0].pv[0], KnightValueMg/2))
+                  && rootPos.see_ge(rootMoves[0].pv[0], 2 * KnightValueMg / 3))
               {
                  int count = 0;
                  for (auto& rm : rootMoves)
-                     count += rootPos.capture(rm.pv[0]) && rootPos.see_ge(rm.pv[0], KnightValueMg/2);
+                     count += rootPos.capture(rm.pv[0]) && rootPos.see_ge(rm.pv[0], 2 * KnightValueMg / 3);
                  if (count == 1)
                      reductionFactor = 1.8;
               }
@@ -470,7 +470,7 @@ void Thread::search() {
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
                      timeReduction *= reductionFactor;
-              unstablePvFactor *=  (2.0 - 1.0 / std::pow(mainThread->previousTimeReduction, 0.51)) / timeReduction;
+              unstablePvFactor *=  (2.0 - 1.0 / std::pow(mainThread->previousTimeReduction, 0.77)) / timeReduction;
 
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
