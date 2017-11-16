@@ -457,11 +457,11 @@ void Thread::search() {
               double reductionFactor = 1.3;
               if (   lastBestMoveDepth * 3 < completedDepth
                   && rootPos.capture(rootMoves[0].pv[0])
-                  && rootPos.see_ge(rootMoves[0].pv[0], KnightValueEg))
+                  && rootPos.see_ge(rootMoves[0].pv[0], RookValueMg))
               {
                  int count = 0;
                  for (auto& rm : rootMoves)
-                     count += rootPos.capture(rm.pv[0]) && rootPos.see_ge(rm.pv[0], KnightValueEg);
+                     count += rootPos.capture(rm.pv[0]) && rootPos.see_ge(rm.pv[0], RookValueMg);
                  if (count == 1)
                      reductionFactor = 1.8;
               }
