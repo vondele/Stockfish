@@ -892,7 +892,7 @@ namespace {
 /// position based tempo
 Value Eval::tempo(const Position& pos)
 {
-   return Value(18 + 3 * pos.non_pawn_material() / (2 * KnightValueEg));
+   return Value(18 + 5 * pos.non_pawn_material() / (2 * KnightValueEg));
 }
 
 
