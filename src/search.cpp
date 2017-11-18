@@ -1429,9 +1429,9 @@ moves_loop: // When in check search starts from here
     if (!pos.capture(rootMoves[0].pv[0]))
        return false;
 
-    // Only try for Knight or better
+    // Only try for Queen or better
     Value pieceValue = PieceValue[MG][pos.piece_on(to_sq(rootMoves[0].pv[0]))];
-    if (pieceValue < RookValueMg)
+    if (pieceValue < QueenValueMg)
        return false;
 
     // SEE must return at least 2/3 of the value of the piece
