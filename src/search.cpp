@@ -1099,7 +1099,8 @@ moves_loop: // When in check search starts from here
         tte->save(posKey, value_to_tt(bestValue, ss->ply),
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  bestValue == DrawValue[pos.side_to_move()] ? depth / 2 : depth, bestMove, ss->staticEval, TT.generation());
+                  std::min(Depth(thisThread->selDepth - ss->ply), depth),
+                  bestMove, ss->staticEval, TT.generation());
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
