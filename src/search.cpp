@@ -307,13 +307,8 @@ void Thread::search() {
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
-
-  // When playing with strength handicap enable MultiPV search that we will
-  // use behind the scenes to retrieve a set of possible moves.
-  if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)4);
-
-  multiPV = std::min(multiPV, rootMoves.size());
+  bool TMmultiPV = false;
+  int scoreDiffMultiPV = -1;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
@@ -327,6 +322,16 @@ void Thread::search() {
           if (((rootDepth / ONE_PLY + rootPos.game_ply() + skipPhase[i]) / skipSize[i]) % 2)
               continue;
       }
+
+      multiPV = Options["MultiPV"];
+      // at low depth do a multiPV search
+      if (TMmultiPV && Time.elapsed() * 20 < Time.optimum())
+          multiPV = std::max(multiPV, (size_t)2);
+      // When playing with strength handicap enable MultiPV search that we will
+      // use behind the scenes to retrieve a set of possible moves.
+      if (skill.enabled())
+          multiPV = std::max(multiPV, (size_t)4);
+      multiPV = std::min(multiPV, rootMoves.size());
 
       // Age out PV variability metric
       if (mainThread)
@@ -453,11 +458,18 @@ void Thread::search() {
               // if the bestMove is stable over several iterations, reduce time for this move,
               // the longer the move has been stable, the more.
               // Use part of the gained time from a previous stable move for the current move.
+              if (multiPV>1) 
+                 scoreDiffMultiPV = rootMoves[0].score - rootMoves[1].score;
+
+              // switch MultiPV if it seems like we can do a quick move
+              TMmultiPV = (rootPos.checkers() || rootPos.capture(rootMoves[0].pv[0])) && lastBestMoveDepth * 5 < completedDepth ?
+                          true : false;
+
               timeReduction = 1;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
-                     timeReduction *= 1.3;
-              unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.51) / timeReduction;
+                     timeReduction *= scoreDiffMultiPV < 0 ? 1.3 : std::min(3.0, 1 + double(scoreDiffMultiPV) / PawnValueMg);
+              unstablePvFactor *=  std::pow(std::min(2.0, mainThread->previousTimeReduction), 0.51) / timeReduction;
 
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
