@@ -59,6 +59,8 @@ using namespace Search;
 
 namespace {
 
+  int var1 = 130, var2 = 100;
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
@@ -468,7 +470,9 @@ void Thread::search() {
               timeReduction = 1;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth && !thinkHard)
-                     timeReduction *= scoreDiffMultiPV < 0 ? 1.3 : std::min(3.0, 1 + double(scoreDiffMultiPV) / PawnValueMg);
+                     timeReduction *= scoreDiffMultiPV < 0 ?
+                                       var1 / 100.0
+                                     : std::min(3.0, 1 + (var2 / 100.0) * double(scoreDiffMultiPV) / PawnValueMg);
               unstablePvFactor *=  std::pow(std::min(2.0, mainThread->previousTimeReduction), 0.51) / timeReduction;
 
               if (   rootMoves.size() == 1
