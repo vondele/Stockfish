@@ -892,7 +892,7 @@ namespace {
 /// position based tempo
 Value Eval::tempo(const Position& pos)
 {
-   return Value(16 + 30 * std::max(VALUE_ZERO, pos.non_pawn_material() - EndgameLimit) / (AllValueMg - EndgameLimit));
+   return Value(14 + 30 * std::max(VALUE_ZERO, pos.non_pawn_material() - EndgameLimit) / (AllValueMg - EndgameLimit));
 }
 
 
