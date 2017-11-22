@@ -304,6 +304,7 @@ void Thread::search() {
       mainThread->failedLow = false;
       mainThread->bestMoveChanges = 0;
   }
+  drawIter = 0;
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
@@ -418,6 +419,11 @@ void Thread::search() {
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
       }
+
+      if (::pv_is_draw(rootPos))
+         drawIter++;
+      else
+         drawIter=0;
 
       // Have we found a "mate in x"?
       if (   Limits.mate
@@ -685,6 +691,7 @@ namespace {
     if (   !PvNode
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        && (pos.plies_from_null() % 2 == 0 || pos.plies_from_null() > thisThread->drawIter)
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
