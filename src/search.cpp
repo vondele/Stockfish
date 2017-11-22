@@ -685,6 +685,7 @@ namespace {
     if (   !PvNode
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  pos.plies_from_null() > depth / (4 * ONE_PLY)
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
