@@ -66,6 +66,8 @@ namespace {
   const int skipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   const int skipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
+  int NMPShift[] = {225, 225, 225, 225, 225, 225, 225, 225};
+
   // Razoring and futility margin based on depth
   // razor_margin[0] is unused as long as depth >= ONE_PLY in search
   const int razor_margin[] = { 0, 570, 603, 554 };
@@ -291,6 +293,7 @@ void Thread::search() {
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
+  Color us = rootPos.side_to_move();
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -443,7 +446,6 @@ void Thread::search() {
                                 bestValue - mainThread->previousScore };
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
 
-              Color us = rootPos.side_to_move();
               bool thinkHard =    DrawValue[us] == bestValue
                                && Limits.time[us] - Time.elapsed() > Limits.time[~us]
                                && ::pv_is_draw(rootPos);
@@ -684,7 +686,7 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + NMPShift[std::min(pos.plies_from_null(),7)]
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
