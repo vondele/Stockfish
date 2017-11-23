@@ -97,6 +97,7 @@ namespace {
   };
 
   Value DrawValue[COLOR_NB];
+  Value Contempt[COLOR_NB];
 
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode, bool skipEarlyPruning);
@@ -185,6 +186,13 @@ void Search::clear() {
 }
 
 
+/// Search::contempt calculates the dynamic contempt for given side
+
+Value Search::contempt(const Position& pos, Color c) {
+   return Contempt[c] * Material::probe(pos)->game_phase() / PHASE_MIDGAME;
+}
+
+
 /// MainThread::search() is called by the main thread when the program receives
 /// the UCI 'go' command. It searches from the root position and outputs the "bestmove".
 
@@ -201,9 +209,11 @@ void MainThread::search() {
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
 
-  int contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
-  DrawValue[ us] = VALUE_DRAW - Value(contempt);
-  DrawValue[~us] = VALUE_DRAW + Value(contempt);
+  int base_contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
+  Contempt[ us] =  Value(base_contempt);
+  Contempt[~us] = -Value(base_contempt);
+  DrawValue[ us] = VALUE_DRAW - contempt(rootPos, us);
+  DrawValue[~us] = VALUE_DRAW + contempt(rootPos, us);
 
   if (rootMoves.empty())
   {

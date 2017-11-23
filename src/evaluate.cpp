@@ -28,6 +28,7 @@
 #include "evaluate.h"
 #include "material.h"
 #include "pawns.h"
+#include "search.h"
 
 namespace {
 
@@ -833,7 +834,7 @@ namespace {
     score += pe->pawns_score();
 
     // Early exit if score is high
-    Value v = (mg_value(score) + eg_value(score)) / 2;
+    Value v = (mg_value(score) + eg_value(score)) / 2 + Search::contempt(pos, WHITE);
     if (abs(v) > LazyThreshold)
        return pos.side_to_move() == WHITE ? v : -v;
 
@@ -870,6 +871,8 @@ namespace {
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
     v /= int(PHASE_MIDGAME);
+
+    v += Search::contempt(pos, WHITE);
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)

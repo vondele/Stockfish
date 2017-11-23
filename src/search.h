@@ -100,6 +100,7 @@ extern LimitsType Limits;
 
 void init();
 void clear();
+Value contempt(const Position& pos, Color c);
 
 } // namespace Search
 
