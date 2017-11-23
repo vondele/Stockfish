@@ -892,7 +892,7 @@ namespace {
 /// position based tempo
 Value Eval::tempo(const Position& pos)
 {
-   return Value(26 - pos.game_ply() / 16);
+   return Value(std::max(10, 26 - pos.game_ply() / 16));
 }
 
 
