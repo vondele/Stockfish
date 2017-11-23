@@ -684,7 +684,8 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  pos.plies_from_null() > 4)
+        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  pos.plies_from_null() > 3)
     {
 
         assert(eval - beta >= 0);
