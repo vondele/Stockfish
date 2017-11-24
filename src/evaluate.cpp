@@ -865,14 +865,14 @@ namespace {
 
     score += evaluate_initiative(eg_value(score));
 
+    score += Eval::Contempt[WHITE];
+
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = evaluate_scale_factor(eg_value(score));
     v =  mg_value(score) * int(me->game_phase())
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
     v /= int(PHASE_MIDGAME);
-
-    v += Eval::contempt(me->game_phase(), WHITE);
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
@@ -938,9 +938,9 @@ std::string Eval::trace(const Position& pos) {
   return ss.str();
 }
 
-Value Eval::Contempt[COLOR_NB];
+Score Eval::Contempt[COLOR_NB];
 
-/// contempt() calculates the dynamic contempt for given side
-Value Eval::contempt(Phase gamePhase, Color c) {
-   return Eval::Contempt[c] * gamePhase / PHASE_MIDGAME;
+Value Eval::score_to_value(Score s, const Position& pos) {
+   Phase phase = Material::probe(pos)->game_phase();
+   return (mg_value(s) * phase + eg_value(s) * (PHASE_MIDGAME - phase)) / PHASE_MIDGAME;
 }

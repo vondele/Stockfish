@@ -53,9 +53,12 @@ namespace Tablebases {
 
 namespace TB = Tablebases;
 
+using namespace Search;
 using std::string;
 using Eval::evaluate;
-using namespace Search;
+using Eval::score_to_value;
+using Eval::Contempt;
+extern Score Eval::Contempt[COLOR_NB];
 
 namespace {
 
@@ -189,8 +192,6 @@ void Search::clear() {
 /// MainThread::search() is called by the main thread when the program receives
 /// the UCI 'go' command. It searches from the root position and outputs the "bestmove".
 
-extern Value Eval::Contempt[COLOR_NB];
-
 void MainThread::search() {
 
   if (Limits.perft)
@@ -205,12 +206,11 @@ void MainThread::search() {
   TT.new_search();
 
   int base_contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
-  Eval::Contempt[ us] =  Value(base_contempt);
-  Eval::Contempt[~us] = -Value(base_contempt);
+  Contempt[ us] =  make_score(base_contempt, 0);
+  Contempt[~us] = -Contempt[us];
 
-  Phase phase = Material::probe(rootPos)->game_phase();
-  DrawValue[ us] = VALUE_DRAW - Eval::contempt(phase, us);
-  DrawValue[~us] = VALUE_DRAW + Eval::contempt(phase, us);
+  DrawValue[ us] = VALUE_DRAW - score_to_value(Contempt[us], rootPos);
+  DrawValue[~us] = VALUE_DRAW + score_to_value(Contempt[us], rootPos);
 
   if (rootMoves.empty())
   {
