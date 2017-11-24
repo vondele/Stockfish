@@ -834,7 +834,7 @@ namespace {
     score += pe->pawns_score();
 
     // Early exit if score is high
-    Value v = (mg_value(score) + eg_value(score)) / 2 + Search::contempt(pos, WHITE);
+    Value v = (mg_value(score) + eg_value(score)) / 2;
     if (abs(v) > LazyThreshold)
        return pos.side_to_move() == WHITE ? v : -v;
 
@@ -872,7 +872,7 @@ namespace {
 
     v /= int(PHASE_MIDGAME);
 
-    v += Search::contempt(pos, WHITE);
+    v += Eval::contempt(me->game_phase(), WHITE);
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
@@ -936,4 +936,11 @@ std::string Eval::trace(const Position& pos) {
   ss << "\nTotal Evaluation: " << to_cp(v) << " (white side)\n";
 
   return ss.str();
+}
+
+Value Eval::Contempt[COLOR_NB];
+
+/// contempt() calculates the dynamic contempt for given side
+Value Eval::contempt(Phase gamePhase, Color c) {
+   return Eval::Contempt[c] * gamePhase / PHASE_MIDGAME;
 }
