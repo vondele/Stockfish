@@ -28,7 +28,6 @@
 #include "evaluate.h"
 #include "material.h"
 #include "pawns.h"
-#include "search.h"
 
 namespace {
 
