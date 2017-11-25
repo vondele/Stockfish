@@ -206,8 +206,8 @@ void MainThread::search() {
   TT.new_search();
 
   int base_contempt = Options["Contempt"] * PawnValueEg / 100; // From centipawns
-  // gradially reduce contempt when previousScore is between -2 and -1 base_contempt.
-  base_contempt = std::min(base_contempt, std::max(0, (int(previousScore) + 2 * base_contempt)));
+  // gradially reduce contempt when previousScore is between -2.5 and -1.5 base_contempt.
+  base_contempt = std::min(base_contempt, std::max(0, (int(previousScore) + 5 * base_contempt / 2)));
 
   Contempt[ us] =  make_score(base_contempt, 0);
   Contempt[~us] = -Contempt[us];
