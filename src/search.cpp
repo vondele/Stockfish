@@ -70,6 +70,7 @@ namespace {
   // razor_margin[0] is unused as long as depth >= ONE_PLY in search
   const int razor_margin[] = { 0, 570, 603, 554 };
   Value futility_margin(Depth d) { return Value(150 * d / ONE_PLY); }
+  Value nmp_margin(Depth d, int pliesFromNull);
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
@@ -684,8 +685,7 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY +
-            ((pos.plies_from_null() != 1 && pos.plies_from_null() != 3) ? 225 : 600)
+        &&  ss->staticEval + nmp_margin(depth, pos.plies_from_null()) >= beta
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
@@ -1387,6 +1387,15 @@ moves_loop: // When in check search starts from here
       }
   }
 
+  // compute the NMP margin based on depth and plies from the previous NMP
+  Value nmp_margin(Depth d, int pliesFromNull) {
+
+     const int params[2][2] = {{-200, 36}, {-600, 36}};
+
+     int recentNM = pliesFromNull == 1 || pliesFromNull == 3;
+
+     return Value(params[recentNM][0] + params[recentNM][1] * d / ONE_PLY);
+  }
 
   // update_stats() updates move sorting heuristics when a new quiet best move is found
 
