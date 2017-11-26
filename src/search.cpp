@@ -66,11 +66,14 @@ namespace {
   const int skipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   const int skipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
+
   // Razoring and futility margin based on depth
   // razor_margin[0] is unused as long as depth >= ONE_PLY in search
   const int razor_margin[] = { 0, 570, 603, 554 };
   Value futility_margin(Depth d) { return Value(150 * d / ONE_PLY); }
   Value nmp_margin(Depth d, int pliesFromNull);
+
+  int param00 = 0, param01 =0, param10 = 0, param11 = 0;  
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
@@ -1390,7 +1393,12 @@ moves_loop: // When in check search starts from here
   // compute the NMP margin based on depth and plies from the previous NMP
   Value nmp_margin(Depth d, int pliesFromNull) {
 
-     const int params[2][2] = {{-200, 36}, {-600, 36}};
+     int params[2][2] = {{-225, 36}, {-600, 36}};
+
+     params[0][0] += param00;
+     params[0][1] += param01;
+     params[1][0] += param10;
+     params[1][1] += param11;
 
      int recentNM = pliesFromNull == 1 || pliesFromNull == 3;
 
