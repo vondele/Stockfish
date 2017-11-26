@@ -74,6 +74,7 @@ namespace {
   Value nmp_margin(Depth d, int pliesFromNull);
 
   int param00 = 0, param01 =0, param10 = 0, param11 = 0;  
+  TUNE(SetRange(-60,60),param00,param10,SetRange(-20,20),param01,param11);
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
