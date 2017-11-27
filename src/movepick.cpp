@@ -222,14 +222,15 @@ Move MovePicker::next_move(bool skipQuiets) {
       cur = endBadCaptures;
       endMoves = generate<QUIETS>(pos, cur);
       score<QUIETS>();
-      partial_insertion_sort(cur, endMoves, -4000 * depth / ONE_PLY);
+      partial_insertion_sort(cur, endMoves, skipQuiets ? (15 - depth / ONE_PLY) * 32 : -4000 * depth / ONE_PLY);
       ++stage;
       /* fallthrough */
 
   case QUIET:
       while (    cur < endMoves
-             && (!skipQuiets || cur->value >= VALUE_ZERO))
+             && (!skipQuiets || cur->value >= (15 - depth / ONE_PLY) * 32))
       {
+
           move = *cur++;
 
           if (   move != ttMove
