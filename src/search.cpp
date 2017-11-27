@@ -685,7 +685,8 @@ namespace {
     if (   !PvNode
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY +
-            ((pos.plies_from_null() != 1 && pos.plies_from_null() != 3) ? 225 : 600)
+            ((pos.plies_from_null() != 1 && pos.plies_from_null() != 3) ? 225 :
+             ((eval == DrawValue[pos.side_to_move()] || beta == DrawValue[pos.side_to_move()]) ? 1000 : 600))
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
 
