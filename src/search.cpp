@@ -291,6 +291,7 @@ void Thread::search() {
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
+  Color us = rootPos.side_to_move();
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -420,7 +421,8 @@ void Thread::search() {
          lastBestMoveDepth = rootDepth;
       }
 
-      if (::pv_is_draw(rootPos))
+      if (   ::pv_is_draw(rootPos)
+          && (!Limits.use_time_management() || Limits.time[us] - Time.elapsed() >= Limits.time[~us]))
          drawIter++;
       else
          drawIter=0;
@@ -449,7 +451,6 @@ void Thread::search() {
                                 bestValue - mainThread->previousScore };
               int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
 
-              Color us = rootPos.side_to_move();
               bool thinkHard =    DrawValue[us] == bestValue
                                && Limits.time[us] - Time.elapsed() > Limits.time[~us]
                                && ::pv_is_draw(rootPos);
