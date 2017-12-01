@@ -67,6 +67,7 @@ namespace {
   const int skipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
   int NMPShift[] = {225, 225, 225, 225, 225, 225, 225, 225};
+  TUNE(SetRange(-800,1200),NMPShift);
 
   // Razoring and futility margin based on depth
   // razor_margin[0] is unused as long as depth >= ONE_PLY in search
