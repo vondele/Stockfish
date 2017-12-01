@@ -683,7 +683,8 @@ namespace {
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
-        &&  eval >= beta
+        &&  eval > beta
+        &&  (!ttHit || tte->depth() > depth - 12 * ONE_PLY)
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         &&  pos.non_pawn_material(pos.side_to_move()))
     {
