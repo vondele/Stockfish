@@ -65,8 +65,7 @@ namespace {
   // Sizes and phases of the skip-blocks, used for distributing search depths across the threads
   const int skipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   const int skipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
-
-  int NMPShift[] = {225, 225, 225, 225, 225, 225, 225, 225};
+  const int NMPShift[] = {185, 285, 215, 291, 283, 194, 170, 228};
 
   // Razoring and futility margin based on depth
   // razor_margin[0] is unused as long as depth >= ONE_PLY in search
