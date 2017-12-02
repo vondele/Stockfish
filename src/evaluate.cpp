@@ -785,10 +785,14 @@ namespace {
         if (pos.opposite_bishops())
         {
             // Endgame with opposite-colored bishops and no other pieces (ignoring pawns)
-            // is almost a draw, in case of KBP vs KB, it is even more a draw.
+            // is drawish especially with few pawns and small pawn difference.
             if (   pos.non_pawn_material(WHITE) == BishopValueMg
                 && pos.non_pawn_material(BLACK) == BishopValueMg)
-                return more_than_one(pos.pieces(PAWN)) ? ScaleFactor(31) : ScaleFactor(9);
+            {
+                int ps = pos.count<PAWN>( strongSide);
+                int pw = pos.count<PAWN>(~strongSide);
+                return ScaleFactor(7 + 10 * std::max(0, 1 + ps - pw - (ps + pw < 5)));
+            }
 
             // Endgame with opposite-colored bishops, but also other pieces. Still
             // a bit drawish, but not as drawish as with only the two bishops.
