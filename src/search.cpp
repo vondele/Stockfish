@@ -682,11 +682,11 @@ namespace {
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
-        &&  eval >= beta
+        &&  eval > beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
     {
 
-        assert(eval - beta >= 0);
+        assert(eval > beta);
 
         // Null move dynamic reduction based on depth and value
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
@@ -699,7 +699,7 @@ namespace {
                                             : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
         pos.undo_null_move();
 
-        if (nullValue >= beta)
+        if (nullValue > beta)
         {
             // Do not return unproven mate scores
             if (nullValue >= VALUE_MATE_IN_MAX_PLY)
@@ -712,8 +712,8 @@ namespace {
             Value v = depth-R < ONE_PLY ? qsearch<NonPV, false>(pos, ss, beta-1, beta)
                                         :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
 
-            if (v >= beta)
-                return nullValue;
+            if (v > beta)
+                return v;
         }
     }
 
