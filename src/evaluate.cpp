@@ -803,7 +803,8 @@ namespace {
             int  pawnDiff = ps - pw;
             bool fewPawns = ps + pw < 5;
             bool moreMaterial = pos.non_pawn_material() > 2 * BishopValueMg;
-            return ScaleFactor(2 + 15 * std::max(0, 1 + pawnDiff - fewPawns) + 30 * moreMaterial);
+            bool passers = more_than_one(pe->passed_pawns(strongSide));
+            return ScaleFactor(2 + 9 * std::max(0, 1 + pawnDiff - fewPawns) + 4 * passers + 30 * moreMaterial);
         }
         // Endings where weaker side can place his king in front of the opponent's
         // pawns are drawish.
