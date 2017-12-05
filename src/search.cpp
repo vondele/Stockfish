@@ -682,7 +682,7 @@ namespace {
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
-        &&  eval * (depth / ONE_PLY) > beta * (depth / ONE_PLY) + Value(50)
+        &&  eval * (depth / ONE_PLY) > beta * (depth / ONE_PLY) + Value(32)
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
     {
 
@@ -699,7 +699,7 @@ namespace {
                                             : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
         pos.undo_null_move();
 
-        if (nullValue >= beta)
+        if (nullValue * (depth / ONE_PLY) > beta * (depth / ONE_PLY) + Value(32))
         {
             // Do not return unproven mate scores
             if (nullValue >= VALUE_MATE_IN_MAX_PLY)
@@ -713,7 +713,7 @@ namespace {
                                         :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
 
             if (v >= beta)
-                return nullValue;
+                return v;
         }
     }
 
