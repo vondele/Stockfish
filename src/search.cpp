@@ -654,7 +654,7 @@ namespace {
                   ss->staticEval, TT.generation());
     }
 
-    if (!pos.non_pawn_material(pos.side_to_move()))
+    if (!pos.non_pawn_material(pos.side_to_move()) || (ss-1)->currentMove == MOVE_NULL)
         goto moves_loop;
 
     // Step 6. Razoring (skipped when in check)
@@ -681,7 +681,6 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  (ss-1)->currentMove != MOVE_NULL
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
     {
 
