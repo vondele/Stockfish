@@ -712,7 +712,7 @@ namespace {
             Value v = depth-R < ONE_PLY ? qsearch<NonPV, false>(pos, ss, beta-1, beta)
                                         :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
 
-            if (v > beta)
+            if (v >= beta)
                 return v;
         }
     }
