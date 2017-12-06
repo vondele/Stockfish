@@ -697,7 +697,7 @@ namespace {
                                             : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
         pos.undo_null_move();
 
-        if (nullValue >= beta)
+        if (nullValue >= beta + !beta)
         {
             // Do not return unproven mate scores
             if (nullValue >= VALUE_MATE_IN_MAX_PLY)
