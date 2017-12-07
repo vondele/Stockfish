@@ -62,6 +62,7 @@ public:
   Endgames endgames;
   size_t PVIdx;
   int selDepth;
+  int NMLock;
   std::atomic<uint64_t> nodes, tbHits;
 
   Position rootPos;

@@ -290,6 +290,7 @@ void Thread::search() {
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
+  NMLock = -MAX_PLY;
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -681,7 +682,8 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
+        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  thisThread->NMLock + 4 < ss->ply)
     {
 
         assert(eval - beta >= 0);
@@ -707,8 +709,11 @@ namespace {
                 return nullValue;
 
             // Do verification search at high depths
+            int NMLockOld = thisThread->NMLock;
+            thisThread->NMLock = ss->ply;
             Value v = depth-R < ONE_PLY ? qsearch<NonPV, false>(pos, ss, beta-1, beta)
                                         :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
+            thisThread->NMLock = NMLockOld;
 
             if (v >= beta)
                 return nullValue;
