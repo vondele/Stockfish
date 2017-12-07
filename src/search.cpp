@@ -681,6 +681,7 @@ namespace {
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
         &&  eval >= beta
+        &&  abs(beta) < VALUE_KNOWN_WIN
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
     {
 
@@ -698,21 +699,7 @@ namespace {
         pos.undo_null_move();
 
         if (nullValue >= beta)
-        {
-            // Do not return unproven mate scores
-            if (nullValue >= VALUE_MATE_IN_MAX_PLY)
-                nullValue = beta;
-
-            if (depth < 12 * ONE_PLY && abs(beta) < VALUE_KNOWN_WIN)
-                return nullValue;
-
-            // Do verification search at high depths
-            Value v = depth-R < ONE_PLY ? qsearch<NonPV, false>(pos, ss, beta-1, beta)
-                                        :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
-
-            if (v >= beta)
-                return nullValue;
-        }
+            return nullValue < VALUE_MATE_IN_MAX_PLY ? nullValue : beta ;
     }
 
     // Step 9. ProbCut (skipped when in check)
