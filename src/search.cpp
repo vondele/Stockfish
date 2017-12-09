@@ -693,12 +693,14 @@ namespace {
         ss->currentMove = MOVE_NULL;
         ss->contHistory = &thisThread->contHistory[NO_PIECE][0];
 
+        Value betaNull = beta + (beta == thisThread->rootMoves[thisThread->PVIdx].previousScore);
+
         pos.do_null_move(st);
-        Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV, false>(pos, ss+1, -beta, -beta+1)
-                                            : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
+        Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV, false>(pos, ss+1, -betaNull, -betaNull+1)
+                                            : - search<NonPV>(pos, ss+1, -betaNull, -betaNull+1, depth-R, !cutNode, true);
         pos.undo_null_move();
 
-        if (nullValue >= beta + (beta == thisThread->rootMoves[thisThread->PVIdx].previousScore))
+        if (nullValue >= betaNull)
             return nullValue < VALUE_MATE_IN_MAX_PLY ? nullValue : beta ;
     }
 
