@@ -698,7 +698,7 @@ namespace {
                                             : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
         pos.undo_null_move();
 
-        if (nullValue >= beta && nullValue != thisThread->rootMoves[thisThread->PVIdx].previousScore)
+        if (nullValue >= beta + (beta == thisThread->rootMoves[thisThread->PVIdx].previousScore))
             return nullValue < VALUE_MATE_IN_MAX_PLY ? nullValue : beta ;
     }
 
