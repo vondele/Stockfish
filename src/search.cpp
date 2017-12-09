@@ -562,11 +562,11 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->PVIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
+    Depth ttDepth = ttHit ? tte->depth() : DEPTH_ZERO;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
-        && ttHit
-        && tte->depth() >= depth
+        && ttDepth >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
@@ -654,7 +654,7 @@ namespace {
                   ss->staticEval, TT.generation());
     }
 
-    if (skipEarlyPruning || !pos.non_pawn_material(pos.side_to_move()))
+    if (skipEarlyPruning || !pos.non_pawn_material(pos.side_to_move()) || ttDepth + 7 * ONE_PLY < depth)
         goto moves_loop;
 
     // Step 6. Razoring (skipped when in check)
@@ -680,7 +680,7 @@ namespace {
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
     if (   !PvNode
-        &&  eval >= beta
+        &&  eval * (depth / ONE_PLY) >= beta * (depth / ONE_PLY) + Value(32)
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
     {
 
