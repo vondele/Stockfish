@@ -693,7 +693,7 @@ namespace {
         {
            Value nullValue = ss->staticEval - 2 * Eval::Tempo;
 
-           if (nullValue < beta)
+           if (nullValue < beta || eval - 2 * Eval::Tempo < beta)
                nullValue = qsearch<NonPV, false>(pos, ss, beta-1, beta);
 
            if (nullValue >= beta)
