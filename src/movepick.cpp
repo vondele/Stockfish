@@ -143,7 +143,7 @@ void MovePicker::score() {
                    + (*contHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    + (*contHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*contHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   + (pos.side_to_move()==WHITE ? 1 : -1) * mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)] - PSQT::psq[pos.moved_piece(m)][from_sq(m)]);
+                   + (pos.side_to_move()==WHITE ? 8 : -8) * mg_value(PSQT::psq[pos.moved_piece(m)][to_sq(m)] - PSQT::psq[pos.moved_piece(m)][from_sq(m)]); 
 
       else // Type == EVASIONS
       {
