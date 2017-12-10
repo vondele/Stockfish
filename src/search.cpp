@@ -689,29 +689,39 @@ namespace {
         // Null move dynamic reduction based on depth and value
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
-        ss->currentMove = MOVE_NULL;
-        ss->contHistory = &thisThread->contHistory[NO_PIECE][0];
-
-        pos.do_null_move(st);
-        Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV, false>(pos, ss+1, -beta, -beta+1)
-                                            : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
-        pos.undo_null_move();
-
-        if (nullValue >= beta)
+        if (depth - R < ONE_PLY)
         {
-            // Do not return unproven mate scores
-            if (nullValue >= VALUE_MATE_IN_MAX_PLY)
-                nullValue = beta;
+           Value nullValue = ss->staticEval - 2 * Eval::Tempo;
 
-            if (depth < 12 * ONE_PLY && abs(beta) < VALUE_KNOWN_WIN)
-                return nullValue;
+           if (nullValue < beta)
+               nullValue = qsearch<NonPV, false>(pos, ss, beta-1, beta);
 
-            // Do verification search at high depths
-            Value v = depth-R < ONE_PLY ? qsearch<NonPV, false>(pos, ss, beta-1, beta)
-                                        :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
+           if (nullValue >= beta)
+              return nullValue;
+        }
+        else
+        {
+           ss->currentMove = MOVE_NULL;
+           ss->contHistory = &thisThread->contHistory[NO_PIECE][0];
+           pos.do_null_move(st);
+           Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
+           pos.undo_null_move();
 
-            if (v >= beta)
-                return nullValue;
+           if (nullValue >= beta)
+           {
+               // Do not return unproven mate scores
+               if (nullValue >= VALUE_MATE_IN_MAX_PLY)
+                   nullValue = beta;
+
+               if (depth < 12 * ONE_PLY && abs(beta) < VALUE_KNOWN_WIN)
+                   return nullValue;
+
+               // Do verification search at high depths
+               Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
+
+               if (v >= beta)
+                   return nullValue;
+           }
         }
     }
 
@@ -1183,9 +1193,7 @@ moves_loop: // When in check search starts from here
                 bestValue = ttValue;
         }
         else
-            ss->staticEval = bestValue =
-            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
-                                             : -(ss-1)->staticEval + 2 * Eval::Tempo;
+            ss->staticEval = bestValue = evaluate(pos);
 
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
