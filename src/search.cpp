@@ -689,7 +689,7 @@ namespace {
         // Null move dynamic reduction based on depth and value
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
-        if (depth - R < ONE_PLY && ss->staticEval - 2 * Eval::Tempo >= beta && (!ttHit || tte->depth() <= depth / ONE_PLY ))
+        if (depth - R < ONE_PLY && ss->staticEval - 2 * Eval::Tempo >= beta && (!ttHit || tte->depth() <= ONE_PLY ))
            return ss->staticEval - 2 * Eval::Tempo;
 
         ss->currentMove = MOVE_NULL;
