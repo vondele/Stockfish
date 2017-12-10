@@ -689,6 +689,9 @@ namespace {
         // Null move dynamic reduction based on depth and value
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
+        if (!ttHit && depth - R < ONE_PLY && ss->staticEval - 2 * Eval::Tempo >= beta)
+           return ss->staticEval - 2 * Eval::Tempo;
+
         ss->currentMove = MOVE_NULL;
         ss->contHistory = &thisThread->contHistory[NO_PIECE][0];
 
