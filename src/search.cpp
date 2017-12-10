@@ -265,6 +265,8 @@ void MainThread::search() {
 
   previousScore = bestThread->rootMoves[0].score;
 
+  ::pv_is_draw(rootPos);
+
   // Send new PV when needed
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
@@ -275,6 +277,7 @@ void MainThread::search() {
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
+
 }
 
 
@@ -649,6 +652,9 @@ namespace {
         eval = ss->staticEval =
         (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
                                          : -(ss-1)->staticEval + 2 * Eval::Tempo;
+
+        if ((ss-1)->currentMove == MOVE_NULL) 
+           std::cout << "xxx " << pos.key() << "[label=" << (pos.side_to_move() == WHITE ? ss->staticEval : -ss->staticEval) << ",shape=" << (pos.side_to_move() == WHITE ? "ellipse]" : "box]") << std::endl;
 
         tte->save(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE,
                   ss->staticEval, TT.generation());
@@ -1183,9 +1189,13 @@ moves_loop: // When in check search starts from here
                 bestValue = ttValue;
         }
         else
+        {
             ss->staticEval = bestValue =
             (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
                                              : -(ss-1)->staticEval + 2 * Eval::Tempo;
+            if ((ss-1)->currentMove == MOVE_NULL) 
+               std::cout << "xxx " << pos.key() << "[label=" << (pos.side_to_move() == WHITE ? ss->staticEval : -ss->staticEval) << ",shape=" << (pos.side_to_move() == WHITE ? "ellipse]" : "box]") << std::endl;
+        }
 
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
@@ -1419,8 +1429,12 @@ moves_loop: // When in check search starts from here
     StateInfo st[MAX_PLY];
     auto& pv = pos.this_thread()->rootMoves[0].pv;
 
-    for (size_t i = 0; i < pv.size(); ++i)
+    for (size_t i = 0; i < pv.size(); ++i) {
+        Key prevKey = pos.key();
         pos.do_move(pv[i], st[i]);
+        Key nextKey = pos.key();
+        std::cout << "xxx " << prevKey << " -> " << nextKey << "[color=red,penwidth=3.0,fontcolor=red,label=" << UCI::move(pv[i], false) << "]" << std::endl;
+    }
 
     bool isDraw = pos.is_draw(pv.size());
 

@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -910,7 +911,10 @@ Score Eval::Contempt = SCORE_ZERO;
 
 Value Eval::evaluate(const Position& pos)
 {
-   return Evaluation<>(pos).value();
+   Value val = Evaluation<>(pos).value();
+
+   std::cout << "xxx " << pos.key() << "[label=" << (pos.side_to_move() == WHITE ? val : -val) << ",shape=" << (pos.side_to_move() == WHITE ? "ellipse]" : "box]") << std::endl;
+   return val;
 }
 
 /// trace() is like evaluate(), but instead of returning a value, it returns

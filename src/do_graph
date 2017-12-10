@@ -1,0 +1,1 @@
+cat inp - | ./stockfish | grep xxx | sed "s/xxx//g" | sort | uniq > t && cat header t footer > graph.dot && dot -Tsvg -o graph.svg graph.dot && eog graph.svg
