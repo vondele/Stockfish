@@ -657,6 +657,10 @@ namespace {
     if (skipEarlyPruning || !pos.non_pawn_material(pos.side_to_move()))
         goto moves_loop;
 
+    // local exploration
+    if (PvNode &&  depth > 8 * ONE_PLY)
+        search<PV>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, 5 * ONE_PLY, false, true);
+
     // Step 6. Razoring (skipped when in check)
     if (   !PvNode
         &&  depth < 4 * ONE_PLY
