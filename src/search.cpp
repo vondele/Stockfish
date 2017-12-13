@@ -658,8 +658,8 @@ namespace {
         goto moves_loop;
 
     // local exploration
-    if (PvNode &&  depth > 8 * ONE_PLY)
-        search<NonPV>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, 5 * ONE_PLY, false, true);
+    if (PvNode && depth > 8 * ONE_PLY)
+        search<NonPV>(pos, ss, -VALUE_INFINITE, VALUE_INFINITE, 4 * ONE_PLY, false, true);
 
     // Step 6. Razoring (skipped when in check)
     if (   !PvNode
