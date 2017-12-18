@@ -1079,6 +1079,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 /// Position::is_draw() tests whether the position is drawn by 50-move rule
 /// or by repetition. It does not detect stalemates.
 
+template<bool PvNode>
 bool Position::is_draw(int ply) const {
 
   if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size()))
@@ -1097,15 +1098,17 @@ bool Position::is_draw(int ply) const {
       stp = stp->previous->previous;
 
       // Return a draw score if a position repeats once earlier but strictly
-      // after the root, or repeats twice before or at the root.
+      // after the root, or repeats twice before or at the root, more when not PV.
       if (   stp->key == st->key
-          && ++cnt + (ply > i) == 2)
+          && ++cnt + (ply > i) == (PvNode ? 2 : 4))
           return true;
   }
 
   return false;
 }
 
+template bool Position::is_draw<false>(int) const;
+template bool Position::is_draw<true>(int) const;
 
 /// Position::flip() flips position with the white and black sides reversed. This
 /// is only useful for debugging e.g. for finding evaluation symmetry bugs.

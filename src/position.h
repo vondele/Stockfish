@@ -152,6 +152,7 @@ public:
   int game_ply() const;
   bool is_chess960() const;
   Thread* this_thread() const;
+  template<bool PvNode>
   bool is_draw(int ply) const;
   int rule50_count() const;
   Score psq_score() const;

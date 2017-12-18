@@ -530,7 +530,7 @@ namespace {
     if (!rootNode)
     {
         // Step 2. Check for aborted search and immediate draw
-        if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+        if (Threads.stop.load(std::memory_order_relaxed) || pos.is_draw<PvNode>(ss->ply) || ss->ply >= MAX_PLY)
             return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos) : VALUE_DRAW;
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
@@ -1149,7 +1149,7 @@ moves_loop: // When in check search starts from here
     moveCount = 0;
 
     // Check for an instant draw or if the maximum ply has been reached
-    if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+    if (pos.is_draw<PvNode>(ss->ply) || ss->ply >= MAX_PLY)
         return ss->ply >= MAX_PLY && !InCheck ? evaluate(pos) : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
@@ -1432,7 +1432,7 @@ moves_loop: // When in check search starts from here
     for (size_t i = 0; i < pv.size(); ++i)
         pos.do_move(pv[i], st[i]);
 
-    bool isDraw = pos.is_draw(pv.size());
+    bool isDraw = pos.is_draw<true>(pv.size());
 
     for (size_t i = pv.size(); i > 0; --i)
         pos.undo_move(pv[i-1]);
