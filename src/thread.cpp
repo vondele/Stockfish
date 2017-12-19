@@ -36,7 +36,6 @@ ThreadPool Threads; // Global object
 Thread::Thread(size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
 
   wait_for_search_finished();
-  clear(); // Zero-init histories (based on std::array)
 }
 
 
@@ -123,20 +122,20 @@ void Thread::idle_loop() {
 
 void ThreadPool::set(size_t requested) {
 
-  if (size() > 0)
-     main()->wait_for_search_finished();
+  if (size() > 0) { // destroy any existing thread(s)
+      main()->wait_for_search_finished();
 
-  while (size() > 0)
-      delete back(), pop_back();
+      while (size() > 0)
+          delete back(), pop_back();
+  }
 
-  if (requested > 0)
+  if (requested > 0) { // create new thread(s)
       push_back(new MainThread(0));
 
-  while (size() < requested)
-      push_back(new Thread(size()));
-
-  if (size() > 0)
-     clear();
+      while (size() < requested)
+          push_back(new Thread(size()));
+      clear();
+  }
 }
 
 /// ThreadPool::clear() sets threadPool data to initial values.
