@@ -548,6 +548,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     (ss+1)->ply = ss->ply + 1;
+    ss->pvDist = PvNode ? 0 : (ss-1)->pvDist + 1;
     ss->currentMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
     ss->contHistory = &thisThread->contHistory[NO_PIECE][0];
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
@@ -679,10 +680,10 @@ namespace {
         return eval;
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
-    if (   !PvNode
+    if (    ss->pvDist > 2
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
-		&& (ss->ply >= thisThread->nmp_ply || ss->ply % 2 == thisThread->pair))
+        && (ss->ply >= thisThread->nmp_ply || ss->ply % 2 == thisThread->pair))
     {
 
         assert(eval - beta >= 0);
