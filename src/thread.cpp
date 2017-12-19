@@ -143,12 +143,12 @@ void ThreadPool::set(size_t requested) {
 
 void ThreadPool::clear() {
 
-  for (Thread* th : Threads)
+  for (Thread* th : *this)
       th->clear();
 
-  Threads.main()->callsCnt = 0;
-  Threads.main()->previousScore = VALUE_INFINITE;
-  Threads.main()->previousTimeReduction = 1;
+  main()->callsCnt = 0;
+  main()->previousScore = VALUE_INFINITE;
+  main()->previousTimeReduction = 1;
 }
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
@@ -186,7 +186,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   // is shared by threads but is accessed in read-only mode.
   StateInfo tmp = setupStates->back();
 
-  for (Thread* th : Threads)
+  for (Thread* th : *this)
   {
       th->nodes = th->tbHits = 0;
       th->rootDepth = th->completedDepth = DEPTH_ZERO;
