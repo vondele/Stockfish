@@ -680,7 +680,7 @@ namespace {
         return eval;
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
-    if (    ss->pvDist > 2
+    if (   !PvNode
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && (ss->ply >= thisThread->nmp_ply || ss->ply % 2 == thisThread->pair))
@@ -775,7 +775,8 @@ moves_loop: // When in check search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     improving =   ss->staticEval >= (ss-2)->staticEval
             /* || ss->staticEval == VALUE_NONE Already implicit in the previous condition */
-               ||(ss-2)->staticEval == VALUE_NONE;
+               ||(ss-2)->staticEval == VALUE_NONE
+               || ss->pvDist < 2;
 
     singularExtensionNode =   !rootNode
                            &&  depth >= 8 * ONE_PLY
