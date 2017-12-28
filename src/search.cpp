@@ -365,6 +365,9 @@ void Thread::search() {
               if (Threads.stop)
                   break;
 
+              if (lastBestMove == rootMoves[0].pv[0])
+                  break;
+
               // When failing high/low give some update (without cluttering
               // the UI) before a re-search.
               if (   mainThread
