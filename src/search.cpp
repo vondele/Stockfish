@@ -289,8 +289,9 @@ void Thread::search() {
   for (int i = 4; i > 0; i--)
      (ss-i)->contHistory = &this->contHistory[NO_PIECE][0]; // Use as sentinel
 
-  bestValue = delta = alpha = -VALUE_INFINITE;
+  bestValue = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
+  delta = Value(18);
 
   if (mainThread)
   {
@@ -339,7 +340,6 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 5 * ONE_PLY)
           {
-              delta = Value(18);
               alpha = std::max(rootMoves[PVIdx].previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(rootMoves[PVIdx].previousScore + delta, VALUE_INFINITE);
           }
@@ -379,6 +379,7 @@ void Thread::search() {
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                  delta += delta / 4 + 5;
 
                   if (mainThread)
                   {
@@ -387,11 +388,20 @@ void Thread::search() {
                   }
               }
               else if (bestValue >= beta && lastBestMove != rootMoves[0].pv[0])
+              {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-              else
+                  delta += delta / 4 + 5;
+              }
+              else if (bestValue >= beta && lastBestMove == rootMoves[0].pv[0])
+              {
+                  delta += delta / 4 + 5;
                   break;
-
-              delta += delta / 4 + 5;
+              }
+              else
+              {
+                  delta = Value(18);
+                  break;
+              }
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
