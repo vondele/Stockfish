@@ -33,7 +33,14 @@ TranspositionTable TT; // Our global transposition table
 
 void TranspositionTable::resize(size_t mbSize) {
 
-  size_t newClusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
+  // mbSize rounded down to a multiple of 2 so that 16 bits of clusterCount
+  // are zero (assuming sizeof(Cluster) = 32).
+  // The minimum size of 2 Mb is enforced via the uci options.
+  size_t newClusterCount = (mbSize / 2) * 2 * 1024 * 1024 / sizeof(Cluster);
+  assert(newClusterCount & 0xFFFF == 0);
+
+  // store only the non-zero part, for faster index calculation on hashing keys.
+  newClusterCount = newClusterCount >> 16;
 
   if (newClusterCount == clusterCount)
       return;
@@ -41,7 +48,7 @@ void TranspositionTable::resize(size_t mbSize) {
   clusterCount = newClusterCount;
 
   free(mem);
-  mem = calloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1, 1);
+  mem = calloc((clusterCount << 16) * sizeof(Cluster) + CacheLineSize - 1, 1);
 
   if (!mem)
   {
