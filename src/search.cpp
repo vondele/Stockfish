@@ -404,7 +404,7 @@ void Thread::search() {
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
       }
 
-      if (!Threads.stop)
+      if (!Threads.stop && bestValue > alpha && bestValue < beta)
           completedDepth = rootDepth;
 
       if (rootMoves[0].pv[0] != lastBestMove) {
