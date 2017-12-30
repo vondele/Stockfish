@@ -146,8 +146,8 @@ void ThreadPool::clear() {
       th->clear();
 
   main()->callsCnt = 0;
-  main()->previousScore = VALUE_INFINITE;
-  main()->previousTimeReduction = 1;
+  previousScore = VALUE_INFINITE;
+  previousTimeReduction = 1;
 }
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
