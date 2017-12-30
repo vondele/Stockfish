@@ -390,9 +390,14 @@ void Thread::search() {
       }
 
       if (!Threads.stop)
+      {
+          std::lock_guard<Mutex> lock(Threads.mutex);
+          completedScore = rootMoves[0].score;
           completedDepth = rootDepth;
+      }
 
-      if (rootMoves[0].pv[0] != lastBestMove) {
+      if (rootMoves[0].pv[0] != lastBestMove)
+      {
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
       }
