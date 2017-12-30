@@ -448,7 +448,7 @@ void Thread::search() {
               // Use part of the gained time from a previous stable move for the current move.
               timeReduction = 1;
               for (int i : {3, 4, 5})
-                  if (lastBestMoveDepth * i < completedDepth && !thinkHard)
+                  if (lastBestMoveDepth * i < rootDepth && !thinkHard)
                      timeReduction *= 1.3;
               unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.51) / timeReduction;
 
