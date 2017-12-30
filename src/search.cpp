@@ -239,24 +239,11 @@ void MainThread::search() {
       Time.availableNodes += Limits.inc[us] - Threads.nodes_searched();
 
   // Check if there are threads with a better score than main thread
-  Thread* bestThread = this;
-  if (    Options["MultiPV"] == 1
-      && !Limits.depth
-      && !Skill(Options["Skill Level"]).enabled()
-      &&  rootMoves[0].pv[0] != MOVE_NONE)
-  {
-      for (Thread* th : Threads)
-      {
-          Depth depthDiff = th->completedDepth - bestThread->completedDepth;
-          Value scoreDiff = th->rootMoves[0].score - bestThread->rootMoves[0].score;
-
-          // Select the thread with the best score, always if it is a mate
-          if (    scoreDiff > 0
-              && (depthDiff >= 0 || th->rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY))
-              bestThread = th;
-      }
-  }
-
+  bool pickMain =   Options["MultiPV"] != 1
+                 || Limits.depth
+                 || Skill(Options["Skill Level"]).enabled()
+                 || rootMoves[0].pv[0] == MOVE_NONE;
+  Thread* bestThread = pickMain ? Threads.main() : Threads.best_thread();
   Threads.previousScore = bestThread->rootMoves[0].score;
 
   // Send new PV when needed

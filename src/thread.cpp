@@ -150,6 +150,25 @@ void ThreadPool::clear() {
   previousTimeReduction = 1;
 }
 
+/// ThreadPool::best_thread() finds the currently best thread
+
+Thread* ThreadPool::best_thread() {
+
+  // Check if there are threads with a better score than main thread
+  Thread* bestThread = main();
+  for (Thread* th : *this)
+  {
+      Depth depthDiff = th->completedDepth - bestThread->completedDepth;
+      Value scoreDiff = th->rootMoves[0].score - bestThread->rootMoves[0].score;
+
+      // Select the thread with the best score, always if it is a mate
+      if (    scoreDiff > 0
+          && (depthDiff >= 0 || th->rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY))
+          bestThread = th;
+  }
+  return bestThread;
+}
+
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
 
