@@ -146,8 +146,24 @@ void ThreadPool::clear() {
       th->clear();
 
   main()->callsCnt = 0;
-  main()->previousScore = VALUE_INFINITE;
-  main()->previousTimeReduction = 1;
+  previousScore = VALUE_INFINITE;
+  previousTimeReduction = 1;
+}
+
+/// ThreadPool::best_thread() finds the currently best thread.
+/// updates and reads to completedScore/Depth are done under a lock.
+
+Thread* ThreadPool::best_thread() {
+
+  std::lock_guard<Mutex> lock(mutex);
+  Thread* bestThread = main();
+  // Select the thread with the best score, depending on depth, always if it is a mate
+  for (Thread* th : *this)
+      if (    th->completedScore > bestThread->completedScore
+          && (   th->completedDepth >= bestThread->completedDepth
+              || th->completedScore >= VALUE_MATE_IN_MAX_PLY))
+          bestThread = th;
+  return bestThread;
 }
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
@@ -189,6 +205,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   {
       th->nodes = th->tbHits = 0;
       th->rootDepth = th->completedDepth = DEPTH_ZERO;
+      th->completedScore = -VALUE_INFINITE;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);
       th->nmp_ply = 0;

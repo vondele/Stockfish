@@ -63,10 +63,13 @@ public:
   size_t PVIdx;
   int selDepth, nmp_ply, pair;
   std::atomic<uint64_t> nodes, tbHits;
+  double bestMoveChanges;
+  bool failedLow;
 
   Position rootPos;
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth;
+  Value completedScore;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
@@ -83,9 +86,6 @@ struct MainThread : public Thread {
   void search() override;
   void check_time();
 
-  bool failedLow;
-  double bestMoveChanges, previousTimeReduction;
-  Value previousScore;
   int callsCnt;
 };
 
@@ -99,11 +99,15 @@ struct ThreadPool : public std::vector<Thread*> {
   void start_thinking(Position&, StateListPtr&, const Search::LimitsType&, bool = false);
   void clear();
   void set(size_t);
+  Thread* best_thread();
 
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
 
+  double previousTimeReduction;
+  Mutex mutex;
+  Value previousScore;
   std::atomic_bool stop, ponder, stopOnPonderhit;
 
 private:
