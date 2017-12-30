@@ -270,7 +270,12 @@ void Thread::search() {
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
+  Thread* bestThread = nullptr;
   double timeReduction = 1.0;
+
+  bool pickMain =   Options["MultiPV"] != 1
+                 || Limits.depth
+                 || Skill(Options["Skill Level"]).enabled();
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -398,12 +403,13 @@ void Thread::search() {
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
           Threads.stop = true;
 
-      if (!mainThread)
-          continue;
-
       // If skill level is enabled and time is up, pick a sub-optimal best move
-      if (skill.enabled() && skill.time_to_pick(rootDepth))
+      if (mainThread && skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
+
+      bestThread = pickMain ? Threads.main() : Threads.best_thread();
+      if (bestThread != this)
+          continue;
 
       // Do we have time for the next iteration? Can we stop searching now?
       if (Limits.use_time_management())
@@ -445,15 +451,13 @@ void Thread::search() {
       }
   }
 
-  if (!mainThread)
-      return;
-
-  Threads.previousTimeReduction = timeReduction;
-
   // If skill level is enabled, swap best PV line with the sub-optimal one
-  if (skill.enabled())
+  if (mainThread && skill.enabled())
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
+
+  if (bestThread == this)
+      Threads.previousTimeReduction = timeReduction;
 }
 
 
