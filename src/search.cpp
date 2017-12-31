@@ -394,10 +394,12 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  if (mainThread && rootMoves[0].pv[0] == lastBestMove)
-                      mainThread->maxTime = Time.optimum() / 2;
-                  else
-                      mainThread->maxTime = Time.maximum();
+                  if (mainThread) {
+                      if (rootMoves[0].pv[0] == lastBestMove)
+                          mainThread->maxTime = Time.optimum() / 2;
+                      else
+                          mainThread->maxTime = Time.maximum();
+                  }
               }
               else
                   break;
