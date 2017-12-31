@@ -396,7 +396,13 @@ void Thread::search() {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   if (mainThread) {
                       if (rootMoves[0].pv[0] == lastBestMove)
-                          mainThread->maxTime = Time.optimum() / 2;
+                      {
+                          const int F[] = { mainThread->failedLow,
+                                            bestValue - mainThread->previousScore };
+                          int improvingFactor = std::max(229, std::min(715, 357 + 119 * F[0] - 6 * F[1]));
+                          double unstablePvFactor = 1 + mainThread->bestMoveChanges;
+                          mainThread->maxTime = Time.optimum() * unstablePvFactor * improvingFactor / 628;
+                      }
                       else
                           mainThread->maxTime = Time.maximum();
                   }
