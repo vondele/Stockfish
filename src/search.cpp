@@ -394,7 +394,7 @@ void Thread::search() {
                       && multiPV == 1
                       && mainThread
                       && Limits.use_time_management()
-                      && Time.elapsed() > Time.optimum())
+                      && Time.elapsed() > Time.optimum() / 3)
                   {
                      fhExit = true;
                      break;
@@ -467,7 +467,7 @@ void Thread::search() {
 
               if (   rootMoves.size() == 1
                   || fhExit
-                  || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
+                  || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 600)
               {
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
