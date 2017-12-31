@@ -284,6 +284,7 @@ void Thread::search() {
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
+  bool fhExit = false;
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -329,6 +330,8 @@ void Thread::search() {
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
       for (RootMove& rm : rootMoves)
           rm.previousScore = rm.score;
+
+      fhExit = false;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (PVIdx = 0; PVIdx < multiPV && !Threads.stop; ++PVIdx)
@@ -386,8 +389,18 @@ void Thread::search() {
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
+              else if (bestValue >= beta) {
+                  if (   lastBestMove == rootMoves[0].pv[0]
+                      && multiPV == 1
+                      && mainThread
+                      && Limits.use_time_management()
+                      && Time.elapsed() > Time.optimum())
+                  {
+                     fhExit = true;
+                     break;
+                  }
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+              }
               else
                   break;
 
@@ -453,6 +466,7 @@ void Thread::search() {
               unstablePvFactor *=  std::pow(mainThread->previousTimeReduction, 0.51) / timeReduction;
 
               if (   rootMoves.size() == 1
+                  || fhExit
                   || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 628)
               {
                   // If we are allowed to ponder do not stop the search now but
