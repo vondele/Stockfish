@@ -323,7 +323,11 @@ void Thread::search() {
 
       // Age out PV variability metric
       if (mainThread)
-          mainThread->bestMoveChanges *= 0.505, mainThread->failedLow = false;
+      {
+          mainThread->bestMoveChanges *= 0.505;
+          mainThread->failedLow = false;
+          mainThread->maxTime = Time.maximum();
+      }
 
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -383,11 +387,16 @@ void Thread::search() {
                   if (mainThread)
                   {
                       mainThread->failedLow = true;
+                      mainThread->maxTime = Time.maximum();
                       Threads.stopOnPonderhit = false;
                   }
               }
               else if (bestValue >= beta)
+              {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+                  if (mainThread)
+                      mainThread->maxTime = Time.optimum();
+              }
               else
                   break;
 
@@ -1497,7 +1506,7 @@ moves_loop: // When in check search starts from here
     if (Threads.ponder)
         return;
 
-    if (   (Limits.use_time_management() && elapsed > Time.maximum())
+    if (   (Limits.use_time_management() && elapsed > maxTime)
         || (Limits.movetime && elapsed >= Limits.movetime)
         || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
             Threads.stop = true;
