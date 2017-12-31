@@ -394,7 +394,7 @@ void Thread::search() {
                       && multiPV == 1
                       && mainThread
                       && Limits.use_time_management()
-                      && Time.elapsed() > Time.optimum() / 3)
+                      && Time.elapsed() > Time.optimum() * 2 / 3)
                   {
                      fhExit = true;
                      break;
