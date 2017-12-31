@@ -386,8 +386,14 @@ void Thread::search() {
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
+              else if (bestValue >= beta) {
+                  if (   lastBestMove == rootMoves[0].pv[0]
+                      && multiPV == 1
+                      && Limits.use_time_management()
+                      && Time.elapsed() < Time.optimum() / 5)
+                      break;
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+              }
               else
                   break;
 
