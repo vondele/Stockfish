@@ -307,6 +307,7 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
+  int fhCount = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
@@ -373,6 +374,11 @@ void Thread::search() {
                   && Time.elapsed() > 3000)
                   sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
+              if (bestValue >= beta)
+                 fhCount++;
+              else
+                 fhCount=0;
+
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
               if (bestValue <= alpha)
@@ -386,7 +392,7 @@ void Thread::search() {
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
+              else if (bestValue >= beta && (lastBestMove != rootMoves[0].pv[0] || fhCount<=1))
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
               else
                   break;
