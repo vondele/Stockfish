@@ -392,7 +392,7 @@ void Thread::search() {
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta && (lastBestMove != rootMoves[0].pv[0] || fhCount<=1))
+              else if (bestValue >= beta && (lastBestMove != rootMoves[0].pv[0] || fhCount>1))
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
               else
                   break;
