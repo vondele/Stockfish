@@ -365,6 +365,19 @@ void Thread::search() {
               if (Threads.stop)
                   break;
 
+              if (   bestValue >= beta
+                  && lastBestMove == rootMoves[0].pv[0]
+                  && multiPV == 1
+                  && rootDepth + ONE_PLY < MAX_PLY
+                  && !(Limits.depth && mainThread && rootDepth / ONE_PLY + 1 > Limits.depth))
+              {
+                  beta = bestValue + delta;
+                  bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth + ONE_PLY, false, false);
+                  std::stable_sort(rootMoves.begin() + PVIdx, rootMoves.end());
+                  if (bestValue < beta)
+                      rootDepth += ONE_PLY;
+              }
+
               // When failing high/low give some update (without cluttering
               // the UI) before a re-search.
               if (   mainThread
