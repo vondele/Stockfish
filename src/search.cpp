@@ -294,7 +294,7 @@ void Thread::search() {
 
   if (mainThread)
   {
-      mainThread->failedLow = false;
+      mainThread->failedLow = 0;
       mainThread->bestMoveChanges = 0;
   }
 
@@ -323,7 +323,7 @@ void Thread::search() {
 
       // Age out PV variability metric
       if (mainThread)
-          mainThread->bestMoveChanges *= 0.505, mainThread->failedLow = false;
+          mainThread->bestMoveChanges *= 0.505, mainThread->failedLow = 0;
 
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -382,12 +382,16 @@ void Thread::search() {
 
                   if (mainThread)
                   {
-                      mainThread->failedLow = true;
+                      mainThread->failedLow = 1;
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
+              else if (bestValue >= beta) 
+              {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+                  if (mainThread)
+                      mainThread->failedLow = -1;
+              }
               else
                   break;
 
