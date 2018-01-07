@@ -371,7 +371,8 @@ void Thread::search() {
                   && rootDepth + ONE_PLY < MAX_PLY
                   && !(Limits.depth && mainThread && rootDepth / ONE_PLY + 1 > Limits.depth))
               {
-                  beta = bestValue + delta;
+                  alpha = std::max(rootMoves[0].score - Value(18),-VALUE_INFINITE);
+                  beta  = std::min(rootMoves[0].score + Value(18), VALUE_INFINITE);
                   bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth + ONE_PLY, false, false);
                   std::stable_sort(rootMoves.begin() + PVIdx, rootMoves.end());
                   if (bestValue < beta)
