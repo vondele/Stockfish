@@ -67,19 +67,18 @@ namespace {
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p)
-           : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch), countermove(cm),
+           : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch), ttMove(ttm), countermove(cm),
              killers{killers_p[0], killers_p[1]}, depth(d){
 
   assert(d > DEPTH_ZERO);
 
   stage = pos.checkers() ? EVASION : MAIN_SEARCH;
-  ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
-  stage += (ttMove == MOVE_NONE);
+  stage += !pos.pseudo_legal(ttMove);
 }
 
 /// MovePicker constructor for quiescence search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,  const CapturePieceToHistory* cph, Square s)
-           : pos(p), mainHistory(mh), captureHistory(cph), depth(d) {
+           : pos(p), mainHistory(mh), captureHistory(cph), ttMove(ttm), depth(d) {
 
   assert(d <= DEPTH_ZERO);
 
@@ -96,8 +95,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
       return;
   }
 
-  ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
-  stage += (ttMove == MOVE_NONE);
+  stage += !pos.pseudo_legal(ttMove);
 }
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE higher
@@ -108,8 +106,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
   assert(!pos.checkers());
 
   stage = PROBCUT;
-  ttMove =   ttm
-          && pos.pseudo_legal(ttm)
+  ttMove =   pos.pseudo_legal(ttm)
           && pos.capture(ttm)
           && pos.see_ge(ttm, threshold) ? ttm : MOVE_NONE;
 
@@ -183,8 +180,7 @@ Move MovePicker::next_move(bool skipQuiets) {
 
       ++stage;
       move = killers[0];  // First killer move
-      if (    move != MOVE_NONE
-          &&  move != ttMove
+      if (    move != ttMove
           &&  pos.pseudo_legal(move)
           && !pos.capture(move))
           return move;
@@ -193,8 +189,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case KILLERS:
       ++stage;
       move = killers[1]; // Second killer move
-      if (    move != MOVE_NONE
-          &&  move != ttMove
+      if (    move != ttMove
           &&  pos.pseudo_legal(move)
           && !pos.capture(move))
           return move;
@@ -203,8 +198,7 @@ Move MovePicker::next_move(bool skipQuiets) {
   case COUNTERMOVE:
       ++stage;
       move = countermove;
-      if (    move != MOVE_NONE
-          &&  move != ttMove
+      if (    move != ttMove
           &&  move != killers[0]
           &&  move != killers[1]
           &&  pos.pseudo_legal(move)
