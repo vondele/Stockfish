@@ -160,12 +160,12 @@ Move MovePicker::next_move(bool skipQuiets) {
       ++stage;
       return ttMove;
 
-  case CAPTURES_INIT:
+  case CAPTURES_INIT: case QSEARCH_RECAPTURES: case QCAPTURES_INIT: case PROBCUT_INIT:
       endBadCaptures = cur = moves;
       endMoves = generate<CAPTURES>(pos, cur);
       score<CAPTURES>();
       ++stage;
-      /* fallthrough */
+      return next_move(skipQuiets);
 
   case GOOD_CAPTURES:
       while (cur < endMoves)
@@ -257,13 +257,6 @@ Move MovePicker::next_move(bool skipQuiets) {
       }
       break;
 
-  case PROBCUT_INIT:
-      cur = moves;
-      endMoves = generate<CAPTURES>(pos, cur);
-      score<CAPTURES>();
-      ++stage;
-      /* fallthrough */
-
   case PROBCUT_CAPTURES:
       while (cur < endMoves)
       {
@@ -273,13 +266,6 @@ Move MovePicker::next_move(bool skipQuiets) {
               return move;
       }
       break;
-
-  case QCAPTURES_INIT:
-      cur = moves;
-      endMoves = generate<CAPTURES>(pos, cur);
-      score<CAPTURES>();
-      ++stage;
-      /* fallthrough */
 
   case QCAPTURES:
       while (cur < endMoves)
@@ -304,11 +290,6 @@ Move MovePicker::next_move(bool skipQuiets) {
       }
       break;
 
-  case QSEARCH_RECAPTURES:
-      cur = moves;
-      endMoves = generate<CAPTURES>(pos, cur);
-      ++stage;
-      /* fallthrough */
 
   case QRECAPTURES:
       while (cur < endMoves)
