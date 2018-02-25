@@ -731,7 +731,7 @@ namespace {
         assert(is_ok((ss-1)->currentMove));
 
         Value rbeta = std::min(beta + 200, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
+        MovePicker mp(pos, ttMove, std::max(VALUE_ZERO, rbeta - ss->staticEval), &thisThread->captureHistory);
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (pos.legal(move))
