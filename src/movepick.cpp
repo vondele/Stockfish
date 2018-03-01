@@ -154,7 +154,7 @@ Move MovePicker::next_move(bool skipQuiets) {
 
   Move move;
 
-  switch (stage) {
+top: switch (stage) {
 
   case MAIN_SEARCH: case EVASION: case QSEARCH: case PROBCUT:
       ++stage;
@@ -168,9 +168,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       endMoves = generate<CAPTURES>(pos, cur);
       score<CAPTURES>();
       ++stage;
-
-      // Rebranch at the top of the switch via a recursive call
-      return next_move(skipQuiets);
+      goto top;
 
   case GOOD_CAPTURES:
       while (cur < endMoves)
