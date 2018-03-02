@@ -131,6 +131,7 @@ public:
   Move next_move(bool skipQuiets = false);
 
 private:
+  template<bool best, typename Pred> Move next_best(Pred pred);
   template<GenType> void score();
   ExtMove* begin() { return cur; }
   ExtMove* end() { return endMoves; }
@@ -142,6 +143,7 @@ private:
   Move ttMove, countermove, killers[2];
   ExtMove *cur, *endMoves, *endBadCaptures;
   int stage;
+  Move move;
   Square recaptureSquare;
   Value threshold;
   Depth depth;
