@@ -145,14 +145,25 @@ void MovePicker::score() {
       }
 }
 
+template<typename Pred>
+void MovePicker::next_best(Pred pred) {
+      while (cur < endMoves)
+      {
+          move = pick_best(cur++, endMoves);
+          if (move != ttMove && pred()) 
+             return;
+      }
+      move = MOVE_NONE;
+      stage++; 
+      return;
+}
+
 /// next_move() is the most important method of the MovePicker class. It returns
 /// a new pseudo legal move every time it is called, until there are no more moves
 /// left. It picks the move with the biggest value from a list of generated moves
 /// taking care not to return the ttMove if it has already been searched.
 
 Move MovePicker::next_move(bool skipQuiets) {
-
-  Move move;
 
   switch (stage) {
 
@@ -259,13 +270,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       break;
 
   case PROBCUT_CAPTURES:
-      while (cur < endMoves)
-      {
-          move = pick_best(cur++, endMoves);
-          if (   move != ttMove
-              && pos.see_ge(move, threshold))
-              return move;
-      }
+      next_best([&](){return pos.see_ge(move, threshold);});
       break;
 
   case QCAPTURES:
@@ -275,6 +280,8 @@ Move MovePicker::next_move(bool skipQuiets) {
           if (move != ttMove)
               return move;
       }
+
+
       if (depth <= DEPTH_QS_NO_CHECKS)
           break;
       cur = moves;
