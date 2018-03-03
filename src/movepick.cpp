@@ -107,7 +107,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 template<GenType Type>
 void MovePicker::score() {
 
-  static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+  static_assert(Type == CAPTURES || Type == QUIETS, "Wrong type");
 
   for (auto& m : *this)
       if (Type == CAPTURES)
@@ -120,14 +120,6 @@ void MovePicker::score() {
                    + (*contHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*contHistory[3])[pos.moved_piece(m)][to_sq(m)];
 
-      else // Type == EVASIONS
-      {
-          if (pos.capture(m))
-              m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - Value(type_of(pos.moved_piece(m)));
-          else
-              m.value = (*mainHistory)[pos.side_to_move()][from_to(m)] - ButterflyHistory::Max;
-      }
 }
 
 /// pick() returns the next (best) move satisfying a predicate function
@@ -229,12 +221,11 @@ again:
   case EVASION_INIT:
       cur = moves;
       endMoves = generate<EVASIONS>(pos, cur);
-      score<EVASIONS>();
       ++stage;
       /* fallthrough */
 
   case EVASION:
-      return pick<Best>(Any);
+      return pick<Next>(Any);
 
   case PROBCUT:
       return pick<Best>([&](){ return pos.see_ge(move, threshold); });

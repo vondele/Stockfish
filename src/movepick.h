@@ -65,7 +65,6 @@ public:
 template <typename T, int W, int D, int Size, int... Sizes>
 struct Stats : public std::array<Stats<T, W, D, Sizes...>, Size>
 {
-  static const int Max = W * D;
 
   T* get() { return this->at(0).get(); }
 
