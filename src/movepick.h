@@ -49,7 +49,7 @@ public:
   void operator<<(int bonus) {
 
     assert(abs(bonus) <= D); // Ensure range is [-W * D, W * D]
-    assert(abs(W * D) < std::numeric_limits<T>::max()); // Ensure we don't overflow
+    assert(W * D < std::numeric_limits<T>::max()); // Ensure we don't overflow
 
     entry += bonus * W - entry * abs(bonus) / D;
 
@@ -65,6 +65,8 @@ public:
 template <typename T, int W, int D, int Size, int... Sizes>
 struct Stats : public std::array<Stats<T, W, D, Sizes...>, Size>
 {
+  static const int Max = W * D;
+
   T* get() { return this->at(0).get(); }
 
   void fill(const T& v) {
@@ -120,7 +122,7 @@ public:
   Move next_move(bool skipQuiets = false);
 
 private:
-  template<bool best, typename Pred> Move next_best(Pred pred);
+  template<int Best, typename Pred> Move pick(Pred);
   template<GenType> void score();
   ExtMove* begin() { return cur; }
   ExtMove* end() { return endMoves; }
