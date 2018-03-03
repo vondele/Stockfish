@@ -62,7 +62,10 @@ struct Entry {
   int16_t value;
   uint8_t factor[COLOR_NB];
   Phase gamePhase;
+  char padding[Is64Bit ? 24 : 4];
 };
+
+static_assert(sizeof(Entry) % 32 == 0, "Material::Entry not padded properly.");
 
 typedef HashTable<Entry, 8192> Table;
 
