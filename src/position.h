@@ -125,6 +125,7 @@ public:
   bool advanced_pawn_push(Move m) const;
   Piece moved_piece(Move m) const;
   Piece captured_piece() const;
+  Value captured_value(Move m) const;
 
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
@@ -363,6 +364,13 @@ inline bool Position::capture(Move m) const {
   assert(is_ok(m));
   // Castling is encoded as "king captures rook"
   return (!empty(to_sq(m)) && type_of(m) != CASTLING) || type_of(m) == ENPASSANT;
+}
+
+inline Value Position::captured_value(Move m) const {
+  return type_of(m) == NORMAL    ? PieceValue[MG][piece_on(to_sq(m))] :
+         type_of(m) == ENPASSANT ? PieceValue[MG][PAWN] :
+         type_of(m) == PROMOTION ? PieceValue[MG][piece_on(to_sq(m))] - PieceValue[MG][PAWN] + PieceValue[MG][promotion_type(m)]
+                                 : VALUE_ZERO;
 }
 
 inline Piece Position::captured_piece() const {
