@@ -86,7 +86,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
   stage = pos.checkers() ? EVASION : QSEARCH;
   ttMove =    ttm
            && pos.pseudo_legal(ttm)
-           && (depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare) ? ttm : MOVE_NONE;
+           && (depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare  || type_of(ttm) == PROMOTION) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
 }
 
@@ -260,7 +260,7 @@ Move MovePicker::next_move(bool skipQuiets) {
       {
           move = pick_best(cur++, endMoves);
           if (   move != ttMove
-              && (depth > DEPTH_QS_RECAPTURES || to_sq(move) == recaptureSquare))
+              && (depth > DEPTH_QS_RECAPTURES || to_sq(move) == recaptureSquare || type_of(move) == PROMOTION))
               return move;
       }
       if (depth <= DEPTH_QS_NO_CHECKS)
