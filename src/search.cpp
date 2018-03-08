@@ -654,7 +654,7 @@ namespace {
     if (inCheck)
     {
         ss->staticEval = eval = VALUE_NONE;
-        improving = true;
+        improving = false;
         goto moves_loop;
     }
     else if (ttHit)
