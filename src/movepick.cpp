@@ -27,10 +27,10 @@ namespace {
   enum PickType { Next, Best };
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, SPECIALS, QUIET_INIT, QUIET, BAD_CAPTURE,
+    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, SPECIALS, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
-    QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
+    QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK
   };
 
   const auto Any = [](){ return true; }; // Helper argument used with pick()
@@ -187,10 +187,6 @@ again:
                                   &&  pos.pseudo_legal(move)
                                   && !pos.capture(move); }))
           return move;
-      ++stage;
-      /* fallthrough */
-
-  case QUIET_INIT:
       cur = endBadCaptures;
       endMoves = generate<QUIETS>(pos, cur);
       score<QUIETS>();
@@ -232,12 +228,8 @@ again:
       // If we didn't find any move and we don't have to try checks
       // then we have finished.
       if (depth != DEPTH_QS_CHECKS)
-          break;
+          return MOVE_NONE;
 
-      ++stage;
-      /* fallthrough */
-
-  case QCHECK_INIT:
       cur = moves;
       endMoves = generate<QUIET_CHECKS>(pos, cur);
       ++stage;
@@ -245,10 +237,8 @@ again:
 
   case QCHECK:
       return pick<Next>(Any);
-
-  default:
-      assert(false);
   }
 
-  return MOVE_NONE;
+  assert(false);
+  return MOVE_NONE; // Silence warnings
 }
