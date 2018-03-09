@@ -27,7 +27,7 @@ namespace {
   enum PickType { Next, Best };
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, KILLER0, KILLER1, COUNTERMOVE, QUIET_INIT, QUIET, BAD_CAPTURE,
+    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, SPECIALS, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
@@ -63,7 +63,7 @@ namespace {
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p)
            : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch),
-             specials{killers_p[0], killers_p[1], cm}, depth(d){
+             specials{killers_p[0], 0, killers_p[1], 0, cm, 0}, depth(d){
 
   assert(d > DEPTH_ZERO);
 
@@ -177,23 +177,17 @@ again:
       if (pick<Best>([&](){ return  pos.see_ge(move, Value(-55 * (cur-1)->value / 1024))
                                   ? true : (*endBadCaptures++ = move, false); }))
           return move;
+      cur = &specials[0];
+      endMoves = cur + 2 + (cur[2].move != cur[0].move && cur[2].move != cur[1].move);
       ++stage;
-
-      //if the countermove is the same as a killer, skip it
-      if ((specials[2] == specials[0]) || (specials[2] == specials[1]))
-         specials[2] = MOVE_NONE;
       /* fallthrough */
 
-  case KILLER0: case KILLER1: case COUNTERMOVE:
-      while ( stage <= COUNTERMOVE)
-      {
-          move = specials[stage++ - KILLER0];
-          if (    move != MOVE_NONE
-              &&  move != ttMove
-              &&  pos.pseudo_legal(move)
-              && !pos.capture(move))
-              return move;
-      }
+  case SPECIALS:
+      if (pick<Next>([&](){ return    move != MOVE_NONE
+                                  &&  pos.pseudo_legal(move)
+                                  && !pos.capture(move); }))
+          return move;
+      ++stage;
       /* fallthrough */
 
   case QUIET_INIT:
