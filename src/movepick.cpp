@@ -27,7 +27,7 @@ namespace {
   enum PickType { Next, Best };
 
   enum Stages {
-    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, SPECIALS, QUIET, BAD_CAPTURE,
+    MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, SPECIAL, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
     PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK
@@ -63,7 +63,7 @@ namespace {
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move* specials_p)
            : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch),
-             specials{specials_p[KILLER0], 0, specials_p[KILLER1], 0, specials_p[COUNTERMOVE], 0}, depth(d){
+             specials{specials_p[KILLER0], specials_p[KILLER1], specials_p[COUNTERMOVE]}, depth(d){
 
   assert(d > DEPTH_ZERO);
 
@@ -177,13 +177,18 @@ again:
       if (pick<Best>([&](){ return  pos.see_ge(move, Value(-55 * (cur-1)->value / 1024))
                                   ? true : (*endBadCaptures++ = move, false); }))
           return move;
-      cur = &specials[KILLER0];
-      endMoves = cur + 2 + (   cur[COUNTERMOVE].move != cur[KILLER0].move
-                            && cur[COUNTERMOVE].move != cur[KILLER1].move);
+
+      // make specials available
+      endMoves = cur = endBadCaptures;
+      *endMoves++ = specials[KILLER0];
+      *endMoves++ = specials[KILLER1];
+      if (   specials[COUNTERMOVE] != specials[KILLER0]
+          && specials[COUNTERMOVE] != specials[KILLER1])
+          *endMoves++ = specials[COUNTERMOVE];
       ++stage;
       /* fallthrough */
 
-  case SPECIALS:
+  case SPECIAL:
       if (pick<Next>([&](){ return    move != MOVE_NONE
                                   &&  pos.pseudo_legal(move)
                                   && !pos.capture(move); }))
