@@ -81,6 +81,9 @@ struct Stats<T, W, D, Size> : public std::array<StatsEntry<T, W, D>, Size> {
 /// Different tables use different W/D parameter, name them to ease readibility
 enum StatsParams { W2 = 2, W32 = 32, D324 = 324, D936 = 936, NOT_USED = 0 };
 
+/// Differt special quiet moves
+enum SpecialType { KILLER0, KILLER1, COUNTERMOVE };
+
 /// ButterflyHistory records how often quiet moves have been successful or
 /// unsuccessful during the current search, and is used for reduction and move
 /// ordering decisions. It uses 2 tables (one for each color) indexed by
@@ -116,7 +119,7 @@ public:
   MovePicker& operator=(const MovePicker&) = delete;
   MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
   MovePicker(const Position&, Move, Depth, const ButterflyHistory*,  const CapturePieceToHistory*, Square);
-  MovePicker(const Position&, Move, Depth, const ButterflyHistory*, const CapturePieceToHistory*, const PieceToHistory**, Move, Move*);
+  MovePicker(const Position&, Move, Depth, const ButterflyHistory*, const CapturePieceToHistory*, const PieceToHistory**, Move*);
   Move next_move(bool skipQuiets = false);
 
 private:

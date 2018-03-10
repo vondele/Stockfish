@@ -61,9 +61,9 @@ namespace {
 
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p)
+                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move* specials_p)
            : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch),
-             specials{killers_p[0], 0, killers_p[1], 0, cm, 0}, depth(d){
+             specials{specials_p[KILLER0], 0, specials_p[KILLER1], 0, specials_p[COUNTERMOVE], 0}, depth(d){
 
   assert(d > DEPTH_ZERO);
 
@@ -177,8 +177,9 @@ again:
       if (pick<Best>([&](){ return  pos.see_ge(move, Value(-55 * (cur-1)->value / 1024))
                                   ? true : (*endBadCaptures++ = move, false); }))
           return move;
-      cur = &specials[0];
-      endMoves = cur + 2 + (cur[2].move != cur[0].move && cur[2].move != cur[1].move);
+      cur = &specials[KILLER0];
+      endMoves = cur + 2 + (   cur[COUNTERMOVE].move != cur[KILLER0].move
+                            && cur[COUNTERMOVE].move != cur[KILLER1].move);
       ++stage;
       /* fallthrough */
 
@@ -196,9 +197,9 @@ again:
 
   case QUIET:
       if (   !skipQuiets
-          && pick<Next>([&](){ return   move != specials[0]
-                                     && move != specials[1]
-                                     && move != specials[2]; }))
+          && pick<Next>([&](){ return   move != specials[KILLER0]
+                                     && move != specials[KILLER1]
+                                     && move != specials[COUNTERMOVE]; }))
           return move;
       cur = moves, endMoves = endBadCaptures; // Point to beginning and end of bad captures
       ++stage;
