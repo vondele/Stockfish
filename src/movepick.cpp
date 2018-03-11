@@ -185,11 +185,12 @@ again:
       if (   specials[COUNTERMOVE] != specials[KILLER0]
           && specials[COUNTERMOVE] != specials[KILLER1])
           *endMoves++ = specials[COUNTERMOVE];
+      score<QUIETS>();
       ++stage;
       /* fallthrough */
 
   case SPECIAL:
-      if (pick<Next>([&](){ return    move != MOVE_NONE
+      if (pick<Best>([&](){ return    move != MOVE_NONE
                                   &&  pos.pseudo_legal(move)
                                   && !pos.capture(move); }))
           return move;
