@@ -25,10 +25,10 @@
 namespace {
 
   enum Stages {
-    MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, KILLER0, KILLER1, COUNTERMOVE, QUIET_INIT, QUIET, BAD_CAPTURES,
-    EVASION, EVASIONS_INIT, ALL_EVASIONS,
-    PROBCUT, PROBCUT_CAPTURES_INIT, PROBCUT_CAPTURES,
-    QSEARCH, QCAPTURES_INIT, QCAPTURES, QCHECKS
+    MAIN_SEARCH, GOOD_CAPTURES, KILLER0, KILLER1, COUNTERMOVE, QUIET_INIT, QUIET, BAD_CAPTURES,
+    IN_CHECK, CHECK_EVASIONS,
+    PROBCUT, PROBCUT_CAPTURES,
+    QSEARCH, QCAPTURES, QCHECKS
   };
 
   // partial_insertion_sort() sorts moves in descending order up to and including
@@ -65,34 +65,34 @@ namespace {
 /// ordering is at the current node.
 
 /// MovePicker constructor for the main search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
+MovePicker::MovePicker(const Position& p, Move& move, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p)
            : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch),
              refutations{killers_p[0], killers_p[1], cm}, depth(d){
 
   assert(d > DEPTH_ZERO);
 
-  stage = pos.checkers() ? EVASION : MAIN_SEARCH;
+  stage = pos.checkers() ? IN_CHECK : MAIN_SEARCH;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
-  stage += (ttMove == MOVE_NONE);
+  move = ttMove ? ttMove : next_move(false);
 }
 
 /// MovePicker constructor for quiescence search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,  const CapturePieceToHistory* cph, Square s)
+MovePicker::MovePicker(const Position& p, Move& move, Move ttm, Depth d, const ButterflyHistory* mh,  const CapturePieceToHistory* cph, Square s)
            : pos(p), mainHistory(mh), captureHistory(cph), recaptureSquare(s), depth(d) {
 
   assert(d <= DEPTH_ZERO);
 
-  stage = pos.checkers() ? EVASION : QSEARCH;
+  stage = pos.checkers() ? IN_CHECK : QSEARCH;
   ttMove =    ttm
            && pos.pseudo_legal(ttm)
            && (depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare) ? ttm : MOVE_NONE;
-  stage += (ttMove == MOVE_NONE);
+  move = ttMove ? ttMove : next_move(false);
 }
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE higher
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
+MovePicker::MovePicker(const Position& p, Move& move, Move ttm, Value th, const CapturePieceToHistory* cph)
            : pos(p), captureHistory(cph), threshold(th) {
 
   assert(!pos.checkers());
@@ -102,7 +102,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
           && pos.pseudo_legal(ttm)
           && pos.capture(ttm)
           && pos.see_ge(ttm, threshold) ? ttm : MOVE_NONE;
-  stage += (ttMove == MOVE_NONE);
+  move = ttMove ? ttMove : next_move(false);
 }
 
 /// score() assigns a numerical value to each move in a list, used for sorting.
@@ -143,27 +143,19 @@ Move MovePicker::next_move(bool skipQuiets) {
 
   Move move;
 
-begin_switch:
-
+top:
   switch (stage) {
 
   case MAIN_SEARCH:
-  case EVASION:
-  case QSEARCH:
   case PROBCUT:
-      ++stage;
-      return ttMove;
-
-  case CAPTURES_INIT:
-  case PROBCUT_CAPTURES_INIT:
-  case QCAPTURES_INIT:
+  case QSEARCH:
       endBadCaptures = cur = moves;
       endMoves = generate<CAPTURES>(pos, cur);
       score<CAPTURES>();
       ++stage;
 
       // Rebranch at the top of the switch
-      goto begin_switch;
+      goto top;
 
   case GOOD_CAPTURES:
       while (cur < endMoves)
@@ -227,23 +219,23 @@ begin_switch:
   case BAD_CAPTURES:
       if (cur < endBadCaptures)
           return *cur++;
-      break;
+      return MOVE_NONE;
 
-  case EVASIONS_INIT:
+  case IN_CHECK:
       cur = moves;
       endMoves = generate<EVASIONS>(pos, cur);
       score<EVASIONS>();
       ++stage;
       /* fallthrough */
 
-  case ALL_EVASIONS:
+  case CHECK_EVASIONS:
       while (cur < endMoves)
       {
           move = pick_best(cur++, endMoves);
           if (move != ttMove)
               return move;
       }
-      break;
+      return MOVE_NONE;
 
   case PROBCUT_CAPTURES:
       while (cur < endMoves)
@@ -253,7 +245,7 @@ begin_switch:
               && pos.see_ge(move, threshold))
               return move;
       }
-      break;
+      return MOVE_NONE;
 
   case QCAPTURES:
       while (cur < endMoves)
@@ -264,7 +256,7 @@ begin_switch:
               return move;
       }
       if (depth <= DEPTH_QS_NO_CHECKS)
-          break;
+          return MOVE_NONE;
       cur = moves;
       endMoves = generate<QUIET_CHECKS>(pos, cur);
       ++stage;
@@ -277,11 +269,10 @@ begin_switch:
           if (move != ttMove)
               return move;
       }
-      break;
+      return MOVE_NONE;
 
   default:
       assert(false);
+      return MOVE_NONE;
   }
-
-  return MOVE_NONE;
 }

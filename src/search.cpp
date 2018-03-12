@@ -767,11 +767,12 @@ namespace {
         assert(is_ok((ss-1)->currentMove));
 
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
+        MovePicker mp(pos, move, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
 
-        while (  (move = mp.next_move()) != MOVE_NONE
+        while (   move != MOVE_NONE
                && probCutCount < 3)
+        {
             if (pos.legal(move))
             {
                 probCutCount++;
@@ -795,6 +796,8 @@ namespace {
                 if (value >= rbeta)
                     return value;
             }
+            move = mp.next_move();
+        }
     }
 
     // Step 11. Internal iterative deepening (skipped when in check)
@@ -815,7 +818,7 @@ moves_loop: // When in check, search starts from here
     const PieceToHistory* contHist[] = { (ss-1)->contHistory, (ss-2)->contHistory, nullptr, (ss-4)->contHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory, contHist, countermove, ss->killers);
+    MovePicker mp(pos, move, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory, contHist, countermove, ss->killers);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
 
     singularExtensionNode =   !rootNode
@@ -831,19 +834,19 @@ moves_loop: // When in check, search starts from here
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move(skipQuiets)) != MOVE_NONE)
+    while (move != MOVE_NONE)
     {
       assert(is_ok(move));
 
       if (move == excludedMove)
-          continue;
+          goto next;
 
       // At root obey the "searchmoves" option and skip moves not listed in Root
       // Move List. As a consequence any illegal move is also skipped. In MultiPV
       // mode we also skip PV moves which have been already searched.
       if (rootNode && !std::count(thisThread->rootMoves.begin() + thisThread->PVIdx,
                                   thisThread->rootMoves.end(), move))
-          continue;
+          goto next;
 
       ss->moveCount = ++moveCount;
 
@@ -902,7 +905,7 @@ moves_loop: // When in check, search starts from here
               if (moveCountPruning)
               {
                   skipQuiets = true;
-                  continue;
+                  goto next;
               }
 
               // Reduced depth of the next LMR search
@@ -912,23 +915,23 @@ moves_loop: // When in check, search starts from here
               if (   lmrDepth < 3
                   && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
                   && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
-                  continue;
+                  goto next;
 
               // Futility pruning: parent node
               if (   lmrDepth < 7
                   && !inCheck
                   && ss->staticEval + 256 + 200 * lmrDepth <= alpha)
-                  continue;
+                  goto next;
 
               // Prune moves with negative SEE
               if (   lmrDepth < 8
                   && !pos.see_ge(move, Value(-35 * lmrDepth * lmrDepth)))
-                  continue;
+                  goto next;
           }
           else if (    depth < 7 * ONE_PLY
                    && !extension
                    && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY)))
-                  continue;
+                  goto next;
       }
 
       // Speculative prefetch as early as possible
@@ -938,7 +941,7 @@ moves_loop: // When in check, search starts from here
       if (!rootNode && !pos.legal(move))
       {
           ss->moveCount = --moveCount;
-          continue;
+          goto next;
       }
 
       if (move == ttMove && captureOrPromotion)
@@ -1098,6 +1101,9 @@ moves_loop: // When in check, search starts from here
           else if (!captureOrPromotion && quietCount < 64)
               quietsSearched[quietCount++] = move;
       }
+
+   next:
+      move = mp.next_move(skipQuiets);
     }
 
     // The following condition would detect a stop only after move loop has been
@@ -1255,10 +1261,11 @@ moves_loop: // When in check, search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    MovePicker mp(pos, ttMove, depth, &pos.this_thread()->mainHistory, &pos.this_thread()->captureHistory, to_sq((ss-1)->currentMove));
+    MovePicker mp(pos, move, ttMove, depth, &pos.this_thread()->mainHistory,
+                  &pos.this_thread()->captureHistory, to_sq((ss-1)->currentMove));
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
-    while ((move = mp.next_move()) != MOVE_NONE)
+    while (move != MOVE_NONE)
     {
       assert(is_ok(move));
 
@@ -1279,13 +1286,13 @@ moves_loop: // When in check, search starts from here
           if (futilityValue <= alpha)
           {
               bestValue = std::max(bestValue, futilityValue);
-              continue;
+              goto next;
           }
 
           if (futilityBase <= alpha && !pos.see_ge(move, VALUE_ZERO + 1))
           {
               bestValue = std::max(bestValue, futilityBase);
-              continue;
+              goto next;
           }
       }
 
@@ -1298,7 +1305,7 @@ moves_loop: // When in check, search starts from here
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
           && !pos.see_ge(move))
-          continue;
+          goto next;
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
@@ -1307,7 +1314,7 @@ moves_loop: // When in check, search starts from here
       if (!pos.legal(move))
       {
           moveCount--;
-          continue;
+          goto next;
       }
 
       ss->currentMove = move;
@@ -1342,7 +1349,11 @@ moves_loop: // When in check, search starts from here
                   return value;
               }
           }
-       }
+      }
+
+   next:
+      move = mp.next_move();
+
     }
 
     // All legal moves have been searched. A special case: If we're in check
