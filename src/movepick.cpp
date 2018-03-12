@@ -171,7 +171,7 @@ begin_switch:
           move = pick_best(cur++, endMoves);
           if (move != ttMove)
           {
-              int captSee = std::max(20 - 15 * (depth / ONE_PLY) * (depth / ONE_PLY), -55 * (cur-1)->value / 1024);
+              int captSee = std::max(-25 * (depth / ONE_PLY) * (depth / ONE_PLY), -55 * (cur-1)->value / 1024);
               if (pos.see_ge(move, Value(captSee)))
                   return move;
 
