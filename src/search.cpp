@@ -493,7 +493,7 @@ namespace {
 
     // use qsearch as needed
     if (depth < ONE_PLY)
-       return qsearch<NT>(pos, ss, alpha, beta);
+       return qsearch<NT>(pos, ss, alpha, beta, depth);
 
     const bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
