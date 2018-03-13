@@ -728,8 +728,7 @@ namespace {
         ss->contHistory = thisThread->contHistory[NO_PIECE][0].get();
 
         pos.do_null_move(st);
-        Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV>(pos, ss+1, -beta, -beta+1)
-                                            : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
+        Value nullValue = - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
         pos.undo_null_move();
 
         if (nullValue >= beta)
