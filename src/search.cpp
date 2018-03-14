@@ -1294,7 +1294,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with low SEE values
       if (  (!inCheck || evasionPrunable)
-          && !pos.see_ge(move, (moveCount - 1) * PawnValueEg / 3))
+          && !pos.see_ge(move, (moveCount - 4) * PawnValueEg / 3))
           continue;
 
       // Speculative prefetch as early as possible
