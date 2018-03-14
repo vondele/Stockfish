@@ -66,9 +66,9 @@ namespace {
 
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p)
+                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p, Square s)
            : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch),
-             refutations{killers_p[0], killers_p[1], cm}, depth(d){
+             refutations{killers_p[0], killers_p[1], cm}, recaptureSquare(s), depth(d){
 
   assert(d > DEPTH_ZERO);
 
@@ -116,6 +116,7 @@ void MovePicker::score() {
   for (auto& m : *this)
       if (Type == CAPTURES)
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
+                   + (to_sq(m) == recaptureSquare) * 64
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if (Type == QUIETS)
