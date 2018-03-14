@@ -1292,9 +1292,9 @@ moves_loop: // When in check, search starts from here
                        &&  bestValue > VALUE_MATED_IN_MAX_PLY
                        && !pos.capture(move);
 
-      // Don't search moves with negative SEE values
+      // Don't search moves with low SEE values
       if (  (!inCheck || evasionPrunable)
-          && !pos.see_ge(move))
+          && !pos.see_ge(move, (moveCount - 1) * PawnValueEg / 3))
           continue;
 
       // Speculative prefetch as early as possible
