@@ -1266,6 +1266,7 @@ moves_loop: // When in check, search starts from here
 
       moveCount++;
 
+      bool passed_see = false;
       // Futility pruning
       if (   !inCheck
           && !givesCheck
@@ -1282,7 +1283,7 @@ moves_loop: // When in check, search starts from here
               continue;
           }
 
-          if (futilityBase <= alpha && !pos.see_ge(move, VALUE_ZERO + 1))
+          if (futilityBase <= alpha && !(passed_see = pos.see_ge(move, VALUE_ZERO + 1)))
           {
               bestValue = std::max(bestValue, futilityBase);
               continue;
@@ -1297,7 +1298,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
-          && !pos.see_ge(move))
+          && !(passed_see || pos.see_ge(move)))
           continue;
 
       // Speculative prefetch as early as possible
