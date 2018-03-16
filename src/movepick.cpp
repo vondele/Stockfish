@@ -259,7 +259,8 @@ begin_switch:
       while (cur < endMoves)
       {
           move = pick_best(cur++, endMoves);
-          if (move != ttMove)
+          if (   move != ttMove
+              && (depth > DEPTH_QS_RECAPTURES || to_sq(move) == recaptureSquare))
               return move;
       }
       if (depth <= DEPTH_QS_NO_CHECKS)
