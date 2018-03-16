@@ -250,7 +250,7 @@ begin_switch:
       {
           move = pick_best(cur++, endMoves);
           if (   move != ttMove
-              && pos.see_ge(move, threshold))
+              && (type_of(move) == PROMOTION || pos.see_ge(move, threshold)))
               return move;
       }
       break;
