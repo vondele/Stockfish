@@ -1323,6 +1323,7 @@ moves_loop: // When in check, search starts from here
       if (value > bestValue)
       {
           bestValue = value;
+          futilityBase = bestValue + 128;
 
           if (value > alpha)
           {
