@@ -682,7 +682,7 @@ namespace {
                   ss->staticEval, TT.generation());
     }
 
-    improving =   ss->staticEval >= (ss-2)->staticEval + 10
+    improving =   ss->staticEval >= (ss-2)->staticEval + 35
                ||(ss-2)->staticEval == VALUE_NONE;
 
     if (skipEarlyPruning || !pos.non_pawn_material(pos.side_to_move()))
