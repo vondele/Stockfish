@@ -761,6 +761,7 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
+        &&  depth >= 3 * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         assert(is_ok((ss-1)->currentMove));
@@ -785,7 +786,7 @@ namespace {
 
                 // If the qsearch held perform the regular search
                 if (value >= rbeta)
-                    value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 4 * ONE_PLY, !cutNode, false);
+                    value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - std::min(4, 4 * depth / (5 * ONE_PLY)) * ONE_PLY, !cutNode, false);
 
                 pos.undo_move(move);
 
