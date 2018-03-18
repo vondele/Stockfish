@@ -67,7 +67,7 @@ namespace {
   const int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
   // Razor and futility margins
-  const int RazorMargin[] = {0, 590, 604};
+  const int RazorMargin[] = {0, 590, 604, 900, 914};
   Value futility_margin(Depth d, bool improving) {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
@@ -689,7 +689,7 @@ namespace {
 
     // Step 7. Razoring (skipped when in check)
     if (  !PvNode
-        && depth <= 2 * ONE_PLY
+        && depth <= 4 * ONE_PLY
         && eval <= alpha - Value(RazorMargin[depth / ONE_PLY]))
     {
         Value ralpha = alpha - (depth != ONE_PLY) * Value(RazorMargin[depth / ONE_PLY]);
