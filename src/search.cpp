@@ -1171,7 +1171,7 @@ moves_loop: // When in check, search starts from here
     Move ttMove, move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
-    bool ttHit, givesCheck, evasionPrunable;
+    bool ttHit, givesCheck;
     int moveCount;
 
     if (PvNode)
@@ -1289,16 +1289,22 @@ moves_loop: // When in check, search starts from here
           }
       }
 
-      // Detect non-capture evasions that are candidates to be pruned
-      evasionPrunable =    inCheck
-                       &&  (depth != DEPTH_ZERO || moveCount > 2)
-                       &&  bestValue > VALUE_MATED_IN_MAX_PLY
-                       && !pos.capture(move);
-
-      // Don't search moves with negative SEE values
-      if (  (!inCheck || evasionPrunable)
+      // Prune non-capture evasions with negative SEE
+      if (    inCheck
+          &&  (depth != DEPTH_ZERO || moveCount > 2)
+          &&  bestValue > VALUE_MATED_IN_MAX_PLY
+          && !pos.capture(move)
           && !pos.see_ge(move))
           continue;
+
+      // only search moves that are 'good captures'
+      if (!inCheck)
+      {
+          int score =  PieceValue[MG][pos.piece_on(to_sq(move))]
+                     + pos.this_thread()->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
+          if (!pos.see_ge(move, Value(-55 * score / 1024)))
+              continue;
+      }
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
