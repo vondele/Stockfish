@@ -171,9 +171,10 @@ top:
       goto top;
 
   case GOOD_CAPTURE:
-      if (select_move<BEST_SCORE>([&](){ return  pos.see_ge(move, Value(-55 * (cur-1)->value / 1024)) ?
-                                                 // Move losing capture to endBadCaptures to be tried later
-                                                 true : (*endBadCaptures++ = move, false); }))
+      if (select_move<BEST_SCORE>([&](){ return     std::distance(moves,cur) < 4
+                                                 || pos.see_ge(move, Value(-55 * (cur-1)->value / 1024)) ?
+                                                    // Move losing capture to endBadCaptures to be tried later
+                                                    true : (*endBadCaptures++ = move, false); }))
           return move;
 
       // If the countermove is the same as a killer, skip it
