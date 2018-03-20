@@ -31,6 +31,10 @@ namespace {
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
 
+  int shift1 = 5500;
+  int shift2 = 12500;
+  TUNE(SetRange(-20000,50000),shift1,shift2);
+
   // Helper filter used with select_move()
   const auto Any = [](){ return true; };
 
@@ -186,8 +190,8 @@ top:
           --endMoves;
 
       score<QUIETS>();
-      refutations[1].value-=5000;
-      refutations[2].value-=15000;
+      refutations[1].value-=shift1;
+      refutations[2].value-=shift2;
       ++stage;
       /* fallthrough */
 
