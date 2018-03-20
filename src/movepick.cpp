@@ -62,7 +62,7 @@ namespace {
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers_p)
            : pos(p), mainHistory(mh), captureHistory(cph), contHistory(ch),
-             refutations{killers_p[0], killers_p[1], cm}, depth(d){
+             refutations{killers_p[0], 0, killers_p[1], 0, cm, 0}, depth(d){
 
   assert(d > DEPTH_ZERO);
 
@@ -178,13 +178,11 @@ top:
           return move;
 
       // prepare refutations
-      endMoves = cur = endBadCaptures;
-      *endMoves++ = refutations[0];
-      *endMoves++ = refutations[1];
-      // If the countermove differs from the killers, add it
-      if (   refutations[0] != refutations[2]
-          && refutations[1] != refutations[2])
-          *endMoves++ = refutations[2];
+      cur = std::begin(refutations), endMoves = std::end(refutations);
+      // If the countermove is the same as a killer, skip it
+      if (   refutations[0].move == refutations[2].move
+          || refutations[1].move == refutations[2].move)
+          --endMoves;
       ++stage;
       /* fallthrough */
 
