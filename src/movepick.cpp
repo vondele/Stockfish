@@ -185,13 +185,16 @@ top:
           || refutations[1].move == refutations[2].move)
           --endMoves;
 
+      score<QUIETS>();
+      refutations[1].value-=5000;
+      refutations[2].value-=15000;
       ++stage;
       /* fallthrough */
 
   case REFUTATION:
-      if (select_move<NEXT>([&](){ return     move != MOVE_NONE
-                                          && !pos.capture(move)
-                                          &&  pos.pseudo_legal(move); }))
+      if (select_move<BEST_SCORE>([&](){ return     move != MOVE_NONE
+                                                && !pos.capture(move)
+                                                &&  pos.pseudo_legal(move); }))
           return move;
       ++stage;
       /* fallthrough */
