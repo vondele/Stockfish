@@ -184,8 +184,8 @@ top:
           || refutations[1].move == refutations[2].move)
           --endMoves;
       score<QUIETS>();
-      refutations[1].value-=1000;
-      refutations[2].value-=11500;
+      refutations[1].value-=3725;
+      refutations[2].value-=12500;
       ++stage;
       /* fallthrough */
 
