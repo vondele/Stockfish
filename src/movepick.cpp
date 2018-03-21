@@ -172,7 +172,8 @@ top:
       goto top;
 
   case GOOD_CAPTURE:
-      if (select_move<BEST_SCORE>([&](){ return  pos.see_ge(move, Value(-55 * (cur-1)->value / 1024)) ?
+      if (select_move<BEST_SCORE>([&](){ return    (refutations[0].move == move || refutations[1].move == move || refutations[2].move == move) 
+                                                || pos.see_ge(move, Value(-55 * (cur-1)->value / 1024)) ?
                                                  // Move losing capture to endBadCaptures to be tried later
                                                  true : (*endBadCaptures++ = move, false); }))
           return move;
