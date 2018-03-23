@@ -681,8 +681,9 @@ namespace {
                   ss->staticEval, TT.generation());
     }
 
-    improving =   ss->staticEval >= (ss-2)->staticEval
-               ||(ss-2)->staticEval == VALUE_NONE;
+    improving =    ss->staticEval >= (ss-2)->staticEval
+               || -(ss-1)->staticEval < ss->staticEval
+               ||  (ss-2)->staticEval == VALUE_NONE;
 
     if (skipEarlyPruning || !pos.non_pawn_material(pos.side_to_move()))
         goto moves_loop;
