@@ -1239,7 +1239,7 @@ moves_loop: // When in check, search starts from here
         if (PvNode && bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = bestValue + 128;
+        futilityBase = bestValue + Value(std::abs(bestValue) < 1500 ? 128 : 32);
     }
 
     // Initialize a MovePicker object for the current position, and prepare
