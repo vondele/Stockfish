@@ -700,7 +700,7 @@ namespace {
     }
 
     // Step 8. Futility pruning: child node (skipped when in check)
-    if (   !rootNode
+    if (   !rootNode && false
         &&  depth < 7 * ONE_PLY
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
