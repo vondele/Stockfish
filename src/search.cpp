@@ -689,7 +689,7 @@ namespace {
         goto moves_loop;
 
     // Step 7. Razoring (skipped when in check)
-    if (  !PvNode
+    if (  !PvNode && false
         && depth < 3 * ONE_PLY
         && eval <= alpha - RazorMargin[depth / ONE_PLY])
     {
