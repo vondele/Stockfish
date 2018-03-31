@@ -73,7 +73,7 @@ namespace {
   }
 
   // shallow depth pruning of captures.
-  int CaptPruneMargin[] = {0, -253, -250, -231, -249, -228, -223};
+  constexpr int CaptPruneMargin[] = {0, -238, -261, -244, -253, -240, -229};
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
