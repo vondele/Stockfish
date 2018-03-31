@@ -821,7 +821,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
 
     singularExtensionNode =   !rootNode
-                           &&  depth >= 8 * ONE_PLY
+                           &&  depth >= 7 * ONE_PLY
                            &&  ttMove != MOVE_NONE
                            &&  ttValue != VALUE_NONE
                            && !excludedMove // Recursive singular search is not allowed
