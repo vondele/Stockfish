@@ -72,7 +72,7 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
-  int SingularExtensionMargin[] = {16, 18, 20, 22, 24, 26, 28, 30, 32};
+  constexpr int SingularExtensionMargin[] = {17, 20, 20, 23, 25, 25, 29, 30, 35};
 
   // Margin for pruning capturing moves: almost linear in depth
   constexpr int CapturePruneMargin[] = { 0,
