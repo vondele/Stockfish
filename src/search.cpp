@@ -873,6 +873,7 @@ moves_loop: // When in check, search starts from here
       // result is lower than ttValue minus a margin then we will extend the ttMove.
       if (    singularExtensionNode
           &&  move == ttMove
+          &&  ttValue >= alpha
           &&  pos.legal(move))
       {
           Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
