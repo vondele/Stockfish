@@ -73,6 +73,7 @@ namespace {
   }
 
   int SingularExtensionMargin[] = {16, 18, 20, 22, 24, 26, 28, 30, 32};
+  TUNE(SingularExtensionMargin);
 
   // Margin for pruning capturing moves: almost linear in depth
   constexpr int CapturePruneMargin[] = { 0,
