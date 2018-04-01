@@ -72,6 +72,8 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
+  int SingularExtensionMargin[] = {16, 18, 20, 22, 24, 26, 28, 30, 32};
+
   // Margin for pruning capturing moves: almost linear in depth
   constexpr int CapturePruneMargin[] = { 0,
                                          1 * PawnValueEg * 1055 / 1000,
@@ -873,7 +875,7 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
+          Value rBeta = std::max(ttValue - SingularExtensionMargin[std::min(16, depth/ONE_PLY) - 8], -VALUE_MATE);
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode, true);
           ss->excludedMove = MOVE_NONE;
