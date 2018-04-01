@@ -864,14 +864,18 @@ moves_loop: // When in check, search starts from here
       // that move is singular and should be extended. To verify this we do a
       // reduced search on on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-      if (    move == ttMove
-          && !rootNode
-          && !excludedMove // Recursive singular search is not allowed
-          &&  depth >= 8 * ONE_PLY
-          &&  ttValue != VALUE_NONE
-          && (tte->bound() & BOUND_LOWER)
-          &&  tte->depth() >= depth - 3 * ONE_PLY
-          &&  pos.legal(move))
+      if (    givesCheck // Check extension (~2 Elo)
+          && !moveCountPruning
+          &&  pos.see_ge(move))
+          extension = ONE_PLY;
+      else if (   move == ttMove
+               && !rootNode
+               && !excludedMove // Recursive singular search is not allowed
+               &&  depth >= 8 * ONE_PLY
+               &&  ttValue != VALUE_NONE
+               && (tte->bound() & BOUND_LOWER)
+               &&  tte->depth() >= depth - 3 * ONE_PLY
+               &&  pos.legal(move))
       {
           Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
           ss->excludedMove = move;
@@ -881,10 +885,6 @@ moves_loop: // When in check, search starts from here
           if (value < rBeta)
               extension = ONE_PLY;
       }
-      else if (    givesCheck // Check extension (~2 Elo)
-               && !moveCountPruning
-               &&  pos.see_ge(move))
-          extension = ONE_PLY;
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
