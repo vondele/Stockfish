@@ -867,8 +867,7 @@ moves_loop: // When in check, search starts from here
       if (    move == ttMove
           && !rootNode
           && !excludedMove // Recursive singular search is not allowed
-          &&  depth >= 8 * ONE_PLY
-          &&  !pos.captured_piece()
+          &&  depth >= (8 - bool(pos.captured_piece())) * ONE_PLY
           &&  ttValue != VALUE_NONE
           && (tte->bound() & BOUND_LOWER)
           &&  tte->depth() >= depth - 3 * ONE_PLY
