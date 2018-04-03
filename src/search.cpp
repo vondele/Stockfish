@@ -870,7 +870,7 @@ moves_loop: // When in check, search starts from here
           && !excludedMove // Recursive singular search is not allowed
           &&  ttValue != VALUE_NONE
           && (tte->bound() & BOUND_LOWER)
-          &&  tte->depth() >= 7 * depth / 8 - ONE_PLY
+          &&  tte->depth() >= (15 * depth - 18 * ONE_PLY) / 16
           &&  pos.legal(move))
       {
           Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
