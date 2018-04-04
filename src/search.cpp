@@ -909,14 +909,10 @@ moves_loop: // When in check, search starts from here
               int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
-              if (   lmrDepth < 3
-                  && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
-                  && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
-                  continue;
+              bool CMP =   (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
+                        && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold;
 
-              if (   lmrDepth < 2
-                  && (   (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
-                      || (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold))
+              if (lmrDepth < 3 && CMP)
                   continue;
 
               // Futility pruning: parent node (~2 Elo)
@@ -927,7 +923,7 @@ moves_loop: // When in check, search starts from here
 
               // Prune moves with negative SEE (~10 Elo)
               if (   lmrDepth < 8
-                  && !pos.see_ge(move, Value(-35 * lmrDepth * lmrDepth)))
+                  && !pos.see_ge(move, Value(-35 * (lmrDepth - CMP) * (lmrDepth - CMP))))
                   continue;
           }
           else if (    depth < 7 * ONE_PLY // (~20 Elo)
