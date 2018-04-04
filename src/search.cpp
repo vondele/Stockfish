@@ -72,6 +72,9 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
+  int SEparam[] = {16, 32, 16};
+  TUNE(SEparam);
+
   // Margin for pruning capturing moves: almost linear in depth
   constexpr int CapturePruneMargin[] = { 0,
                                          1 * PawnValueEg * 1055 / 1000,
@@ -870,7 +873,7 @@ moves_loop: // When in check, search starts from here
           && !excludedMove // Recursive singular search is not allowed
           &&  ttValue != VALUE_NONE
           && (tte->bound() & BOUND_LOWER)
-          &&  tte->depth() >= std::min(depth - ONE_PLY, (16 * depth - 32 * ONE_PLY - 16 * givesCheck * ONE_PLY) / 16)
+          &&  tte->depth() >= std::min(depth - ONE_PLY, (SEparam[0] * depth - SEparam[1] * ONE_PLY - SEparam[2] * givesCheck * ONE_PLY) / 16)
           &&  pos.legal(move))
       {
           Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
