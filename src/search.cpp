@@ -66,6 +66,9 @@ namespace {
   constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
+  int a0 = 0;
+  TUNE(SetRange(-300,300),a0);
+
   // Razor and futility margins
   constexpr int RazorMargin[] = {0, 590, 604};
   Value futility_margin(Depth d, bool improving) {
@@ -923,7 +926,7 @@ moves_loop: // When in check, search starts from here
 
               // Prune moves with negative SEE (~10 Elo)
               if (   lmrDepth < 8
-                  && !pos.see_ge(move, Value(CMP ? -45 * (lmrDepth - 1) * (lmrDepth -1) : -35 * lmrDepth * lmrDepth)))
+                  && !pos.see_ge(move, Value(-35 * lmrDepth * lmrDepth + a0 * CMP * lmrDepth)))
                   continue;
           }
           else if (    depth < 7 * ONE_PLY // (~20 Elo)
