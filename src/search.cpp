@@ -923,7 +923,7 @@ moves_loop: // When in check, search starts from here
 
               // Prune moves with negative SEE (~10 Elo)
               if (   lmrDepth < 8
-                  && !pos.see_ge(move, Value(-35 * lmrDepth * lmrDepth + 10 * CMP * lmrDepth)))
+                  && !pos.see_ge(move, Value(-35 * lmrDepth * lmrDepth + 15 * CMP * lmrDepth)))
 
                   continue;
           }
