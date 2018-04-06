@@ -589,7 +589,7 @@ namespace {
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-        && tte->depth() >= depth - (ttValue >= beta + futility_margin(depth, false) && depth < 4)
+        && tte->depth() >= depth - (ttValue >= beta + futility_margin(depth, false) && depth < 3)
         && ttValue != VALUE_NONE // Possible in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
