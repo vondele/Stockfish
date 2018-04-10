@@ -770,15 +770,11 @@ namespace {
 
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
         MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
-        int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3)
-            if (   thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > -probCutCount * 256
-                && pos.legal(move))
+               && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 0)
+            if (pos.legal(move))
             {
-                probCutCount++;
-
                 ss->currentMove = move;
                 ss->contHistory = thisThread->contHistory[pos.moved_piece(move)][to_sq(move)].get();
 
