@@ -773,9 +773,9 @@ namespace {
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3)
-            if (   thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > -probCutCount * 256
-                && pos.legal(move))
+               && probCutCount < 3
+               && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 0)
+            if (pos.legal(move))
             {
                 probCutCount++;
 
