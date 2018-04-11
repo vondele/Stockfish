@@ -712,7 +712,7 @@ namespace {
     // Step 8. Futility pruning: child node (skipped when in check, ~30 Elo)
     if (   !rootNode
         &&  depth < 7 * ONE_PLY
-        &&  eval >= beta + std::max(VALUE_ZERO, futility_margin(depth, improving) - PieceValue[EG][type_of(pos.captured_piece())]/8)
+        &&  eval >= beta + std::max(VALUE_ZERO, futility_margin(depth, improving) - PieceValue[EG][type_of(pos.captured_piece())]/16)
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
