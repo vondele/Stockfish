@@ -68,8 +68,11 @@ namespace {
 
   // Razor and futility margins
   constexpr int RazorMargin[] = {0, 590, 604};
+  int futilityMargin[] = {0, 175, 175, 175, 175, 175, 175}; 
+  TUNE(futilityMargin);
+
   Value futility_margin(Depth d, bool improving) {
-    return Value((175 - 50 * improving) * d / ONE_PLY);
+    return Value((futilityMargin[d / ONE_PLY] - 50 * improving) * d / ONE_PLY);
   }
 
   // Margin for pruning capturing moves: almost linear in depth
