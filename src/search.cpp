@@ -68,7 +68,7 @@ namespace {
 
   // Razor and futility margins
   constexpr int RazorMargin[] = {0, 590, 604};
-  constexpr int FutilityMargin[] = {0, 139, 179, 177, 168, 166, 178};
+  constexpr int FutilityMargin[] = {0, 135, 179, 177, 163, 167, 185};
 
   Value futility_margin(Depth d, bool improving) {
     return Value((FutilityMargin[d / ONE_PLY] - 50 * improving) * d / ONE_PLY);
