@@ -925,7 +925,7 @@ moves_loop: // When in check, search starts from here
                   && !pos.see_ge(move, Value(-40 * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (    depth < 8 * ONE_PLY // (~20 Elo)
+          else if (    depth < 7 * ONE_PLY // (~20 Elo)
                    && !extension
                    && !pos.see_ge(move, -Value(CapturePruneMargin[depth / ONE_PLY])))
                   continue;
