@@ -69,7 +69,7 @@ namespace {
   // Razor and futility margins
   constexpr int RazorMargin[] = {0, 590, 604};
   Value futility_margin(Depth d, bool improving) {
-    return Value((175 - 50 * improving) * d / ONE_PLY);
+    return Value((158 - 55 * improving) * d / ONE_PLY);
   }
 
   // Margin for pruning capturing moves: almost linear in depth
@@ -711,7 +711,7 @@ namespace {
 
     // Step 8. Futility pruning: child node (skipped when in check, ~30 Elo)
     if (   !rootNode
-        &&  depth < 7 * ONE_PLY
+        &&  depth < 5 * ONE_PLY
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
@@ -802,7 +802,7 @@ namespace {
     // Step 11. Internal iterative deepening (skipped when in check, ~2 Elo)
     if (    depth >= 6 * ONE_PLY
         && !ttMove
-        && (PvNode || ss->staticEval + 128 >= beta))
+        && (PvNode || ss->staticEval + 50 >= beta))
     {
         Depth d = 3 * depth / 4 - 2 * ONE_PLY;
         search<NT>(pos, ss, alpha, beta, d, cutNode, true);
@@ -921,11 +921,11 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Prune moves with negative SEE (~10 Elo)
-              if (   lmrDepth < 8
-                  && !pos.see_ge(move, Value(-35 * lmrDepth * lmrDepth)))
+              if (   lmrDepth < 9
+                  && !pos.see_ge(move, Value(-40 * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (    depth < 7 * ONE_PLY // (~20 Elo)
+          else if (    depth < 8 * ONE_PLY // (~20 Elo)
                    && !extension
                    && !pos.see_ge(move, -Value(CapturePruneMargin[depth / ONE_PLY])))
                   continue;
