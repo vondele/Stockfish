@@ -929,6 +929,7 @@ moves_loop: // When in check, search starts from here
           {
               if (   depth < 3 * ONE_PLY
                   && captureOrPromotion
+                  && !extension
                   && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
 
