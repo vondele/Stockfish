@@ -92,6 +92,7 @@ namespace {
 
   // History and stats update bonus, based on depth
   int statBonus[] = {0, 1, 6, 13, 22, 33, 46, 61, 78, 97, 118, 141, 166, 193, 222, 253, 286, 321};
+  TUNE(statBonus);
   int stat_bonus(Depth depth) {
     int d = depth / ONE_PLY;
     return d > 17 ? 0 : statBonus[d];
