@@ -447,9 +447,10 @@ void Thread::search() {
           && !Threads.stop
           && !Threads.stopOnPonderhit
           && rootDepth >= 5 * ONE_PLY
+          && lastBestMoveDepth * 5 < completedDepth
           && Time.elapsed() > Time.optimum() / 8)
       {
-          Value rBeta = bestValue - PawnValueEg;
+          Value rBeta = std::max(bestValue - 2 * PawnValueEg, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
           Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rootDepth / 2, false, false);
           ss->excludedMove = MOVE_NONE;
@@ -475,7 +476,7 @@ void Thread::search() {
               int improvingFactor = std::max(246, std::min(832, 306 + 119 * F[0] - 6 * F[1]));
 
               // If the bestMove is stable over several iterations, reduce time accordingly
-              timeReduction = singularBestMove ? 8.0 : 1.0;
+              timeReduction = singularBestMove ? 4.0 : 1.0;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth)
                      timeReduction *= 1.25;
