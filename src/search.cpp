@@ -448,9 +448,9 @@ void Thread::search() {
           && !Threads.stopOnPonderhit
           && rootDepth >= 5 * ONE_PLY
           && lastBestMoveDepth * 5 < completedDepth
-          && Time.elapsed() > Time.optimum() / 8)
+          && Time.elapsed() > Time.optimum() / 4)
       {
-          Value rBeta = std::max(bestValue - 2 * PawnValueEg, -VALUE_INFINITE);
+          Value rBeta = std::max(bestValue - PawnValueEg, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
           Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rootDepth / 2, false, false);
           ss->excludedMove = MOVE_NONE;
@@ -487,7 +487,7 @@ void Thread::search() {
               double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
               if (singularBestMove)
-                  bestMoveInstability *= 0.25;
+                  bestMoveInstability *= 0.5;
 
               // Stop the search if we have only one legal move, or if available time elapsed
               if (   rootMoves.size() == 1
