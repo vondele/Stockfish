@@ -441,6 +441,22 @@ void Thread::search() {
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
           Threads.stop = true;
 
+      // verify singular bestmove
+      bool singularBestMove = false;
+      if (    Limits.use_time_management()
+          && !Threads.stop
+          && !Threads.stopOnPonderhit
+          && rootDepth >= 5 * ONE_PLY
+          && Time.elapsed() > Time.optimum() / 8)
+      {
+          Value rBeta = bestValue - PawnValueEg;
+          ss->excludedMove = rootMoves[0].pv[0];
+          Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rootDepth / 2, false, false);
+          ss->excludedMove = MOVE_NONE;
+          if (value < rBeta)
+              singularBestMove = true;
+      }
+
       if (!mainThread)
           continue;
 
@@ -459,7 +475,7 @@ void Thread::search() {
               int improvingFactor = std::max(246, std::min(832, 306 + 119 * F[0] - 6 * F[1]));
 
               // If the bestMove is stable over several iterations, reduce time accordingly
-              timeReduction = 1.0;
+              timeReduction = singularBestMove ? 8.0 : 1.0;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth)
                      timeReduction *= 1.25;
