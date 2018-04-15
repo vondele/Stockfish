@@ -91,10 +91,10 @@ namespace {
   }
 
   // History and stats update bonus, based on depth
-  int statBonus[] = {0, 1, 6, 13, 22, 33, 46, 61, 78, 97, 118, 141, 166, 193, 222, 253, 286, 321};
+  constexpr int StatBonus[] = {0, 1, 5, 14, 22, 28, 46, 60, 76, 84, 118, 127, 159, 188, 226, 229, 281, 324};
   int stat_bonus(Depth depth) {
     int d = depth / ONE_PLY;
-    return d > 17 ? 0 : statBonus[d];
+    return d > 17 ? 0 : StatBonus[d];
   }
 
   // Skill structure is used to implement strength limit
