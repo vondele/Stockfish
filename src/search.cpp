@@ -454,8 +454,10 @@ void Thread::search() {
           ss->excludedMove = rootMoves[0].pv[0];
           Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rootDepth / 2, false, false);
           ss->excludedMove = MOVE_NONE;
-          if (value < rBeta)
+          if (value < rBeta) {
               singularBestMove = true;
+              // std::cout << "Singular : " << rootPos.fen() << " : " << UCI::move(rootMoves[0].pv[0],false) << std::endl;
+          }
       }
 
       if (!mainThread)
@@ -476,7 +478,7 @@ void Thread::search() {
               int improvingFactor = std::max(246, std::min(832, 306 + 119 * F[0] - 6 * F[1]));
 
               // If the bestMove is stable over several iterations, reduce time accordingly
-              timeReduction = singularBestMove ? 4.0 : 1.0;
+              timeReduction = 1.0;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth)
                      timeReduction *= 1.25;
@@ -484,6 +486,8 @@ void Thread::search() {
               // Use part of the gained time from a previous stable move for the current move
               double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
+              if (singularBestMove)
+                  bestMoveInstability *= 0.25;
 
               // Stop the search if we have only one legal move, or if available time elapsed
               if (   rootMoves.size() == 1
