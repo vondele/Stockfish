@@ -446,20 +446,18 @@ void Thread::search() {
       if (    Limits.use_time_management()
           && !Threads.stop
           && !Threads.stopOnPonderhit
-          && rootDepth >= 8 * ONE_PLY
-          && lastBestMoveDepth * 5 < completedDepth
-          && Time.elapsed() > Time.optimum() / 4)
+          && rootDepth >= 12 * ONE_PLY
+          && lastBestMoveDepth * 8 < completedDepth
+          && Time.elapsed() > Time.optimum() / 8)
       {
           Depth rDepth = rootDepth - 6 * ONE_PLY;
-          Value margin = std::max(PawnValueEg, (48 - rDepth / ONE_PLY) * PawnValueEg / 16);
+          Value margin = PawnValueEg/4;
           Value rBeta = std::max(bestValue - margin, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
           Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rDepth, false, false);
           ss->excludedMove = MOVE_NONE;
-          if (value < rBeta) {
+          if (value < rBeta)
               singularBestMove = true;
-              // std::cout << "Singular : " << rootPos.fen() << " : " << UCI::move(rootMoves[0].pv[0],false) << std::endl;
-          }
       }
 
       if (!mainThread)
