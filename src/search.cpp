@@ -450,9 +450,11 @@ void Thread::search() {
           && lastBestMoveDepth * 5 < completedDepth
           && Time.elapsed() > Time.optimum() / 4)
       {
-          Value rBeta = std::max(bestValue - 3 * PawnValueEg, -VALUE_INFINITE);
+          Depth rDepth = rootDepth - 6 * ONE_PLY;
+          Value margin = std::max(PawnValueEg, (30 - rDepth / ONE_PLY) * PawnValueEg / 10);
+          Value rBeta = std::max(bestValue - margin, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
-          Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rootDepth - 6 * ONE_PLY, false, false);
+          Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rDepth, false, false);
           ss->excludedMove = MOVE_NONE;
           if (value < rBeta) {
               singularBestMove = true;
