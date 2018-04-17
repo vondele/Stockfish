@@ -463,7 +463,8 @@ void Thread::search() {
       {
           Depth rDepth = rootDepth - 6 * ONE_PLY;
           // Value margin = std::max(PawnValueEg/4, (16 - rDepth / ONE_PLY) * PawnValueEg / 16);
-          margin = std::max(PawnValueEg/16, (16 - rDepth / ONE_PLY) * PawnValueEg / 16);
+          // margin = std::max(PawnValueEg/16, (16 - rDepth / ONE_PLY) * PawnValueEg / 16);
+          margin = PawnValueEg/4;
           Value rBeta = std::max(bestValue - margin, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
           high_resolution_clock::time_point t3 = high_resolution_clock::now();
