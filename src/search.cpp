@@ -24,6 +24,8 @@
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
+#include <chrono>
+using namespace std::chrono;
 
 #include "evaluate.h"
 #include "misc.h"
@@ -322,6 +324,12 @@ void Thread::search() {
   contempt = (us == WHITE ?  make_score(ct, ct / 2)
                           : -make_score(ct, ct / 2));
 
+  high_resolution_clock::time_point t1,t2;
+  bool singularBestMove = false;
+  Move thisSingularBestMove = MOVE_NONE;
+  Value margin;
+  Depth singularDepth;
+
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
          && !Threads.stop
@@ -372,7 +380,10 @@ void Thread::search() {
           // high/low anymore.
           while (true)
           {
+              
+              t1 = high_resolution_clock::now();
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false, false);
+              t2 = high_resolution_clock::now();
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -442,23 +453,32 @@ void Thread::search() {
           Threads.stop = true;
 
       // verify singular bestmove
-      bool singularBestMove = false;
-      if (    Limits.use_time_management()
+      if (   Limits.use_time_management()
           && !Threads.stop
           && !Threads.stopOnPonderhit
-          && rootDepth >= 8 * ONE_PLY
-          && lastBestMoveDepth * 5 < completedDepth
-          && Time.elapsed() > Time.optimum() / 4)
+          && !singularBestMove
+          && rootDepth >= 12 * ONE_PLY
+          && lastBestMoveDepth * 8 < completedDepth
+          && Time.elapsed() > Time.optimum() / 8)
       {
           Depth rDepth = rootDepth - 6 * ONE_PLY;
-          Value margin = std::max(PawnValueEg, (48 - rDepth / ONE_PLY) * PawnValueEg / 16);
+          // Value margin = std::max(PawnValueEg/4, (16 - rDepth / ONE_PLY) * PawnValueEg / 16);
+          margin = std::max(PawnValueEg/16, (16 - rDepth / ONE_PLY) * PawnValueEg / 16);
           Value rBeta = std::max(bestValue - margin, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
+          high_resolution_clock::time_point t3 = high_resolution_clock::now();
           Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rDepth, false, false);
+          high_resolution_clock::time_point t4 = high_resolution_clock::now();
           ss->excludedMove = MOVE_NONE;
+          duration<double> time_span1 = duration_cast<duration<double>>(t2 - t1);
+          duration<double> time_span2 = duration_cast<duration<double>>(t4 - t3);
+          std::cout << "Singular check : " << UCI::move(rootMoves[0].pv[0],false) <<
+                           " " << 100 * time_span2.count() / time_span1.count() << std::endl;
           if (value < rBeta) {
               singularBestMove = true;
-              // std::cout << "Singular : " << rootPos.fen() << " : " << UCI::move(rootMoves[0].pv[0],false) << std::endl;
+              thisSingularBestMove = rootMoves[0].pv[0];
+              singularDepth = rootDepth;
+              // std::cout << "Singular : " << rootPos.fen() << " : " << UCI::move(thisSingularBestMove,false) << " " << UCI::value(bestValue) << " " << UCI::value(margin) << " "  << rootDepth << std::endl;
           }
       }
 
@@ -488,8 +508,8 @@ void Thread::search() {
               // Use part of the gained time from a previous stable move for the current move
               double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
-              if (singularBestMove)
-                  bestMoveInstability *= 0.25;
+            //  if (singularBestMove)
+            //      bestMoveInstability *= 0.25;
 
               // Stop the search if we have only one legal move, or if available time elapsed
               if (   rootMoves.size() == 1
@@ -507,6 +527,10 @@ void Thread::search() {
 
   if (!mainThread)
       return;
+
+  if (singularBestMove)
+      std::cout << "Singular : " << (thisSingularBestMove != rootMoves[0].pv[0]) << " " <<  rootPos.fen() << " : " << UCI::move(thisSingularBestMove,false) << " "
+                << UCI::move(rootMoves[0].pv[0],false) << " " << UCI::value(bestValue) << " " << UCI::value(margin) << " "  << singularDepth << std::endl;
 
   mainThread->previousTimeReduction = timeReduction;
 
