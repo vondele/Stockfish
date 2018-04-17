@@ -451,7 +451,7 @@ void Thread::search() {
           && Time.elapsed() > Time.optimum() / 8)
       {
           Depth rDepth = rootDepth - 6 * ONE_PLY;
-          Value margin = PawnValueEg/4;
+          Value margin = PawnValueEg;
           Value rBeta = std::max(bestValue - margin, -VALUE_INFINITE);
           ss->excludedMove = rootMoves[0].pv[0];
           Value value = ::search<NonPV>(rootPos, ss, rBeta - 1, rBeta, rDepth, false, false);
