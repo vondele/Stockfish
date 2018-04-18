@@ -448,6 +448,7 @@ void Thread::search() {
           && !Threads.stopOnPonderhit
           && rootDepth >= 12 * ONE_PLY
           && lastBestMoveDepth * 8 < completedDepth
+          && rootPos.capture(rootMoves[0].pv[0])
           && Time.elapsed() > Time.optimum() / 8)
       {
           Depth rDepth = rootDepth - 8 * ONE_PLY;
