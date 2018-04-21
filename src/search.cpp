@@ -803,10 +803,10 @@ namespace {
 
                 pos.do_move(move, st);
 
-                // Perform a preliminary qsearch to verify that the move holds
-                value = -qsearch<NonPV>(pos, ss+1, -rbeta, -rbeta+1);
+                // Perform a preliminary low depth search to verify that the move holds
+                value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 8 * ONE_PLY, !cutNode, false);
 
-                // If the qsearch held perform the regular search
+                // If the low depth held perform the regular search
                 if (value >= rbeta)
                     value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 4 * ONE_PLY, !cutNode, false);
 
