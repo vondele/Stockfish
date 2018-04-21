@@ -799,12 +799,10 @@ namespace {
                 ss->currentMove = move;
                 ss->contHistory = thisThread->contHistory[pos.moved_piece(move)][to_sq(move)].get();
 
-                assert(depth >= 5 * ONE_PLY);
-
                 pos.do_move(move, st);
 
                 // Perform a preliminary low depth search to verify that the move holds
-                value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 8 * ONE_PLY, !cutNode, false);
+                value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 7 * ONE_PLY, !cutNode, false);
 
                 // If the low depth held perform the regular search
                 if (value >= rbeta)
