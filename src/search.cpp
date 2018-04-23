@@ -90,6 +90,7 @@ namespace {
   }
 
   int bonusVal8 = 2496;
+  TUNE(SetRange(2096,2896),bonusVal8);
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth depth) {
