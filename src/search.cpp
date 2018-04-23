@@ -90,6 +90,7 @@ namespace {
   }
 
   int StatBonusValues[] = {64, 64, 32};
+  TUNE(StatBonusValues);
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth depth) {
