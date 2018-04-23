@@ -89,10 +89,12 @@ namespace {
     return Reductions[PvNode][i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] * ONE_PLY;
   }
 
+  int StatBonusValues[] = {64, 64, 32};
+
   // History and stats update bonus, based on depth
   int stat_bonus(Depth depth) {
     int d = depth / ONE_PLY;
-    return d > 17 ? 0 : 32 * d * d + 64 * d - 64;
+    return d > 17 ? 0 : StatBonusValues[2] * d * d + StatBonusValues[1] * d - StatBonusValues[0];
   }
 
   // Skill structure is used to implement strength limit
