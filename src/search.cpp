@@ -818,7 +818,7 @@ namespace {
     }
 
     // Step 11. Internal iterative deepening (skipped when in check, ~2 Elo)
-    if (    depth >= 8 * ONE_PLY
+    if (    depth >= 6 * ONE_PLY
         && !ttMove)
     {
         Depth d = 3 * depth / 4 - 2 * ONE_PLY;
