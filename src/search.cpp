@@ -737,13 +737,13 @@ namespace {
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  ss->staticEval >= beta - 38 * depth / ONE_PLY + 249
         && (ss->ply >= thisThread->nmp_ply || ss->ply % 2 != thisThread->nmp_odd))
     {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
+        Depth R = ((844 + 66 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
         ss->currentMove = MOVE_NULL;
         ss->contHistory = thisThread->contHistory[NO_PIECE][0].get();
