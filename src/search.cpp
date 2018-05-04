@@ -719,7 +719,8 @@ namespace {
     // Step 7. Razoring (skipped when in check, ~2 Elo)
     if (  !PvNode
         && depth < 3 * ONE_PLY
-        && eval <= alpha - RazorMargin[depth / ONE_PLY])
+        && eval <= alpha - RazorMargin[depth / ONE_PLY]
+        && type_of(pos.captured_piece()) <= PAWN)
     {
         Value ralpha = alpha - (depth >= 2 * ONE_PLY) * RazorMargin[depth / ONE_PLY];
         Value v = qsearch<NonPV>(pos, ss, ralpha, ralpha+1);
