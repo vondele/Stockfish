@@ -713,7 +713,10 @@ namespace {
     improving =   ss->staticEval >= (ss-2)->staticEval
                ||(ss-2)->staticEval == VALUE_NONE;
 
-    if ((ss-1)->currentMove == MOVE_NULL || ss->excludedMove || !pos.non_pawn_material(pos.side_to_move()))
+    if (   (ss-1)->currentMove == MOVE_NULL
+        || ss->excludedMove
+        || (!ttMove && depth >= 4 * ONE_PLY)
+        || !pos.non_pawn_material(pos.side_to_move()))
         goto moves_loop;
 
     // Step 7. Razoring (skipped when in check, ~2 Elo)
