@@ -715,7 +715,7 @@ namespace {
 
     if (   (ss-1)->currentMove == MOVE_NULL
         || ss->excludedMove
-        || (!ttMove && depth >= 4 * ONE_PLY)
+        || (!ttMove && depth >= 6 * ONE_PLY)
         || !pos.non_pawn_material(pos.side_to_move()))
         goto moves_loop;
 
