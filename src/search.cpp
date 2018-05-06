@@ -713,7 +713,10 @@ namespace {
     improving =   ss->staticEval >= (ss-2)->staticEval
                ||(ss-2)->staticEval == VALUE_NONE;
 
-    if ((ss-1)->currentMove == MOVE_NULL || ss->excludedMove || !pos.non_pawn_material(pos.side_to_move()))
+    if (   ss->excludedMove
+        || (ss-1)->currentMove == MOVE_NULL
+        || (ss->ply < thisThread->nmp_ply && ss->ply % 2 == thisThread->nmp_odd)
+        || !pos.non_pawn_material(pos.side_to_move()))
         goto moves_loop;
 
     // Step 7. Razoring (skipped when in check, ~2 Elo)
@@ -737,8 +740,7 @@ namespace {
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
-        && (ss->ply >= thisThread->nmp_ply || ss->ply % 2 != thisThread->nmp_odd))
+        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
     {
         assert(eval - beta >= 0);
 
