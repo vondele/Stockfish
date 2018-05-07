@@ -996,7 +996,7 @@ moves_loop: // When in check, search starts from here
                   r += ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
-              if (!PvNode && (ss-1)->moveCount>4)
+              if (!PvNode && (ss-1)->moveCount>5)
                   r += 2 * ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
