@@ -682,18 +682,12 @@ namespace {
         }
     }
 
-    // Step 6. Static evaluation of the position
-    if (inCheck)
-    {
-        ss->staticEval = eval = VALUE_NONE;
-        improving = false;
-        goto moves_loop;  // Skip early pruning when in check
-    }
-    else if (ttHit)
+    // Step 6. Evaluate the position statically
+    if (ttHit)
     {
         // Never assume anything on values stored in TT
         if ((ss->staticEval = eval = tte->eval()) == VALUE_NONE)
-            eval = ss->staticEval = evaluate(pos);
+            eval = ss->staticEval = inCheck ? VALUE_NONE : evaluate(pos);
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
@@ -703,15 +697,18 @@ namespace {
     else
     {
         ss->staticEval = eval =
-        (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
+        (ss-1)->currentMove != MOVE_NULL ? (inCheck ? VALUE_NONE : evaluate(pos))
                                          : -(ss-1)->staticEval + 2 * Eval::Tempo;
 
         tte->save(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE,
                   ss->staticEval, TT.generation());
     }
 
-    // Step 7. Razoring (~2 Elo)
+    improving = inCheck ? false : (ss->staticEval >= (ss-2)->staticEval || (ss-2)->staticEval == VALUE_NONE);
+
+    // Step 7. Razoring (skipped when in check, ~2 Elo)
     if (  !PvNode
+        && !inCheck
         && depth < 3 * ONE_PLY
         && eval <= alpha - RazorMargin[depth / ONE_PLY])
     {
@@ -721,11 +718,9 @@ namespace {
             return v;
     }
 
-    improving =   ss->staticEval >= (ss-2)->staticEval
-               || (ss-2)->staticEval == VALUE_NONE;
-
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !rootNode
+        && !inCheck
         &&  depth < 7 * ONE_PLY
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -733,6 +728,7 @@ namespace {
 
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
+        && !inCheck
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 30000
         &&  eval >= beta
@@ -782,6 +778,7 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
+        && !inCheck
         &&  depth >= 5 * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
@@ -818,6 +815,7 @@ namespace {
 
     // Step 11. Internal iterative deepening (~2 Elo)
     if (    depth >= 8 * ONE_PLY
+        && !inCheck
         && !ttMove)
     {
         Depth d = 3 * depth / 4 - 2 * ONE_PLY;
@@ -828,8 +826,7 @@ namespace {
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
 
-moves_loop: // When in check, search starts from here
-
+    // prepare for moves loop
     const PieceToHistory* contHist[] = { (ss-1)->contHistory, (ss-2)->contHistory, nullptr, (ss-4)->contHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
