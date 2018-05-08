@@ -708,7 +708,7 @@ namespace {
 
     // Step 7. Razoring (skipped when in check, ~2 Elo)
     if (  !PvNode
-        && !inCheck
+        && eval != VALUE_NONE
         && depth < 3 * ONE_PLY
         && eval <= alpha - RazorMargin[depth / ONE_PLY])
     {
@@ -720,7 +720,7 @@ namespace {
 
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !rootNode
-        && !inCheck
+        &&  eval != VALUE_NONE
         &&  depth < 7 * ONE_PLY
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -815,7 +815,6 @@ namespace {
 
     // Step 11. Internal iterative deepening (~2 Elo)
     if (    depth >= 8 * ONE_PLY
-        && !inCheck
         && !ttMove)
     {
         Depth d = 3 * depth / 4 - 2 * ONE_PLY;
