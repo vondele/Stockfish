@@ -488,7 +488,7 @@ namespace {
             kingDanger = std::max(0, kingDanger + mobilityDanger);
             int s1 = kingDanger * kingDanger / 4096;
             int s2 = kingDanger / 16;
-            score -= make_score(std::max(s1, s2), std::min(s1, s2));
+            score -= make_score(s1, std::min(s1, s2));
         }
     }
 
