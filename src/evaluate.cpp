@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
@@ -482,8 +483,8 @@ namespace {
 
         if (kingDanger > 0)
         {
-            kingDanger = std::max(0, kingDanger + mg_value(mobility[Them] - mobility[Us]));
-            score -= make_score(kingDanger / 16 + kingDanger * kingDanger / 8192, kingDanger / 16);
+            kingDanger = std::max(0, kingDanger + mg_value(mobility[Them] - mobility[Us])) / 16;
+            score -= make_score(kingDanger + std::pow(kingDanger, 3) / 512, kingDanger);
         }
     }
 
