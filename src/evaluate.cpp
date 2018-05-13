@@ -478,11 +478,13 @@ namespace {
                      + 191 * popcount(kingRing[Us] & weak)
                      + 143 * popcount(pos.blockers_for_king(Us) | unsafeChecks)
                      - 848 * !pos.count<QUEEN>(Them)
-                     -   9 * mg_value(score) / 8
-                     +       mg_value(mobility[Them] - mobility[Us]);
+                     -   9 * mg_value(score) / 8;
 
-        kingDanger = std::max(0, kingDanger);
-        score -= make_score(kingDanger / 16 + kingDanger * kingDanger / 8192, kingDanger / 16);
+        if (kingDanger > 0)
+        {
+            kingDanger = std::max(0, kingDanger + mg_value(mobility[Them] - mobility[Us]));
+            score -= make_score(kingDanger / 16 + kingDanger * kingDanger / 8192, kingDanger / 16);
+        }
     }
 
     Bitboard kf = KingFlank[file_of(ksq)];
