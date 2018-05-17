@@ -755,7 +755,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
+        Depth R = ((823 + 97 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
         if (depth > 10 * ONE_PLY && R > 4 * ONE_PLY)
             R -= 24 / std::max(6, int(MoveList<LEGAL>(pos).size())) * ONE_PLY;
