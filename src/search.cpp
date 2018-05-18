@@ -806,10 +806,11 @@ namespace {
             {
                 probCutCount++;
 
+                if (thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
+                    continue;
+
                 ss->currentMove = move;
                 ss->contHistory = thisThread->contHistory[pos.moved_piece(move)][to_sq(move)].get();
-
-                assert(depth >= 5 * ONE_PLY);
 
                 pos.do_move(move, st);
 
