@@ -682,18 +682,6 @@ namespace {
         }
     }
 
-    // Check if there exists a move which draws by repetition, or an alternative
-    // earlier move to this position.
-    if (  !rootNode
-        && pos.rule50_count() >= 3
-        && alpha < VALUE_DRAW
-        && pos.has_game_cycle(ss->ply))
-    {
-        alpha = VALUE_DRAW;
-        if (alpha >= beta)
-            return alpha;
-    }
-
     // Step 6. Static evaluation of the position
     if (inCheck)
     {
@@ -827,6 +815,19 @@ namespace {
                     return value;
             }
     }
+
+    // Check if there exists a move which draws by repetition, or an alternative
+    // earlier move to this position.
+    if (  !rootNode
+        && pos.rule50_count() >= 3
+        && alpha < VALUE_DRAW
+        && pos.has_game_cycle(ss->ply))
+    {
+        alpha = VALUE_DRAW;
+        if (alpha >= beta)
+            return alpha;
+    }
+
 
     // Step 11. Internal iterative deepening (~2 Elo)
     if (    depth >= 8 * ONE_PLY
