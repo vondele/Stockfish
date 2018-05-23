@@ -773,7 +773,7 @@ namespace {
             if (nullValue >= VALUE_MATE_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (abs(beta) < VALUE_KNOWN_WIN && (depth < 12 * ONE_PLY || thisThread->nmp_min_ply))
+            if (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY)
                 return nullValue;
 
             // Do verification search at high depths. Disable null move pruning
