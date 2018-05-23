@@ -773,8 +773,11 @@ namespace {
             if (nullValue >= VALUE_MATE_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY)
+            if (thisThread->nmp_min_ply || (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY))
                 return nullValue;
+
+            // Recursive verification is not allowed
+            assert(!thisThread->nmp_min_ply);
 
             // Do verification search at high depths. Disable null move pruning
             // for side to move for the first part of the remaining search tree.
