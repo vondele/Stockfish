@@ -925,7 +925,7 @@ moves_loop: // When in check, search starts from here
           && pos.rule50_count() > 16
           && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
       {
-          extension = 4 * ONE_PLY;
+          extension = 2 * ONE_PLY;
       }
 
       // Calculate new depth for this move
