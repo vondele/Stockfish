@@ -922,7 +922,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       if (   pos.rule50_count() > 16
-          && depth > 4 * ONE_PLY
+          && depth > 6 * ONE_PLY
           && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
           extension = ONE_PLY;
 
