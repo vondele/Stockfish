@@ -921,13 +921,6 @@ moves_loop: // When in check, search starts from here
                &&  pos.see_ge(move))
           extension = ONE_PLY;
 
-      if (   PvNode
-          && pos.rule50_count() > 16
-          && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
-      {
-          extension = 2 * ONE_PLY;
-      }
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -997,6 +990,7 @@ moves_loop: // When in check, search starts from here
       // re-searched at full depth.
       if (    depth >= 3 * ONE_PLY
           &&  moveCount > 1
+          && !(pos.rule50_count() > 16 && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
           && (!captureOrPromotion || moveCountPruning))
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
