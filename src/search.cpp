@@ -856,6 +856,7 @@ moves_loop: // When in check, search starts from here
 
     skipQuiets = false;
     ttCapture = false;
+    int shuffleExtCount = 0;
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
@@ -922,9 +923,13 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       if (   pos.rule50_count() > 16
-          && depth > 6 * ONE_PLY
+          && depth > 5 * ONE_PLY
+          && shuffleExtCount < 2
           && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
+      {
           extension = ONE_PLY;
+          shuffleExtCount++;
+      }
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
