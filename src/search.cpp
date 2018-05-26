@@ -923,7 +923,8 @@ moves_loop: // When in check, search starts from here
 
       if (   pos.rule50_count() > 16
           && depth > 5 * ONE_PLY
-          && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
+          && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)) 
+          && pos.non_pawn_material() >= Value(3000))
           extension = ONE_PLY;
 
       // Calculate new depth for this move
