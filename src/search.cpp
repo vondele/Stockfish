@@ -749,7 +749,7 @@ namespace {
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22500
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * (depth / ONE_PLY + ss->pvDist) + 225
+        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply > thisThread->nmp_min_ply || us != thisThread->nmp_color))
@@ -942,7 +942,7 @@ moves_loop: // When in check, search starts from here
               }
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
+              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount) - ONE_PLY * (ss->pvDist / 10), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 3
