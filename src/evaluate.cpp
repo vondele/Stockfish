@@ -174,6 +174,7 @@ namespace {
   constexpr Score Overload           = S( 10,  5);
   constexpr Score PawnlessFlank      = S( 20, 80);
   constexpr Score RookOnPawn         = S(  8, 24);
+  constexpr Score RookPassedPawn     = S(  0,  5);
   constexpr Score SliderOnQueen      = S( 42, 21);
   constexpr Score ThreatByPawnPush   = S( 47, 26);
   constexpr Score ThreatByRank       = S( 16,  3);
@@ -640,6 +641,8 @@ namespace {
     Score score = SCORE_ZERO;
 
     b = pe->passed_pawns(Us);
+    if (b && pos.count<ROOK>(Us) > pos.count<ROOK>(Them))
+        score += RookPassedPawn * (popcount(b) - pos.count<ROOK>(Them));
 
     while (b)
     {
