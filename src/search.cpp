@@ -774,22 +774,26 @@ namespace {
             if (nullValue >= VALUE_MATE_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY))
+            if (!(thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY))) {
+
+                assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
+
+                // Do verification search at high depths, with null move pruning disabled
+                // for us, until ply exceeds nmpMinPly.
+                thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / 4;
+                thisThread->nmpColor = us;
+
+                nullValue = search<NonPV>(pos, ss, beta-1, beta, depth-R, false);
+
+                thisThread->nmpMinPly = 0;
+
+            }
+
+            if (nullValue >= beta) {
+                if ((ss-1)->moveCount == 1 && !pos.captured_piece())
+                    update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
                 return nullValue;
-
-            assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
-
-            // Do verification search at high depths, with null move pruning disabled
-            // for us, until ply exceeds nmpMinPly.
-            thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / 4;
-            thisThread->nmpColor = us;
-
-            Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false);
-
-            thisThread->nmpMinPly = 0;
-
-            if (v >= beta)
-                return nullValue;
+            }
         }
     }
 
