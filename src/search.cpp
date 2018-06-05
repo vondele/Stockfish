@@ -729,7 +729,7 @@ namespace {
         && eval <= alpha - RazorMargin[depth / ONE_PLY])
     {
         Value ralpha = alpha - (depth >= 2 * ONE_PLY) * RazorMargin[depth / ONE_PLY];
-        Value v = qsearch<NonPV>(pos, ss, ralpha, ralpha+1);
+        Value v = search<NonPV>(pos, ss, ralpha, ralpha+1, DEPTH_ZERO, false);
         if (depth < 2 * ONE_PLY || v <= ralpha)
             return v;
     }
@@ -818,7 +818,7 @@ namespace {
                 pos.do_move(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
-                value = -qsearch<NonPV>(pos, ss+1, -rbeta, -rbeta+1);
+                value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, DEPTH_ZERO, false);
 
                 // If the qsearch held perform the regular search
                 if (value >= rbeta)
