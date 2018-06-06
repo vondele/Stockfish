@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "movepick.h"
 
@@ -109,7 +110,7 @@ void MovePicker::score() {
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
   for (auto& m : *this)
-      if (Type == CAPTURES)
+      if (Type == CAPTURES) 
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))] / 16;
 
@@ -174,7 +175,8 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(move, Value(-55 * (cur-1)->value / 1024)) ?
+                       return (  (*captureHistory)[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 10300
+                               || pos.see_ge(move, Value(-55 * (cur-1)->value / 1024))) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = move, false); }))
           return move;
