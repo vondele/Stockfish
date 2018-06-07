@@ -286,7 +286,7 @@ void Thread::search() {
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
   Color us = rootPos.side_to_move();
-  bool failedLow;
+  bool failedLow = false;
 
   std::memset(ss-4, 0, 7 * sizeof(Stack));
   for (int i = 4; i > 0; i--)
@@ -294,9 +294,6 @@ void Thread::search() {
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
-
-  if (mainThread)
-      mainThread->bestMoveChanges = 0, failedLow = false;
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
@@ -335,10 +332,6 @@ void Thread::search() {
               continue;  // Retry with an incremented rootDepth
       }
 
-      // Age out PV variability metric
-      if (mainThread)
-          mainThread->bestMoveChanges *= 0.517, failedLow = false;
-
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
       for (RootMove& rm : rootMoves)
@@ -346,6 +339,7 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
+      failedLow = false;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
@@ -412,11 +406,9 @@ void Thread::search() {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
+                  failedLow = true;
                   if (mainThread)
-                  {
-                      failedLow = true;
                       Threads.stopOnPonderhit = false;
-                  }
               }
               else if (bestValue >= beta)
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
@@ -457,15 +449,17 @@ void Thread::search() {
       if (skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
 
-      // Do we have time for the next iteration? Can we stop searching now?
+      // Check if the adjusted optimum time has passed and search can be stopped
       if (    Limits.use_time_management()
           && !Threads.stop
           && !Threads.stopOnPonderhit)
           {
-              const int F[] = { failedLow,
-                                bestValue - mainThread->previousScore };
+              // Scaling factor on how the score changed
+              int scoreChange = bestValue - mainThread->previousScore;
+              double improvingFactor = std::max(0.416, std::min(1.453, 0.527 + 0.208 * failedLow  - 0.0101 * scoreChange));
 
-              int improvingFactor = std::max(246, std::min(832, 306 + 119 * F[0] - 6 * F[1]));
+              // Account for recent changes of bestMove
+              double bestMoveInstability = 1.0 + 1.814 * std::pow(2.21, (lastBestMoveDepth - completedDepth) / ONE_PLY);
 
               // If the bestMove is stable over several iterations, reduce time accordingly
               timeReduction = 1.0;
@@ -474,12 +468,11 @@ void Thread::search() {
                      timeReduction *= 1.25;
 
               // Use part of the gained time from a previous stable move for the current move
-              double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
 
-              // Stop the search if we have only one legal move, or if available time elapsed
+              // Stop the search if we have only one legal move, or if elapsed time exceeds the adjusted optimum.
               if (   rootMoves.size() == 1
-                  || Time.elapsed() > Time.optimum() * bestMoveInstability * improvingFactor / 581)
+                  || Time.elapsed() > Time.optimum() * bestMoveInstability * improvingFactor)
               {
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
@@ -1085,12 +1078,6 @@ moves_loop: // When in check, search starts from here
 
               for (Move* m = (ss+1)->pv; *m != MOVE_NONE; ++m)
                   rm.pv.push_back(*m);
-
-              // We record how often the best move has been changed in each
-              // iteration. This information is used for time management: When
-              // the best move changes frequently, we allocate some more time.
-              if (moveCount > 1 && thisThread == Threads.main())
-                  ++static_cast<MainThread*>(thisThread)->bestMoveChanges;
           }
           else
               // All other moves but the PV are set to the lowest value: this
