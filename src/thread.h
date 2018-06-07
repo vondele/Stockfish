@@ -85,8 +85,7 @@ struct MainThread : public Thread {
   void search() override;
   void check_time();
 
-  bool failedLow;
-  double bestMoveChanges, previousTimeReduction;
+  double previousTimeReduction;
   Value previousScore;
   int callsCnt;
 };
