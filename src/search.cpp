@@ -65,8 +65,8 @@ namespace {
   constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
-  int nom = 200, denom = 220;
-  TUNE(nom, denom);
+  int nom = 1830, denom = 2250;
+  TUNE(SetRange(1500,2100),nom,SetRange(1900,2500),denom);
 
   // Razor and futility margins
   constexpr int RazorMargin[] = {0, 590, 604};
@@ -479,7 +479,7 @@ void Thread::search() {
                      timeReduction *= 1.25;
 
               // Use part of the gained time from a previous stable move for the current move
-              double bestMoveInstability = 1.0 + (nom/100.0)/std::pow(denom/100.0, (completedDepth - lastBestMoveDepth) / ONE_PLY);
+              double bestMoveInstability = 1.0 + (nom/1000.0)/std::pow(denom/1000.0, (completedDepth - lastBestMoveDepth) / ONE_PLY);
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
 
               // Stop the search if we have only one legal move, or if available time elapsed
