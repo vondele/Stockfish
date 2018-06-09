@@ -71,8 +71,8 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
-  // Margin adjustment for pruning capturing moves: almost constant 1024.
-  constexpr int CapturePruneAdjust[] = { 0, 1080, 1067, 986, 1063, 973, 952, 1024};
+  // Margin adjustment for pruning capturing moves: almost constant -1024.
+  constexpr int CapturePruneAdjust[] = { 0, -1080, -1067, -986, -1063, -973, -952, -1024};
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
