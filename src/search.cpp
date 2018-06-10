@@ -459,15 +459,17 @@ void Thread::search() {
       if (skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
 
-      // Do we have time for the next iteration? Can we stop searching now?
+      // Check if the adjusted optimum time has passed and search can be stopped
       if (    Limits.use_time_management()
           && !Threads.stop
           && !Threads.stopOnPonderhit)
           {
-              const int F[] = { failedLow,
-                                bestValue - mainThread->previousScore };
+              // Scaling factor on how the score changed
+              int scoreChange = bestValue - mainThread->previousScore;
+              double improvingFactor = std::max(0.423, std::min(1.432, 0.527 + 0.208 * failedLow  - 0.0101 * scoreChange));
 
-              int improvingFactor = std::max(246, std::min(832, 306 + 119 * F[0] - 6 * F[1]));
+              // Account for recent changes of bestMove
+              double bestMoveInstability = 1.0 + 1.814 * std::pow(2.21, (lastBestMoveDepth - completedDepth) / ONE_PLY);
 
               // If the bestMove is stable over several iterations, reduce time accordingly
               timeReduction = 1.0;
@@ -476,12 +478,11 @@ void Thread::search() {
                      timeReduction *= 1.25;
 
               // Use part of the gained time from a previous stable move for the current move
-              double bestMoveInstability = 1.0 + 1.814/std::pow(2.21, (completedDepth - lastBestMoveDepth) / ONE_PLY);
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
 
               // Stop the search if we have only one legal move, or if available time elapsed
               if (   rootMoves.size() == 1
-                  || Time.elapsed() > Time.optimum() * bestMoveInstability * improvingFactor / 581)
+                  || Time.elapsed() > Time.optimum() * bestMoveInstability * improvingFactor)
               {
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
