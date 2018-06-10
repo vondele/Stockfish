@@ -71,6 +71,10 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
+ int F1 = 119, F2 = 60;
+ TUNE(SetRange(70,170),F1,SetRange(30,90),F2);
+
+
   // Margin for pruning capturing moves: almost linear in depth
   constexpr int CapturePruneMargin[] = { 0,
                                          1 * PawnValueEg * 1055 / 1000,
@@ -464,8 +468,6 @@ void Thread::search() {
           && !Threads.stop
           && !Threads.stopOnPonderhit)
           {
-              int F1 = 119, F2 = 60;
-
               // Scaling factor on how the score changed
               int scoreChange = bestValue - mainThread->previousScore;
               double improvingFactor = std::max(0.423, std::min(1.432, 0.527 + (F1 * 10 * failedLow  - F2 * scoreChange) / 5810.0));
