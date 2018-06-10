@@ -58,6 +58,9 @@ using namespace Search;
 
 namespace {
 
+  int F1=423, F2=432;
+  TUNE(SetRange(250,800),F1,F2);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
@@ -466,7 +469,7 @@ void Thread::search() {
           {
               // Scaling factor on how the score changed
               int scoreChange = bestValue - mainThread->previousScore;
-              double improvingFactor = std::max(0.423, std::min(1.432, 0.527 + 0.208 * failedLow  - 0.0101 * scoreChange));
+              double improvingFactor = std::max(F1/1000.0, std::min(1.0+F2/1000.0, 0.527 + 0.208 * failedLow  - 0.0101 * scoreChange));
 
               // Account for recent changes of bestMove
               double bestMoveInstability = 1.0 + 1.814 * std::pow(2.21, (lastBestMoveDepth - completedDepth) / ONE_PLY);
