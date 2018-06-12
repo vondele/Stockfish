@@ -917,6 +917,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
+          && !extension
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
@@ -952,7 +953,6 @@ moves_loop: // When in check, search starts from here
                   continue;
           }
           else if (    depth < 7 * ONE_PLY // (~20 Elo)
-                   && !extension
                    && !pos.see_ge(move, -Value(PawnValueEg * (depth / ONE_PLY))))
                   continue;
       }
