@@ -904,8 +904,14 @@ moves_loop: // When in check, search starts from here
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
           ss->excludedMove = MOVE_NONE;
 
-          if (value < rBeta)
+          if (value < rBeta) {
+              // update move sorting heuristics
+              if (!pos.capture_or_promotion(move))
+                  update_quiet_stats(pos, ss, move, nullptr, 0, stat_bonus(depth / 2));
+              else
+                  update_capture_stats(pos, move, nullptr, 0, stat_bonus(depth / 2));
               extension = ONE_PLY;
+          }
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
@@ -1153,7 +1159,7 @@ moves_loop: // When in check, search starts from here
                    :     inCheck ? mated_in(ss->ply) : VALUE_DRAW;
     else if (bestMove)
     {
-        // Quiet best move: update move sorting heuristics
+        // update move sorting heuristics
         if (!pos.capture_or_promotion(bestMove))
             update_quiet_stats(pos, ss, bestMove, quietsSearched, quietCount,
                                stat_bonus(depth + (bestValue > beta + PawnValueMg ? ONE_PLY : DEPTH_ZERO)));
