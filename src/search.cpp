@@ -282,7 +282,7 @@ void Thread::search() {
   Stack stack[MAX_PLY+7], *ss = stack+4; // To reference from (ss-4) to (ss+2)
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
-  Depth lastBestMoveDepth = DEPTH_NONE;
+  Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
   Color us = rootPos.side_to_move();
@@ -431,7 +431,7 @@ void Thread::search() {
       if (!Threads.stop)
           completedDepth = rootDepth;
 
-      if (lastBestMove && rootMoves[0].pv[0] != lastBestMove)
+      if (rootMoves[0].pv[0] != lastBestMove)
           lastBestMoveDepth = rootDepth;
       lastBestMove = rootMoves[0].pv[0];
 
@@ -461,10 +461,7 @@ void Thread::search() {
               double bestMoveInstability = 1.0 + 1.791 * std::pow(2.202, (lastBestMoveDepth - completedDepth) / ONE_PLY);
 
               // If the bestMove is stable over several iterations, reduce time accordingly
-              timeReduction = 1.0;
-              for (int i : {3, 4, 5})
-                  if (lastBestMoveDepth * i < completedDepth)
-                     timeReduction *= 1.26;
+              timeReduction = lastBestMoveDepth * 4 < completedDepth ? 2.0 : 1.0;
 
               // Use part of the gained time from a previous stable move for the current move
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
