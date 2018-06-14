@@ -61,6 +61,8 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
+  int F1=0, F2=0, F3=0, F4=0;
+
   // Sizes and phases of the skip-blocks, used for distributing search depths across the threads
   constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
@@ -456,16 +458,16 @@ void Thread::search() {
           {
               // Scaling factor on how the score changed
               int scoreChange = bestValue - mainThread->previousScore;
-              double improvingFactor = std::max(0.416, std::min(1.453, 0.527 + 0.208 * failedLow  - 0.0101 * scoreChange));
+              double improvingFactor = (1.0+F1/1000.0)*std::max(0.416, std::min(1.453, 0.527 + 0.208 * failedLow  - 0.0101 * scoreChange));
 
               // Account for recent changes of bestMove
-              double bestMoveInstability = 1.0 + 1.814 * std::pow(2.21, (lastBestMoveDepth - completedDepth) / ONE_PLY);
+              double bestMoveInstability = 1.0 + (1.814 + F2/1000.0) * std::pow(2.21 + F3/1000.0, (lastBestMoveDepth - completedDepth) / ONE_PLY);
 
               // If the bestMove is stable over several iterations, reduce time accordingly
               timeReduction = 1.0;
               for (int i : {3, 4, 5})
                   if (lastBestMoveDepth * i < completedDepth)
-                     timeReduction *= 1.25;
+                     timeReduction *= 1.25 + F4/1000.0;
 
               // Use part of the gained time from a previous stable move for the current move
               bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
