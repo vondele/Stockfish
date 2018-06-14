@@ -62,6 +62,7 @@ namespace {
   enum NodeType { NonPV, PV };
 
   int F1=0, F2=0, F3=0, F4=0;
+  TUNE(SetRange(-100,100),F1,SetRange(-200,200),F2, F3, F4);
 
   // Sizes and phases of the skip-blocks, used for distributing search depths across the threads
   constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
