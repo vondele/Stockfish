@@ -282,7 +282,7 @@ void Thread::search() {
   Stack stack[MAX_PLY+7], *ss = stack+4; // To reference from (ss-4) to (ss+2)
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
-  Depth lastBestMoveDepth = DEPTH_ZERO;
+  Depth lastBestMoveDepth = DEPTH_NONE;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
   Color us = rootPos.side_to_move();
@@ -431,10 +431,9 @@ void Thread::search() {
       if (!Threads.stop)
           completedDepth = rootDepth;
 
-      if (rootMoves[0].pv[0] != lastBestMove) {
-         lastBestMove = rootMoves[0].pv[0];
-         lastBestMoveDepth = rootDepth;
-      }
+      if (lastBestMove && rootMoves[0].pv[0] != lastBestMove)
+          lastBestMoveDepth = rootDepth;
+      lastBestMove = rootMoves[0].pv[0];
 
       // Have we found a "mate in x"?
       if (   Limits.mate
