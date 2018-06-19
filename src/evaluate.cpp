@@ -97,6 +97,8 @@ namespace {
   constexpr int BishopSafeCheck = 435;
   constexpr int KnightSafeCheck = 790;
 
+  int F1=48, F2=48, F3=136;
+
 #define S(mg, eg) make_score(mg, eg)
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
@@ -775,9 +777,9 @@ namespace {
                     +  8 * pe->pawn_asymmetry()
                     + 12 * pos.count<PAWN>()
                     + 16 * pawnsOnBothFlanks
-                    + 48 * !pos.non_pawn_material()
-                    - 64 * (pos.non_pawn_material() < 2 * (QueenValueMg + RookValueMg + BishopValueMg) && pos.opposite_bishops())
-                    -136 ;
+                    + F1 * !pos.non_pawn_material()
+                    - F2 * (pos.non_pawn_material() < 2 * (QueenValueMg + RookValueMg + BishopValueMg) && pos.opposite_bishops())
+                    - F3 ;
 
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
