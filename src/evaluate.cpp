@@ -98,6 +98,7 @@ namespace {
   constexpr int KnightSafeCheck = 790;
 
   int F1=48, F2=48, F3=136;
+  TUNE(F1,F2,F3);
 
 #define S(mg, eg) make_score(mg, eg)
 
