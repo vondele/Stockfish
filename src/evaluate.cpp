@@ -775,9 +775,9 @@ namespace {
                     +  8 * pe->pawn_asymmetry()
                     + 12 * pos.count<PAWN>()
                     + 16 * pawnsOnBothFlanks
-                    + 51 * !pos.non_pawn_material()
-                    - 44 * (pos.non_pawn_material() < 2 * (QueenValueMg + RookValueMg + BishopValueMg) && pos.opposite_bishops())
-                    -117 ;
+                    + 54 * !pos.non_pawn_material()
+                    - 43 * (pos.non_pawn_material() < 2 * (QueenValueMg + RookValueMg + BishopValueMg) && pos.opposite_bishops())
+                    -122;
 
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
