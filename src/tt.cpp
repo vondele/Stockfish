@@ -42,7 +42,7 @@ void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev, int PvDis
 
   // Overwrite less valuable entries
   if (  (k >> 48) != key16
-      || d / ONE_PLY > depth8 - 8 + PvDist / 4
+      || d / ONE_PLY > depth8 - 9 + PvDist / 2
       || b == BOUND_EXACT)
   {
       key16     = (uint16_t)(k >> 48);
