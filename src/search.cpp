@@ -590,6 +590,7 @@ namespace {
     ss->contHistory = thisThread->contHistory[NO_PIECE][0].get();
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
+    ss->PvDist = PvNode ? 0 : (ss-1)->PvDist + 1;
 
     // Initialize statScore to zero for the grandchildren of the current position.
     // So statScore is shared between all grandchildren and only the first grandchild
@@ -670,7 +671,7 @@ namespace {
                 {
                     tte->save(posKey, value_to_tt(value, ss->ply), b,
                               std::min(DEPTH_MAX - ONE_PLY, depth + 6 * ONE_PLY),
-                              MOVE_NONE, VALUE_NONE);
+                              MOVE_NONE, VALUE_NONE, ss->PvDist);
 
                     return value;
                 }
@@ -711,7 +712,7 @@ namespace {
                                          : -(ss-1)->staticEval + 2 * Eval::Tempo;
 
         tte->save(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE,
-                  ss->staticEval);
+                  ss->staticEval, ss->PvDist);
     }
 
     // Step 7. Razoring (~2 Elo)
@@ -1175,7 +1176,7 @@ moves_loop: // When in check, search starts from here
         tte->save(posKey, value_to_tt(bestValue, ss->ply),
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  depth, bestMove, ss->staticEval);
+                  depth, bestMove, ss->staticEval, ss->PvDist);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -1213,6 +1214,7 @@ moves_loop: // When in check, search starts from here
     }
 
     (ss+1)->ply = ss->ply + 1;
+    ss->PvDist = PvNode ? 0 : (ss-1)->PvDist + 1;
     ss->currentMove = bestMove = MOVE_NONE;
     inCheck = pos.checkers();
     moveCount = 0;
@@ -1272,7 +1274,7 @@ moves_loop: // When in check, search starts from here
         {
             if (!ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), BOUND_LOWER,
-                          DEPTH_NONE, MOVE_NONE, ss->staticEval);
+                          DEPTH_NONE, MOVE_NONE, ss->staticEval, ss->PvDist);
 
             return bestValue;
         }
@@ -1371,7 +1373,7 @@ moves_loop: // When in check, search starts from here
               else // Fail high
               {
                   tte->save(posKey, value_to_tt(value, ss->ply), BOUND_LOWER,
-                            ttDepth, move, ss->staticEval);
+                            ttDepth, move, ss->staticEval, ss->PvDist);
 
                   return value;
               }
@@ -1386,7 +1388,7 @@ moves_loop: // When in check, search starts from here
 
     tte->save(posKey, value_to_tt(bestValue, ss->ply),
               PvNode && bestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
-              ttDepth, bestMove, ss->staticEval);
+              ttDepth, bestMove, ss->staticEval, ss->PvDist);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 

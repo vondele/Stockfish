@@ -30,9 +30,11 @@
 TranspositionTable TT; // Our global transposition table
 
 /// TTEntry::save saves a TTEntry
-void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {
+void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev, int PvDist) {
 
   assert(d / ONE_PLY * ONE_PLY == d);
+
+  // std::cout << "xxx " << d << " " << int(depth8) << " " << PvDist << std::endl;
 
   // Preserve any existing move for the same position
   if (m || (k >> 48) != key16)
@@ -40,7 +42,7 @@ void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {
 
   // Overwrite less valuable entries
   if (  (k >> 48) != key16
-      || d / ONE_PLY > depth8 - 4
+      || d / ONE_PLY > depth8 - 8 + PvDist / 4
       || b == BOUND_EXACT)
   {
       key16     = (uint16_t)(k >> 48);
