@@ -325,7 +325,7 @@ void Thread::search() {
   {
       // Distribute search depths across the helper threads
       if (   idx > 0
-          && ((rootDepth / ONE_PLY + idx % msb(idx + 1)) / msb(idx + 1)) % 2)
+          && ((rootDepth / ONE_PLY + idx % (1 + msb(idx + 1))) / msb(idx + 1)) % 2)
           continue;
 
       // Age out PV variability metric
