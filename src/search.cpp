@@ -631,7 +631,7 @@ namespace {
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
-        && !thisThread->pvDraw
+        && !(thisThread->pvDraw && ttValue < beta)
         && ttHit
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
