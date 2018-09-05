@@ -557,7 +557,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, pureStaticEval;
-    bool ttHit, inCheck, givesCheck, improving, looksDraw;
+    bool ttHit, inCheck, givesCheck, improving;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture, pvExact;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
@@ -701,10 +701,6 @@ namespace {
             }
         }
     }
-
-    looksDraw =    ttHit
-                && ttValue == VALUE_DRAW
-                && (tte->bound() & BOUND_UPPER);
 
     // Step 6. Static evaluation of the position
     if (inCheck)
@@ -1005,7 +1001,10 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
 
-          if (looksDraw)
+          if (   depth >= 6 * ONE_PLY
+              && ttHit
+              && ttValue == VALUE_DRAW
+              && (tte->bound() & BOUND_UPPER))
               r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
