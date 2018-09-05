@@ -999,12 +999,7 @@ moves_loop: // When in check, search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount);
-
-          if (   ttHit
-              && ttValue == VALUE_DRAW
-              && (tte->bound() & BOUND_UPPER))
-              r -= 2 * ONE_PLY;
+          Depth r = reduction<PvNode>(improving || (ttHit && ttValue == VALUE_DRAW && (tte->bound() & BOUND_UPPER)), depth, moveCount);
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
