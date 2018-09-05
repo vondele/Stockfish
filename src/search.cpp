@@ -1001,7 +1001,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
 
-          if (   depth >= 6 * ONE_PLY
+          if (   depth >= 4 * ONE_PLY
               && ttHit
               && ttValue == VALUE_DRAW
               && (tte->bound() & BOUND_UPPER))
