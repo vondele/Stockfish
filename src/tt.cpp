@@ -28,6 +28,7 @@
 #include "uci.h"
 
 TranspositionTable TT; // Our global transposition table
+TranspositionTable TTexcl; // Our global transposition table for positions with excluded move
 
 /// TTEntry::save saves a TTEntry
 void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {

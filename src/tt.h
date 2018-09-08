@@ -97,5 +97,6 @@ private:
 };
 
 extern TranspositionTable TT;
+extern TranspositionTable TTexcl;
 
 #endif // #ifndef TT_H_INCLUDED

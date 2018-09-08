@@ -140,6 +140,7 @@ void ThreadPool::set(size_t requested) {
 
   // Reallocate the hash with the new threadpool size
   TT.resize(Options["Hash"]);
+  TTexcl.resize((Options["Hash"]+63)/64);
 }
 
 /// ThreadPool::clear() sets threadPool data to initial values.

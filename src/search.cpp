@@ -179,6 +179,7 @@ void Search::clear() {
 
   Time.availableNodes = 0;
   TT.clear();
+  TTexcl.clear();
   Threads.clear();
 }
 
@@ -198,6 +199,7 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
+  TTexcl.new_search();
 
   if (rootMoves.empty())
   {
@@ -616,10 +618,13 @@ namespace {
 
     // Step 4. Transposition table lookup. We don't want the score of a partial
     // search to overwrite a previous full search TT value, so we use a different
-    // position key in case of an excluded move.
+    // TT for excuded moves
     excludedMove = ss->excludedMove;
-    posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-    tte = TT.probe(posKey, ttHit);
+    posKey = pos.key();
+    if (excludedMove == MOVE_NONE)
+        tte = TT.probe(posKey, ttHit);
+    else
+        tte = TTexcl.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
@@ -846,7 +851,10 @@ namespace {
     {
         search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
 
-        tte = TT.probe(posKey, ttHit);
+        if (excludedMove == MOVE_NONE)
+            tte = TT.probe(posKey, ttHit);
+        else
+            tte = TTexcl.probe(posKey, ttHit);
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
@@ -1181,11 +1189,10 @@ moves_loop: // When in check, search starts from here
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
 
-    if (!excludedMove)
-        tte->save(posKey, value_to_tt(bestValue, ss->ply),
-                  bestValue >= beta ? BOUND_LOWER :
-                  PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  depth, bestMove, pureStaticEval);
+    tte->save(posKey, value_to_tt(bestValue, ss->ply),
+              bestValue >= beta ? BOUND_LOWER :
+              PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
+              depth, bestMove, pureStaticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
