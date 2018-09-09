@@ -57,6 +57,8 @@ using Eval::evaluate;
 using namespace Search;
 
 namespace {
+  int a1 = 48, a2 = 64, a3 = 64, a4 = 0;
+  TUNE(SetRange(-128,128),a1,a2,a3,a4);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
@@ -917,8 +919,10 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          int f = (givesCheck && pos.see_ge(move)) ? 10 : 0;
-          Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY + f, -VALUE_MATE);
+          int ttAdjust = (givesCheck && pos.see_ge(move)) ?
+                         (-a1 * depth / ONE_PLY + 2 * a2) / 32 :
+                         (-a3 * depth / ONE_PLY + 2 * a4) / 32;
+          Value rBeta = std::max(ttValue + ttAdjust, -VALUE_MATE);
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
           ss->excludedMove = MOVE_NONE;
