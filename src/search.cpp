@@ -857,7 +857,7 @@ moves_loop: // When in check, search starts from here
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
     // count at high depth, otherwise some guestimate.
-    int countedMoves = depth <= 8 ? 26 : MoveList<LEGAL>(pos).size();
+    int countedMoves = depth <= 7 ? 26 : MoveList<LEGAL>(pos).size();
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
@@ -1004,7 +1004,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
 
-          if (countedMoves < 16)
+          if (countedMoves < 15)
               r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
