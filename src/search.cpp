@@ -908,6 +908,7 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
+      bool singular = false;
       if (    depth >= 8 * ONE_PLY
           &&  move == ttMove
           && !rootNode
@@ -922,8 +923,10 @@ moves_loop: // When in check, search starts from here
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
           ss->excludedMove = MOVE_NONE;
 
-          if (value < rBeta)
+          if (value < rBeta) {
               extension = ONE_PLY;
+              singular = true;
+          }
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
@@ -934,7 +937,8 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 14. Pruning at shallow depth (~170 Elo)
-      if (  !rootNode
+      if (   !rootNode
+          && !singular
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
