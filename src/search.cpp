@@ -938,7 +938,6 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (   !rootNode
-          && !singular
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
@@ -1012,7 +1011,7 @@ moves_loop: // When in check, search starts from here
           if (!captureOrPromotion)
           {
               // Decrease reduction for exact PV nodes (~0 Elo)
-              if (pvExact)
+              if (pvExact || singular)
                   r -= ONE_PLY;
 
               // Increase reduction if ttMove is a capture (~0 Elo)
