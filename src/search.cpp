@@ -857,7 +857,7 @@ moves_loop: // When in check, search starts from here
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
     // count at high depth, otherwise some guestimate.
-    int countedMoves = depth <= 9 ? 26 : MoveList<LEGAL>(pos).size();
+    int countedMoves = depth <= 10 ? 26 : MoveList<LEGAL>(pos).size();
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
