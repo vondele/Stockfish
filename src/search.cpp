@@ -917,8 +917,8 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          int d = depth / ONE_PLY;
-          Value rBeta = std::max(ttValue - 128 * d / (d + 56), -VALUE_MATE);
+          int d = depth / ONE_PLY - 8;
+          Value rBeta = std::max(ttValue - 16 - d * d / 2, -VALUE_MATE);
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
           ss->excludedMove = MOVE_NONE;
