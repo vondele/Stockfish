@@ -1067,7 +1067,7 @@ moves_loop: // When in check, search starts from here
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
       }
 
-      if (value == VALUE_DRAW && ttValue == VALUE_DRAW)
+      if (value == VALUE_DRAW && ttValue == VALUE_DRAW && thisThread->rootMoves[thisThread->pvIdx].previousScore == VALUE_DRAW)
           drawCount++;
 
       // Step 18. Undo move
