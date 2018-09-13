@@ -950,7 +950,7 @@ moves_loop: // When in check, search starts from here
               }
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount - 2 * drawCount / 3), DEPTH_ZERO) / ONE_PLY;
+              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount - drawCount), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 3 + ((ss-1)->statScore > 0)
@@ -1067,7 +1067,7 @@ moves_loop: // When in check, search starts from here
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
       }
 
-      if (value == VALUE_DRAW && bestValue == VALUE_DRAW && thisThread->rootMoves[thisThread->pvIdx].previousScore == VALUE_DRAW)
+      if (value == VALUE_DRAW && bestValue == VALUE_DRAW && PvNode)
           drawCount++;
 
       // Step 18. Undo move
