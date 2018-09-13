@@ -900,7 +900,7 @@ moves_loop: // When in check, search starts from here
 
       // xxx
       moveCountPruning =   depth < 16 * ONE_PLY
-                        && moveCount - drawCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
 
       // Step 13. Extensions (~70 Elo)
 
@@ -952,7 +952,7 @@ moves_loop: // When in check, search starts from here
 
               // Reduced depth of the next LMR search
               // xxx
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
+              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount - drawCount), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 3 + ((ss-1)->statScore > 0)
