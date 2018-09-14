@@ -536,7 +536,7 @@ namespace {
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1);
+        alpha = thisThread->rootMoves[thisThread->pvIdx].previousScore != VALUE_DRAW ?  VALUE_DRAW : (VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1));
         if (alpha >= beta)
             return alpha;
     }
@@ -585,7 +585,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) - 10 * ((ss-1)->statScore > 0)
-                                                    : VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1);
+                                                    : (thisThread->rootMoves[thisThread->pvIdx].previousScore != VALUE_DRAW ?  VALUE_DRAW : (VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1)));
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1232,7 +1232,7 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : VALUE_DRAW  + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1);
+        return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : (thisThread->rootMoves[thisThread->pvIdx].previousScore != VALUE_DRAW ?  VALUE_DRAW : (VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1)));
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
