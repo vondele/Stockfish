@@ -86,7 +86,7 @@ namespace {
   }
 
   Value value_draw(Depth depth, Thread* thisThread) {
-    return depth < 4 ?  VALUE_DRAW : (VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1));
+    return depth < 6 ?  VALUE_DRAW : (VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1));
   }
 
   // Skill structure is used to implement strength limit
