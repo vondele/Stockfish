@@ -1007,7 +1007,7 @@ moves_loop: // When in check, search starts from here
 
           if (   type_of(movedPiece) == KING
               && to_sq((ss-2)->currentMove) == from_sq(ss->currentMove))
-              r -= ONE_PLY;
+              r += ONE_PLY;
 
           if (!captureOrPromotion)
           {
