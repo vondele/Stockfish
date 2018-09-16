@@ -1005,6 +1005,10 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
+          if (   type_of(movedPiece) == KING
+              && to_sq((ss-2)->currentMove) == from_sq(ss->currentMove))
+              r -= ONE_PLY;
+
           if (!captureOrPromotion)
           {
               // Decrease reduction for exact PV nodes (~0 Elo)
