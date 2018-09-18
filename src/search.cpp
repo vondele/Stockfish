@@ -123,7 +123,7 @@ namespace {
     if (depth < 4 || ss->ply >= MAX_PLY)
        return VALUE_DRAW;
 
-    Value value= search<NonPV, true>(pos, ss, VALUE_DRAW, VALUE_DRAW + 1, depth / 2, true);
+    Value value= search<NonPV, true>(pos, ss, VALUE_DRAW, VALUE_DRAW + 1, std::min(depth / 2, depth - 6 * ONE_PLY), true);
     return VALUE_DRAW + (value >= VALUE_DRAW ? +2 : -2);
   }
 
