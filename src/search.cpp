@@ -866,6 +866,7 @@ moves_loop: // When in check, search starts from here
     skipQuiets = false;
     ttCapture = false;
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
+    bool drawSoFar = ttValue == VALUE_DRAW;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -928,6 +929,9 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
                &&  pos.see_ge(move))
+          extension = ONE_PLY;
+
+      if (drawSoFar && move != ttMove)
           extension = ONE_PLY;
 
       // Calculate new depth for this move
@@ -1066,6 +1070,9 @@ moves_loop: // When in check, search starts from here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
       }
+
+      if (value > VALUE_DRAW + 1 || value < VALUE_DRAW - 1)
+          drawSoFar = false;
 
       // Step 18. Undo move
       pos.undo_move(move);
