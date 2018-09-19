@@ -931,7 +931,7 @@ moves_loop: // When in check, search starts from here
                &&  pos.see_ge(move))
           extension = ONE_PLY;
 
-      if (drawSoFar && move != ttMove)
+      if (drawSoFar && move != ttMove && moveCount>2)
           extension = ONE_PLY;
 
       // Calculate new depth for this move
