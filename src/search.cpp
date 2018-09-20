@@ -1418,7 +1418,7 @@ moves_loop: // When in check, search starts from here
   //
 
   bool adaptiveSEE(Position& pos, Stack* ss, Move move, Depth depth, Value threshold) {
-       if (depth < 10 || pos.checkers() || !pos.legal(move)) {
+       if (depth < 8 || pos.checkers() || !pos.legal(move)) {
           return pos.see_ge(move, threshold);
        } else {
           StateInfo st;
