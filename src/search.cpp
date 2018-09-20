@@ -1418,7 +1418,7 @@ moves_loop: // When in check, search starts from here
   //
 
   bool adaptiveSEE(Position& pos, Stack* ss, Move move, Depth depth, Value threshold) {
-       if (depth < 8 || pos.checkers() || !pos.legal(move)) {
+       if (depth < 12 || pos.checkers() || !pos.legal(move)) {
           return pos.see_ge(move, threshold);
        } else {
           StateInfo st;
@@ -1426,8 +1426,7 @@ moves_loop: // When in check, search starts from here
           Value v = ss->staticEval + threshold;
           Value value = -qsearch<NonPV>(pos, ss+1, -v, -v+1);
           pos.undo_move(move);
-          std::cout << "xxx " << pos.see_ge(move, threshold) << " " << (value>=v) << std::endl;
-          return pos.see_ge(move, threshold);
+          return  value>=v;
        };
   }
 
