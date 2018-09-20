@@ -739,9 +739,13 @@ namespace {
     }
 
     // Step 7. Razoring (~2 Elo)
-    if (   depth < 2 * ONE_PLY
-        && eval <= alpha - RazorMargin)
-        return qsearch<NT>(pos, ss, alpha, beta);
+    if (eval <= alpha - RazorMargin)
+    {
+        if (depth < 2 * ONE_PLY)
+           return qsearch<NT>(pos, ss, alpha, beta);
+        else
+           depth -= ONE_PLY;
+    }
 
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
