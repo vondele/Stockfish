@@ -761,6 +761,15 @@ namespace {
     bool pawnsOnBothFlanks =   (pos.pieces(PAWN) & QueenSide)
                             && (pos.pieces(PAWN) & KingSide);
 
+    Score oppB = SCORE_ZERO;
+    if (pos.opposite_bishops())
+    {  
+       if (eg > 0)
+          oppB = make_score(5,-5);    
+       else
+          oppB = make_score(-5,+5);    
+    }
+
     // Compute the initiative bonus for the attacking side
     int complexity =   8 * pe->pawn_asymmetry()
                     + 12 * pos.count<PAWN>()
@@ -775,9 +784,9 @@ namespace {
     int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
     if (T)
-        Trace::add(INITIATIVE, make_score(0, v));
+        Trace::add(INITIATIVE, make_score(0, v)+oppB);
 
-    return make_score(0, v);
+    return make_score(0, v)+oppB;
   }
 
 
