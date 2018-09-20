@@ -809,7 +809,7 @@ namespace {
         &&  depth >= 5 * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
-        Value rbeta = std::min(beta + (216 - 48 * improving) * 32 / (depth / ONE_PLY + 23) , VALUE_INFINITE);
+        Value rbeta = std::min(beta + (216 - 48 * improving) * 32 / (depth / ONE_PLY + 28) , VALUE_INFINITE);
         MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
 
