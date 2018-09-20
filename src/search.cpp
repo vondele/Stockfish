@@ -108,6 +108,7 @@ namespace {
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCnt, int bonus);
+  bool adaptiveSEE(Position& pos, Stack* ss, Move move, Depth depth, Value threshold = VALUE_ZERO);
 
   inline bool gives_check(const Position& pos, Move move) {
     Color us = pos.side_to_move();
@@ -927,7 +928,7 @@ moves_loop: // When in check, search starts from here
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
-               &&  pos.see_ge(move))
+               && adaptiveSEE(pos, ss, move, depth))
           extension = ONE_PLY;
 
       // Calculate new depth for this move
@@ -965,11 +966,13 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Prune moves with negative SEE (~10 Elo)
-              if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
+              if (!adaptiveSEE(pos, ss, move, depth, Value(-29 * lmrDepth * lmrDepth)))
+              // if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
           }
           else if (   !extension // (~20 Elo)
-                   && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY)))
+                   && !adaptiveSEE(pos, ss, move, depth, -PawnValueEg * (depth / ONE_PLY)))
+                   //&& !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY)))
                   continue;
       }
 
@@ -1331,7 +1334,7 @@ moves_loop: // When in check, search starts from here
               continue;
           }
 
-          if (futilityBase <= alpha && !pos.see_ge(move, VALUE_ZERO + 1))
+          if (futilityBase <= alpha && !adaptiveSEE(pos, ss, move, depth, VALUE_ZERO + 1))
           {
               bestValue = std::max(bestValue, futilityBase);
               continue;
@@ -1407,6 +1410,25 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
     return bestValue;
+  }
+
+
+  //
+  // use SEE at low depth, qsearch afterwards
+  //
+
+  bool adaptiveSEE(Position& pos, Stack* ss, Move move, Depth depth, Value threshold) {
+       if (depth < 12 || pos.checkers() || !pos.legal(move)) {
+          return pos.see_ge(move, threshold);
+       } else {
+          StateInfo st;
+          pos.do_move(move, st);
+          Value v = ss->staticEval + threshold;
+          Value value = -qsearch<NonPV>(pos, ss+1, -v, -v+1);
+          pos.undo_move(move);
+          std::cout << "xxx " << pos.see_ge(move, threshold) << " " << (value>=v) << std::endl;
+          return pos.see_ge(move, threshold);
+       };
   }
 
 
