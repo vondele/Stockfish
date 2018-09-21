@@ -765,9 +765,9 @@ namespace {
     if (pos.opposite_bishops())
     {  
        if (eg > 0)
-          oppB = make_score(5,-5);    
+          oppB = make_score(10,-10);    
        else
-          oppB = make_score(-5,+5);    
+          oppB = make_score(-10,+10);    
     }
 
     // Compute the initiative bonus for the attacking side
