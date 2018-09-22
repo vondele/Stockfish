@@ -873,7 +873,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return  4 * ((pos.side_to_move() == WHITE ? v : -v) / 4) // Side to move point of view
+    return  8 * ((pos.side_to_move() == WHITE ? v : -v) / 8) // Side to move point of view
            + Eval::Tempo;
   }
 
