@@ -989,9 +989,16 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
+      bool wasOCB = pos.opposite_bishops();
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
+     
+      // extend jumping in an OCB game 
+      if (   !wasOCB
+          && extension == DEPTH_ZERO
+          && pos.opposite_bishops())
+          newDepth += ONE_PLY;
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth.
