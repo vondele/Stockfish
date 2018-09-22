@@ -1006,7 +1006,7 @@ moves_loop: // When in check, search starts from here
           // extend jumping in an OCB game 
           if (   !wasOCB
               && pos.opposite_bishops())
-              r -= ONE_PLY;
+              r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
