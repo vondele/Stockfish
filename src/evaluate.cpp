@@ -632,6 +632,9 @@ namespace {
 
     b = pe->passed_pawns(Us);
 
+    Value mat = pos.non_pawn_material(Us);
+    int rookEG = (mat >= RookValueMg && mat < QueenValueMg) ? 3 : 4;
+
     while (b)
     {
         Square s = pop_lsb(&b);
@@ -698,7 +701,7 @@ namespace {
             || (pos.pieces(PAWN) & forward_file_bb(Us, s)))
             bonus = bonus / 2;
 
-        score += bonus + PassedFile[file_of(s)];
+        score += bonus + PassedFile[file_of(s)] * rookEG / 4;
     }
 
     if (T)
