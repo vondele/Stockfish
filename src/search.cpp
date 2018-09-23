@@ -855,6 +855,7 @@ moves_loop: // When in check, search starts from here
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory, nullptr, (ss-4)->continuationHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
+    bool wasOCB = pos.opposite_bishops();
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
@@ -989,11 +990,16 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
-      bool wasOCB = pos.opposite_bishops();
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
-     
+
+      // extend jumping in an OCB game
+      if (   !wasOCB
+          && move == ttMove
+          && extension == DEPTH_ZERO
+          && pos.opposite_bishops())
+          newDepth += ONE_PLY;
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth.
@@ -1002,11 +1008,6 @@ moves_loop: // When in check, search starts from here
           && (!captureOrPromotion || moveCountPruning))
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
-
-          // extend jumping in an OCB game 
-          if (   !wasOCB
-              && pos.opposite_bishops())
-              r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
