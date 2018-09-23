@@ -633,7 +633,7 @@ namespace {
     b = pe->passed_pawns(Us);
 
     Value mat = pos.non_pawn_material(Us);
-    int rookEG = (mat >= RookValueMg && mat < QueenValueMg) ? 3 : 4;
+    int rookEG = (mat >= RookValueMg && mat < QueenValueMg) ? 5 : 4;
 
     while (b)
     {
