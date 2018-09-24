@@ -757,7 +757,7 @@ namespace {
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && ((ss-1)->statScore < 23200 || (ss-1)->toughMove)
+        && (ss-1)->statScore < 23200
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
@@ -807,7 +807,7 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
-        &&  depth >= 5 * ONE_PLY
+        &&  depth >= 5 * ONE_PLY + (ss-1)->toughMove * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
