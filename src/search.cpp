@@ -990,7 +990,8 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
-      ss->toughMove = !pos.see_ge(move, -PawnValueEg);
+      if (newDepth >= 4 * ONE_PLY)
+          ss->toughMove = !pos.see_ge(move, -PawnValueEg);
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
