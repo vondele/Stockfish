@@ -807,7 +807,7 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
-        &&  depth >= 5 * ONE_PLY + (ss-1)->toughMove * ONE_PLY
+        &&  depth >= 5 * ONE_PLY - (ss-1)->toughMove * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
@@ -831,7 +831,7 @@ namespace {
                 value = -qsearch<NonPV>(pos, ss+1, -rbeta, -rbeta+1);
 
                 // If the qsearch held perform the regular search
-                if (value >= rbeta)
+                if (value >= rbeta && depth > 4 * ONE_PLY)
                     value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 4 * ONE_PLY, !cutNode);
 
                 pos.undo_move(move);
@@ -990,7 +990,7 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
-      ss->toughMove = !pos.see_ge(move, -(PawnValueEg / 2) * (depth / ONE_PLY));
+      ss->toughMove = !pos.see_ge(move, -PawnValueEg);
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
