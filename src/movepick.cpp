@@ -61,8 +61,8 @@ namespace {
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move eM, Move* killers)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}, {eM, 0}}, depth(d) {
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), em(eM),
+             refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d) {
 
   assert(d > DEPTH_ZERO);
 
@@ -185,16 +185,16 @@ top:
       cur = std::begin(refutations);
       endMoves = std::end(refutations);
 
-      // If the excludedMove is the same as a killer, or counterMove, skip it
-      if (   refutations[0].move == refutations[3].move
-          || refutations[1].move == refutations[3].move
-          || refutations[2].move == refutations[3].move)
-          refutations[3].move = MOVE_NONE;
+      // If the excludedMove is the same as a killer, give it preference
+      if (   refutations[1].move == em) {
+          refutations[1].move = refutations[0].move;
+          refutations[0].move = em;
+      }
 
       // If the countermove is the same as a killer, skip it
       if (   refutations[0].move == refutations[2].move
           || refutations[1].move == refutations[2].move)
-          refutations[2].move = MOVE_NONE;
+          --endMoves;
 
       ++stage;
       /* fallthrough */
