@@ -917,7 +917,7 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          if (type_of(movedPiece) == PAWN)
+          if (PvNode && type_of(movedPiece) == PAWN)
           {
              extension = ONE_PLY;
           } 
