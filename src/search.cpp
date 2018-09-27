@@ -917,13 +917,20 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
-          ss->excludedMove = move;
-          value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
-          ss->excludedMove = MOVE_NONE;
+          if (type_of(movedPiece) == PAWN)
+          {
+             extension = ONE_PLY;
+          } 
+          else
+          {
+             Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
+             ss->excludedMove = move;
+             value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
+             ss->excludedMove = MOVE_NONE;
 
-          if (value < rBeta)
-              extension = ONE_PLY;
+             if (value < rBeta)
+                 extension = ONE_PLY;
+          }          
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
@@ -940,7 +947,7 @@ moves_loop: // When in check, search starts from here
       {
           if (   !captureOrPromotion
               && !givesCheck
-              && (type_of(movedPiece) != PAWN || pos.non_pawn_material() >= Value(5000)))
+              && (!pos.advanced_pawn_push(move) || pos.non_pawn_material() >= Value(5000)))
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
