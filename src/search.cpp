@@ -917,20 +917,13 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          if (PvNode && type_of(movedPiece) == PAWN)
-          {
-             extension = ONE_PLY;
-          } 
-          else
-          {
-             Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
-             ss->excludedMove = move;
-             value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
-             ss->excludedMove = MOVE_NONE;
+          Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
+          ss->excludedMove = move;
+          value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
+          ss->excludedMove = MOVE_NONE;
 
-             if (value < rBeta)
-                 extension = ONE_PLY;
-          }          
+          if (value < rBeta)
+              extension = ONE_PLY;
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
@@ -1006,7 +999,7 @@ moves_loop: // When in check, search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount);
+          Depth r = reduction<PvNode>(improving, depth - (type_of(movedPiece)==PAWN) * ONE_PLY, moveCount);
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
