@@ -898,8 +898,8 @@ moves_loop: // When in check, search starts from here
       movedPiece = pos.moved_piece(move);
       givesCheck = gives_check(pos, move);
 
-      moveCountPruning =   depth < 16 * ONE_PLY
-                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+      moveCountPruning =   depth < 16 * ONE_PLY - (type_of(movedPiece) == PAWN) * ONE_PLY
+                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY + (type_of(movedPiece) == PAWN)];
 
       // Step 13. Extensions (~70 Elo)
 
@@ -999,7 +999,7 @@ moves_loop: // When in check, search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          Depth r = reduction<PvNode>(improving, depth - (type_of(movedPiece)==PAWN) * ONE_PLY, moveCount);
+          Depth r = reduction<PvNode>(improving, depth, moveCount);
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
