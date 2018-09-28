@@ -147,6 +147,7 @@ namespace {
  {38, 42, 46, 50, 54, 58, 62, 64, 64},
  {40, 44, 48, 52, 56, 60, 64, 64, 64},
  {42, 46, 50, 54, 58, 62, 64, 64, 64}}};
+  TUNE(SetRange(10,90),scaleFactorTable);
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is
   // no (friendly) pawn on the rook file.
