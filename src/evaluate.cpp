@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -124,6 +125,28 @@ namespace {
     { S(22, 6), S(36,12) }, // Knight
     { S( 9, 2), S(15, 5) }  // Bishop
   };
+
+  // opp pawns asym
+  int scaleFactorTable[2][9][9] = {
+{{26, 30, 34, 38, 42, 46, 50, 54, 58},
+ {33, 37, 41, 45, 49, 53, 57, 61, 64},
+ {40, 44, 48, 52, 56, 60, 64, 64, 64},
+ {47, 51, 55, 59, 63, 64, 64, 64, 64},
+ {54, 58, 62, 64, 64, 64, 64, 64, 64},
+ {61, 64, 64, 64, 64, 64, 64, 64, 64},
+ {64, 64, 64, 64, 64, 64, 64, 64, 64},
+ {64, 64, 64, 64, 64, 64, 64, 64, 64},
+ {64, 64, 64, 64, 64, 64, 64, 64, 64}},
+{
+ {26, 30, 34, 38, 42, 46, 50, 54, 58},
+ {28, 32, 36, 40, 44, 48, 52, 56, 60},
+ {30, 34, 38, 42, 46, 50, 54, 58, 62},
+ {32, 36, 40, 44, 48, 52, 56, 60, 64},
+ {34, 38, 42, 46, 50, 54, 58, 62, 64},
+ {36, 40, 44, 48, 52, 56, 60, 64, 64},
+ {38, 42, 46, 50, 54, 58, 62, 64, 64},
+ {40, 44, 48, 52, 56, 60, 64, 64, 64},
+ {42, 46, 50, 54, 58, 62, 64, 64, 64}}};
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is
   // no (friendly) pawn on the rook file.
@@ -791,8 +814,7 @@ namespace {
             && pos.non_pawn_material(BLACK) == BishopValueMg)
             sf = 8 + 4 * pe->pawn_asymmetry();
         else
-            sf = std::min(40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf);
-
+            sf = scaleFactorTable[pos.opposite_bishops()][pos.count<PAWN>(strongSide)][std::min(8, pe->pawn_asymmetry())];
     }
 
     return ScaleFactor(sf);
