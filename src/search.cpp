@@ -1044,7 +1044,7 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 20000 * ONE_PLY;
           }
 
-          r = std::min((newDepth - ONE_PLY) * 2 / 3, std::max(r, DEPTH_ZERO));
+          r = std::min((newDepth - ONE_PLY) * 1 / 2, std::max(r, DEPTH_ZERO));
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth - r, true);
 
