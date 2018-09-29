@@ -327,7 +327,7 @@ void Thread::search() {
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
-  float complexityAdjustment=(400.0 + complexity(rootPos))/400.0;
+  float complexityAdjustment=complexity(rootPos) > 10 ? 1.2 : 0.0;
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
@@ -1530,7 +1530,7 @@ moves_loop: // When in check, search starts from here
                     + 12 * outflanking
                     + 16 * pawnsOnBothFlanks
                     + 48 * !pos.non_pawn_material()
-                    -100;
+                    -118;
 
     return complexity;
 
