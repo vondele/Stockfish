@@ -29,6 +29,7 @@
 #include "misc.h"
 #include "movegen.h"
 #include "movepick.h"
+#include "pawns.h"
 #include "position.h"
 #include "search.h"
 #include "thread.h"
@@ -601,6 +602,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     (ss+1)->ply = ss->ply + 1;
+    ss->asym = 0;
     ss->currentMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
     ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
@@ -916,13 +918,20 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
-          ss->excludedMove = move;
-          value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
-          ss->excludedMove = MOVE_NONE;
+          Pawns::Entry* pe = Pawns::probe(pos);
+          ss->asym = pe->pawn_asymmetry();
+          if ((ss-1)->asym != 0 && (ss-1)->asym != ss->asym)
+             extension = ONE_PLY;
+          else 
+          {
+             Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
+             ss->excludedMove = move;
+             value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
+             ss->excludedMove = MOVE_NONE;
 
-          if (value < rBeta)
-              extension = ONE_PLY;
+             if (value < rBeta)
+                 extension = ONE_PLY;
+          }
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
