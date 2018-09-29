@@ -758,7 +758,7 @@ namespace {
     // Compute the initiative bonus for the attacking side
     int complexity =   8 * pe->pawn_asymmetry()
                     + 12 * pos.count<PAWN>()
-                    + 12 * outflanking
+                    + 12 * std::max(0, outflanking)
                     + 16 * pawnsOnBothFlanks
                     + 48 * !pos.non_pawn_material()
                     -118 ;
@@ -766,7 +766,7 @@ namespace {
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
     // that the endgame score will never change sign after the bonus.
-    int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg) / 2);
+    int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
     if (T)
         Trace::add(INITIATIVE, make_score(0, v));
