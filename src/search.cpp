@@ -108,6 +108,7 @@ namespace {
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCnt, int bonus);
+  int complexity(const Position& pos);
 
   inline bool gives_check(const Position& pos, Move move) {
     Color us = pos.side_to_move();
@@ -1018,6 +1019,9 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2 * ONE_PLY;
 
+              if (complexity(pos) > 30)
+                 r-= ONE_PLY;
+
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
               // hence break make_move(). (~5 Elo)
@@ -1538,6 +1542,31 @@ moves_loop: // When in check, search starts from here
     }
 
     return best;
+  }
+
+  // compute pos complexity (borrowed from eval).
+  int complexity(const Position& pos) {
+
+    constexpr Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
+    constexpr Bitboard KingSide    = FileEBB | FileFBB | FileGBB | FileHBB;
+
+    Pawns::Entry* pe = Pawns::probe(pos);
+    int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
+                     - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
+
+    bool pawnsOnBothFlanks =   (pos.pieces(PAWN) & QueenSide)
+                            && (pos.pieces(PAWN) & KingSide);
+
+    // Compute the initiative bonus for the attacking side
+    int complexity =   8 * pe->pawn_asymmetry()
+                    + 12 * pos.count<PAWN>()
+                    + 12 * outflanking
+                    + 16 * pawnsOnBothFlanks
+                    + 48 * !pos.non_pawn_material()
+                    -118;
+
+    return complexity;
+
   }
 
 } // namespace
