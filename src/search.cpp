@@ -29,6 +29,7 @@
 #include "misc.h"
 #include "movegen.h"
 #include "movepick.h"
+#include "pawns.h"
 #include "position.h"
 #include "search.h"
 #include "thread.h"
@@ -1505,6 +1506,31 @@ moves_loop: // When in check, search starts from here
         thisThread->mainHistory[us][from_to(quiets[i])] << -bonus;
         update_continuation_histories(ss, pos.moved_piece(quiets[i]), to_sq(quiets[i]), -bonus);
     }
+  }
+
+  // 
+  int complexity(const Position& pos) {
+
+    constexpr Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
+    constexpr Bitboard KingSide    = FileEBB | FileFBB | FileGBB | FileHBB;
+    
+    Pawns::Entry* pe = Pawns::probe(pos);
+    int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
+                     - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
+
+    bool pawnsOnBothFlanks =   (pos.pieces(PAWN) & QueenSide)
+                            && (pos.pieces(PAWN) & KingSide);
+
+    // Compute the initiative bonus for the attacking side
+    int complexity =   8 * pe->pawn_asymmetry()
+                    + 12 * pos.count<PAWN>()
+                    + 12 * outflanking
+                    + 16 * pawnsOnBothFlanks
+                    + 48 * !pos.non_pawn_material()
+                    -118 ;
+
+    return complexity;
+
   }
 
   // When playing with strength handicap, choose best move among a set of RootMoves
