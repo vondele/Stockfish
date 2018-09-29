@@ -109,6 +109,7 @@ namespace {
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietsCnt, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCnt, int bonus);
+  int complexity(const Position& pos);
 
   inline bool gives_check(const Position& pos, Move move) {
     Color us = pos.side_to_move();
@@ -326,6 +327,8 @@ void Thread::search() {
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
+  float complexityAdjustment=(400.0 + complexity(rootPos))/400.0;
+
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
       ct =  Options["Analysis Contempt"] == "Off"  ? 0
@@ -495,7 +498,7 @@ void Thread::search() {
 
               // Stop the search if we have only one legal move, or if available time elapsed
               if (   rootMoves.size() == 1
-                  || Time.elapsed() > Time.optimum() * bestMoveInstability * improvingFactor / 581)
+                  || Time.elapsed() > Time.optimum() * complexityAdjustment * bestMoveInstability * improvingFactor / 581)
               {
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
@@ -1508,12 +1511,12 @@ moves_loop: // When in check, search starts from here
     }
   }
 
-  // 
+  // compute pos complexity (borrowed from eval).
   int complexity(const Position& pos) {
 
     constexpr Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
     constexpr Bitboard KingSide    = FileEBB | FileFBB | FileGBB | FileHBB;
-    
+
     Pawns::Entry* pe = Pawns::probe(pos);
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -1527,7 +1530,7 @@ moves_loop: // When in check, search starts from here
                     + 12 * outflanking
                     + 16 * pawnsOnBothFlanks
                     + 48 * !pos.non_pawn_material()
-                    -118 ;
+                    -100;
 
     return complexity;
 
