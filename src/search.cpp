@@ -868,6 +868,11 @@ moves_loop: // When in check, search starts from here
     ttCapture = false;
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
 
+    if (depth>=4) {
+       Pawns::Entry* pe = Pawns::probe(pos);
+       ss->asym = pe->pawn_asymmetry();
+    }
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(skipQuiets)) != MOVE_NONE)
@@ -918,20 +923,13 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-          Pawns::Entry* pe = Pawns::probe(pos);
-          ss->asym = pe->pawn_asymmetry();
-          if ((ss-1)->asym != 0 && (ss-1)->asym != ss->asym)
-             extension = ONE_PLY;
-          else 
-          {
-             Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
-             ss->excludedMove = move;
-             value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
-             ss->excludedMove = MOVE_NONE;
+          Value rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
+          ss->excludedMove = move;
+          value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
+          ss->excludedMove = MOVE_NONE;
 
-             if (value < rBeta)
-                 extension = ONE_PLY;
-          }
+          if (value < rBeta)
+              extension = ONE_PLY;
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
@@ -1011,6 +1009,9 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
+              r -= ONE_PLY;
+
+          if ((ss-1)->asym!=0 && ss->asym!=0 && (ss-1)->asym!=ss->asym)
               r -= ONE_PLY;
 
           if (!captureOrPromotion)
