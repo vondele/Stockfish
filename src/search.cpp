@@ -327,7 +327,7 @@ void Thread::search() {
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
-  float complexityAdjustment=complexity(rootPos) > 10 ? 1.2 : complexity(rootPos) < -20 ? 0.95 : 1.0;
+  float complexityAdjustment=complexity(rootPos) > 10 ? 1.1 : 1.0;
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
