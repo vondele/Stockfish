@@ -32,6 +32,7 @@ namespace {
   };
 
   int var1 = 64, var2 = 64, var3 = 64, var4 = 64;
+  TUNE(var1,var2,var3,var4);
 
   // Helper filter used with select()
   const auto Any = [](){ return true; };
