@@ -855,6 +855,28 @@ moves_loop: // When in check, search starts from here
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory, nullptr, (ss-4)->continuationHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
+    if (depth > 10) 
+    {
+       MovePicker mp2(pos, ttMove, depth, &thisThread->mainHistory,
+                                        &thisThread->captureHistory,
+                                        contHist,
+                                        countermove,
+                                        ss->killers);
+       while ((move = mp2.next_move(false)) != MOVE_NONE) {
+          bool ttHit2;
+          TTEntry* tte2 = TT.probe(pos.key_after(move), ttHit2);
+          Value ttValue2 = ttHit2 ? -value_from_tt(tte2->value(), ss->ply) : -VALUE_NONE;
+          if (ttValue2 > beta && (tte2->bound() & BOUND_LOWER)) {
+             if (ss->killers[0] != move)
+             {
+                 ss->killers[1] = ss->killers[0];
+                 ss->killers[0] = move;
+             }
+             break;
+          }
+       }
+    }
+
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
