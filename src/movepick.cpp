@@ -110,7 +110,7 @@ void MovePicker::score() {
 
   for (auto& m : *this)
       if (Type == CAPTURES)
-          m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
+          m.value =  PieceValue[MG][pos.piece_on(to_sq(m))] * 8 / (7 + std::max(1, depth / ONE_PLY))
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))] / 8;
 
       else if (Type == QUIETS)
