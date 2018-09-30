@@ -867,11 +867,7 @@ moves_loop: // When in check, search starts from here
           TTEntry* tte2 = TT.probe(pos.key_after(move), ttHit2);
           Value ttValue2 = ttHit2 ? -value_from_tt(tte2->value(), ss->ply) : -VALUE_NONE;
           if (ttValue2 > beta && (tte2->bound() & BOUND_LOWER)) {
-             if (ss->killers[0] != move)
-             {
-                 ss->killers[1] = ss->killers[0];
-                 ss->killers[0] = move;
-             }
+             countermove = move;
              break;
           }
        }
