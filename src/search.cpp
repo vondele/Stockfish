@@ -809,7 +809,7 @@ namespace {
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, rbeta - ss->staticEval - 50, &thisThread->captureHistory);
+        MovePicker mp(pos, ttMove, rbeta - ss->staticEval + 50, &thisThread->captureHistory);
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
