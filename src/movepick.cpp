@@ -31,7 +31,7 @@ namespace {
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
 
-  int var1 = 64, var2 = 64, var3 = 64, var4 = 64;
+  int var1 = 70, var2 = 65, var3 = 55, var4 = 52;
   TUNE(var1,var2,var3,var4);
 
   // Helper filter used with select()
