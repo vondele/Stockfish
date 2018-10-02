@@ -814,14 +814,14 @@ namespace {
 
         while (  (move = mp.next_move()) != MOVE_NONE
                && probCutCount < 3)
-            if (move != excludedMove && pos.legal(move))
+            if (   move != excludedMove
+                && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 0
+                && pos.legal(move))
             {
                 probCutCount++;
 
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
-
-                assert(depth >= 5 * ONE_PLY);
 
                 pos.do_move(move, st);
 
