@@ -805,7 +805,7 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
-        &&  depth >= 5 * ONE_PLY + (ttMove && pos.capture_or_promotion(ttMove)) * ONE_PLY
+        &&  depth >= 5 * ONE_PLY - (ttMove && pos.capture_or_promotion(ttMove)) * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
