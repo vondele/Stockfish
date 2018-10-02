@@ -814,7 +814,7 @@ namespace {
         ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3 + ttCapture)
+               && probCutCount < 3 - ttCapture)
             if (move != excludedMove && pos.legal(move))
             {
                 probCutCount++;
