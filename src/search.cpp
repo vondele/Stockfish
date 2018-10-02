@@ -805,15 +805,16 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
-        &&  depth >= 5 * ONE_PLY - (ttMove && pos.capture_or_promotion(ttMove)) * ONE_PLY
+        &&  depth >= 5 * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
         MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
+        ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3)
+               && probCutCount < 3 + ttCapture)
             if (move != excludedMove && pos.legal(move))
             {
                 probCutCount++;
