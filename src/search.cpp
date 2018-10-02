@@ -813,7 +813,7 @@ namespace {
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount++ < 4)
+               && probCutCount++ < 5)
             if (   move != excludedMove
                 && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 0
                 && pos.legal(move))
