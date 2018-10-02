@@ -61,13 +61,12 @@ namespace {
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
+           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm),
              refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d) {
 
   assert(d > DEPTH_ZERO);
 
   stage = pos.checkers() ? EVASION_TT : MAIN_TT;
-  ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
 }
 
@@ -80,7 +79,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
   stage = pos.checkers() ? EVASION_TT : QSEARCH_TT;
   ttMove =    ttm
-           && pos.pseudo_legal(ttm)
            && (depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
 }
@@ -94,7 +92,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 
   stage = PROBCUT_TT;
   ttMove =   ttm
-          && pos.pseudo_legal(ttm)
           && pos.capture(ttm)
           && pos.see_ge(ttm, threshold) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
