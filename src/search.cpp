@@ -636,8 +636,7 @@ namespace {
         {
             if (ttValue >= beta)
             {
-                if (!pos.capture_or_promotion(ttMove))
-                    update_quiet_stats(pos, ss, ttMove, nullptr, 0, stat_bonus(depth));
+                update_quiet_stats(pos, ss, ttMove, nullptr, 0, stat_bonus(depth));
 
                 // Extra penalty for a quiet TT move in previous ply when it gets refuted
                 if ((ss-1)->moveCount == 1 && !pos.captured_piece())
@@ -1161,9 +1160,8 @@ moves_loop: // When in check, search starts from here
     else if (bestMove)
     {
         // Quiet best move: update move sorting heuristics
-        if (!pos.capture_or_promotion(bestMove))
-            update_quiet_stats(pos, ss, bestMove, quietsSearched, quietCount,
-                               stat_bonus(depth + (bestValue > beta + PawnValueMg ? ONE_PLY : DEPTH_ZERO)));
+        update_quiet_stats(pos, ss, bestMove, quietsSearched, quietCount,
+                           stat_bonus(depth + (bestValue > beta + PawnValueMg ? ONE_PLY : DEPTH_ZERO)));
 
         update_capture_stats(pos, bestMove, capturesSearched, captureCount, stat_bonus(depth + ONE_PLY));
 
@@ -1482,21 +1480,25 @@ moves_loop: // When in check, search starts from here
   void update_quiet_stats(const Position& pos, Stack* ss, Move move,
                           Move* quiets, int quietsCnt, int bonus) {
 
-    if (ss->killers[0] != move)
-    {
-        ss->killers[1] = ss->killers[0];
-        ss->killers[0] = move;
-    }
-
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
-    thisThread->mainHistory[us][from_to(move)] << bonus;
-    update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
-    if (is_ok((ss-1)->currentMove))
+    if (!pos.capture_or_promotion(move))
     {
-        Square prevSq = to_sq((ss-1)->currentMove);
-        thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
+       if (ss->killers[0] != move)
+       {
+           ss->killers[1] = ss->killers[0];
+           ss->killers[0] = move;
+       }
+
+       thisThread->mainHistory[us][from_to(move)] << bonus;
+       update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
+
+       if (is_ok((ss-1)->currentMove))
+       {
+           Square prevSq = to_sq((ss-1)->currentMove);
+           thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
+       }
     }
 
     // Decrease all the other played quiet moves
