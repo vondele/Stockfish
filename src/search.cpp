@@ -1044,8 +1044,8 @@ moves_loop: // When in check, search starts from here
           else
           {
             int ch = thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
-            if (ch > 2500)
-                r -= ONE_PLY;
+            if (ch < -2500)
+                r += ONE_PLY;
           }
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
