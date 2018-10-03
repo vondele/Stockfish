@@ -1044,7 +1044,7 @@ moves_loop: // When in check, search starts from here
           else
           {
             int ch = thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))];
-            if (ch < -5000)
+            if (ch < -7500)
                 r += ONE_PLY;
           }
 
