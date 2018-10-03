@@ -815,7 +815,7 @@ namespace {
         while (  (move = mp.next_move()) != MOVE_NONE
                && probCutCount++ < 6)
             if (   move != excludedMove
-                && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 0
+                && thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] > 1000
                 && pos.legal(move))
             {
                 ss->currentMove = move;
