@@ -814,7 +814,7 @@ namespace {
 
         while (  (move = mp.next_move()) != MOVE_NONE
                && probCutCount < 3)
-            if (move != excludedMove && pos.legal(move))
+            if (move != excludedMove && move != ttMove && pos.legal(move))
             {
                 probCutCount++;
 
