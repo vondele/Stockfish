@@ -994,7 +994,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth.
-      if (    depth >= 3 * ONE_PLY
+      if (    newDepth >= 3 * ONE_PLY
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
@@ -1042,7 +1042,7 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 20000 * ONE_PLY;
           }
 
-          Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), 2 * ONE_PLY);
+          Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
