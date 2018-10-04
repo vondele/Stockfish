@@ -926,7 +926,7 @@ moves_loop: // When in check, search starts from here
       }
       else if (    givesCheck // Check extension (~2 Elo)
                && !moveCountPruning
-               &&  pos.see_ge(move, Value(captureOrPromotion ? -800 : 0)))
+               &&  pos.see_ge(move, Value(captureOrPromotion ? -200 : 0)))
           extension = ONE_PLY;
 
       // Calculate new depth for this move
