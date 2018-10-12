@@ -1314,10 +1314,12 @@ moves_loop: // When in check, search starts from here
 
       moveCount++;
 
+
       // Futility pruning
       if (   !inCheck
           && !givesCheck
           &&  futilityBase > -VALUE_KNOWN_WIN
+          &&  thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 9500
           && !pos.advanced_pawn_push(move))
       {
           assert(type_of(move) != ENPASSANT); // Due to !pos.advanced_pawn_push
@@ -1345,7 +1347,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
-          && (thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < -5000 || !pos.see_ge(move)))
+          && !pos.see_ge(move))
           continue;
 
       // Speculative prefetch as early as possible
