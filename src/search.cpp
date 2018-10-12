@@ -1322,7 +1322,7 @@ moves_loop: // When in check, search starts from here
       {
           assert(type_of(move) != ENPASSANT); // Due to !pos.advanced_pawn_push
 
-          futilityValue = futilityBase + PieceValue[MG][pos.piece_on(to_sq(move))];
+          futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))];
 
           if (futilityValue <= alpha)
           {
@@ -1345,7 +1345,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
-          && !pos.see_ge(move))
+          && !pos.see_ge(move, KnightValueEg - BishopValueEg))
           continue;
 
       // Speculative prefetch as early as possible
