@@ -558,7 +558,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, pureStaticEval;
     bool ttHit, inCheck, givesCheck, improving;
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture, pvExact;
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture, ttCheck, pvExact;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
 
@@ -864,6 +864,7 @@ moves_loop: // When in check, search starts from here
 
     skipQuiets = false;
     ttCapture = false;
+    ttCheck = false;
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
@@ -982,8 +983,11 @@ moves_loop: // When in check, search starts from here
           continue;
       }
 
-      if (move == ttMove && (captureOrPromotion || givesCheck))
+      if (move == ttMove && captureOrPromotion)
           ttCapture = true;
+
+      if (move == ttMove && givesCheck)
+          ttCheck = true;
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
@@ -1012,6 +1016,10 @@ moves_loop: // When in check, search starts from here
 
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
+                  r += ONE_PLY;
+
+              // Increase reduction if ttMove is a check
+              if (ttCheck)
                   r += ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
