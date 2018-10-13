@@ -1019,7 +1019,7 @@ moves_loop: // When in check, search starts from here
                   r += ONE_PLY;
 
               // Increase reduction if ttMove is a check
-              if (ttCheck)
+              if (ttCapture && ttCheck)
                   r += ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
