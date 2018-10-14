@@ -1006,7 +1006,7 @@ moves_loop: // When in check, search starts from here
               r -= ONE_PLY;
 
           if (ss->pvDist > 10)
-              r -= ONE_PLY;
+              r += ONE_PLY;
 
           if (!captureOrPromotion)
           {
