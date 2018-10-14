@@ -898,10 +898,8 @@ moves_loop: // When in check, search starts from here
       movedPiece = pos.moved_piece(move);
       givesCheck = gives_check(pos, move);
 
-      int iDepth = depth / ONE_PLY + (ss->pvDist > 5);
-
-      moveCountPruning =   iDepth < 16
-                        && moveCount >= FutilityMoveCounts[improving][iDepth];
+      moveCountPruning =   depth < 16 * ONE_PLY
+                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
 
       // Step 13. Extensions (~70 Elo)
 
@@ -1005,6 +1003,9 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
+              r -= ONE_PLY;
+
+          if (ss->pvDist > 10)
               r -= ONE_PLY;
 
           if (!captureOrPromotion)
