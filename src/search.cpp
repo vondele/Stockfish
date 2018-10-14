@@ -898,7 +898,7 @@ moves_loop: // When in check, search starts from here
       movedPiece = pos.moved_piece(move);
       givesCheck = gives_check(pos, move);
 
-      int iDepth = std::max(1, depth / ONE_PLY - (ss->pvDist > 5));
+      int iDepth = depth / ONE_PLY + (ss->pvDist > 5);
 
       moveCountPruning =   iDepth < 16
                         && moveCount >= FutilityMoveCounts[improving][iDepth];
