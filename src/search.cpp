@@ -908,6 +908,7 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
+      if (ss->pvDist <= 10) {
       if (    depth >= 8 * ONE_PLY
           &&  move == ttMove
           && !rootNode
@@ -929,6 +930,7 @@ moves_loop: // When in check, search starts from here
                && !moveCountPruning
                &&  pos.see_ge(move))
           extension = ONE_PLY;
+      }
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
@@ -1004,9 +1006,6 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
-
-          if (ss->pvDist > 10)
-              r += ONE_PLY;
 
           if (!captureOrPromotion)
           {
