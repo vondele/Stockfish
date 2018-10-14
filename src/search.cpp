@@ -625,7 +625,7 @@ namespace {
             : ttHit    ? tte->move() : MOVE_NONE;
 
     // At non-PV nodes we check for an early TT cutoff
-    if (   ss->pvDist > 1
+    if (   ss->pvDist > 2
         && ttHit
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
