@@ -440,8 +440,11 @@ void Thread::search() {
                       Threads.stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
+              else if (bestValue >= beta) 
+              {
+                  alpha = (3 * alpha + beta) / 4;
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+              }
               else
                   break;
 
