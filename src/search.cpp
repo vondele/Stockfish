@@ -626,7 +626,7 @@ namespace {
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-    tte = TT.probe(posKey, ttHit, 2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1);
+    tte = TT.probe(posKey, ttHit, 4 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 2);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
@@ -853,7 +853,7 @@ namespace {
     {
         search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
 
-        tte = TT.probe(posKey, ttHit, 2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1);
+        tte = TT.probe(posKey, ttHit, 4 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 2);
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
