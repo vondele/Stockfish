@@ -387,7 +387,7 @@ void Thread::search() {
           if (rootDepth >= 5 * ONE_PLY)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-              delta = Value(18);
+              delta = Value(25);
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
@@ -403,6 +403,12 @@ void Thread::search() {
           // high/low anymore.
           while (true)
           {
+              if (rootDepth >= 5 * ONE_PLY) {
+                  if (bestValue < -15)
+                      beta  = std::min(VALUE_DRAW - 1, beta);
+                  if (bestValue > 15)
+                     alpha = std::max(VALUE_DRAW + 1, alpha);
+              }
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -433,8 +439,6 @@ void Thread::search() {
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
-                  if (bestValue < -20)
-                      beta  = std::min(VALUE_DRAW - 1, beta);
 
                   if (mainThread)
                   {
@@ -445,8 +449,6 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  if (bestValue > 20)
-                     alpha = std::max(VALUE_DRAW + 1, alpha);
               }
               else
                   break;
