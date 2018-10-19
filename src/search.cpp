@@ -1322,6 +1322,7 @@ moves_loop: // When in check, search starts from here
 
       // Futility pruning
       if (   !inCheck
+          && !PvNode
           && !givesCheck
           &&  futilityBase > -VALUE_KNOWN_WIN
           && !pos.advanced_pawn_push(move))
