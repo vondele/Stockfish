@@ -613,6 +613,7 @@ namespace {
     ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
+    ss->pvDist = PvNode ? 0 : (ss-1)->pvDist + 1;
 
     // Initialize statScore to zero for the grandchildren of the current position.
     // So statScore is shared between all grandchildren and only the first grandchild
@@ -906,7 +907,7 @@ moves_loop: // When in check, search starts from here
       givesCheck = gives_check(pos, move);
 
       moveCountPruning =   depth < 16 * ONE_PLY
-                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY] + (bestValue < alpha) * 4 / (1 + ss->pvDist) ;
 
       // Step 13. Extensions (~70 Elo)
 
