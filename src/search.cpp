@@ -930,7 +930,7 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = MOVE_NONE;
 
           if (value < rBeta) {
-              improving=false;
+              improving=true;
               extension = ONE_PLY;
           }
       }
