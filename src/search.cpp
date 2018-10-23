@@ -929,8 +929,10 @@ moves_loop: // When in check, search starts from here
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
           ss->excludedMove = MOVE_NONE;
 
-          if (value < rBeta)
+          if (value < rBeta) {
+              improving=false;
               extension = ONE_PLY;
+          }
       }
       else if (    givesCheck // Check extension (~2 Elo)
                &&  pos.see_ge(move))
