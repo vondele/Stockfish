@@ -1022,7 +1022,7 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2 * ONE_PLY;
 
-              if (pos.advanced_pawn_push(move))
+              if (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)])
                   r -= ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
