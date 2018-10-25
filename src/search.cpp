@@ -1022,7 +1022,7 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2 * ONE_PLY;
 
-              if (relative_rank(us, to_sq(move)) > RANK_4 && relative_rank(us, from_sq(move)) < RANK_5)
+              if (relative_rank(us, to_sq(move)) > RANK_5 && relative_rank(us, from_sq(move)) < RANK_6)
                   r -= ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
