@@ -1022,7 +1022,7 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2 * ONE_PLY;
 
-              if ((pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)]) && relative_rank(us, to_sq(move)) > RANK_4)
+              if ( type_of(movedPiece)==PAWN && (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)]) && relative_rank(us, to_sq(move)) > RANK_4)
                   r -= ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
