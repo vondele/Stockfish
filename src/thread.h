@@ -73,6 +73,8 @@ public:
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory;
   Score contempt;
+  Move  PVBestMove;
+  Depth PVBestMoveDepth;
 };
 
 

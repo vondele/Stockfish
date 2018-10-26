@@ -286,7 +286,7 @@ void MainThread::search() {
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+  sync_cout << "bestmove " << UCI::move(bestThread->PVBestMove, rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
@@ -305,6 +305,8 @@ void Thread::search() {
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
+  PVBestMove = MOVE_NONE;
+  PVBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
   Color us = rootPos.side_to_move();
@@ -422,6 +424,11 @@ void Thread::search() {
               if (Threads.stop)
                   break;
 
+              if (adjustedDepth >= PVBestMoveDepth) {
+                  PVBestMove=rootMoves[0].pv[0];
+                  PVBestMoveDepth = adjustedDepth;
+              }
+
               // When failing high/low give some update (without cluttering
               // the UI) before a re-search.
               if (   mainThread
@@ -460,6 +467,11 @@ void Thread::search() {
 
           // Sort the PV lines searched so far and update the GUI
           std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
+
+          if (adjustedDepth >= PVBestMoveDepth) {
+              PVBestMove=rootMoves[0].pv[0];
+              PVBestMoveDepth = adjustedDepth;
+          }
 
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
