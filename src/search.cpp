@@ -66,6 +66,7 @@ namespace {
   constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
   int A1 = 256, A2 = 200;
+  TUNE(A1, A2);
 
   // Razor and futility margins
   constexpr int RazorMargin = 600;
