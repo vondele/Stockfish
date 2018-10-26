@@ -65,6 +65,8 @@ namespace {
   constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
   constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
+  int A1 = 256, A2 = 200;
+
   // Razor and futility margins
   constexpr int RazorMargin = 600;
   Value futility_margin(Depth d, bool improving) {
@@ -974,7 +976,7 @@ moves_loop: // When in check, search starts from here
 
               Value bound = Value(-29 * lmrDepth * lmrDepth);
               if (!inCheck)
-                 bound = std::max(bound, alpha - ss->staticEval - 256 - 200 * lmrDepth);
+                 bound = std::max(bound, alpha - ss->staticEval - A1 - A2 * lmrDepth);
 
               // Prune moves with negative SEE (~10 Elo)
               if (!pos.see_ge(move, bound))
