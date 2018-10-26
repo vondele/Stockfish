@@ -405,7 +405,7 @@ void Thread::search() {
           int failedHighCnt = 0;
           while (true)
           {
-        	  adjustedDepth = std::max(ONE_PLY, rootDepth - failedHighCnt * ONE_PLY);
+              adjustedDepth = std::max(ONE_PLY, rootDepth - failedHighCnt * ONE_PLY);
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -443,17 +443,22 @@ void Thread::search() {
                       failedLow = true;
                       Threads.stopOnPonderhit = false;
                   }
+                  delta += delta / 4 + 5;
               }
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   if (mainThread)
                 	  ++failedHighCnt;
+                  delta += delta / 4 + 5;
               }
               else
-                  break;
-
-              delta += delta / 4 + 5;
+              {
+                  if (failedHighCnt==0)
+                     break;
+                  else
+                     failedHighCnt = 0;
+              }
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
