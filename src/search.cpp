@@ -1013,13 +1013,15 @@ moves_loop: // When in check, search starts from here
       // re-searched at full depth.
       if (    depth >= 3 * ONE_PLY
           &&  moveCount > 1
-          && !(type_of(movedPiece) == PAWN && pawnPushCount == 1)
           && (!captureOrPromotion || moveCountPruning))
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
+              r -= ONE_PLY;
+
+          if (type_of(movedPiece) == PAWN && pawnPushCount == 1)
               r -= ONE_PLY;
 
           if (!captureOrPromotion)
