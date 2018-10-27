@@ -882,6 +882,8 @@ moves_loop: // When in check, search starts from here
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
 
+    int pawnPushCount = 0;
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(skipQuiets)) != MOVE_NONE)
@@ -915,6 +917,9 @@ moves_loop: // When in check, search starts from here
 
       moveCountPruning =   depth < 16 * ONE_PLY
                         && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+
+      if (type_of(movedPiece) == PAWN)
+          pawnPushCount++;
 
       // Step 13. Extensions (~70 Elo)
 
@@ -950,6 +955,7 @@ moves_loop: // When in check, search starts from here
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
           && pos.non_pawn_material(us)
+          && !(type_of(movedPiece) == PAWN && pawnPushCount == 1)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           if (   !captureOrPromotion
