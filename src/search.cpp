@@ -408,6 +408,19 @@ void Thread::search() {
         	  adjustedDepth = std::max(ONE_PLY, rootDepth - failedHighCnt * ONE_PLY);
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
+              // verify PV legality
+#ifndef NDEBUG
+              auto& pv = rootMoves[pvIdx].pv;
+              StateInfo st[MAX_PLY];
+              for (size_t i = 0; i < pv.size(); i++)
+              {
+                   assert(MoveList<LEGAL>(rootPos).contains(pv[i]));
+                   rootPos.do_move(pv[i], st[i]);
+              }
+              for (size_t i = pv.size(); i > 0; i--)
+                   rootPos.undo_move(pv[i-1]);
+#endif
+
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
               // first and eventually the new best one are set to -VALUE_INFINITE
