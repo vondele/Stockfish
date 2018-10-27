@@ -467,7 +467,7 @@ void Thread::search() {
       }
 
       if (!Threads.stop)
-          completedDepth = rootDepth;
+          completedDepth = rootDepth - (rootDepth != adjustedDepth) * ONE_PLY;
 
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
