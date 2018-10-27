@@ -974,7 +974,7 @@ moves_loop: // When in check, search starts from here
 
               Value bound = Value(-29 * lmrDepth * lmrDepth);
               if (!inCheck)
-                 bound = std::max(bound, alpha - ss->staticEval - 256 - 200 * lmrDepth);
+                 bound = std::max(bound, alpha - ss->staticEval - 270 - 200 * lmrDepth);
 
               // Prune moves with negative SEE (~10 Elo)
               if (!pos.see_ge(move, bound))
