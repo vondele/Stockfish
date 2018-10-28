@@ -1021,7 +1021,7 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          if (type_of(movedPiece) == PAWN && pawnPushCount == 1)
+          if (type_of(movedPiece) == PAWN && pawnPushCount == 1 && pos.rule50_count()>16)
               r -= ONE_PLY;
 
           if (!captureOrPromotion)
