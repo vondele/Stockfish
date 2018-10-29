@@ -764,8 +764,8 @@ namespace {
     int sign = ((eg > 0) - (eg < 0));
 
     // scale complexity with kingDanger difference.
-    const int scale = 1024;
-    complexity = complexity * std::min(2 * scale, std::max(scale / 2, (scale + sign * (kd[BLACK] - kd[WHITE])))) / scale;
+    const int scale = 512;
+    complexity = complexity * std::min(4 * scale, std::max(scale / 4, (scale + sign * (kd[BLACK] - kd[WHITE])))) / scale;
 
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
