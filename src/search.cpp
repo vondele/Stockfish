@@ -439,7 +439,7 @@ void Thread::search() {
 
                   if (mainThread)
                   {
-                      failedHighCnt = 0;
+                      failedHighCnt /= 2;
                       failedLow = true;
                       Threads.stopOnPonderhit = false;
                   }
