@@ -764,7 +764,7 @@ namespace {
     int sign = ((eg > 0) - (eg < 0));
 
     // scale complexity with kingDanger difference.
-    complexity = complexity * (2048 + sign * (kd[BLACK] - kd[WHITE])) / 2048;
+    complexity = complexity * (1024 + sign * (kd[BLACK] - kd[WHITE])) / 1024;
 
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
