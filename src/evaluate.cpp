@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -190,12 +191,12 @@ namespace {
   private:
     template<Color Us> void initialize();
     template<Color Us, PieceType Pt> Score pieces();
-    template<Color Us> Score king() const;
+    template<Color Us> Score king(int& kd) const;
     template<Color Us> Score threats() const;
     template<Color Us> Score passed() const;
     template<Color Us> Score space() const;
     ScaleFactor scale_factor(Value eg) const;
-    Score initiative(Value eg) const;
+    Score initiative(Value eg, int kd[COLOR_NB]) const;
 
     const Position& pos;
     Material::Entry* me;
@@ -403,9 +404,9 @@ namespace {
   }
 
 
-  // Evaluation::king() assigns bonuses and penalties to a king of a given color
+  // Evaluation::king(int&) assigns bonuses and penalties to a king of a given color
   template<Tracing T> template<Color Us>
-  Score Evaluation<T>::king() const {
+  Score Evaluation<T>::king(int& kd) const {
 
     constexpr Color    Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
@@ -424,6 +425,7 @@ namespace {
     b2 = b1 & attackedBy2[Them] & ~attackedBy[Us][PAWN];
 
     int tropism = popcount(b1) + popcount(b2);
+    kd = 0;
 
     // Main king safety evaluation
     if (kingAttackersCount[Them] > 1 - pos.count<QUEEN>(Them))
@@ -489,6 +491,7 @@ namespace {
             kingDanger = std::max(0, kingDanger + mobilityDanger);
             score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
         }
+        kd = std::max(0, kingDanger);
     }
 
     // Penalty when our king is on a pawnless flank
@@ -741,7 +744,7 @@ namespace {
   // known attacking/defending status of the players.
 
   template<Tracing T>
-  Score Evaluation<T>::initiative(Value eg) const {
+  Score Evaluation<T>::initiative(Value eg, int kd[COLOR_NB]) const {
 
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -757,10 +760,16 @@ namespace {
                     + 48 * !pos.non_pawn_material()
                     -118 ;
 
+
+    int sign = ((eg > 0) - (eg < 0));
+
+    // scale complexity with kingDanger difference.
+    complexity = complexity * (2048 + sign * (kd[BLACK] - kd[WHITE])) / 2048;
+
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
     // that the endgame score will never change sign after the bonus.
-    int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
+    int v = sign * std::max(complexity, -abs(eg));
 
     if (T)
         Trace::add(INITIATIVE, make_score(0, v));
@@ -837,12 +846,14 @@ namespace {
 
     score += mobility[WHITE] - mobility[BLACK];
 
-    score +=  king<   WHITE>() - king<   BLACK>()
+    int kd[COLOR_NB];
+
+    score +=  king<   WHITE>(kd[WHITE]) - king<   BLACK>(kd[BLACK])
             + threats<WHITE>() - threats<BLACK>()
             + passed< WHITE>() - passed< BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 
-    score += initiative(eg_value(score));
+    score += initiative(eg_value(score), kd);
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
