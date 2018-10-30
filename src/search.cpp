@@ -940,7 +940,7 @@ moves_loop: // When in check, search starts from here
           if (value < rBeta)
               extension = ONE_PLY;
       }
-      else if (    (givesCheck || type_of(move) == CASTLING) // Check extension (~2 Elo)
+      else if (    givesCheck // Check extension (~2 Elo)
                &&  pos.see_ge(move))
           extension = ONE_PLY;
 
@@ -1016,7 +1016,7 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          if (!captureOrPromotion)
+          if (!captureOrPromotion && type_of(move) != CASTLING)
           {
               // Decrease reduction for exact PV nodes (~0 Elo)
               if (pvExact)
