@@ -940,7 +940,7 @@ moves_loop: // When in check, search starts from here
           if (value < rBeta)
               extension = ONE_PLY;
       }
-      else if (    givesCheck // Check extension (~2 Elo)
+      else if (    (givesCheck || type_of(move) == CASTLING) // Check extension (~2 Elo)
                &&  pos.see_ge(move))
           extension = ONE_PLY;
 
