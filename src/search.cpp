@@ -1008,7 +1008,7 @@ moves_loop: // When in check, search starts from here
       // re-searched at full depth.
       if (    depth >= 3 * ONE_PLY
           &&  moveCount > 1
-          && (!captureOrPromotion || moveCountPruning))
+          && (!(captureOrPromotion || type_of(move) == CASTLING) || moveCountPruning))
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
 
@@ -1016,7 +1016,7 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          if (!captureOrPromotion && type_of(move) != CASTLING)
+          if (!captureOrPromotion)
           {
               // Decrease reduction for exact PV nodes (~0 Elo)
               if (pvExact)
