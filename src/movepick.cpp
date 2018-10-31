@@ -118,7 +118,7 @@ void MovePicker::score() {
                    + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   + (type_of(m) == CASTLING ? 18000 : 0);
+                   + (type_of(m) == CASTLING ? 5000 : 0);
 
       else // Type == EVASIONS
       {
