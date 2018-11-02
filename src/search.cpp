@@ -1021,6 +1021,11 @@ moves_loop: // When in check, search starts from here
               if (pvExact)
                   r -= ONE_PLY;
 
+              if (   type_of(movedPiece) == QUEEN
+                  && relative_rank(us, to_sq(move)) > RANK_4
+                  && relative_rank(us, from_sq(move)) < RANK_5)
+                  r -= ONE_PLY;
+
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r += ONE_PLY;
