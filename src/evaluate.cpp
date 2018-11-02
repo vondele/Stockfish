@@ -842,6 +842,8 @@ namespace {
             + passed< WHITE>() - passed< BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 
+    score += make_score(0, (pos.this_thread()->nodes.load(std::memory_order_relaxed) & 7) - 3);
+
     score += initiative(eg_value(score));
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
