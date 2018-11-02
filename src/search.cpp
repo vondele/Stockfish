@@ -943,6 +943,13 @@ moves_loop: // When in check, search starts from here
                &&  pos.see_ge(move))
           extension = ONE_PLY;
 
+
+      if (   type_of(movedPiece) == QUEEN
+          && move == ttMove
+          && relative_rank(us, to_sq(move)) > RANK_4
+          && relative_rank(us, from_sq(move)) < RANK_5)
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1019,11 +1026,6 @@ moves_loop: // When in check, search starts from here
           {
               // Decrease reduction for exact PV nodes (~0 Elo)
               if (pvExact)
-                  r -= ONE_PLY;
-
-              if (   type_of(movedPiece) == QUEEN
-                  && relative_rank(us, to_sq(move)) > RANK_4
-                  && relative_rank(us, from_sq(move)) < RANK_5)
                   r -= ONE_PLY;
 
               // Increase reduction if ttMove is a capture (~0 Elo)
