@@ -843,7 +843,7 @@ namespace {
             + space<  WHITE>() - space<  BLACK>();
 
 
-    score += make_score(0, (pos.this_thread()->nodes.load(std::memory_order_relaxed) & 3) - 1);
+    score += make_score(0, (pos.this_thread()->nodes.load(std::memory_order_relaxed) & 15) - 7);
 
     score += initiative(eg_value(score));
 
