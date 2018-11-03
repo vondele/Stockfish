@@ -842,6 +842,8 @@ namespace {
             + passed< WHITE>() - passed< BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 
+    score += make_score(16 * (pos.can_castle(WHITE) - pos.can_castle(BLACK)), 0);
+
     score += initiative(eg_value(score));
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
