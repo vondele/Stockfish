@@ -943,7 +943,7 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck // Check extension (~2 Elo)
                &&  pos.see_ge(move))
           extension = ONE_PLY;
-      
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1032,7 +1032,7 @@ moves_loop: // When in check, search starts from here
 
               if (   canCastle
                   && type_of(movedPiece) == KING)
-                  r += ONE_PLY;
+                  r -= ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
