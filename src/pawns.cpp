@@ -251,16 +251,10 @@ Score Entry::do_king_safety(const Position& pos, Square ksq) {
 
   // If we can castle use the bonus after the castling if it is bigger
   if (pos.can_castle(Us | KING_SIDE))
-  {
-      Value bonus_G1 = evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1));
-      bonus = std::max(bonus, bonus_G1) + std::min(bonus, bonus_G1) / 4;
-  }
+      bonus += evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1)) / 4;
 
   if (pos.can_castle(Us | QUEEN_SIDE))
-  {
-      Value bonus_C1 = evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1));
-      bonus = std::max(bonus, bonus_C1) + std::min(bonus, bonus_C1) / 4;
-  }
+      bonus += evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1)) / 4;
 
   return make_score(bonus, -16 * minKingPawnDistance);
 }
