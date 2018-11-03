@@ -842,7 +842,7 @@ namespace {
             + passed< WHITE>() - passed< BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 
-    score += make_score(16 * (bool(pos.can_castle(WHITE)) - bool(pos.can_castle(BLACK))), 0);
+    score += make_score(12 * (bool(pos.can_castle(WHITE)) - bool(pos.can_castle(BLACK))), 0);
 
     score += initiative(eg_value(score));
 
