@@ -1032,7 +1032,7 @@ moves_loop: // When in check, search starts from here
 
               if (   canCastle
                   && type_of(movedPiece) == KING)
-                  r -= ONE_PLY;
+                  r += type_of(move) != CASTLING ? -ONE_PLY : ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
