@@ -859,7 +859,7 @@ namespace {
     }
 
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + Eval::Tempo;
+           + Eval::Tempo + (pos.ep_square() != SQ_NONE) * 5;
   }
 
 } // namespace
