@@ -435,10 +435,10 @@ void Thread::search() {
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
+                  failedHighCnt = 0;
 
                   if (mainThread)
                   {
-                      failedHighCnt = 0;
                       failedLow = true;
                       Threads.stopOnPonderhit = false;
                   }
@@ -446,8 +446,7 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  if (mainThread)
-                	  ++failedHighCnt;
+                  ++failedHighCnt;
               }
               else
                   break;
