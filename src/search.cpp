@@ -62,8 +62,9 @@ namespace {
   enum NodeType { NonPV, PV };
 
   // Sizes and phases of the skip-blocks, used for distributing search depths across the threads
-  constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
-  constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
+  constexpr int SkipSize[]      = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
+  constexpr int SkipPhase[]     = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
+  constexpr int SkipPhaseHead[] = { 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1 };
 
   // Razor and futility margins
   constexpr int RazorMargin = 600;
@@ -446,7 +447,7 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  if (idx == 0 || SkipPhase[(idx - 1) % 20] == 0)
+                  if (idx == 0 || SkipPhaseHead[(idx - 1) % 20])
                       ++failedHighCnt;
               }
               else
