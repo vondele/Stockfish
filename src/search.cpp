@@ -446,7 +446,8 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  ++failedHighCnt;
+                  if (idx == 0 || SkipPhase[(idx - 1) % 20] == 0)
+                      ++failedHighCnt;
               }
               else
                   break;
