@@ -949,6 +949,12 @@ moves_loop: // When in check, search starts from here
           && depth < 12 * ONE_PLY)
           extension = ONE_PLY;
 
+      if (   captureOrPromotion
+          && pos.count<PAWN>(~us) > 6
+          && type_of(pos.piece_on(to_sq(move))) == PAWN
+          && depth < 8 * ONE_PLY)
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
