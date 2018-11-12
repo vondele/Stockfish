@@ -949,8 +949,10 @@ moves_loop: // When in check, search starts from here
           && depth < 12 * ONE_PLY)
           extension = ONE_PLY;
 
-      if (   pos.rule50_count() > 40
-          && pos.rule50_count() < 50
+      if (   pos.rule50_count() > 30
+          && pos.rule50_count() < 40
+          && !inCheck
+          && pureStaticEval > 0     
           && (type_of(movedPiece) == PAWN || captureOrPromotion))
           extension = ONE_PLY;
 
