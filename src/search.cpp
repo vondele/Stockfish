@@ -952,7 +952,7 @@ moves_loop: // When in check, search starts from here
       if (   pos.rule50_count() > 30
           && pos.rule50_count() < 40
           && (type_of(movedPiece) == PAWN || captureOrPromotion)
-          && depth > 6 * ONE_PLY)
+          && depth < 12 * ONE_PLY)
           extension = ONE_PLY;
 
       // Calculate new depth for this move
