@@ -950,6 +950,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       if (   pos.rule50_count() > 25
+          && pos.rule50_count() < 30
           && (type_of(movedPiece) == PAWN || captureOrPromotion))
           extension = ONE_PLY;
 
