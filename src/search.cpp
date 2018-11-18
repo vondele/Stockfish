@@ -1049,7 +1049,7 @@ moves_loop: // When in check, search starts from here
                              - 4000;
 
               // increase reduction by comparing opponent's stat score (~10 Elo)
-              if ((ss-1)->statScore >= +3500)
+              if ((ss-1)->statScore >= -7000)
                   r += ONE_PLY;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
