@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "movepick.h"
 
@@ -117,8 +118,8 @@ void MovePicker::score() {
           m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
                    + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)];
-
+                   + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                   + bool(pos.check_squares(type_of(pos.moved_piece(m))) & to_sq(m)) * 256;
       else // Type == EVASIONS
       {
           if (pos.capture(m))
