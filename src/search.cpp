@@ -885,6 +885,7 @@ moves_loop: // When in check, search starts from here
     skipQuiets = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
+    Move SEMove = MOVE_NONE;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -941,8 +942,10 @@ moves_loop: // When in check, search starts from here
           value = search<NonPV>(pos, ss, rBeta - 1, rBeta, depth / 2, cutNode);
           ss->excludedMove = MOVE_NONE;
 
-          if (value < rBeta)
+          if (value < rBeta) {
               extension = ONE_PLY;
+              SEMove = ttMove;
+          }
       }
       else if (    givesCheck // Check extension (~2 Elo)
                &&  pos.see_ge(move))
@@ -1190,6 +1193,9 @@ moves_loop: // When in check, search starts from here
         // Extra penalty for a quiet TT move in previous ply when it gets refuted
         if ((ss-1)->moveCount == 1 && !pos.captured_piece())
             update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
+
+        if (SEMove == bestMove)
+            bestValue -= Value(1);
     }
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 3 * ONE_PLY || PvNode)
@@ -1199,6 +1205,7 @@ moves_loop: // When in check, search starts from here
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
+
 
     if (!excludedMove)
         tte->save(posKey, value_to_tt(bestValue, ss->ply),
