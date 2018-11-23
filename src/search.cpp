@@ -518,7 +518,7 @@ void Thread::search() {
                   if (lastBestMoveDepth * i < completedDepth)
                      timeReduction *= 1.25;
  
-              if (int(equalPV) * ONE_PLY > rootDepth / 3)
+              if (int(equalPV) * ONE_PLY > rootDepth / 4)
                      timeReduction *= 1.5;
 
               // Use part of the gained time from a previous stable move for the current move
