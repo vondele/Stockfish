@@ -836,12 +836,8 @@ namespace {
                && probCutCount < 3)
             if (move != excludedMove && pos.legal(move))
             {
-                probCutCount++;
-
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
-
-                assert(depth >= 5 * ONE_PLY);
 
                 pos.do_move(move, st);
 
@@ -850,7 +846,10 @@ namespace {
 
                 // If the qsearch held perform the regular search
                 if (value >= rbeta)
+                {
+                    probCutCount++;
                     value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 4 * ONE_PLY, !cutNode);
+                }
 
                 pos.undo_move(move);
 
