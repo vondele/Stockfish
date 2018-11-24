@@ -518,8 +518,8 @@ void Thread::search() {
                   if (lastBestMoveDepth * i < completedDepth)
                      timeReduction *= 1.25;
  
-              if (equalPV > 8)
-                     timeReduction *= 1.25;
+              if (equalPV < 5)
+                     timeReduction /= 1.10;
 
               // Use part of the gained time from a previous stable move for the current move
               double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
