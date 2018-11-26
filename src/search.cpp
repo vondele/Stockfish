@@ -829,15 +829,13 @@ namespace {
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value rbeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
+        MovePicker mp(pos, ttMove, &thisThread->captureHistory);
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
                && probCutCount < 3)
             if (move != excludedMove && pos.legal(move))
             {
-                probCutCount++;
-
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
 
@@ -850,7 +848,10 @@ namespace {
 
                 // If the qsearch held perform the regular search
                 if (value >= rbeta)
+                {
+                    probCutCount++;
                     value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, depth - 4 * ONE_PLY, !cutNode);
+                }
 
                 pos.undo_move(move);
 
