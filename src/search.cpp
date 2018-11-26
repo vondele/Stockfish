@@ -955,7 +955,7 @@ moves_loop: // When in check, search starts from here
       if (   depth >= 3 * ONE_PLY
           && move == ttMove
           && pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK)
-          && !pos.see_ge(move, KnightValueMg - BishopValueMg))
+          && pos.see_ge(move, BishopValueMg - KnightValueMg))
           extension = ONE_PLY;
 
       // Calculate new depth for this move
