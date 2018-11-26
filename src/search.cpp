@@ -1036,7 +1036,7 @@ moves_loop: // When in check, search starts from here
 
               // side swapping moves
               if ((file_of(from_sq(move)) < FILE_E) == (file_of(to_sq(move)) > FILE_D))
-                  r -= ONE_PLY;
+                  r += ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
