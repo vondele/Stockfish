@@ -952,6 +952,12 @@ moves_loop: // When in check, search starts from here
                && type_of(movedPiece) == KING)
           extension = ONE_PLY;
 
+      if (   depth >= 3 * ONE_PLY
+          && move == ttMove
+          && pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK)
+          && !pos.see_ge(move))
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
