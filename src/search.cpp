@@ -1034,6 +1034,10 @@ moves_loop: // When in check, search starts from here
               if (ttCapture)
                   r += ONE_PLY;
 
+              // side swapping moves
+              if ((file_of(from_sq(move)) < FILE_E) == (file_of(to_sq(move)) > FILE_D))
+                  r -= ONE_PLY;
+
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
                   r += 2 * ONE_PLY;
