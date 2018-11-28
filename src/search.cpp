@@ -833,7 +833,7 @@ namespace {
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3 - pos.capture_or_promotion(ttMove))
+               && probCutCount < 3 + pos.capture_or_promotion(ttMove))
             if (move != excludedMove && pos.legal(move))
             {
                 probCutCount++;
