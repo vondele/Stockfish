@@ -186,6 +186,7 @@ void Search::clear() {
 
   Time.availableNodes = 0;
   TT.clear();
+  TT2.clear();
   Threads.clear();
   Tablebases::init(Options["SyzygyPath"]); // Free up mapped files
 }
@@ -206,6 +207,7 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
+  TT2.new_search();
 
   if (rootMoves.empty())
   {

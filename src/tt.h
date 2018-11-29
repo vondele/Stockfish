@@ -41,7 +41,7 @@ struct TTEntry {
   Value eval()  const { return (Value)eval16; }
   Depth depth() const { return (Depth)(depth8 * int(ONE_PLY)); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
-  void save(Key k, Value v, Bound b, Depth d, Move m, Value ev);
+  void save(Key k, Value v, Bound b, Depth d, Move m, Value ev, bool useMini = true);
 
 private:
   friend class TranspositionTable;
@@ -79,7 +79,7 @@ public:
   void new_search() { generation8 += 4; } // Lower 2 bits are used by Bound
   TTEntry* probe(const Key key, bool& found) const;
   int hashfull() const;
-  void resize(size_t mbSize);
+  void resize(size_t kbSize);
   void clear();
 
   // The 32 lowest order bits of the key are used to get the index of the cluster
@@ -97,5 +97,6 @@ private:
 };
 
 extern TranspositionTable TT;
+extern TranspositionTable TT2;
 
 #endif // #ifndef TT_H_INCLUDED

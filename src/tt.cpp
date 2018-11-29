@@ -28,9 +28,10 @@
 #include "uci.h"
 
 TranspositionTable TT; // Our global transposition table
+TranspositionTable TT2; // Our global mini transposition table
 
 /// TTEntry::save saves a TTEntry
-void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {
+void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev, bool useMini) {
 
   assert(d / ONE_PLY * ONE_PLY == d);
 
@@ -48,6 +49,14 @@ void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {
       eval16    = (int16_t)ev;
       genBound8 = (uint8_t)(TT.generation8 | b);
       depth8    = (int8_t)(d / ONE_PLY);
+
+      if (   d > 8 * ONE_PLY
+          && useMini)
+      {
+          bool hit;
+          TTEntry* tte = TT2.probe(k, hit);
+          tte->save(k, v, b, d, m, ev, false);
+      }
   }
 }
 
@@ -56,17 +65,17 @@ void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {
 /// measured in megabytes. Transposition table consists of a power of 2 number
 /// of clusters and each cluster consists of ClusterSize number of TTEntry.
 
-void TranspositionTable::resize(size_t mbSize) {
+void TranspositionTable::resize(size_t kbSize) {
 
-  clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
+  clusterCount = kbSize * 1024 / sizeof(Cluster);
 
   free(mem);
   mem = malloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
 
   if (!mem)
   {
-      std::cerr << "Failed to allocate " << mbSize
-                << "MB for transposition table." << std::endl;
+      std::cerr << "Failed to allocate " << kbSize
+                << "KB for transposition table." << std::endl;
       exit(EXIT_FAILURE);
   }
 

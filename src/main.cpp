@@ -44,6 +44,7 @@ int main(int argc, char* argv[]) {
   Search::init();
   Pawns::init();
   Threads.set(Options["Threads"]);
+  TT2.resize(4);
   Search::clear(); // After threads are up
 
   UCI::loop(argc, argv);
