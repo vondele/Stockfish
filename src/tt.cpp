@@ -34,15 +34,15 @@ void TTEntry::save(Key k, Value v, Bound b, Depth d, Move m, Value ev) {
 
   assert(d / ONE_PLY * ONE_PLY == d);
 
-  // Preserve any existing move for the same position
-  if (m || (k >> 48) != key16)
-      move16 = (uint16_t)m;
-
   // Overwrite less valuable entries
   if (  (k >> 48) != key16
       || d / ONE_PLY > depth8 - 4
       || b == BOUND_EXACT)
   {
+      // Preserve any existing move for the same position
+      if (m || (k >> 48) != key16)
+          move16 = (uint16_t)m;
+
       key16     = (uint16_t)(k >> 48);
       value16   = (int16_t)v;
       eval16    = (int16_t)ev;
