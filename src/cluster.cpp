@@ -45,9 +45,12 @@ static MPI_Comm TTComm = MPI_COMM_NULL;
 static MPI_Comm MoveComm = MPI_COMM_NULL;
 static MPI_Comm StopComm = MPI_COMM_NULL;
 
-static std::vector<KeyedTTEntry> TTBuff;
-
 static MPI_Datatype MIDatatype = MPI_DATATYPE_NULL;
+
+static MPI_Request req_send = MPI_REQUEST_NULL;
+static MPI_Request req_recv = MPI_REQUEST_NULL;
+static TTSendBuffer<TTSendBufferSize> send_buff = {};
+static TTSendBuffer<TTSendBufferSize> recv_buff = {};
 
 void init() {
   int thread_support;
@@ -61,8 +64,6 @@ void init() {
 
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-  TTBuff.resize(TTSendBufferSize * world_size);
 
   const std::array<MPI_Aint, 4> MIdisps = {offsetof(MoveInfo, move),
                                            offsetof(MoveInfo, depth),
@@ -168,31 +169,27 @@ void save(Thread* thread, TTEntry* tte,
      // Communicate on main search thread
      if (thread == Threads.main())
      {
-         static MPI_Request req = MPI_REQUEST_NULL;
-         static TTSendBuffer<TTSendBufferSize> send_buff = {};
-         int flag;
+         int flag_send, flag_recv;
          bool found;
          TTEntry* replace_tte;
 
          // Test communication status
-         MPI_Test(&req, &flag, MPI_STATUS_IGNORE);
+         MPI_Test(&req_recv, &flag_recv, MPI_STATUS_IGNORE);
+         MPI_Test(&req_send, &flag_send, MPI_STATUS_IGNORE);
 
          // Current communication is complete
-         if (flag)
+         if (flag_recv && flag_send)
          {
-             // Save all received entries (except ours)
-             for (size_t irank = 0; irank < size_t(size()) ; ++irank)
+             for (auto&& e : recv_buff)
              {
-                 if (irank == size_t(rank()))
-                     continue;
-                 for (size_t i = irank * TTSendBufferSize ; i < (irank + 1) * TTSendBufferSize; ++i)
-                 {
-                     auto&& e = TTBuff[i];
-                     replace_tte = TT.probe(e.first, found);
-                     replace_tte->save(e.first, e.second.value(), e.second.bound(), e.second.depth(),
-                                       e.second.move(), e.second.eval());
-                 }
+                 replace_tte = TT.probe(e.first, found);
+                 replace_tte->save(e.first, e.second.value(), e.second.bound(), e.second.depth(),
+                                   e.second.move(), e.second.eval());
              }
+
+             // Start next recv
+             MPI_Irecv(recv_buff.data(), recv_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
+                       (rank() - 1 + size()) % size(), 42, TTComm, &req_recv);
 
              // Reset send buffer
              send_buff = {};
@@ -206,10 +203,9 @@ void save(Thread* thread, TTEntry* tte,
                  th->ttBuffer.buffer = {};
              }
 
-             // Start next communication
-             MPI_Iallgather(send_buff.data(), send_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
-                            TTBuff.data(), TTSendBufferSize * sizeof(KeyedTTEntry), MPI_BYTE,
-                            TTComm, &req);
+             // Start next send
+             MPI_Isend(send_buff.data(), send_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
+                       (rank() + 1) % size(), 42, TTComm, &req_send);
          }
      }
   }
