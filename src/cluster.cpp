@@ -76,6 +76,11 @@ void init() {
   MPI_Comm_dup(MPI_COMM_WORLD, &TTComm);
   MPI_Comm_dup(MPI_COMM_WORLD, &MoveComm);
   MPI_Comm_dup(MPI_COMM_WORLD, &StopComm);
+
+  MPI_Recv_init(recv_buff.data(), recv_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
+                (rank() - 1 + size()) % size(), 42, TTComm, &req_recv);
+  MPI_Send_init(send_buff.data(), send_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
+                (rank() + 1) % size(), 42, TTComm, &req_send);
 }
 
 void finalize() {
@@ -188,8 +193,7 @@ void save(Thread* thread, TTEntry* tte,
              }
 
              // Start next recv
-             MPI_Irecv(recv_buff.data(), recv_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
-                       (rank() - 1 + size()) % size(), 42, TTComm, &req_recv);
+             MPI_Start(&req_recv);
 
              // Reset send buffer
              send_buff = {};
@@ -204,8 +208,7 @@ void save(Thread* thread, TTEntry* tte,
              }
 
              // Start next send
-             MPI_Isend(send_buff.data(), send_buff.size() * sizeof(KeyedTTEntry), MPI_BYTE,
-                       (rank() + 1) % size(), 42, TTComm, &req_send);
+             MPI_Start(&req_send);
          }
      }
   }
