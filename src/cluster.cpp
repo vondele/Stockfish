@@ -165,8 +165,8 @@ void save(Thread* thread, TTEntry* tte,
          thread->ttBuffer.buffer.replace(KeyedTTEntry(k,*tte));
      }
 
-     // Communicate on main search thread
-     if (thread == Threads.main())
+     // Communicate on last search thread
+     if (thread == Threads.back())
      {
          static MPI_Request req = MPI_REQUEST_NULL;
          static TTSendBuffer<TTSendBufferSize> send_buff = {};
