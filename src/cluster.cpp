@@ -190,7 +190,7 @@ void save(Thread* thread, TTEntry* tte,
                      auto&& e = TTBuff[i];
                      replace_tte = TT.probe(e.first, found);
                      replace_tte->save(e.first, e.second.value(), e.second.bound(), e.second.depth(),
-                                       e.second.move(), e.second.eval());
+                                       e.second.move(), e.second.eval(), 2);
                  }
              }
 
