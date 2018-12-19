@@ -1471,8 +1471,6 @@ moves_loop: // When in check, search starts from here
     for (int i : {1, 2, 4})
         if (is_ok((ss-i)->currentMove))
             (*(ss-i)->continuationHistory)[pc][to] << bonus;
-        else
-            break;
   }
 
 
