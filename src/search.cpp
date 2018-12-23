@@ -240,8 +240,8 @@ void MainThread::search() {
   // "ponderhit" just reset Threads.ponder).
   Threads.stop = true;
 
-  // Finish any outstanding barriers.
-  Cluster::sync_stop();
+  // Signal and synchronize all other ranks
+  Cluster::signals_sync();
 
   // Wait until all threads have finished
   for (Thread* th : Threads)
@@ -431,10 +431,6 @@ void Thread::search() {
               // new PV that goes to the front. Note that in case of MultiPV
               // search the already searched PV lines are preserved.
               std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
-
-              // update node counters before writing PVs and check signals
-              if (mainThread)
-                  Cluster::sync_stop();
 
               // If search has been stopped, we break immediately. Sorting is
               // safe because RootMoves is still valid, although it refers to
@@ -1606,8 +1602,8 @@ void MainThread::check_time() {
       dbg_print();
   }
 
-  // Check if root has reached a stop barrier
-  Cluster::sync_stop();
+  // poll on MPI signals
+  Cluster::signals_poll();
 
   // We should not stop pondering until told so by the GUI
   if (Threads.ponder)

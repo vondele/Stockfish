@@ -200,7 +200,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   setupStates->back() = tmp;
 
-  Cluster::sync_start();
+  Cluster::signals_init();
 
   main()->start_searching();
 }

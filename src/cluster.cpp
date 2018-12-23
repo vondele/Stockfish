@@ -38,19 +38,19 @@ namespace Cluster {
 static int world_rank = MPI_PROC_NULL;
 static int world_size = 0;
 
-static bool stop_signal = false;
-static MPI_Request reqStop = MPI_REQUEST_NULL;
+static MPI_Request reqSignals = MPI_REQUEST_NULL;
+static uint64_t signalsCallCounter = 0;
+
+enum Signals : int { SIG_NODES = 0, SIG_STOP = 1, SIG_NB = 2};
+static uint64_t signalsSend[SIG_NB] = {};
+static uint64_t signalsRecv[SIG_NB] = {};
 
 static uint64_t nodesSearchedOthers = 0;
-static uint64_t nodesSearchedSend = 0;
-static uint64_t nodesSearchedRecv = 0;
-static uint64_t nodesCallCounter = 0;
-static MPI_Request reqNodesSearched = MPI_REQUEST_NULL;
 
 static MPI_Comm InputComm = MPI_COMM_NULL;
 static MPI_Comm TTComm = MPI_COMM_NULL;
 static MPI_Comm MoveComm = MPI_COMM_NULL;
-static MPI_Comm StopComm = MPI_COMM_NULL;
+static MPI_Comm signalsComm = MPI_COMM_NULL;
 
 static std::vector<KeyedTTEntry> TTBuff;
 
@@ -82,19 +82,11 @@ void init() {
   MPI_Comm_dup(MPI_COMM_WORLD, &InputComm);
   MPI_Comm_dup(MPI_COMM_WORLD, &TTComm);
   MPI_Comm_dup(MPI_COMM_WORLD, &MoveComm);
-  MPI_Comm_dup(MPI_COMM_WORLD, &StopComm);
+  MPI_Comm_dup(MPI_COMM_WORLD, &signalsComm);
 }
 
 void finalize() {
 
-  // finalize outstanding messages of the nodes counter. We might have issued one call less than needed on some ranks.
-  uint64_t globalCounter;
-  MPI_Allreduce(&nodesCallCounter, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
-  if (nodesCallCounter < globalCounter)
-     MPI_Iallreduce(&nodesSearchedSend, &nodesSearchedRecv, 1, MPI_UINT64_T,
-                    MPI_SUM, MoveComm, &reqNodesSearched);
-  MPI_Wait(&reqNodesSearched, MPI_STATUS_IGNORE);
-  MPI_Barrier(MoveComm);
 
   // free data tyes and communicators
   MPI_Type_free(&MIDatatype);
@@ -102,10 +94,21 @@ void finalize() {
   MPI_Comm_free(&InputComm);
   MPI_Comm_free(&TTComm);
   MPI_Comm_free(&MoveComm);
-  MPI_Comm_free(&StopComm);
+  MPI_Comm_free(&signalsComm);
 
   MPI_Finalize();
 }
+
+int size() {
+
+  return world_size;
+}
+
+int rank() {
+
+  return world_rank;
+}
+
 
 bool getline(std::istream& input, std::string& str) {
 
@@ -148,60 +151,59 @@ bool getline(std::istream& input, std::string& str) {
   return state;
 }
 
-void sync_start() {
+void signals_send() {
 
-  stop_signal = false;
-
-  nodesSearchedOthers = nodesSearchedSend = nodesSearchedRecv = 0;
-
-  // Start listening to stop signal
-  if (!is_root())
-      MPI_Ibarrier(StopComm, &reqStop);
+  signalsSend[SIG_NODES] = Threads.nodes_searched();
+  signalsSend[SIG_STOP] = Threads.stop;
+  MPI_Iallreduce(signalsSend, signalsRecv, SIG_NB, MPI_UINT64_T,
+                 MPI_SUM, signalsComm, &reqSignals);
+  ++signalsCallCounter;
 }
 
-void sync_stop() {
+void signals_process() {
 
-  // update the nodeCount, using a non-blocking collective
+  nodesSearchedOthers = signalsRecv[SIG_NODES] - signalsSend[SIG_NODES];
+  if (signalsRecv[SIG_STOP] > 0)
+      Threads.stop = true;
+}
+
+void signals_sync() {
+
+  while(signalsRecv[SIG_STOP] < uint64_t(size()))
+      signals_poll();
+
+  // finalize outstanding messages of the signal loops. We might have issued one call less than needed on some ranks.
+  uint64_t globalCounter;
+  MPI_Allreduce(&signalsCallCounter, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm); // MoveComm needed
+  if (signalsCallCounter < globalCounter)
+      signals_send();
+
+  assert(signalsCallCounter == globalCounter);
+
+  MPI_Wait(&reqSignals, MPI_STATUS_IGNORE);
+
+  signals_process();
+
+}
+
+void signals_init() {
+
+  nodesSearchedOthers = 0;
+
+  signalsSend[SIG_NODES] = signalsRecv[SIG_NODES] = 0;
+  signalsSend[SIG_STOP] = signalsRecv[SIG_STOP] = 0;
+
+}
+
+void signals_poll() {
+
   int flag;
-  MPI_Test(&reqNodesSearched, &flag, MPI_STATUS_IGNORE);
+  MPI_Test(&reqSignals, &flag, MPI_STATUS_IGNORE);
   if (flag)
   {
-     nodesSearchedOthers = nodesSearchedRecv - nodesSearchedSend;
-     nodesSearchedSend = Threads.nodes_searched();
-     MPI_Iallreduce(&nodesSearchedSend, &nodesSearchedRecv, 1, MPI_UINT64_T,
-                    MPI_SUM, MoveComm, &reqNodesSearched);
-     ++nodesCallCounter;
+     signals_process();
+     signals_send();
   }
-
-  // Handle stop signal.
-  if (is_root())
-  {
-      if (!stop_signal && Threads.stop)
-      {
-          // Signal the cluster about stopping
-          stop_signal = true;
-          MPI_Ibarrier(StopComm, &reqStop);
-          MPI_Wait(&reqStop, MPI_STATUS_IGNORE);
-      }
-  }
-  else
-  {
-      int flagStop;
-      // Check if we've received any stop signal
-      MPI_Test(&reqStop, &flagStop, MPI_STATUS_IGNORE);
-      if (flagStop)
-          Threads.stop = true;
-  }
-}
-
-int size() {
-
-  return world_size;
-}
-
-int rank() {
-
-  return world_rank;
 }
 
 void save(Thread* thread, TTEntry* tte,
