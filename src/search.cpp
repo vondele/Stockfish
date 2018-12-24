@@ -234,7 +234,7 @@ void MainThread::search() {
   Threads.stopOnPonderhit = true;
 
   while (!Threads.stop && (Threads.ponder || Limits.infinite))
-  { } // Busy wait for a stop or a ponder reset
+  { Cluster::signals_poll(); } // Busy wait for a stop or a ponder reset
 
   // Stop the threads if not already stopped (also raise the stop if
   // "ponderhit" just reset Threads.ponder).

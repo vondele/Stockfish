@@ -46,6 +46,7 @@ static uint64_t signalsSend[SIG_NB] = {};
 static uint64_t signalsRecv[SIG_NB] = {};
 
 static uint64_t nodesSearchedOthers = 0;
+static uint64_t stopSignalsPosted = 0;
 
 static MPI_Comm InputComm = MPI_COMM_NULL;
 static MPI_Comm TTComm = MPI_COMM_NULL;
@@ -163,13 +164,14 @@ void signals_send() {
 void signals_process() {
 
   nodesSearchedOthers = signalsRecv[SIG_NODES] - signalsSend[SIG_NODES];
+  stopSignalsPosted = signalsRecv[SIG_STOP];
   if (signalsRecv[SIG_STOP] > 0)
       Threads.stop = true;
 }
 
 void signals_sync() {
 
-  while(signalsRecv[SIG_STOP] < uint64_t(size()))
+  while(stopSignalsPosted < uint64_t(size()))
       signals_poll();
 
   // finalize outstanding messages of the signal loops. We might have issued one call less than needed on some ranks.
