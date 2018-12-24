@@ -116,15 +116,23 @@ bool getline(std::istream& input, std::string& str) {
   int size;
   std::vector<char> vec;
   bool state;
+  static size_t counter = 0;
 
-  if (is_root())
+  size = 0;
+  do 
   {
-      state = static_cast<bool>(std::getline(input, str));
-      vec.assign(str.begin(), str.end());
-      size = vec.size();
-  }
+     if (is_root() && counter < 4)
+     {
+         state = static_cast<bool>(std::getline(input, str));
+         vec.assign(str.begin(), str.end());
+         size = vec.size();
+         ++counter;
+     }
 
-  MPI_Bcast(&size, 1, MPI_INT, 0, InputComm);
+     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+     MPI_Bcast(&size, 1, MPI_INT, 0, InputComm);
+
+  } while(size==0);
 
   if (!is_root())
       vec.resize(size);
