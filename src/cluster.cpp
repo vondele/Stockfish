@@ -190,7 +190,7 @@ void signals_sync() {
 
 void signals_init() {
 
-  nodesSearchedOthers = 0;
+  stopSignalsPosted = nodesSearchedOthers = 0;
 
   signalsSend[SIG_NODES] = signalsRecv[SIG_NODES] = 0;
   signalsSend[SIG_STOP] = signalsRecv[SIG_STOP] = 0;
