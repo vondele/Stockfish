@@ -206,15 +206,25 @@ void signals_sync() {
   // finalize outstanding messages of the signal loops. We might have issued one call less than needed on some ranks.
   MPI_Allreduce(&signalsCallCounter, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm); // MoveComm needed
   if (signalsCallCounter < globalCounter)
+  {
+      int flag = 0;
+      while(!flag)
+         MPI_Test(&reqSignals, &flag, MPI_STATUS_IGNORE);
       signals_send();
+  }
   assert(signalsCallCounter == globalCounter);
   MPI_Wait(&reqSignals, MPI_STATUS_IGNORE);
   signals_process();
 
   // finalize outstanding messages in the sendRecv loop
   MPI_Allreduce(&sendRecvPosted, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
-  if (sendRecvPosted < globalCounter)
+  while (sendRecvPosted < globalCounter)
+  {
+      int flag = 0;
+      while(!flag)
+         MPI_Testall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), &flag, MPI_STATUSES_IGNORE);
       sendrecv_post();
+  }
   assert(sendRecvPosted == globalCounter);
   MPI_Waitall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
 
