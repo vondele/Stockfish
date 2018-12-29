@@ -54,9 +54,9 @@ static MPI_Comm TTComm = MPI_COMM_NULL;
 static MPI_Comm MoveComm = MPI_COMM_NULL;
 static MPI_Comm signalsComm = MPI_COMM_NULL;
 
-static std::vector<KeyedTTEntry> TTRecvBuff;
-static MPI_Request reqGather = MPI_REQUEST_NULL;
-static uint64_t gathersPosted = 0;
+static std::array<std::vector<KeyedTTEntry>, 2> TTSendRecvBuffs;
+static std::array<MPI_Request, 2> reqsTTSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
+static uint64_t sendRecvPosted = 0;
 
 static std::atomic<uint64_t> TTCacheCounter = {};
 
@@ -115,10 +115,13 @@ int rank() {
   return world_rank;
 }
 
-void ttRecvBuff_resize(size_t nThreads) {
+void ttSendRecvBuff_resize(size_t nThreads) {
 
-  TTRecvBuff.resize(TTCacheSize * world_size * nThreads);
-  std::fill(TTRecvBuff.begin(), TTRecvBuff.end(), KeyedTTEntry());
+  for (int i : {0, 1})
+  {
+     TTSendRecvBuffs[i].resize(TTCacheSize * world_size * nThreads);
+     std::fill(TTSendRecvBuffs[i].begin(), TTSendRecvBuffs[i].end(), KeyedTTEntry());
+  }
 
 }
 
@@ -183,13 +186,25 @@ void signals_process() {
       Threads.stop = true;
 }
 
+void sendrecv_post() {
+
+   ++sendRecvPosted;
+   MPI_Irecv(TTSendRecvBuffs[sendRecvPosted       % 2].data(),
+             TTSendRecvBuffs[sendRecvPosted       % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
+             (rank() + size() - 1) % size(), 42, TTComm, &reqsTTSendRecv[0]);
+   MPI_Isend(TTSendRecvBuffs[(sendRecvPosted + 1) % 2].data(),
+             TTSendRecvBuffs[(sendRecvPosted + 1) % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
+             (rank() + 1         ) % size(), 42, TTComm, &reqsTTSendRecv[1]);
+}
+
 void signals_sync() {
 
   while(stopSignalsPosted < uint64_t(size()))
       signals_poll();
 
-  // finalize outstanding messages of the signal loops. We might have issued one call less than needed on some ranks.
   uint64_t globalCounter;
+
+  // finalize outstanding messages of the signal loops. We might have issued one call less than needed on some ranks.
   MPI_Allreduce(&signalsCallCounter, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm); // MoveComm needed
   if (signalsCallCounter < globalCounter)
   {
@@ -198,22 +213,17 @@ void signals_sync() {
   }
   assert(signalsCallCounter == globalCounter);
   MPI_Wait(&reqSignals, MPI_STATUS_IGNORE);
-
   signals_process();
 
-  // finalize outstanding messages in the gather loop
-  MPI_Allreduce(&gathersPosted, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
-  if (gathersPosted < globalCounter)
+  // finalize outstanding messages in the sendRecv loop
+  MPI_Allreduce(&sendRecvPosted, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
+  while (sendRecvPosted < globalCounter)
   {
-     size_t recvBuffPerRankSize = Threads.size() * TTCacheSize;
-     MPI_Wait(&reqGather, MPI_STATUS_IGNORE);
-     MPI_Iallgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
-                    TTRecvBuff.data(), recvBuffPerRankSize * sizeof(KeyedTTEntry), MPI_BYTE,
-                    TTComm, &reqGather);
-     ++gathersPosted;
+      MPI_Waitall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
+      sendrecv_post();
   }
-  assert(gathersPosted == globalCounter);
-  MPI_Wait(&reqGather, MPI_STATUS_IGNORE);
+  assert(sendRecvPosted == globalCounter);
+  MPI_Waitall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
 
 }
 
@@ -259,7 +269,7 @@ void save(Thread* thread, TTEntry* tte,
      {
          // Test communication status
          int flag;
-         MPI_Test(&reqGather, &flag, MPI_STATUS_IGNORE);
+         MPI_Testall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), &flag, MPI_STATUSES_IGNORE);
 
          // Current communication is complete
          if (flag)
@@ -276,7 +286,7 @@ void save(Thread* thread, TTEntry* tte,
                         std::lock_guard<Mutex> lk(th->ttCache.mutex);
 
                         for (auto&& e : th->ttCache.buffer)
-                            TTRecvBuff[i++] = e;
+                            TTSendRecvBuffs[sendRecvPosted % 2][i++] = e;
 
                         // Reset thread's send buffer
                         th->ttCache.buffer = {};
@@ -287,7 +297,7 @@ void save(Thread* thread, TTEntry* tte,
                  else
                     for (size_t i = irank * recvBuffPerRankSize; i < (irank + 1) * recvBuffPerRankSize; ++i)
                     {
-                        auto&& e = TTRecvBuff[i];
+                        auto&& e = TTSendRecvBuffs[sendRecvPosted % 2][i];
                         bool found;
                         TTEntry* replace_tte;
                         replace_tte = TT.probe(e.first, found);
@@ -297,10 +307,7 @@ void save(Thread* thread, TTEntry* tte,
              }
 
              // Start next communication
-             MPI_Iallgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
-                            TTRecvBuff.data(), recvBuffPerRankSize * sizeof(KeyedTTEntry), MPI_BYTE,
-                            TTComm, &reqGather);
-             ++gathersPosted;
+             sendrecv_post();
 
 	     // Force check of time on the next occasion.
              static_cast<MainThread*>(thread)->callsCnt = 0;
