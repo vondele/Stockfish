@@ -1,0 +1,507 @@
+Stockfish 040119 64 POPCNT by T. Romstad, M. Costalba, J. Kiiski, G. Linscott
+info depth 1 seldepth 1 multipv 1 score cp 84 nodes 4460 nps 1486666 tbhits 0 time 3 pv e2e3
+info depth 2 seldepth 2 multipv 1 score cp 87 nodes 5575 nps 1858333 tbhits 0 time 3 pv e2e4 b8c6
+info depth 3 seldepth 3 multipv 1 score cp 63 nodes 7944 nps 1986000 tbhits 0 time 4 pv e2e3 e7e6 d2d4 b8c6
+info depth 4 seldepth 4 multipv 1 score cp 39 nodes 13176 nps 3294000 tbhits 0 time 4 pv g1f3 d7d5 d2d4 e7e6
+info depth 5 seldepth 5 multipv 1 score cp 57 nodes 18539 nps 4634750 tbhits 0 time 4 pv d2d4 d7d5 e2e3 e7e6 b1d2
+info depth 6 seldepth 6 multipv 1 score cp 56 nodes 27412 nps 6853000 tbhits 0 time 4 pv g1f3 d7d5 d2d4 g8f6 c2c3 c7c6
+info depth 7 seldepth 7 multipv 1 score cp 61 nodes 44329 nps 8865800 tbhits 0 time 5 pv g1f3 d7d5 d2d4 b8c6 c2c3 g8f6 c1g5
+info depth 8 seldepth 8 multipv 1 score cp 83 nodes 55955 nps 11191000 tbhits 0 time 5 pv e2e4 d7d5 e4d5 d8d5 d1e2 g8f6 b1c3
+info depth 9 seldepth 10 multipv 1 score cp 104 nodes 107937 nps 15419571 tbhits 0 time 7 pv e2e4 c7c5 b1c3 e7e5 b2b3 b8c6 g1f3
+info depth 10 seldepth 12 multipv 1 score cp 86 nodes 222548 nps 20231636 tbhits 0 time 11 pv e2e4 e7e6 d2d4 d7d5 e4e5 b8d7 b1c3 g8e7 g1f3 c7c6
+info depth 11 seldepth 16 multipv 1 score cp 79 nodes 677200 nps 26046153 tbhits 0 time 26 pv d2d4 d7d5 e2e3 c7c5 g1f3 g8f6 c2c4 c5d4 e3d4 c8g4 b1c3 b8c6 c1g5
+info depth 12 seldepth 18 multipv 1 score cp 68 nodes 1941713 nps 28140768 tbhits 0 time 69 pv e2e4 e7e5 g1f3 b8c6 f1c4 f8c5 c2c3 g8f6 d2d4 e5d4 e1g1 d4c3 b1c3 d7d6
+info depth 13 seldepth 20 multipv 1 score cp 74 nodes 2435698 nps 28655270 tbhits 0 time 85 pv d2d4 d7d5 c2c4 e7e6 g1f3 d5c4 b1c3 c7c6 e2e4 b7b5 a2a3 f8e7 f1e2
+info depth 14 seldepth 26 multipv 1 score cp 70 nodes 4589396 nps 29046810 tbhits 0 time 158 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 c2c3 c7c6 f1d3 f8d6 d1e2 d8e7 e2e7 d6e7 e1g1 e8g8 f1e1 c8e6
+info depth 15 seldepth 20 multipv 1 score cp 83 nodes 5351759 nps 29085646 tbhits 0 time 184 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8d6 e1g1 e8g8 b1c3 c7c6 f1e1
+info depth 16 seldepth 19 multipv 1 score cp 75 nodes 325776398 nps 1645335343 tbhits 0 time 198 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8d6 e1g1 e8g8 f1e1 h7h6 c2c4 d5c4 d3c4 c7c6 b1c3
+info depth 17 seldepth 26 multipv 1 score cp 70 nodes 651101842 nps 2533470202 tbhits 0 time 257 pv e2e4 e7e6 d2d4 d7d5 e4e5 c7c5 c2c3 b8c6 g1f3 g8e7 f1d3 e7g6 e1g1 f8e7 c1e3 e8g8 b1d2 c8d7 h2h3
+info depth 18 seldepth 26 multipv 1 score cp 59 nodes 1277367426 nps 2903107786 tbhits 0 time 440 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 c7c5 c2c3 c5c4 d3c2 f8d6 d1e2 d8e7 e2e7 e8e7 e1g1 c8e6 f1e1 b8c6 c1e3 a8e8 b1d2 e7d7
+info depth 19 seldepth 32 multipv 1 score cp 70 nodes 2102515839 nps 3038317686 tbhits 0 time 692 pv e2e4 e7e6 d2d4 d7d5 e4e5 c7c5 c2c3 c8d7 g1f3 g8e7 f1d3 b8c6 e1g1 e7g6 c1e3 f8e7 b1d2 c5d4 c3d4 e8g8 a2a3 d8b6
+info depth 20 seldepth 32 multipv 1 score cp 63 nodes 4069764373 nps 3196986938 hashfull 764 tbhits 0 time 1273 pv d2d4 e7e6 c2c4 d7d5 b1c3 c7c5 g1f3 c5d4 f3d4 g8f6 e2e3 b8c6 c4d5 e6d5 f1d3 f8e7 e1g1 e8g8 h2h3 c6d4 e3d4 e7d6
+info depth 21 seldepth 28 multipv 1 score cp 66 nodes 4246530461 nps 3209773591 hashfull 775 tbhits 0 time 1323 pv d2d4 e7e6 c2c4 d7d5 g1f3 g8f6 b1c3 f8b4 c1g5 e8g8 e2e3 b8d7 c4d5 e6d5 f1d3 h7h6 g5h4 c7c6 e1g1 f8e8 a2a3 b4d6 h4g3 d6g3 h2g3 d7f8
+info depth 22 seldepth 38 multipv 1 score cp 57 nodes 5164255329 nps 3252049955 hashfull 856 tbhits 0 time 1588 pv e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 e4e5 f6d7 f2f4 c7c5 g1f3 b8c6 c1e3 f8e7 f1e2 a7a6 e1g1 e8g8 c3a4 c5c4 c2c3 b7b6 e3f2 c8b7
+info depth 22 currmove b1c3 currmovenumber 3
+info depth 22 currmove g1f3 currmovenumber 4
+info depth 22 currmove e2e3 currmovenumber 5
+info depth 22 currmove b2b4 currmovenumber 6
+info depth 22 currmove c2c3 currmovenumber 7
+info depth 22 currmove a2a3 currmovenumber 8
+info depth 22 currmove d2d3 currmovenumber 9
+info depth 22 currmove c2c4 currmovenumber 10
+info depth 22 currmove g2g3 currmovenumber 11
+info depth 22 currmove a2a4 currmovenumber 12
+info depth 22 currmove f2f4 currmovenumber 13
+info depth 22 currmove h2h4 currmovenumber 14
+info depth 22 currmove h2h3 currmovenumber 15
+info depth 22 currmove b1a3 currmovenumber 16
+info depth 22 currmove b2b3 currmovenumber 17
+info depth 22 currmove f2f3 currmovenumber 18
+info depth 22 currmove g2g4 currmovenumber 19
+info depth 22 currmove g1h3 currmovenumber 20
+info depth 23 seldepth 32 multipv 1 score cp 53 nodes 12811419009 nps 3500387707 hashfull 997 tbhits 0 time 3660 pv e2e4 e7e6 b1c3 d7d5 d2d4 g8f6 e4e5 f6d7 f2f4 c7c5 g1f3 b8c6 c1e3 f8e7 f1b5 a7a6 b5c6 b7c6 e1g1 a8b8 a1b1 e8g8 f1e1 d8c7 d4c5 d7c5
+info depth 24 currmove e2e4 currmovenumber 1
+info depth 24 currmove d2d4 currmovenumber 2
+info depth 24 currmove g1f3 currmovenumber 3
+info depth 24 currmove c2c4 currmovenumber 4
+info depth 24 currmove a2a3 currmovenumber 5
+info depth 24 currmove b1c3 currmovenumber 6
+info depth 24 currmove b1a3 currmovenumber 7
+info depth 24 currmove c2c3 currmovenumber 8
+info depth 24 currmove b2b4 currmovenumber 9
+info depth 24 currmove d2d3 currmovenumber 10
+info depth 24 currmove f2f3 currmovenumber 11
+info depth 24 currmove f2f4 currmovenumber 12
+info depth 24 currmove h2h3 currmovenumber 13
+info depth 24 currmove e2e3 currmovenumber 14
+info depth 24 currmove b2b3 currmovenumber 15
+info depth 24 currmove g2g3 currmovenumber 16
+info depth 24 currmove g1h3 currmovenumber 17
+info depth 24 currmove a2a4 currmovenumber 18
+info depth 24 currmove g2g4 currmovenumber 19
+info depth 24 currmove h2h4 currmovenumber 20
+info depth 24 seldepth 33 multipv 1 score cp 54 nodes 15420558353 nps 3582011231 hashfull 1000 tbhits 0 time 4305 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 c7c5 e1g1 c5c4 d3e2 f8e7 b2b3 c4b3 a2b3 b8c6 e2d3 e8g8 f1e1 c8e6 c1a3 e7d6 a3d6 d8d6 b1c3 c6b4 g2g3
+info depth 25 currmove e2e4 currmovenumber 1
+info depth 25 seldepth 36 multipv 1 score cp 63 lowerbound nodes 16892233724 nps 3622610706 hashfull 1000 tbhits 0 time 4663 pv e2e4
+info depth 24 currmove e2e4 currmovenumber 1
+info depth 24 currmove d2d4 currmovenumber 2
+info depth 24 currmove b1c3 currmovenumber 3
+info depth 24 currmove g1f3 currmovenumber 4
+info depth 24 currmove c2c3 currmovenumber 5
+info depth 24 currmove c2c4 currmovenumber 6
+info depth 24 currmove d2d3 currmovenumber 7
+info depth 24 currmove g2g3 currmovenumber 8
+info depth 24 currmove b2b4 currmovenumber 9
+info depth 24 currmove f2f4 currmovenumber 10
+info depth 24 currmove h2h3 currmovenumber 11
+info depth 24 currmove b1a3 currmovenumber 12
+info depth 24 currmove a2a3 currmovenumber 13
+info depth 24 currmove e2e3 currmovenumber 14
+info depth 24 currmove h2h4 currmovenumber 15
+info depth 24 currmove f2f3 currmovenumber 16
+info depth 24 currmove b2b3 currmovenumber 17
+info depth 24 currmove a2a4 currmovenumber 18
+info depth 24 currmove g1h3 currmovenumber 19
+info depth 24 currmove g2g4 currmovenumber 20
+info depth 25 seldepth 36 multipv 1 score cp 65 nodes 17599178753 nps 3643722309 hashfull 1000 tbhits 0 time 4830 pv e2e4 e7e6 b1c3 d7d5 d2d4 f8b4 e4d5 e6d5 f1d3 g8f6 g1f3 c7c5 e1g1 e8g8 d4c5 b4c5 a2a3 a7a6 b2b4 c5d6 f1e1 c8e6 c1b2 b8c6 c3a4 f8e8 a4c5 d8b6 c5e6 e8e6
+info depth 26 currmove e2e4 currmovenumber 1
+info depth 26 currmove d2d4 currmovenumber 2
+info depth 26 currmove b2b3 currmovenumber 3
+info depth 26 currmove g1f3 currmovenumber 4
+info depth 26 currmove b1a3 currmovenumber 5
+info depth 26 currmove b1c3 currmovenumber 6
+info depth 26 currmove e2e3 currmovenumber 7
+info depth 26 currmove c2c3 currmovenumber 8
+info depth 26 currmove f2f4 currmovenumber 9
+info depth 26 currmove a2a3 currmovenumber 10
+info depth 26 currmove c2c4 currmovenumber 11
+info depth 26 currmove b2b4 currmovenumber 12
+info depth 26 currmove d2d3 currmovenumber 13
+info depth 26 currmove g2g3 currmovenumber 14
+info depth 26 currmove h2h3 currmovenumber 15
+info depth 26 currmove h2h4 currmovenumber 16
+info depth 26 currmove f2f3 currmovenumber 17
+info depth 26 currmove a2a4 currmovenumber 18
+info depth 26 currmove g1h3 currmovenumber 19
+info depth 26 currmove g2g4 currmovenumber 20
+info depth 26 seldepth 34 multipv 1 score cp 56 upperbound nodes 19809622665 nps 3698585262 hashfull 1000 tbhits 0 time 5356 pv e2e4 e7e6
+info depth 26 currmove e2e4 currmovenumber 1
+info depth 26 seldepth 36 multipv 1 score cp 65 lowerbound nodes 20623477336 nps 3725339114 hashfull 1000 tbhits 0 time 5536 pv e2e4
+info depth 25 currmove e2e4 currmovenumber 1
+info depth 25 currmove d2d4 currmovenumber 2
+info depth 25 currmove c2c4 currmovenumber 3
+info depth 25 currmove e2e3 currmovenumber 4
+info depth 25 currmove h2h4 currmovenumber 5
+info depth 25 currmove b1c3 currmovenumber 6
+info depth 25 currmove b1a3 currmovenumber 7
+info depth 25 currmove h2h3 currmovenumber 8
+info depth 25 currmove b2b3 currmovenumber 9
+info depth 25 currmove g2g3 currmovenumber 10
+info depth 25 currmove b2b4 currmovenumber 11
+info depth 25 currmove d2d3 currmovenumber 12
+info depth 25 currmove f2f3 currmovenumber 13
+info depth 25 currmove a2a3 currmovenumber 14
+info depth 25 currmove f2f4 currmovenumber 15
+info depth 25 currmove g1f3 currmovenumber 16
+info depth 25 currmove c2c3 currmovenumber 17
+info depth 25 currmove a2a4 currmovenumber 18
+info depth 25 currmove g1h3 currmovenumber 19
+info depth 25 currmove g2g4 currmovenumber 20
+info depth 26 seldepth 36 multipv 1 score cp 53 nodes 22088031901 nps 3760305056 hashfull 1000 tbhits 0 time 5874 pv e2e4 e7e6 d2d4 d7d5 b1c3 f8b4 e4d5 e6d5 f1d3 g8f6 g1f3 d8e7 c1e3 f6g4 d1e2 g4e3 f2e3 c7c5 e1g1 b4c3 d3b5 c8d7 b2c3 e8g8 a1b1 b8c6 b5c6 d7c6 f3e5 f7f6 e5c6 b7c6
+info depth 27 currmove e2e4 currmovenumber 1
+info depth 27 seldepth 43 multipv 1 score cp 62 lowerbound nodes 30411426135 nps 3908421299 hashfull 1000 tbhits 0 time 7781 pv e2e4
+info depth 26 currmove e2e4 currmovenumber 1
+info depth 26 currmove d2d4 currmovenumber 2
+info depth 26 currmove c2c4 currmovenumber 3
+info depth 26 currmove g1f3 currmovenumber 4
+info depth 26 currmove b1c3 currmovenumber 5
+info depth 26 currmove e2e3 currmovenumber 6
+info depth 26 currmove a2a4 currmovenumber 7
+info depth 26 currmove f2f3 currmovenumber 8
+info depth 26 currmove g2g3 currmovenumber 9
+info depth 26 currmove c2c3 currmovenumber 10
+info depth 26 currmove a2a3 currmovenumber 11
+info depth 26 currmove b2b4 currmovenumber 12
+info depth 26 currmove h2h3 currmovenumber 13
+info depth 26 currmove f2f4 currmovenumber 14
+info depth 26 currmove b2b3 currmovenumber 15
+info depth 26 currmove g2g4 currmovenumber 16
+info depth 26 currmove g1h3 currmovenumber 17
+info depth 26 currmove d2d3 currmovenumber 18
+info depth 26 currmove b1a3 currmovenumber 19
+info depth 26 currmove h2h4 currmovenumber 20
+info depth 27 seldepth 43 multipv 1 score cp 50 nodes 46025755183 nps 4057277431 hashfull 1000 tbhits 0 time 11344 pv d2d4 g8f6 c2c4 e7e6 g1f3 b7b6 g2g3 c8a6 b2b3 a6b7 f1g2 f8b4 c1d2 a7a5 e1g1 e8g8 a2a3 b4e7 b1c3 d7d5 d1c2 d5c4 b3c4 c7c5 d4c5 e7c5 d2f4 b8d7 f1d1 f6g4 e2e3 g8h8 h2h3
+info depth 28 currmove d2d4 currmovenumber 1
+info depth 28 currmove e2e4 currmovenumber 2
+info depth 28 currmove g1f3 currmovenumber 3
+info depth 28 currmove a2a3 currmovenumber 4
+info depth 28 currmove c2c3 currmovenumber 5
+info depth 28 currmove h2h3 currmovenumber 6
+info depth 28 currmove b1c3 currmovenumber 7
+info depth 28 currmove b1a3 currmovenumber 8
+info depth 28 currmove e2e3 currmovenumber 9
+info depth 28 currmove b2b4 currmovenumber 10
+info depth 28 currmove c2c4 currmovenumber 11
+info depth 28 currmove f2f3 currmovenumber 12
+info depth 28 currmove g2g3 currmovenumber 13
+info depth 28 currmove d2d3 currmovenumber 14
+info depth 28 currmove f2f4 currmovenumber 15
+info depth 28 currmove b2b3 currmovenumber 16
+info depth 28 currmove g1h3 currmovenumber 17
+info depth 28 currmove g2g4 currmovenumber 18
+info depth 28 currmove a2a4 currmovenumber 19
+info depth 28 currmove h2h4 currmovenumber 20
+info depth 28 seldepth 40 multipv 1 score cp 48 nodes 56261618079 nps 4109687222 hashfull 1000 tbhits 0 time 13690 pv d2d4 g8f6 c2c4 e7e6 g1f3 b7b6 g2g3 c8a6 b2b3 a6b7 f1g2 f8b4 c1d2 c7c5 d2b4 c5b4 e1g1 e8g8 a2a3 b8a6 d1d2 f6e4 d2e3 e4f6 f3e5 d8c7 g2b7 c7b7 a3b4 a6b4 b1c3
+info depth 29 currmove d2d4 currmovenumber 1
+info depth 29 seldepth 40 multipv 1 score cp 58 lowerbound nodes 58993528024 nps 4121674563 hashfull 1000 tbhits 0 time 14313 pv d2d4
+info depth 28 currmove d2d4 currmovenumber 1
+info depth 28 currmove e2e4 currmovenumber 2
+info depth 28 currmove b2b3 currmovenumber 3
+info depth 28 currmove c2c3 currmovenumber 4
+info depth 28 currmove e2e3 currmovenumber 5
+info depth 28 currmove b1c3 currmovenumber 6
+info depth 28 currmove g1f3 currmovenumber 7
+info depth 28 currmove b2b4 currmovenumber 8
+info depth 28 currmove h2h3 currmovenumber 9
+info depth 28 currmove c2c4 currmovenumber 10
+info depth 28 currmove d2d3 currmovenumber 11
+info depth 28 currmove f2f4 currmovenumber 12
+info depth 28 currmove h2h4 currmovenumber 13
+info depth 28 currmove g2g3 currmovenumber 14
+info depth 28 currmove a2a3 currmovenumber 15
+info depth 28 currmove b1a3 currmovenumber 16
+info depth 28 currmove g2g4 currmovenumber 17
+info depth 28 currmove g1h3 currmovenumber 18
+info depth 28 currmove a2a4 currmovenumber 19
+info depth 28 currmove f2f3 currmovenumber 20
+info depth 29 seldepth 45 multipv 1 score cp 51 nodes 65296163965 nps 4145788188 hashfull 1000 tbhits 0 time 15750 pv d2d4 e7e6 e2e4 d7d5 b1d2 c7c5 g1f3 b8c6 e4d5 e6d5 f1b5 d8e7 b5e2 e7c7 e1g1 g8f6 f1e1 c5d4 d2b3 f8b4 c1d2 b4d2 d1d2 e8g8 e2d3 c8d7 b3d4 f8e8 c2c3 f6e4 d2c2 c7f4 a1d1 c6d4 f3d4 a7a6
+info depth 30 currmove d2d4 currmovenumber 1
+info depth 30 currmove e2e4 currmovenumber 2
+info depth 30 currmove b1c3 currmovenumber 3
+info depth 30 currmove e2e3 currmovenumber 4
+info depth 30 currmove g1f3 currmovenumber 5
+info depth 30 currmove c2c3 currmovenumber 6
+info depth 30 currmove g2g3 currmovenumber 7
+info depth 30 currmove f2f3 currmovenumber 8
+info depth 30 currmove a2a3 currmovenumber 9
+info depth 30 currmove d2d3 currmovenumber 10
+info depth 30 currmove c2c4 currmovenumber 11
+info depth 30 currmove b1a3 currmovenumber 12
+info depth 30 currmove b2b4 currmovenumber 13
+info depth 30 currmove f2f4 currmovenumber 14
+info depth 30 currmove h2h3 currmovenumber 15
+info depth 30 currmove a2a4 currmovenumber 16
+info depth 30 currmove g1h3 currmovenumber 17
+info depth 30 currmove g2g4 currmovenumber 18
+info depth 30 currmove h2h4 currmovenumber 19
+info depth 30 currmove b2b3 currmovenumber 20
+info depth 30 seldepth 37 multipv 1 score cp 53 nodes 68298614987 nps 4154669687 hashfull 1000 tbhits 0 time 16439 pv d2d4 g8f6 c2c4 e7e6 g1f3 b7b6 g2g3 c8a6 b2b3 f8b4 c1d2 b4d2 b1d2 d7d6 f1g2 b8d7 e1g1 e8g8 e2e4 e6e5 f1e1 a6c8 d2b1 a7a5 b1c3 f8e8 d1d2 h7h6 a1d1 c8b7 d4e5 d7e5 f3e5
+info depth 31 currmove d2d4 currmovenumber 1
+info depth 31 currmove e2e4 currmovenumber 2
+info depth 31 currmove c2c3 currmovenumber 3
+info depth 31 currmove g1f3 currmovenumber 4
+info depth 31 currmove a2a3 currmovenumber 5
+info depth 31 currmove b1c3 currmovenumber 6
+info depth 31 currmove h2h4 currmovenumber 7
+info depth 31 currmove g2g3 currmovenumber 8
+info depth 31 currmove b2b4 currmovenumber 9
+info depth 31 currmove c2c4 currmovenumber 10
+info depth 31 currmove d2d3 currmovenumber 11
+info depth 31 currmove b1a3 currmovenumber 12
+info depth 31 currmove f2f4 currmovenumber 13
+info depth 31 currmove a2a4 currmovenumber 14
+info depth 31 currmove g2g4 currmovenumber 15
+info depth 31 currmove h2h3 currmovenumber 16
+info depth 31 currmove f2f3 currmovenumber 17
+info depth 31 currmove b2b3 currmovenumber 18
+info depth 31 currmove e2e3 currmovenumber 19
+info depth 31 currmove g1h3 currmovenumber 20
+info depth 31 seldepth 40 multipv 1 score cp 44 upperbound nodes 118165306743 nps 4244748428 hashfull 1000 tbhits 0 time 27838 pv d2d4 g8f6
+info depth 31 currmove d2d4 currmovenumber 1
+info depth 31 currmove e2e4 currmovenumber 2
+info depth 31 seldepth 45 multipv 1 score cp 53 lowerbound nodes 163817535950 nps 4278002140 hashfull 1000 tbhits 0 time 38293 pv e2e4
+info depth 30 currmove e2e4 currmovenumber 1
+info depth 30 currmove d2d4 currmovenumber 2
+info depth 30 currmove b1c3 currmovenumber 3
+info depth 30 currmove g1f3 currmovenumber 4
+info depth 30 currmove c2c4 currmovenumber 5
+info depth 30 currmove c2c3 currmovenumber 6
+info depth 30 currmove h2h4 currmovenumber 7
+info depth 30 currmove h2h3 currmovenumber 8
+info depth 30 currmove a2a3 currmovenumber 9
+info depth 30 currmove g2g3 currmovenumber 10
+info depth 30 currmove b2b4 currmovenumber 11
+info depth 30 currmove d2d3 currmovenumber 12
+info depth 30 currmove b1a3 currmovenumber 13
+info depth 30 currmove b2b3 currmovenumber 14
+info depth 30 currmove f2f4 currmovenumber 15
+info depth 30 currmove f2f3 currmovenumber 16
+info depth 30 currmove g2g4 currmovenumber 17
+info depth 30 currmove e2e3 currmovenumber 18
+info depth 30 currmove g1h3 currmovenumber 19
+info depth 30 currmove a2a4 currmovenumber 20
+info depth 31 seldepth 46 multipv 1 score cp 60 nodes 172346849646 nps 4282228480 hashfull 1000 tbhits 0 time 40247 pv e2e4 c7c5 g1f3 d7d6 d2d4 c5d4 f3d4 g8f6 b1c3 a7a6 c1g5 e7e6 d1f3 h7h6 g5f6 d8f6 f3f6 g7f6 e1c1 b7b5 f1e2 h6h5 d4b3 b8c6 a2a3 h5h4 d1d3 f8e7 b3d4 c6d4 d3d4 c8d7
+info depth 32 currmove e2e4 currmovenumber 1
+info depth 32 currmove d2d4 currmovenumber 2
+info depth 32 currmove b1c3 currmovenumber 3
+info depth 32 currmove a2a3 currmovenumber 4
+info depth 32 currmove g1f3 currmovenumber 5
+info depth 32 currmove h2h3 currmovenumber 6
+info depth 32 currmove d2d3 currmovenumber 7
+info depth 32 currmove c2c3 currmovenumber 8
+info depth 32 currmove c2c4 currmovenumber 9
+info depth 32 currmove f2f4 currmovenumber 10
+info depth 32 currmove f2f3 currmovenumber 11
+info depth 32 currmove b2b4 currmovenumber 12
+info depth 32 currmove a2a4 currmovenumber 13
+info depth 32 currmove g1h3 currmovenumber 14
+info depth 32 currmove b1a3 currmovenumber 15
+info depth 32 currmove b2b3 currmovenumber 16
+info depth 32 currmove g2g3 currmovenumber 17
+info depth 32 currmove h2h4 currmovenumber 18
+info depth 32 currmove e2e3 currmovenumber 19
+info depth 32 currmove g2g4 currmovenumber 20
+info depth 32 seldepth 44 multipv 1 score cp 50 upperbound nodes 180764837609 nps 4286777594 hashfull 1000 tbhits 0 time 42168 pv e2e4 c7c5
+info depth 32 currmove e2e4 currmovenumber 1
+info depth 32 currmove d2d4 currmovenumber 2
+info depth 32 currmove c2c4 currmovenumber 3
+info depth 32 currmove b1c3 currmovenumber 4
+info depth 32 currmove g2g3 currmovenumber 5
+info depth 32 currmove d2d3 currmovenumber 6
+info depth 32 currmove f2f4 currmovenumber 7
+info depth 32 currmove b1a3 currmovenumber 8
+info depth 32 currmove e2e3 currmovenumber 9
+info depth 32 currmove g1f3 currmovenumber 10
+info depth 32 currmove g1h3 currmovenumber 11
+info depth 32 currmove h2h3 currmovenumber 12
+info depth 32 currmove g2g4 currmovenumber 13
+info depth 32 currmove c2c3 currmovenumber 14
+info depth 32 currmove b2b4 currmovenumber 15
+info depth 32 currmove a2a4 currmovenumber 16
+info depth 32 currmove a2a3 currmovenumber 17
+info depth 32 currmove f2f3 currmovenumber 18
+info depth 32 currmove b2b3 currmovenumber 19
+info depth 32 currmove h2h4 currmovenumber 20
+info depth 32 seldepth 44 multipv 1 score cp 43 nodes 206395325505 nps 4295607007 hashfull 1000 tbhits 0 time 48048 pv e2e4 c7c5 g1f3 d7d6 d2d4 g8f6 b1c3 c5d4 f3d4 a7a6 c1g5 e7e6 d1f3 h7h6 g5f6 d8f6 f3f6 g7f6 e1c1 b7b5 f1e2 c8b7 e2h5 e8e7 a2a3 h8g8 g2g3 b8c6 d4c6 b7c6 h1e1 f8g7 c3d5 c6d5 e4d5 f6f5 d5e6 f7e6 c1b1 a8b8
+info depth 33 currmove e2e4 currmovenumber 1
+info depth 33 currmove d2d4 currmovenumber 2
+info depth 33 currmove c2c3 currmovenumber 3
+info depth 33 currmove d2d3 currmovenumber 4
+info depth 33 currmove b1c3 currmovenumber 5
+info depth 33 currmove c2c4 currmovenumber 6
+info depth 33 currmove a2a3 currmovenumber 7
+info depth 33 currmove f2f3 currmovenumber 8
+info depth 33 currmove g1h3 currmovenumber 9
+info depth 33 currmove e2e3 currmovenumber 10
+info depth 33 currmove h2h3 currmovenumber 11
+info depth 33 currmove g2g4 currmovenumber 12
+info depth 33 currmove g1f3 currmovenumber 13
+info depth 33 currmove g2g3 currmovenumber 14
+info depth 33 currmove b1a3 currmovenumber 15
+info depth 33 currmove f2f4 currmovenumber 16
+info depth 33 currmove b2b4 currmovenumber 17
+info depth 33 currmove b2b3 currmovenumber 18
+info depth 33 currmove a2a4 currmovenumber 19
+info depth 33 currmove h2h4 currmovenumber 20
+info depth 33 seldepth 43 multipv 1 score cp 46 nodes 213840064213 nps 4296392835 hashfull 1000 tbhits 0 time 49772 pv e2e4 c7c5 g1f3 d7d6 d2d4 c5d4 f3d4 g8f6 b1c3 a7a6 c1g5 e7e6 d1f3 h7h6 g5f6 d8f6 f3f6 g7f6 f1e2 c8d7 e2h5 b7b5 e1c1 b5b4 c3e2 e8e7 d1d3 h8g8 e2g3 b8c6 d4c6 d7c6 h1d1 a8d8 d3b3 f8g7 b3b4 f6f5 e4f5 c6g2
+info depth 34 currmove e2e4 currmovenumber 1
+info depth 34 currmove d2d4 currmovenumber 2
+info depth 34 currmove g1f3 currmovenumber 3
+info depth 34 currmove c2c4 currmovenumber 4
+info depth 34 currmove c2c3 currmovenumber 5
+info depth 34 currmove a2a3 currmovenumber 6
+info depth 34 currmove h2h3 currmovenumber 7
+info depth 34 currmove f2f3 currmovenumber 8
+info depth 34 currmove b1c3 currmovenumber 9
+info depth 34 currmove e2e3 currmovenumber 10
+info depth 34 currmove b2b4 currmovenumber 11
+info depth 34 currmove d2d3 currmovenumber 12
+info depth 34 currmove g1h3 currmovenumber 13
+info depth 34 currmove b1a3 currmovenumber 14
+info depth 34 currmove h2h4 currmovenumber 15
+info depth 34 currmove a2a4 currmovenumber 16
+info depth 34 currmove g2g3 currmovenumber 17
+info depth 34 currmove f2f4 currmovenumber 18
+info depth 34 currmove g2g4 currmovenumber 19
+info depth 34 currmove b2b3 currmovenumber 20
+info depth 34 seldepth 49 multipv 1 score cp 41 nodes 254994337995 nps 4301959341 hashfull 1000 tbhits 0 time 59274 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 g1f3 b8c6 e4d5 e6d5 f1b5 d8e7 b5e2 e7c7 e1g1 g8f6 f1e1 c5d4 h2h3 f8e7 e2d3 e8g8 d2b3 a7a6 b3d4 f8e8 c1g5 c8d7 d1d2 c6d4 f3d4 c7b6 c2c3 e7c5 g5f6 e8e1 a1e1 b6f6 d3c2 c5d4 c3d4 h7h6 f2f3 a8c8
+info depth 35 currmove e2e4 currmovenumber 1
+info depth 35 seldepth 39 multipv 1 score cp 50 lowerbound nodes 258965971469 nps 4302332061 hashfull 1000 tbhits 0 time 60192 pv e2e4
+info depth 34 currmove e2e4 currmovenumber 1
+info depth 34 currmove d2d4 currmovenumber 2
+info depth 34 currmove g1f3 currmovenumber 3
+info depth 34 currmove b1c3 currmovenumber 4
+info depth 34 currmove c2c3 currmovenumber 5
+info depth 34 currmove a2a3 currmovenumber 6
+info depth 34 currmove f2f4 currmovenumber 7
+info depth 34 currmove b1a3 currmovenumber 8
+info depth 34 currmove d2d3 currmovenumber 9
+info depth 34 currmove h2h4 currmovenumber 10
+info depth 34 currmove g2g3 currmovenumber 11
+info depth 34 currmove e2e3 currmovenumber 12
+info depth 34 currmove g1h3 currmovenumber 13
+info depth 34 currmove b2b3 currmovenumber 14
+info depth 34 currmove h2h3 currmovenumber 15
+info depth 34 currmove c2c4 currmovenumber 16
+info depth 34 currmove a2a4 currmovenumber 17
+info depth 34 currmove g2g4 currmovenumber 18
+info depth 34 currmove b2b4 currmovenumber 19
+info depth 34 currmove f2f3 currmovenumber 20
+info depth 35 seldepth 44 multipv 1 score cp 43 nodes 264236724203 nps 4303389534 hashfull 1000 tbhits 0 time 61402 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 g1f3 c5d4 e4d5 d8d5 f1c4 d5d7 e1g1 b8c6 d2b3 a7a6 a2a4 g8f6 c1f4 f8d6 f4d6 d7d6 b3d4 c6d4 d1d4 d6d4 f3d4 e8g8 c4b3 f8d8 a1d1 c8d7 f1e1 d8c8 d4f3 d7c6 f3e5 c6d5 b3d5 f6d5 c2c3
+info depth 36 currmove e2e4 currmovenumber 1
+info depth 36 seldepth 47 multipv 1 score cp 52 lowerbound nodes 271972631032 nps 4305203663 hashfull 1000 tbhits 0 time 63173 pv e2e4
+info depth 35 currmove e2e4 currmovenumber 1
+info depth 35 currmove d2d4 currmovenumber 2
+info depth 35 currmove g1f3 currmovenumber 3
+info depth 35 currmove b1c3 currmovenumber 4
+info depth 35 currmove c2c3 currmovenumber 5
+info depth 35 currmove c2c4 currmovenumber 6
+info depth 35 currmove e2e3 currmovenumber 7
+info depth 35 currmove a2a3 currmovenumber 8
+info depth 35 currmove f2f3 currmovenumber 9
+info depth 35 currmove b1a3 currmovenumber 10
+info depth 35 currmove d2d3 currmovenumber 11
+info depth 35 currmove a2a4 currmovenumber 12
+info depth 35 currmove g1h3 currmovenumber 13
+info depth 35 currmove f2f4 currmovenumber 14
+info depth 35 currmove g2g3 currmovenumber 15
+info depth 35 currmove h2h3 currmovenumber 16
+info depth 35 currmove b2b4 currmovenumber 17
+info depth 35 currmove b2b3 currmovenumber 18
+info depth 35 currmove g2g4 currmovenumber 19
+info depth 35 currmove h2h4 currmovenumber 20
+info depth 36 seldepth 50 multipv 1 score cp 50 nodes 275910346170 nps 4305717012 hashfull 1000 tbhits 0 time 64080 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 g1f3 b8c6 e4d5 e6d5 f1b5 d8e7 b5e2 e7c7 e1g1 g8f6 f1e1 c5d4 d2b3 f8b4 c1d2 e8g8 d2b4 c6b4 b3d4 c8g4 c2c3 b4c6 d1b3 f8e8 e2d3 h7h6 h2h3 g4f3 d4f3 a8d8 a1b1 g8h8 a2a3 a7a6 d3c2 e8e1 b1e1 d5d4
+info depth 37 currmove e2e4 currmovenumber 1
+info depth 37 currmove d2d4 currmovenumber 2
+info depth 37 currmove d2d3 currmovenumber 3
+info depth 37 currmove b1c3 currmovenumber 4
+info depth 37 currmove g1f3 currmovenumber 5
+info depth 37 currmove a2a3 currmovenumber 6
+info depth 37 currmove e2e3 currmovenumber 7
+info depth 37 currmove c2c3 currmovenumber 8
+info depth 37 currmove c2c4 currmovenumber 9
+info depth 37 currmove b2b4 currmovenumber 10
+info depth 37 currmove b2b3 currmovenumber 11
+info depth 37 currmove h2h3 currmovenumber 12
+info depth 37 currmove f2f3 currmovenumber 13
+info depth 37 currmove g1h3 currmovenumber 14
+info depth 37 currmove g2g3 currmovenumber 15
+info depth 37 currmove b1a3 currmovenumber 16
+info depth 37 currmove a2a4 currmovenumber 17
+info depth 37 currmove f2f4 currmovenumber 18
+info depth 37 currmove g2g4 currmovenumber 19
+info depth 37 currmove h2h4 currmovenumber 20
+info depth 37 seldepth 49 multipv 1 score cp 41 upperbound nodes 328433932109 nps 4314969875 hashfull 1000 tbhits 0 time 76115 pv e2e4 c7c5
+info depth 37 currmove e2e4 currmovenumber 1
+info depth 37 seldepth 49 multipv 1 score cp 50 lowerbound nodes 332832131340 nps 4316273052 hashfull 1000 tbhits 0 time 77111 pv e2e4
+info depth 36 currmove e2e4 currmovenumber 1
+info depth 36 currmove d2d4 currmovenumber 2
+info depth 36 currmove b1c3 currmovenumber 3
+info depth 36 currmove g1f3 currmovenumber 4
+info depth 36 currmove h2h3 currmovenumber 5
+info depth 36 currmove f2f3 currmovenumber 6
+info depth 36 currmove d2d3 currmovenumber 7
+info depth 36 currmove g2g3 currmovenumber 8
+info depth 36 currmove e2e3 currmovenumber 9
+info depth 36 currmove g2g4 currmovenumber 10
+info depth 36 currmove f2f4 currmovenumber 11
+info depth 36 currmove c2c3 currmovenumber 12
+info depth 36 currmove b2b4 currmovenumber 13
+info depth 36 currmove c2c4 currmovenumber 14
+info depth 36 currmove g1h3 currmovenumber 15
+info depth 36 currmove b1a3 currmovenumber 16
+info depth 36 currmove h2h4 currmovenumber 17
+info depth 36 currmove a2a3 currmovenumber 18
+info depth 36 currmove a2a4 currmovenumber 19
+info depth 36 currmove b2b3 currmovenumber 20
+info depth 37 seldepth 49 multipv 1 score cp 55 nodes 345937071902 nps 4319030562 hashfull 1000 tbhits 0 time 80096 pv e2e4 c7c5 g1f3 d7d6 f1b5 c8d7 b5d7 d8d7 c2c4 e7e5 b1c3 g7g6 d2d3 f8g7 a2a3 g8e7 b2b4 b8c6 c1e3 c6d4 e1g1 e8g8 a1b1 b7b6 f1e1 f7f5 e3g5 g7f6 g5f6 f8f6 e4f5 g6f5 b4c5 b6c5 f3d4 c5d4 c3d5 e7d5 c4d5 g8h8 d1h5
+info depth 38 currmove e2e4 currmovenumber 1
+info depth 38 currmove d2d4 currmovenumber 2
+info depth 38 currmove g1f3 currmovenumber 3
+info depth 38 currmove b1c3 currmovenumber 4
+info depth 38 currmove d2d3 currmovenumber 5
+info depth 38 currmove c2c4 currmovenumber 6
+info depth 38 currmove c2c3 currmovenumber 7
+info depth 38 currmove a2a3 currmovenumber 8
+info depth 38 currmove b1a3 currmovenumber 9
+info depth 38 currmove b2b4 currmovenumber 10
+info depth 38 currmove g2g3 currmovenumber 11
+info depth 38 currmove g1h3 currmovenumber 12
+info depth 38 currmove b2b3 currmovenumber 13
+info depth 38 currmove e2e3 currmovenumber 14
+info depth 38 currmove h2h3 currmovenumber 15
+info depth 38 currmove f2f4 currmovenumber 16
+info depth 38 currmove h2h4 currmovenumber 17
+info depth 38 currmove g2g4 currmovenumber 18
+info depth 38 currmove a2a4 currmovenumber 19
+info depth 38 currmove f2f3 currmovenumber 20
+info depth 38 seldepth 48 multipv 1 score cp 45 upperbound nodes 380993058652 nps 4328482829 hashfull 1000 tbhits 0 time 88020 pv e2e4 e7e6
+info depth 38 currmove e2e4 currmovenumber 1
+info depth 38 seldepth 50 multipv 1 score cp 55 lowerbound nodes 406314401495 nps 4333927825 hashfull 1000 tbhits 0 time 93752 pv e2e4
+info depth 37 currmove e2e4 currmovenumber 1
+info depth 37 currmove d2d4 currmovenumber 2
+info depth 37 currmove g1f3 currmovenumber 3
+info depth 37 currmove c2c4 currmovenumber 4
+info depth 37 currmove d2d3 currmovenumber 5
+info depth 37 currmove c2c3 currmovenumber 6
+info depth 37 currmove h2h3 currmovenumber 7
+info depth 37 currmove a2a3 currmovenumber 8
+info depth 37 currmove b1a3 currmovenumber 9
+info depth 37 currmove f2f3 currmovenumber 10
+info depth 37 currmove b1c3 currmovenumber 11
+info depth 37 currmove g2g3 currmovenumber 12
+info depth 37 currmove e2e3 currmovenumber 13
+info depth 37 currmove b2b4 currmovenumber 14
+info depth 37 currmove f2f4 currmovenumber 15
+info depth 37 currmove a2a4 currmovenumber 16
+info depth 37 currmove b2b3 currmovenumber 17
+info depth 37 currmove h2h4 currmovenumber 18
+info depth 37 currmove g1h3 currmovenumber 19
+info depth 37 currmove g2g4 currmovenumber 20
+info depth 38 seldepth 50 multipv 1 score cp 42 nodes 452140947753 nps 4341831333 hashfull 1000 tbhits 0 time 104136 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 g1f3 c5d4 e4d5 d8d5 f1c4 d5d7 e1g1 b8c6 d2b3 a7a6 a2a4 g8f6 c1f4 f8d6 f4d6 d7d6 b3d4 c6d4 d1d4 d6d4 f3d4 e8g8 c4b3 f8d8 c2c3 c8d7 f1d1 a8c8 f2f3 e6e5 d4c2 e5e4 g1f2 e4f3 g2f3 d8e8 c2e3 d7e6
+info depth 39 currmove e2e4 currmovenumber 1
+info depth 39 seldepth 52 multipv 1 score cp 52 lowerbound nodes 470179820236 nps 4344225039 hashfull 1000 tbhits 0 time 108231 pv e2e4
+info depth 38 currmove e2e4 currmovenumber 1
+info depth 38 currmove d2d4 currmovenumber 2
+info depth 38 currmove c2c3 currmovenumber 3
+info depth 38 currmove g1f3 currmovenumber 4
+info depth 38 currmove b1c3 currmovenumber 5
+info depth 38 currmove d2d3 currmovenumber 6
+info depth 38 currmove f2f3 currmovenumber 7
+info depth 38 currmove a2a3 currmovenumber 8
+info depth 38 currmove b1a3 currmovenumber 9
+info depth 38 currmove c2c4 currmovenumber 10
+info depth 38 currmove f2f4 currmovenumber 11
+info depth 38 currmove b2b4 currmovenumber 12
+info depth 38 currmove g2g4 currmovenumber 13
+info depth 38 currmove h2h3 currmovenumber 14
+info depth 38 currmove e2e3 currmovenumber 15
+info depth 38 currmove g1h3 currmovenumber 16
+info depth 38 currmove g2g3 currmovenumber 17
+info depth 38 currmove h2h4 currmovenumber 18
+info depth 38 currmove b2b3 currmovenumber 19
+info depth 38 currmove a2a4 currmovenumber 20
+info depth 39 seldepth 55 multipv 1 score cp 50 nodes 479259578932 nps 4344976328 hashfull 1000 tbhits 0 time 110302 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 g1f3 c5d4 e4d5 d8d5 f1c4 d5d7 e1g1 b8c6 d2b3 a7a6 a2a4 g8f6 c1f4 f8d6 f4d6 d7d6 b3d4 c6d4 d1d4 d6d4 f3d4 c8d7 f1e1 e8g8 c4b3 a8c8 c2c3 d7c6 d4e6 f7e6 b3e6 g8h8 e6c8 f8c8 f2f3 h7h6 b2b3 h8g8 c3c4 c6d7 a1d1 d7c6 g1f2 g8f7 g2g3
+info depth 40 currmove e2e4 currmovenumber 1
+info depth 40 seldepth 55 multipv 1 score cp 50 nodes 522019093386 nps 4350122860 hashfull 1000 tbhits 0 time 120001 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 g1f3 c5d4 e4d5 d8d5 f1c4 d5d7 e1g1 b8c6 d2b3 a7a6 a2a4 g8f6 c1f4 f8d6 f4d6 d7d6 b3d4 c6d4 d1d4 d6d4 f3d4 c8d7 f1e1 e8g8 c4b3 a8c8 c2c3 d7c6 d4e6 f7e6 b3e6 g8h8 e6c8 f8c8 f2f3 h7h6 b2b3 h8g8 c3c4 c6d7 a1d1 d7c6 g1f2 g8f7 g2g3
+bestmove e2e4 ponder e7e6

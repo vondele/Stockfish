@@ -1,0 +1,5 @@
+setoption name Threads value 32
+setoption name Hash value 256
+go movetime 120000
+ucinewgame
+quit

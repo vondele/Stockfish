@@ -1,0 +1,1634 @@
+Indexing opening suite...
+Started game 3 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 2 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 1 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 12 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 6 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 7 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 5 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 16 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 11 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 4 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 8 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 13 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 10 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 9 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 14 of 400 (master-32t vs cluster-4mpi-32t)
+Started game 15 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 3 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 1  [0.500] 1
+Elo difference: 0.00 +/- 0.00
+Started game 17 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 7 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 2  [0.500] 2
+Elo difference: 0.00 +/- 0.00
+Started game 18 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 16 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 3  [0.500] 3
+Elo difference: 0.00 +/- 0.00
+Started game 19 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 4 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 4  [0.500] 4
+Elo difference: 0.00 +/- 0.00
+Started game 20 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 2 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 5  [0.500] 5
+Elo difference: 0.00 +/- 0.00
+Started game 21 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 9 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 6  [0.500] 6
+Elo difference: 0.00 +/- 0.00
+Started game 22 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 10 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 0 - 0 - 7  [0.500] 7
+Elo difference: 0.00 +/- 0.00
+Started game 23 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 12 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 1 - 0 - 7  [0.563] 8
+Elo difference: 43.66 +/- 82.35
+Started game 24 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 13 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 7  [0.611] 9
+Elo difference: 78.52 +/- 102.43
+Started game 25 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 1 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 8  [0.600] 10
+Elo difference: 70.44 +/- 91.94
+Started game 26 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 8 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 9  [0.591] 11
+Elo difference: 63.88 +/- 83.51
+Started game 27 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 5 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 10  [0.583] 12
+Elo difference: 58.45 +/- 76.56
+Started game 28 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 11 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 11  [0.577] 13
+Elo difference: 53.88 +/- 70.72
+Started game 29 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 15 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 12  [0.571] 14
+Elo difference: 49.98 +/- 65.74
+Started game 30 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 6 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 13  [0.567] 15
+Elo difference: 46.60 +/- 61.43
+Started game 31 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 14 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 2 - 0 - 14  [0.563] 16
+Elo difference: 43.66 +/- 57.66
+Started game 32 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 25 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 3 - 0 - 14  [0.588] 17
+Elo difference: 61.96 +/- 65.74
+Started game 33 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 19 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 4 - 0 - 14  [0.611] 18
+Elo difference: 78.52 +/- 71.22
+Started game 34 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 22 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 4 - 0 - 15  [0.605] 19
+Elo difference: 74.25 +/- 67.50
+Started game 35 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 18 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 5 - 0 - 15  [0.625] 20
+Elo difference: 88.74 +/- 71.40
+Started game 36 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 21 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 6 - 0 - 15  [0.643] 21
+Elo difference: 102.11 +/- 74.38
+Started game 37 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 24 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 6 - 0 - 16  [0.636] 22
+Elo difference: 97.22 +/- 70.94
+Started game 38 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 23 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 6 - 0 - 17  [0.630] 23
+Elo difference: 92.78 +/- 67.83
+Finished game 17 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 6 - 0 - 18  [0.625] 24
+Elo difference: 88.74 +/- 65.00
+Started game 39 of 400 (cluster-4mpi-32t vs master-32t)
+Started game 40 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 29 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 7 - 0 - 18  [0.640] 25
+Elo difference: 99.95 +/- 67.28
+Started game 41 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 26 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 7 - 0 - 19  [0.635] 26
+Elo difference: 95.90 +/- 64.67
+Started game 42 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 28 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 7 - 0 - 20  [0.630] 27
+Elo difference: 92.18 +/- 62.27
+Started game 43 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 20 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 7 - 0 - 21  [0.625] 28
+Elo difference: 88.74 +/- 60.06
+Started game 44 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 27 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 8 - 0 - 21  [0.638] 29
+Elo difference: 98.39 +/- 61.88
+Started game 45 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 30 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 8 - 1 - 21  [0.617] 30
+Elo difference: 82.59 +/- 65.97
+Started game 46 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 31 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 9 - 1 - 21  [0.629] 31
+Elo difference: 91.73 +/- 67.19
+Started game 47 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 35 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 9 - 1 - 22  [0.625] 32
+Elo difference: 88.74 +/- 65.00
+Started game 48 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 33 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 10 - 1 - 22  [0.636] 33
+Elo difference: 97.22 +/- 66.04
+Started game 49 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 32 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 10 - 1 - 23  [0.632] 34
+Elo difference: 94.21 +/- 64.00
+Started game 50 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 34 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 10 - 1 - 24  [0.629] 35
+Elo difference: 91.39 +/- 62.10
+Started game 51 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 45 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 10 - 1 - 25  [0.625] 36
+Elo difference: 88.74 +/- 60.31
+Started game 52 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 44 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 10 - 1 - 26  [0.622] 37
+Elo difference: 86.24 +/- 58.63
+Started game 53 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 40 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 10 - 1 - 27  [0.618] 38
+Elo difference: 83.88 +/- 57.05
+Started game 54 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 41 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 11 - 1 - 27  [0.628] 39
+Elo difference: 91.12 +/- 57.97
+Started game 55 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 37 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 11 - 1 - 28  [0.625] 40
+Elo difference: 88.74 +/- 56.47
+Started game 56 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 36 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 11 - 1 - 29  [0.622] 41
+Elo difference: 86.48 +/- 55.06
+Started game 57 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 38 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 11 - 1 - 30  [0.619] 42
+Elo difference: 84.34 +/- 53.73
+Started game 58 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 46 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 11 - 1 - 31  [0.616] 43
+Elo difference: 82.30 +/- 52.46
+Started game 59 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 39 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 11 - 1 - 32  [0.614] 44
+Elo difference: 80.37 +/- 51.25
+Started game 60 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 47 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 12 - 1 - 32  [0.622] 45
+Elo difference: 86.68 +/- 52.06
+Started game 61 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 43 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 13 - 1 - 32  [0.630] 46
+Elo difference: 92.78 +/- 52.78
+Started game 62 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 49 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 14 - 1 - 32  [0.638] 47
+Elo difference: 98.67 +/- 53.42
+Started game 63 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 51 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 14 - 1 - 33  [0.635] 48
+Elo difference: 96.50 +/- 52.27
+Started game 64 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 53 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 15 - 1 - 33  [0.643] 49
+Elo difference: 102.11 +/- 52.85
+Started game 65 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 42 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 15 - 1 - 34  [0.640] 50
+Elo difference: 99.95 +/- 51.76
+Started game 66 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 52 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 16 - 1 - 34  [0.647] 51
+Elo difference: 105.30 +/- 52.28
+Started game 67 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 55 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 16 - 1 - 35  [0.644] 52
+Elo difference: 103.15 +/- 51.24
+Started game 68 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 48 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 16 - 1 - 36  [0.642] 53
+Elo difference: 101.09 +/- 50.24
+Started game 69 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 57 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 16 - 1 - 37  [0.639] 54
+Elo difference: 99.11 +/- 49.29
+Started game 70 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 54 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 16 - 1 - 38  [0.636] 55
+Elo difference: 97.22 +/- 48.37
+Started game 71 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 59 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 17 - 1 - 38  [0.643] 56
+Elo difference: 102.11 +/- 48.85
+Started game 72 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 58 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 17 - 1 - 39  [0.640] 57
+Elo difference: 100.22 +/- 47.97
+Started game 73 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 60 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 18 - 1 - 39  [0.647] 58
+Elo difference: 104.91 +/- 48.41
+Started game 74 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 62 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 18 - 1 - 40  [0.644] 59
+Elo difference: 103.03 +/- 47.57
+Started game 75 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 61 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 19 - 1 - 40  [0.650] 60
+Elo difference: 107.54 +/- 47.97
+Started game 76 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 56 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 19 - 1 - 41  [0.648] 61
+Elo difference: 105.66 +/- 47.16
+Started game 77 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 66 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 19 - 1 - 42  [0.645] 62
+Elo difference: 103.85 +/- 46.38
+Started game 78 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 50 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 19 - 1 - 43  [0.643] 63
+Elo difference: 102.11 +/- 45.63
+Started game 79 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 63 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 20 - 1 - 43  [0.648] 64
+Elo difference: 106.35 +/- 46.00
+Started game 80 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 64 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 20 - 1 - 44  [0.646] 65
+Elo difference: 104.61 +/- 45.28
+Started game 81 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 67 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 20 - 1 - 45  [0.644] 66
+Elo difference: 102.93 +/- 44.57
+Started game 82 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 68 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 20 - 1 - 46  [0.642] 67
+Elo difference: 101.30 +/- 43.90
+Started game 83 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 65 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 20 - 1 - 47  [0.640] 68
+Elo difference: 99.73 +/- 43.24
+Started game 84 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 74 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 20 - 1 - 48  [0.638] 69
+Elo difference: 98.21 +/- 42.60
+Started game 85 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 70 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 21 - 1 - 48  [0.643] 70
+Elo difference: 102.11 +/- 42.96
+Started game 86 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 71 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 22 - 1 - 48  [0.648] 71
+Elo difference: 105.93 +/- 43.29
+Started game 87 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 69 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 48  [0.653] 72
+Elo difference: 109.66 +/- 43.59
+Started game 88 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 73 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 49  [0.651] 73
+Elo difference: 108.06 +/- 42.98
+Started game 89 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 72 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 50  [0.649] 74
+Elo difference: 106.51 +/- 42.38
+Started game 90 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 80 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 51  [0.647] 75
+Elo difference: 105.00 +/- 41.81
+Started game 91 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 79 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 52  [0.645] 76
+Elo difference: 103.53 +/- 41.25
+Started game 92 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 75 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 53  [0.643] 77
+Elo difference: 102.11 +/- 40.70
+Started game 93 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 83 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 54  [0.641] 78
+Elo difference: 100.72 +/- 40.17
+Started game 94 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 82 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 55  [0.639] 79
+Elo difference: 99.38 +/- 39.66
+Started game 95 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 77 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 23 - 1 - 56  [0.637] 80
+Elo difference: 98.07 +/- 39.16
+Started game 96 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 78 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 24 - 1 - 56  [0.642] 81
+Elo difference: 101.44 +/- 39.45
+Started game 97 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 84 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 24 - 1 - 57  [0.640] 82
+Elo difference: 100.13 +/- 38.97
+Started game 98 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 76 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 24 - 1 - 58  [0.639] 83
+Elo difference: 98.86 +/- 38.49
+Started game 99 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 87 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 24 - 1 - 59  [0.637] 84
+Elo difference: 97.62 +/- 38.03
+Started game 100 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 95 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 25 - 1 - 59  [0.641] 85
+Elo difference: 100.84 +/- 38.31
+Started game 101 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 81 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 25 - 1 - 60  [0.640] 86
+Elo difference: 99.60 +/- 37.86
+Started game 102 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 86 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 25 - 1 - 61  [0.638] 87
+Elo difference: 98.39 +/- 37.42
+Started game 103 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 85 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 25 - 1 - 62  [0.636] 88
+Elo difference: 97.22 +/- 36.99
+Started game 104 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 90 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 25 - 1 - 63  [0.635] 89
+Elo difference: 96.07 +/- 36.57
+Started game 105 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 88 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 25 - 1 - 64  [0.633] 90
+Elo difference: 94.94 +/- 36.17
+Started game 106 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 89 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 26 - 1 - 64  [0.637] 91
+Elo difference: 97.97 +/- 36.43
+Started game 107 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 97 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 27 - 1 - 64  [0.641] 92
+Elo difference: 100.94 +/- 36.67
+Started game 108 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 92 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 28 - 1 - 64  [0.645] 93
+Elo difference: 103.85 +/- 36.90
+Started game 109 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 99 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 29 - 1 - 64  [0.649] 94
+Elo difference: 106.73 +/- 37.12
+Started game 110 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 94 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 29 - 1 - 65  [0.647] 95
+Elo difference: 105.53 +/- 36.73
+Started game 111 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 91 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 29 - 1 - 66  [0.646] 96
+Elo difference: 104.37 +/- 36.34
+Started game 112 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 93 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 30 - 1 - 66  [0.649] 97
+Elo difference: 107.14 +/- 36.55
+Started game 113 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 98 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 31 - 1 - 66  [0.653] 98
+Elo difference: 109.88 +/- 36.75
+Started game 114 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 96 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 31 - 1 - 67  [0.652] 99
+Elo difference: 108.70 +/- 36.37
+Started game 115 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 100 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 31 - 2 - 67  [0.645] 100
+Elo difference: 103.73 +/- 36.99
+Started game 116 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 102 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 32 - 2 - 67  [0.649] 101
+Elo difference: 106.41 +/- 37.16
+Started game 117 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 104 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 33 - 2 - 67  [0.652] 102
+Elo difference: 109.04 +/- 37.33
+Started game 118 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 101 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 33 - 2 - 68  [0.650] 103
+Elo difference: 107.91 +/- 36.96
+Started game 119 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 106 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 34 - 2 - 68  [0.654] 104
+Elo difference: 110.48 +/- 37.11
+Started game 120 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 105 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 35 - 2 - 68  [0.657] 105
+Elo difference: 113.02 +/- 37.27
+Started game 121 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 107 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 35 - 2 - 69  [0.656] 106
+Elo difference: 111.88 +/- 36.90
+Started game 122 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 109 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 35 - 2 - 70  [0.654] 107
+Elo difference: 110.76 +/- 36.55
+Started game 123 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 108 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 36 - 2 - 70  [0.657] 108
+Elo difference: 113.22 +/- 36.69
+Started game 124 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 103 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 36 - 2 - 71  [0.656] 109
+Elo difference: 112.11 +/- 36.34
+Started game 125 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 111 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 37 - 2 - 71  [0.659] 110
+Elo difference: 114.52 +/- 36.48
+Started game 126 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 110 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 38 - 2 - 71  [0.662] 111
+Elo difference: 116.90 +/- 36.61
+Started game 127 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 113 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 39 - 2 - 71  [0.665] 112
+Elo difference: 119.25 +/- 36.74
+Started game 128 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 114 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 40 - 2 - 71  [0.668] 113
+Elo difference: 121.57 +/- 36.86
+Started game 129 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 116 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 40 - 2 - 72  [0.667] 114
+Elo difference: 120.41 +/- 36.52
+Started game 130 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 115 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 41 - 2 - 72  [0.670] 115
+Elo difference: 122.68 +/- 36.64
+Started game 131 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 112 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 41 - 2 - 73  [0.668] 116
+Elo difference: 121.54 +/- 36.31
+Started game 132 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 117 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 41 - 2 - 74  [0.667] 117
+Elo difference: 120.41 +/- 35.98
+Started game 133 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 118 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 41 - 2 - 75  [0.665] 118
+Elo difference: 119.31 +/- 35.66
+Started game 134 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 121 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 42 - 2 - 75  [0.668] 119
+Elo difference: 121.51 +/- 35.78
+Started game 135 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 126 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 42 - 2 - 76  [0.667] 120
+Elo difference: 120.41 +/- 35.47
+Started game 136 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 124 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 42 - 2 - 77  [0.665] 121
+Elo difference: 119.34 +/- 35.16
+Started game 137 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 123 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 43 - 2 - 77  [0.668] 122
+Elo difference: 121.48 +/- 35.27
+Started game 138 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 120 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 43 - 2 - 78  [0.667] 123
+Elo difference: 120.41 +/- 34.97
+Started game 139 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 125 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 43 - 2 - 79  [0.665] 124
+Elo difference: 119.36 +/- 34.68
+Started game 140 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 119 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 43 - 2 - 80  [0.664] 125
+Elo difference: 118.33 +/- 34.39
+Started game 141 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 127 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 43 - 2 - 81  [0.663] 126
+Elo difference: 117.32 +/- 34.11
+Started game 142 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 129 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 44 - 2 - 81  [0.665] 127
+Elo difference: 119.39 +/- 34.21
+Started game 143 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 135 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 45 - 2 - 81  [0.668] 128
+Elo difference: 121.43 +/- 34.32
+Started game 144 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 128 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 46 - 2 - 81  [0.671] 129
+Elo difference: 123.45 +/- 34.41
+Started game 145 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 122 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 46 - 2 - 82  [0.669] 130
+Elo difference: 122.42 +/- 34.14
+Started game 146 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 140 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 46 - 2 - 83  [0.668] 131
+Elo difference: 121.41 +/- 33.87
+Started game 147 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 136 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 46 - 3 - 83  [0.663] 132
+Elo difference: 117.46 +/- 34.24
+Started game 148 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 133 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 47 - 3 - 83  [0.665] 133
+Elo difference: 119.43 +/- 34.33
+Started game 149 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 132 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 47 - 3 - 84  [0.664] 134
+Elo difference: 118.47 +/- 34.06
+Started game 150 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 131 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 48 - 3 - 84  [0.667] 135
+Elo difference: 120.41 +/- 34.15
+Started game 151 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 130 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 48 - 3 - 85  [0.665] 136
+Elo difference: 119.45 +/- 33.88
+Started game 152 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 137 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 48 - 3 - 86  [0.664] 137
+Elo difference: 118.51 +/- 33.62
+Started game 153 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 134 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 48 - 3 - 87  [0.663] 138
+Elo difference: 117.59 +/- 33.37
+Started game 154 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 138 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 48 - 3 - 88  [0.662] 139
+Elo difference: 116.68 +/- 33.12
+Started game 155 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 143 (cluster-4mpi-32t vs master-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 48 - 4 - 88  [0.657] 140
+Elo difference: 113.02 +/- 33.43
+Started game 156 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 139 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 48 - 4 - 89  [0.656] 141
+Elo difference: 112.16 +/- 33.18
+Started game 157 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 141 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 48 - 4 - 90  [0.655] 142
+Elo difference: 111.31 +/- 32.94
+Started game 158 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 144 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 49 - 4 - 90  [0.657] 143
+Elo difference: 113.17 +/- 33.02
+Started game 159 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 146 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 49 - 4 - 91  [0.656] 144
+Elo difference: 112.33 +/- 32.78
+Started game 160 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 142 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 49 - 4 - 92  [0.655] 145
+Elo difference: 111.50 +/- 32.54
+Started game 161 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 150 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 49 - 4 - 93  [0.654] 146
+Elo difference: 110.68 +/- 32.31
+Started game 162 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 148 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 49 - 4 - 94  [0.653] 147
+Elo difference: 109.88 +/- 32.08
+Started game 163 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 149 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 50 - 4 - 94  [0.655] 148
+Elo difference: 111.68 +/- 32.16
+Started game 164 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 151 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 94  [0.658] 149
+Elo difference: 113.46 +/- 32.24
+Started game 165 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 145 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 95  [0.657] 150
+Elo difference: 112.65 +/- 32.02
+Started game 166 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 154 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 96  [0.656] 151
+Elo difference: 111.85 +/- 31.80
+Started game 167 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 153 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 97  [0.655] 152
+Elo difference: 111.07 +/- 31.58
+Started game 168 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 155 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 98  [0.654] 153
+Elo difference: 110.29 +/- 31.36
+Started game 169 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 159 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 99  [0.653] 154
+Elo difference: 109.52 +/- 31.15
+Started game 170 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 161 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 100  [0.652] 155
+Elo difference: 108.77 +/- 30.94
+Started game 171 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 157 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 101  [0.651] 156
+Elo difference: 108.03 +/- 30.74
+Started game 172 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 158 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 102  [0.650] 157
+Elo difference: 107.29 +/- 30.54
+Started game 173 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 160 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 103  [0.649] 158
+Elo difference: 106.57 +/- 30.34
+Started game 174 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 156 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 104  [0.648] 159
+Elo difference: 105.86 +/- 30.14
+Started game 175 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 147 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 105  [0.647] 160
+Elo difference: 105.16 +/- 29.95
+Started game 176 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 164 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 51 - 4 - 106  [0.646] 161
+Elo difference: 104.46 +/- 29.75
+Started game 177 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 165 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 52 - 4 - 106  [0.648] 162
+Elo difference: 106.13 +/- 29.83
+Started game 178 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 163 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 52 - 4 - 107  [0.647] 163
+Elo difference: 105.43 +/- 29.65
+Started game 179 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 162 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 52 - 4 - 108  [0.646] 164
+Elo difference: 104.75 +/- 29.46
+Started game 180 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 166 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 53 - 4 - 108  [0.648] 165
+Elo difference: 106.38 +/- 29.54
+Started game 181 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 168 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 53 - 4 - 109  [0.648] 166
+Elo difference: 105.70 +/- 29.35
+Started game 182 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 152 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 53 - 4 - 110  [0.647] 167
+Elo difference: 105.03 +/- 29.17
+Started game 183 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 171 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 54 - 4 - 110  [0.649] 168
+Elo difference: 106.63 +/- 29.25
+Started game 184 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 175 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 55 - 4 - 110  [0.651] 169
+Elo difference: 108.22 +/- 29.32
+Started game 185 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 170 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 55 - 4 - 111  [0.650] 170
+Elo difference: 107.54 +/- 29.14
+Started game 186 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 174 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 55 - 5 - 111  [0.646] 171
+Elo difference: 104.64 +/- 29.38
+Started game 187 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 172 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 56 - 5 - 111  [0.648] 172
+Elo difference: 106.21 +/- 29.45
+Started game 188 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 176 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 56 - 5 - 112  [0.647] 173
+Elo difference: 105.56 +/- 29.27
+Started game 189 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 167 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 56 - 5 - 113  [0.647] 174
+Elo difference: 104.91 +/- 29.10
+Started game 190 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 173 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 56 - 5 - 114  [0.646] 175
+Elo difference: 104.27 +/- 28.93
+Started game 191 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 178 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 57 - 5 - 114  [0.648] 176
+Elo difference: 105.81 +/- 28.99
+Started game 192 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 177 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 58 - 5 - 114  [0.650] 177
+Elo difference: 107.32 +/- 29.06
+Started game 193 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 182 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 59 - 5 - 114  [0.652] 178
+Elo difference: 108.83 +/- 29.12
+Started game 194 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 179 (cluster-4mpi-32t vs master-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 59 - 6 - 114  [0.648] 179
+Elo difference: 106.05 +/- 29.33
+Started game 195 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 181 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 59 - 6 - 115  [0.647] 180
+Elo difference: 105.42 +/- 29.16
+Started game 196 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 169 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 59 - 6 - 116  [0.646] 181
+Elo difference: 104.80 +/- 28.99
+Started game 197 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 184 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 59 - 6 - 117  [0.646] 182
+Elo difference: 104.19 +/- 28.82
+Started game 198 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 180 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 59 - 7 - 117  [0.642] 183
+Elo difference: 101.52 +/- 29.01
+Started game 199 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 185 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 60 - 7 - 117  [0.644] 184
+Elo difference: 102.99 +/- 29.07
+Started game 200 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 183 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 61 - 7 - 117  [0.646] 185
+Elo difference: 104.45 +/- 29.13
+Started game 201 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 186 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 61 - 7 - 118  [0.645] 186
+Elo difference: 103.85 +/- 28.96
+Started game 202 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 189 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 62 - 7 - 118  [0.647] 187
+Elo difference: 105.30 +/- 29.02
+Started game 203 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 188 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 118  [0.649] 188
+Elo difference: 106.73 +/- 29.07
+Started game 204 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 193 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 119  [0.648] 189
+Elo difference: 106.13 +/- 28.91
+Started game 205 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 190 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 120  [0.647] 190
+Elo difference: 105.53 +/- 28.75
+Started game 206 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 191 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 121  [0.647] 191
+Elo difference: 104.95 +/- 28.59
+Started game 207 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 187 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 122  [0.646] 192
+Elo difference: 104.37 +/- 28.44
+Started game 208 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 192 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 123  [0.645] 193
+Elo difference: 103.79 +/- 28.28
+Started game 209 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 194 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 124  [0.644] 194
+Elo difference: 103.22 +/- 28.13
+Started game 210 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 197 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 125  [0.644] 195
+Elo difference: 102.66 +/- 27.98
+Started game 211 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 198 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by stalemate}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 126  [0.643] 196
+Elo difference: 102.11 +/- 27.83
+Started game 212 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 196 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 127  [0.642] 197
+Elo difference: 101.56 +/- 27.69
+Started game 213 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 199 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 128  [0.641] 198
+Elo difference: 101.02 +/- 27.54
+Started game 214 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 202 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 129  [0.641] 199
+Elo difference: 100.48 +/- 27.40
+Started game 215 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 200 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 130  [0.640] 200
+Elo difference: 99.95 +/- 27.26
+Started game 216 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 201 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 131  [0.639] 201
+Elo difference: 99.43 +/- 27.12
+Started game 217 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 208 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 132  [0.639] 202
+Elo difference: 98.91 +/- 26.98
+Started game 218 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 203 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 63 - 7 - 133  [0.638] 203
+Elo difference: 98.39 +/- 26.84
+Started game 219 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 205 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 133  [0.640] 204
+Elo difference: 99.73 +/- 26.90
+Started game 220 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 204 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 134  [0.639] 205
+Elo difference: 99.22 +/- 26.76
+Started game 221 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 206 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 135  [0.638] 206
+Elo difference: 98.71 +/- 26.63
+Started game 222 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 209 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 136  [0.638] 207
+Elo difference: 98.21 +/- 26.50
+Started game 223 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 207 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 137  [0.637] 208
+Elo difference: 97.71 +/- 26.37
+Started game 224 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 210 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 138  [0.636] 209
+Elo difference: 97.22 +/- 26.24
+Started game 225 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 195 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 64 - 7 - 139  [0.636] 210
+Elo difference: 96.73 +/- 26.11
+Started game 226 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 212 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 65 - 7 - 139  [0.637] 211
+Elo difference: 98.02 +/- 26.16
+Started game 227 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 213 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 66 - 7 - 139  [0.639] 212
+Elo difference: 99.31 +/- 26.21
+Started game 228 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 215 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 66 - 7 - 140  [0.638] 213
+Elo difference: 98.82 +/- 26.09
+Started game 229 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 214 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 67 - 7 - 140  [0.640] 214
+Elo difference: 100.09 +/- 26.14
+Started game 230 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 219 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 68 - 7 - 140  [0.642] 215
+Elo difference: 101.36 +/- 26.19
+Started game 231 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 221 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 69 - 7 - 140  [0.644] 216
+Elo difference: 102.61 +/- 26.24
+Started game 232 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 216 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 69 - 7 - 141  [0.643] 217
+Elo difference: 102.11 +/- 26.11
+Started game 233 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 218 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 69 - 8 - 141  [0.640] 218
+Elo difference: 99.88 +/- 26.26
+Started game 234 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 217 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 70 - 8 - 141  [0.642] 219
+Elo difference: 101.12 +/- 26.31
+Started game 235 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 224 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 70 - 9 - 141  [0.639] 220
+Elo difference: 98.92 +/- 26.45
+Started game 236 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 222 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 70 - 9 - 142  [0.638] 221
+Elo difference: 98.45 +/- 26.32
+Started game 237 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 220 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 70 - 9 - 143  [0.637] 222
+Elo difference: 97.98 +/- 26.20
+Started game 238 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 227 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 71 - 9 - 143  [0.639] 223
+Elo difference: 99.21 +/- 26.24
+Started game 239 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 225 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 72 - 9 - 143  [0.641] 224
+Elo difference: 100.42 +/- 26.28
+Started game 240 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 223 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 72 - 9 - 144  [0.640] 225
+Elo difference: 99.95 +/- 26.16
+Started game 241 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 226 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 72 - 10 - 144  [0.637] 226
+Elo difference: 97.82 +/- 26.29
+Started game 242 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 228 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 72 - 10 - 145  [0.637] 227
+Elo difference: 97.37 +/- 26.17
+Started game 243 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 211 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 72 - 10 - 146  [0.636] 228
+Elo difference: 96.92 +/- 26.05
+Started game 244 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 229 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 72 - 10 - 147  [0.635] 229
+Elo difference: 96.47 +/- 25.93
+Started game 245 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 234 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 72 - 10 - 148  [0.635] 230
+Elo difference: 96.03 +/- 25.82
+Started game 246 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 233 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 73 - 10 - 148  [0.636] 231
+Elo difference: 97.22 +/- 25.86
+Started game 247 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 235 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 74 - 10 - 148  [0.638] 232
+Elo difference: 98.39 +/- 25.90
+Started game 248 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 232 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 74 - 10 - 149  [0.637] 233
+Elo difference: 97.95 +/- 25.78
+Started game 249 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 231 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 74 - 10 - 150  [0.637] 234
+Elo difference: 97.51 +/- 25.67
+Started game 250 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 236 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 74 - 10 - 151  [0.636] 235
+Elo difference: 97.07 +/- 25.56
+Started game 251 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 238 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 75 - 10 - 151  [0.638] 236
+Elo difference: 98.23 +/- 25.60
+Started game 252 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 230 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 76 - 10 - 151  [0.639] 237
+Elo difference: 99.38 +/- 25.63
+Started game 253 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 239 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 76 - 10 - 152  [0.639] 238
+Elo difference: 98.94 +/- 25.52
+Started game 254 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 237 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 76 - 10 - 153  [0.638] 239
+Elo difference: 98.50 +/- 25.41
+Started game 255 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 245 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 153  [0.640] 240
+Elo difference: 99.64 +/- 25.45
+Started game 256 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 244 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 154  [0.639] 241
+Elo difference: 99.20 +/- 25.34
+Started game 257 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 243 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 155  [0.638] 242
+Elo difference: 98.77 +/- 25.23
+Started game 258 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 241 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 156  [0.638] 243
+Elo difference: 98.34 +/- 25.12
+Started game 259 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 246 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 157  [0.637] 244
+Elo difference: 97.91 +/- 25.02
+Started game 260 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 242 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 158  [0.637] 245
+Elo difference: 97.49 +/- 24.91
+Started game 261 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 249 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 77 - 10 - 159  [0.636] 246
+Elo difference: 97.08 +/- 24.81
+Started game 262 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 251 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 78 - 10 - 159  [0.638] 247
+Elo difference: 98.18 +/- 24.85
+Started game 263 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 240 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 78 - 10 - 160  [0.637] 248
+Elo difference: 97.77 +/- 24.74
+Started game 264 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 248 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 78 - 10 - 161  [0.637] 249
+Elo difference: 97.35 +/- 24.64
+Started game 265 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 250 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 78 - 11 - 161  [0.634] 250
+Elo difference: 95.44 +/- 24.75
+Started game 266 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 255 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 161  [0.635] 251
+Elo difference: 96.54 +/- 24.79
+Started game 267 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 252 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 162  [0.635] 252
+Elo difference: 96.13 +/- 24.69
+Started game 268 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 253 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 163  [0.634] 253
+Elo difference: 95.73 +/- 24.58
+Started game 269 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 254 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 164  [0.634] 254
+Elo difference: 95.34 +/- 24.48
+Started game 270 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 247 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 165  [0.633] 255
+Elo difference: 94.94 +/- 24.39
+Started game 271 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 257 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 166  [0.633] 256
+Elo difference: 94.55 +/- 24.29
+Started game 272 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 256 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 79 - 11 - 167  [0.632] 257
+Elo difference: 94.17 +/- 24.19
+Started game 273 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 259 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 80 - 11 - 167  [0.634] 258
+Elo difference: 95.23 +/- 24.23
+Started game 274 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 258 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 80 - 12 - 167  [0.631] 259
+Elo difference: 93.41 +/- 24.33
+Started game 275 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 262 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 80 - 12 - 168  [0.631] 260
+Elo difference: 93.03 +/- 24.23
+Started game 276 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 261 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 81 - 12 - 168  [0.632] 261
+Elo difference: 94.09 +/- 24.27
+Started game 277 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 260 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 81 - 12 - 169  [0.632] 262
+Elo difference: 93.71 +/- 24.17
+Started game 278 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 263 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 82 - 12 - 169  [0.633] 263
+Elo difference: 94.75 +/- 24.20
+Started game 279 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 265 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 83 - 12 - 169  [0.634] 264
+Elo difference: 95.79 +/- 24.24
+Started game 280 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 267 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 84 - 12 - 169  [0.636] 265
+Elo difference: 96.83 +/- 24.27
+Started game 281 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 264 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 84 - 12 - 170  [0.635] 266
+Elo difference: 96.45 +/- 24.18
+Started game 282 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 266 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 84 - 12 - 171  [0.635] 267
+Elo difference: 96.07 +/- 24.08
+Started game 283 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 268 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 84 - 12 - 172  [0.634] 268
+Elo difference: 95.69 +/- 23.99
+Started game 284 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 272 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 84 - 12 - 173  [0.634] 269
+Elo difference: 95.32 +/- 23.90
+Started game 285 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 270 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 85 - 12 - 173  [0.635] 270
+Elo difference: 96.33 +/- 23.93
+Started game 286 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 269 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 85 - 12 - 174  [0.635] 271
+Elo difference: 95.96 +/- 23.84
+Started game 287 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 273 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 86 - 12 - 174  [0.636] 272
+Elo difference: 96.96 +/- 23.87
+Started game 288 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 276 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 86 - 12 - 175  [0.636] 273
+Elo difference: 96.59 +/- 23.78
+Started game 289 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 271 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 87 - 12 - 175  [0.637] 274
+Elo difference: 97.59 +/- 23.81
+Started game 290 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 278 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 88 - 12 - 175  [0.638] 275
+Elo difference: 98.58 +/- 23.84
+Started game 291 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 275 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 89 - 12 - 175  [0.639] 276
+Elo difference: 99.57 +/- 23.87
+Started game 292 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 285 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 89 - 12 - 176  [0.639] 277
+Elo difference: 99.19 +/- 23.78
+Started game 293 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 279 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 89 - 12 - 177  [0.638] 278
+Elo difference: 98.81 +/- 23.69
+Started game 294 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 274 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 89 - 13 - 177  [0.636] 279
+Elo difference: 97.09 +/- 23.78
+Started game 295 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 277 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 89 - 13 - 178  [0.636] 280
+Elo difference: 96.73 +/- 23.69
+Started game 296 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 280 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 89 - 13 - 179  [0.635] 281
+Elo difference: 96.37 +/- 23.61
+Started game 297 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 284 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 89 - 13 - 180  [0.635] 282
+Elo difference: 96.01 +/- 23.52
+Started game 298 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 282 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 89 - 13 - 181  [0.634] 283
+Elo difference: 95.65 +/- 23.43
+Started game 299 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 286 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 89 - 13 - 182  [0.634] 284
+Elo difference: 95.30 +/- 23.35
+Started game 300 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 287 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 90 - 13 - 182  [0.635] 285
+Elo difference: 96.26 +/- 23.38
+Started game 301 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 292 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 90 - 13 - 183  [0.635] 286
+Elo difference: 95.90 +/- 23.29
+Started game 302 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 283 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 90 - 13 - 184  [0.634] 287
+Elo difference: 95.55 +/- 23.21
+Started game 303 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 291 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 90 - 13 - 185  [0.634] 288
+Elo difference: 95.20 +/- 23.13
+Started game 304 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 289 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 90 - 13 - 186  [0.633] 289
+Elo difference: 94.86 +/- 23.04
+Started game 305 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 281 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 90 - 13 - 187  [0.633] 290
+Elo difference: 94.51 +/- 22.96
+Started game 306 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 296 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 91 - 13 - 187  [0.634] 291
+Elo difference: 95.46 +/- 22.99
+Started game 307 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 294 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 91 - 13 - 188  [0.634] 292
+Elo difference: 95.12 +/- 22.91
+Started game 308 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 288 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 92 - 13 - 188  [0.635] 293
+Elo difference: 96.05 +/- 22.94
+Started game 309 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 300 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 188  [0.636] 294
+Elo difference: 96.98 +/- 22.97
+Started game 310 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 297 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 189  [0.636] 295
+Elo difference: 96.64 +/- 22.88
+Started game 311 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 295 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 190  [0.635] 296
+Elo difference: 96.29 +/- 22.80
+Started game 312 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 290 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 191  [0.635] 297
+Elo difference: 95.95 +/- 22.73
+Started game 313 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 293 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 192  [0.634] 298
+Elo difference: 95.61 +/- 22.65
+Started game 314 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 298 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 193  [0.634] 299
+Elo difference: 95.28 +/- 22.57
+Started game 315 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 301 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 194  [0.633] 300
+Elo difference: 94.94 +/- 22.49
+Started game 316 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 302 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 195  [0.633] 301
+Elo difference: 94.61 +/- 22.41
+Started game 317 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 304 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 196  [0.632] 302
+Elo difference: 94.28 +/- 22.34
+Started game 318 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 305 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 197  [0.632] 303
+Elo difference: 93.96 +/- 22.26
+Started game 319 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 309 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 93 - 13 - 198  [0.632] 304
+Elo difference: 93.63 +/- 22.19
+Started game 320 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 310 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 94 - 13 - 198  [0.633] 305
+Elo difference: 94.54 +/- 22.21
+Started game 321 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 306 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 94 - 13 - 199  [0.632] 306
+Elo difference: 94.21 +/- 22.14
+Started game 322 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 299 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 94 - 13 - 200  [0.632] 307
+Elo difference: 93.89 +/- 22.07
+Started game 323 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 308 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 94 - 13 - 201  [0.631] 308
+Elo difference: 93.57 +/- 21.99
+Started game 324 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 307 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 94 - 13 - 202  [0.631] 309
+Elo difference: 93.25 +/- 21.92
+Started game 325 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 312 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 94 - 13 - 203  [0.631] 310
+Elo difference: 92.94 +/- 21.85
+Started game 326 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 311 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 95 - 13 - 203  [0.632] 311
+Elo difference: 93.82 +/- 21.87
+Started game 327 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 314 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 96 - 13 - 203  [0.633] 312
+Elo difference: 94.70 +/- 21.90
+Started game 328 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 303 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 97 - 13 - 203  [0.634] 313
+Elo difference: 95.58 +/- 21.93
+Started game 329 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 319 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 98 - 13 - 203  [0.635] 314
+Elo difference: 96.45 +/- 21.96
+Started game 330 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 315 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 203  [0.637] 315
+Elo difference: 97.32 +/- 21.98
+Started game 331 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 318 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 204  [0.636] 316
+Elo difference: 97.00 +/- 21.91
+Started game 332 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 317 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 205  [0.636] 317
+Elo difference: 96.68 +/- 21.84
+Started game 333 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 322 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 206  [0.635] 318
+Elo difference: 96.36 +/- 21.77
+Started game 334 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 313 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 207  [0.635] 319
+Elo difference: 96.04 +/- 21.70
+Started game 335 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 326 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 208  [0.634] 320
+Elo difference: 95.72 +/- 21.63
+Started game 336 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 316 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 209  [0.634] 321
+Elo difference: 95.41 +/- 21.56
+Started game 337 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 324 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 99 - 13 - 210  [0.634] 322
+Elo difference: 95.10 +/- 21.49
+Started game 338 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 327 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 100 - 13 - 210  [0.635] 323
+Elo difference: 95.95 +/- 21.52
+Started game 339 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 323 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 100 - 13 - 211  [0.634] 324
+Elo difference: 95.64 +/- 21.45
+Started game 340 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 320 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 100 - 13 - 212  [0.634] 325
+Elo difference: 95.33 +/- 21.38
+Started game 341 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 325 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 100 - 13 - 213  [0.633] 326
+Elo difference: 95.02 +/- 21.31
+Started game 342 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 328 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 100 - 13 - 214  [0.633] 327
+Elo difference: 94.72 +/- 21.25
+Started game 343 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 329 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 101 - 13 - 214  [0.634] 328
+Elo difference: 95.55 +/- 21.27
+Started game 344 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 330 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 101 - 13 - 215  [0.634] 329
+Elo difference: 95.25 +/- 21.20
+Started game 345 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 332 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 101 - 13 - 216  [0.633] 330
+Elo difference: 94.94 +/- 21.14
+Started game 346 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 334 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 101 - 13 - 217  [0.633] 331
+Elo difference: 94.64 +/- 21.07
+Started game 347 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 321 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 101 - 13 - 218  [0.633] 332
+Elo difference: 94.34 +/- 21.01
+Started game 348 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 331 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 101 - 13 - 219  [0.632] 333
+Elo difference: 94.05 +/- 20.94
+Started game 349 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 335 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 102 - 13 - 219  [0.633] 334
+Elo difference: 94.87 +/- 20.97
+Started game 350 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 338 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 103 - 13 - 219  [0.634] 335
+Elo difference: 95.69 +/- 20.99
+Started game 351 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 339 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 104 - 13 - 219  [0.635] 336
+Elo difference: 96.50 +/- 21.02
+Started game 352 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 336 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 105 - 13 - 219  [0.636] 337
+Elo difference: 97.32 +/- 21.04
+Started game 353 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 340 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 105 - 14 - 219  [0.635] 338
+Elo difference: 95.90 +/- 21.12
+Started game 354 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 342 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 105 - 14 - 220  [0.634] 339
+Elo difference: 95.61 +/- 21.05
+Started game 355 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 333 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 105 - 14 - 221  [0.634] 340
+Elo difference: 95.31 +/- 20.99
+Started game 356 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 341 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 106 - 14 - 221  [0.635] 341
+Elo difference: 96.12 +/- 21.01
+Started game 357 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 349 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 107 - 14 - 221  [0.636] 342
+Elo difference: 96.92 +/- 21.04
+Started game 358 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 346 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 108 - 14 - 221  [0.637] 343
+Elo difference: 97.71 +/- 21.06
+Started game 359 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 337 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 108 - 14 - 222  [0.637] 344
+Elo difference: 97.41 +/- 21.00
+Started game 360 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 344 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 108 - 15 - 222  [0.635] 345
+Elo difference: 96.03 +/- 21.06
+Started game 361 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 350 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 108 - 16 - 222  [0.633] 346
+Elo difference: 94.66 +/- 21.13
+Started game 362 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 343 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 108 - 16 - 223  [0.633] 347
+Elo difference: 94.37 +/- 21.07
+Started game 363 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 351 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 108 - 16 - 224  [0.632] 348
+Elo difference: 94.09 +/- 21.01
+Started game 364 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 345 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 109 - 16 - 224  [0.633] 349
+Elo difference: 94.87 +/- 21.03
+Started game 365 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 353 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 224  [0.634] 350
+Elo difference: 95.66 +/- 21.05
+Started game 366 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 354 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 225  [0.634] 351
+Elo difference: 95.37 +/- 20.99
+Started game 367 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 352 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 226  [0.634] 352
+Elo difference: 95.09 +/- 20.93
+Started game 368 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 348 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 227  [0.633] 353
+Elo difference: 94.80 +/- 20.86
+Started game 369 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 355 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 228  [0.633] 354
+Elo difference: 94.52 +/- 20.80
+Started game 370 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 347 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 229  [0.632] 355
+Elo difference: 94.24 +/- 20.74
+Started game 371 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 356 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 230  [0.632] 356
+Elo difference: 93.96 +/- 20.68
+Started game 372 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 361 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 110 - 16 - 231  [0.632] 357
+Elo difference: 93.69 +/- 20.62
+Started game 373 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 357 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 111 - 16 - 231  [0.633] 358
+Elo difference: 94.46 +/- 20.64
+Started game 374 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 362 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 111 - 16 - 232  [0.632] 359
+Elo difference: 94.18 +/- 20.59
+Started game 375 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 358 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 112 - 16 - 232  [0.633] 360
+Elo difference: 94.94 +/- 20.61
+Started game 376 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 363 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 113 - 16 - 232  [0.634] 361
+Elo difference: 95.70 +/- 20.63
+Started game 377 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 359 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 114 - 16 - 232  [0.635] 362
+Elo difference: 96.46 +/- 20.65
+Started game 378 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 364 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 114 - 17 - 232  [0.634] 363
+Elo difference: 95.15 +/- 20.71
+Started game 379 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 360 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 114 - 17 - 233  [0.633] 364
+Elo difference: 94.88 +/- 20.65
+Started game 380 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 365 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 115 - 17 - 233  [0.634] 365
+Elo difference: 95.63 +/- 20.67
+Started game 381 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 366 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 116 - 17 - 233  [0.635] 366
+Elo difference: 96.38 +/- 20.69
+Started game 382 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 368 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 116 - 17 - 234  [0.635] 367
+Elo difference: 96.10 +/- 20.63
+Started game 383 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 371 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 117 - 17 - 234  [0.636] 368
+Elo difference: 96.84 +/- 20.65
+Started game 384 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 369 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 117 - 17 - 235  [0.636] 369
+Elo difference: 96.57 +/- 20.59
+Started game 385 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 367 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 117 - 17 - 236  [0.635] 370
+Elo difference: 96.29 +/- 20.53
+Started game 386 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 373 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 117 - 17 - 237  [0.635] 371
+Elo difference: 96.02 +/- 20.48
+Started game 387 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 370 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 118 - 17 - 237  [0.636] 372
+Elo difference: 96.76 +/- 20.50
+Started game 388 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 372 (master-32t vs cluster-4mpi-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 118 - 18 - 237  [0.634] 373
+Elo difference: 95.48 +/- 20.55
+Started game 389 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 377 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 119 - 18 - 237  [0.635] 374
+Elo difference: 96.21 +/- 20.57
+Started game 390 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 380 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 119 - 18 - 238  [0.635] 375
+Elo difference: 95.94 +/- 20.52
+Started game 391 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 381 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 119 - 18 - 239  [0.634] 376
+Elo difference: 95.67 +/- 20.46
+Started game 392 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 375 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 119 - 18 - 240  [0.634] 377
+Elo difference: 95.41 +/- 20.40
+Started game 393 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 376 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 119 - 18 - 241  [0.634] 378
+Elo difference: 95.14 +/- 20.35
+Started game 394 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 379 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 120 - 18 - 241  [0.635] 379
+Elo difference: 95.87 +/- 20.37
+Started game 395 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 374 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 120 - 18 - 242  [0.634] 380
+Elo difference: 95.60 +/- 20.31
+Started game 396 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 378 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 120 - 18 - 243  [0.634] 381
+Elo difference: 95.34 +/- 20.25
+Started game 397 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 384 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 120 - 18 - 244  [0.634] 382
+Elo difference: 95.07 +/- 20.20
+Started game 398 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 383 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 121 - 18 - 244  [0.634] 383
+Elo difference: 95.79 +/- 20.22
+Started game 399 of 400 (cluster-4mpi-32t vs master-32t)
+Finished game 386 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 121 - 18 - 245  [0.634] 384
+Elo difference: 95.53 +/- 20.16
+Started game 400 of 400 (master-32t vs cluster-4mpi-32t)
+Finished game 387 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 122 - 18 - 245  [0.635] 385
+Elo difference: 96.24 +/- 20.18
+Finished game 382 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 123 - 18 - 245  [0.636] 386
+Elo difference: 96.95 +/- 20.20
+Finished game 385 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 123 - 18 - 246  [0.636] 387
+Elo difference: 96.69 +/- 20.15
+Finished game 388 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 124 - 18 - 246  [0.637] 388
+Elo difference: 97.39 +/- 20.16
+Finished game 397 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 124 - 18 - 247  [0.636] 389
+Elo difference: 97.13 +/- 20.11
+Finished game 390 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 124 - 18 - 248  [0.636] 390
+Elo difference: 96.87 +/- 20.06
+Finished game 389 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 124 - 18 - 249  [0.636] 391
+Elo difference: 96.60 +/- 20.00
+Finished game 396 (master-32t vs cluster-4mpi-32t): 0-1 {Black wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 125 - 18 - 249  [0.636] 392
+Elo difference: 97.30 +/- 20.02
+Finished game 392 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 125 - 18 - 250  [0.636] 393
+Elo difference: 97.04 +/- 19.97
+Finished game 393 (cluster-4mpi-32t vs master-32t): 1-0 {White wins by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 250  [0.637] 394
+Elo difference: 97.74 +/- 19.99
+Finished game 391 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 251  [0.637] 395
+Elo difference: 97.47 +/- 19.93
+Finished game 394 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by insufficient mating material}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 252  [0.636] 396
+Elo difference: 97.22 +/- 19.88
+Finished game 398 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 253  [0.636] 397
+Elo difference: 96.96 +/- 19.83
+Finished game 399 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by 3-fold repetition}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 254  [0.636] 398
+Elo difference: 96.70 +/- 19.78
+Finished game 395 (cluster-4mpi-32t vs master-32t): 1/2-1/2 {Draw by fifty moves rule}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 255  [0.635] 399
+Elo difference: 96.45 +/- 19.73
+Finished game 400 (master-32t vs cluster-4mpi-32t): 1/2-1/2 {Draw by adjudication}
+Score of cluster-4mpi-32t vs master-32t: 126 - 18 - 256  [0.635] 400
+Elo difference: 96.19 +/- 19.68
+Finished match
+Terminating process of engine master-32t(17)
+Terminating process of engine cluster-4mpi-32t(12)
+Terminating process of engine master-32t(30)
+Terminating process of engine master-32t(1)
+Terminating process of engine cluster-4mpi-32t(15)
+Terminating process of engine cluster-4mpi-32t(8)
+Terminating process of engine master-32t(26)
+Terminating process of engine master-32t(2)
+Terminating process of engine cluster-4mpi-32t(4)
+Terminating process of engine cluster-4mpi-32t(7)
+Terminating process of engine master-32t(18)
+Terminating process of engine cluster-4mpi-32t(23)
+Terminating process of engine master-32t(21)
+Terminating process of engine master-32t(29)
+Terminating process of engine cluster-4mpi-32t(11)
+Terminating process of engine cluster-4mpi-32t(24)
+Terminating process of engine cluster-4mpi-32t(16)
+Terminating process of engine master-32t(13)
+Terminating process of engine cluster-4mpi-32t(31)
+Terminating process of engine cluster-4mpi-32t(0)
+Terminating process of engine master-32t(14)
+Terminating process of engine master-32t(9)
+Terminating process of engine cluster-4mpi-32t(27)
+Terminating process of engine master-32t(5)
+Terminating process of engine cluster-4mpi-32t(3)
+Terminating process of engine master-32t(6)
+Terminating process of engine master-32t(22)
+Terminating process of engine cluster-4mpi-32t(19)
+Terminating process of engine master-32t(10)
+Terminating process of engine cluster-4mpi-32t(28)
+Terminating process of engine master-32t(25)
+Terminating process of engine cluster-4mpi-32t(20)
