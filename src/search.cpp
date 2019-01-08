@@ -1659,6 +1659,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
   size_t multiPV = std::min((size_t)Options["MultiPV"], rootMoves.size());
   uint64_t nodesSearched = Cluster::nodes_searched();
   uint64_t tbHits = Cluster::tb_hits() + (TB::RootInTB ? rootMoves.size() : 0);
+  uint64_t TTSaves = Cluster::TT_saves();
 
   for (size_t i = 0; i < multiPV; ++i)
   {
@@ -1687,6 +1688,9 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
       ss << " nodes "    << nodesSearched
          << " nps "      << nodesSearched * 1000 / elapsed;
+
+      ss << " TTSaves " << TTSaves
+         << " TTSavesps " << TTSaves * 1000 / elapsed;
 
       if (elapsed > 1000) // Earlier makes little sense
           ss << " hashfull " << TT.hashfull();

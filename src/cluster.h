@@ -80,6 +80,7 @@ void ttRecvBuff_resize(size_t nThreads);
 void cluster_info(Depth depth);
 uint64_t nodes_searched();
 uint64_t tb_hits();
+uint64_t TT_saves();
 void signals_init();
 void signals_poll();
 void signals_sync();
@@ -99,6 +100,7 @@ inline void ttRecvBuff_resize(size_t) { }
 inline void cluster_info(Depth) { }
 uint64_t nodes_searched();
 uint64_t tb_hits();
+uint64_t TT_saves();
 inline void signals_init() { }
 inline void signals_poll() { }
 inline void signals_sync() { }
