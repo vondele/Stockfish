@@ -73,9 +73,11 @@ bool getline(std::istream& input, std::string& str);
 int size();
 int rank();
 inline bool is_root() { return rank() == 0; }
+bool TT_recv();
 void save(Thread* thread, TTEntry* tte, Key k, Value v, Bound b, Depth d, Move m, Value ev);
 void pick_moves(MoveInfo& mi, std::string& PVLine);
 void ttRecvBuff_resize(size_t nThreads);
+void cluster_info(Depth depth);
 uint64_t nodes_searched();
 uint64_t tb_hits();
 void signals_init();
@@ -90,9 +92,11 @@ inline bool getline(std::istream& input, std::string& str) { return static_cast<
 constexpr int size() { return 1; }
 constexpr int rank() { return 0; }
 constexpr bool is_root() { return true; }
+constexpr bool TT_recv() { return false; }
 inline void save(Thread*, TTEntry* tte, Key k, Value v, Bound b, Depth d, Move m, Value ev) { tte->save(k, v, b, d, m, ev); }
 inline void pick_moves(MoveInfo&, std::string&) { }
 inline void ttRecvBuff_resize(size_t) { }
+inline void cluster_info(Depth) { }
 uint64_t nodes_searched();
 uint64_t tb_hits();
 inline void signals_init() { }

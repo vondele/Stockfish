@@ -466,7 +466,10 @@ void Thread::search() {
                   && multiPV == 1
                   && (bestValue <= alpha || bestValue >= beta)
                   && Time.elapsed() > 3000)
+              {
                   sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+                  Cluster::cluster_info(rootDepth);
+              }
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
@@ -501,7 +504,10 @@ void Thread::search() {
 
           if (    Cluster::is_root() && mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
+          {
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+              Cluster::cluster_info(rootDepth);
+          }
       }
 
       if (!Threads.stop)
@@ -950,6 +956,7 @@ moves_loop: // When in check, search starts from here
           sync_cout << "info depth " << depth / ONE_PLY
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
+
       if (PvNode)
           (ss+1)->pv = nullptr;
 
@@ -1607,7 +1614,9 @@ moves_loop: // When in check, search starts from here
 
 void MainThread::check_time() {
 
-  if (--callsCnt > 0)
+  bool received = Cluster::TT_recv();
+
+  if (--callsCnt > 0 && !received)
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
