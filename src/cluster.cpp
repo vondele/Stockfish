@@ -71,6 +71,7 @@ void init() {
   if (thread_support < MPI_THREAD_MULTIPLE)
   {
       std::cerr << "Stockfish requires support for MPI_THREAD_MULTIPLE."
+                << "Check the documentation of your MPI installation for more information."
                 << std::endl;
       std::exit(EXIT_FAILURE);
   }
