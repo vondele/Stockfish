@@ -737,7 +737,7 @@ namespace {
     if (inCheck)
     {
         ss->staticEval = eval = pureStaticEval = VALUE_NONE;
-        improving = false;
+        improving = false || pvHit;
         goto moves_loop;  // Skip early pruning when in check
     }
     else if (ttHit)
@@ -776,7 +776,8 @@ namespace {
         return qsearch<NT>(pos, ss, alpha, beta);
 
     improving =   ss->staticEval >= (ss-2)->staticEval
-               || (ss-2)->staticEval == VALUE_NONE;
+               || (ss-2)->staticEval == VALUE_NONE
+               || pvHit;
 
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !PvNode
