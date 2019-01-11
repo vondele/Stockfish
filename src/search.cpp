@@ -1250,7 +1250,6 @@ moves_loop: // When in check, search starts from here
     StateInfo st;
     TTEntry* tte;
     Key posKey;
-    //Move ttMove, move, bestMove;
     Move move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
