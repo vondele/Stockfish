@@ -1250,7 +1250,8 @@ moves_loop: // When in check, search starts from here
     StateInfo st;
     TTEntry* tte;
     Key posKey;
-    Move ttMove, move, bestMove;
+    //Move ttMove, move, bestMove;
+    Move move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable;
@@ -1286,7 +1287,6 @@ moves_loop: // When in check, search starts from here
     posKey = pos.key();
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-    ttMove = ttHit ? tte->move() : MOVE_NONE;
     pvHit = ttHit && tte->pv_hit();
 
     if (  !PvNode
@@ -1343,10 +1343,10 @@ moves_loop: // When in check, search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->captureHistory,
-                                      contHist,
-                                      to_sq((ss-1)->currentMove));
+    MovePicker mp(pos, depth, &thisThread->mainHistory,
+                              &thisThread->captureHistory,
+                              contHist,
+                              to_sq((ss-1)->currentMove));
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
     while ((move = mp.next_move()) != MOVE_NONE)
