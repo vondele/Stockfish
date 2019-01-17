@@ -349,7 +349,8 @@ void Thread::search() {
   contempt = (us == WHITE ?  make_score(ct, ct / 2)
                           : -make_score(ct, ct / 2));
 
-  Depth skippedDepth = DEPTH_ZERO;
+  Depth baseDepth = DEPTH_ZERO;
+  bool recentlySkipped = false;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
@@ -357,10 +358,15 @@ void Thread::search() {
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
   {
       if (   rootDepth <= Threads.completedDepth
-          && skippedDepth + 2 * ONE_PLY < rootDepth)
+          && baseDepth + 2 * ONE_PLY < rootDepth)
       {
-          skippedDepth = rootDepth;
+          recentlySkipped = true;
           continue;
+      }
+      else if (recentlySkipped)
+      {
+          recentlySkipped = false;
+          baseDepth = rootDepth;
       }
 
       // Age out PV variability metric
