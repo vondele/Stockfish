@@ -357,8 +357,8 @@ void Thread::search() {
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
   {
-      if (   rootDepth <= Threads.completedDepth + int(std::log(idx + 1) / std::log(2.26))
-          && baseDepth + 2 * ONE_PLY < rootDepth)
+      if (   rootDepth <= Threads.completedDepth
+          && baseDepth + 3 * ONE_PLY < rootDepth)
       {
           recentlySkipped = true;
           continue;
