@@ -106,6 +106,7 @@ struct ThreadPool : public std::vector<Thread*> {
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
 
   std::atomic_bool stop, ponder, stopOnPonderhit;
+  std::atomic<Depth> completedDepth;
 
 private:
   StateListPtr setupStates;
@@ -118,6 +119,15 @@ private:
     return sum;
   }
 };
+
+template<typename T>
+inline void update_maximum(std::atomic<T>& maximum_value, T const& value) noexcept
+{
+    T prev_value = maximum_value;
+    while(prev_value < value &&
+            !maximum_value.compare_exchange_weak(prev_value, value))
+        ;
+}
 
 extern ThreadPool Threads;
 
