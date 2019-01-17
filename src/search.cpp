@@ -358,7 +358,7 @@ void Thread::search() {
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
   {
       if (   rootDepth <= Threads.completedDepth
-          && baseDepth + 3 * ONE_PLY < rootDepth)
+          && baseDepth + 1 * ONE_PLY < rootDepth)
       {
           recentlySkipped = true;
           continue;
