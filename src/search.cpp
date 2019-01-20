@@ -255,16 +255,20 @@ void MainThread::search() {
   {
       std::map<Move, int64_t> votes;
       Value minScore = this->rootMoves[0].score;
+      Depth minDepth = this->completedDepth;
 
       // Find out minimum score and reset votes for moves which can be voted
       for (Thread* th: Threads)
+      {
           minScore = std::min(minScore, th->rootMoves[0].score);
+          minDepth = std::min(minDepth, th->completedDepth);
+      }
 
       // Vote according to score and depth
       for (Thread* th : Threads)
       {
-          int64_t s = th->rootMoves[0].score - minScore + 1;
-          votes[th->rootMoves[0].pv[0]] += 200 + s * s * int(th->completedDepth);
+          int64_t s = th->rootMoves[0].score - minScore + 10;
+          votes[th->rootMoves[0].pv[0]] +=  s * s + 50 * int64_t(th->completedDepth - minDepth + 1);
       }
 
       // Select best thread
