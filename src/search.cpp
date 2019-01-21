@@ -353,7 +353,8 @@ void Thread::search() {
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
   {
       // Distribute search depths across the helper threads
-      int skipSize = int(std::log(idx + 1) / std::log(1.92));
+      // (approx. 6 Elo on 8 threads, with short TC)
+      int skipSize = int(std::log(idx + 2) / std::log(2.26));
       if (skipSize && (rootDepth / ONE_PLY + idx + 1) / skipSize % 2)
           continue;  // Retry with an incremented rootDepth
 
