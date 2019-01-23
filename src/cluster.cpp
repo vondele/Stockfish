@@ -312,7 +312,7 @@ void save(Thread* thread, TTEntry* tte,
 
      // Communicate on main search thread, as soon the threads combined have collected
      // sufficient data to fill the send buffers.
-     if (thread == Threads.main() && TTCacheCounter > size() * recvBuffPerRankSize)
+     if (thread == Threads.main() && TTCacheCounter > recvBuffPerRankSize)
      {
          // Test communication status
          int flag;
