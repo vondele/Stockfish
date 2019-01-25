@@ -27,10 +27,6 @@
 #include <thread>
 #include <vector>
 
-#ifdef USE_MPI
-#include <mpi.h>
-#endif
-
 #include "cluster.h"
 #include "material.h"
 #include "movepick.h"
@@ -79,18 +75,8 @@ public:
   ContinuationHistory continuationHistory;
   Score contempt;
 
-// TODO define this struct in cluster, with constructor etc.
-#ifdef USE_MPI
-  struct {
-      Cluster::TTCache<Cluster::TTCacheSize> buffer = {};
-      // The receive buffer is used to gather information from all ranks.
-      std::array<std::vector<Cluster::KeyedTTEntry>, 2> TTSendRecvBuffs;
-      std::array<MPI_Request, 2> reqsTTSendRecv;
-      // The TTCacheCounter tracks the number of local elements that are ready to be sent.
-      uint64_t TTCacheCounter;
-      uint64_t sendRecvPosted;
-  } ttCache;
-#endif
+  Cluster::ClusterInfo ttCache;
+
 };
 
 

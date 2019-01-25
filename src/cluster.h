@@ -26,6 +26,10 @@
 #include <istream>
 #include <string>
 
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
+
 #include "tt.h"
 
 class Thread;
@@ -83,6 +87,22 @@ public:
   }
 };
 
+class ClusterInfo
+{
+
+public:
+
+   ClusterInfo();
+
+   TTCache<TTCacheSize> buffer = {};  // TODO remove template argument... this is fixed.
+   // The receive buffer is used to gather information from all ranks.
+   std::array<std::vector<Cluster::KeyedTTEntry>, 2> TTSendRecvBuffs;
+   std::array<MPI_Request, 2> reqsTTSendRecv;
+   // The TTCacheCounter tracks the number of local elements that are ready to be sent.
+   uint64_t TTCacheCounter;
+   uint64_t sendRecvPosted;
+};
+
 void init();
 void finalize();
 bool getline(std::istream& input, std::string& str);
@@ -100,6 +120,10 @@ void signals_poll();
 void signals_sync();
 
 #else
+
+class ClusterInfo
+{
+};
 
 inline void init() { }
 inline void finalize() { }

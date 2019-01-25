@@ -25,7 +25,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <istream>
-#include <mpi.h>
 #include <string>
 #include <vector>
 
@@ -64,6 +63,18 @@ std::atomic<uint64_t> sendRecvPosted = {};
 // bestMove requires MoveInfo communicators and data types
 static MPI_Comm MoveComm = MPI_COMM_NULL;
 static MPI_Datatype MIDatatype = MPI_DATATYPE_NULL;
+
+///
+ClusterInfo::ClusterInfo() {
+
+  for (int i : {0, 1})
+  {
+      TTSendRecvBuffs[i].resize(TTCacheSize * size());
+      std::fill(TTSendRecvBuffs[i].begin(), TTSendRecvBuffs[i].end(), KeyedTTEntry());
+  }
+  reqsTTSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
+  TTCacheCounter = sendRecvPosted = 0;
+}
 
 /// Initialize MPI and associated data types. Note that the MPI library must be configured
 /// to support MPI_THREAD_MULTIPLE, since multiple threads access MPI simultaneously.

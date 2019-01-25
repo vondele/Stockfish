@@ -21,10 +21,6 @@
 #include <algorithm> // For std::count
 #include <cassert>
 
-#ifdef USE_MPI
-#include <mpi.h>
-#endif
-
 #include "movegen.h"
 #include "search.h"
 #include "thread.h"
@@ -39,17 +35,6 @@ ThreadPool Threads; // Global object
 /// in idle_loop(). Note that 'searching' and 'exit' should be alredy set.
 
 Thread::Thread(size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
-
-#ifdef USE_MPI
-  for (int i : {0, 1})
-  {
-      ttCache.TTSendRecvBuffs[i].resize(Cluster::TTCacheSize * Cluster::size());
-      std::fill(ttCache.TTSendRecvBuffs[i].begin(), ttCache.TTSendRecvBuffs[i].end(), Cluster::KeyedTTEntry());
-  }
-  ttCache.reqsTTSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
-  ttCache.TTCacheCounter = 0;
-  ttCache.sendRecvPosted = 0;
-#endif
 
   wait_for_search_finished();
 }
