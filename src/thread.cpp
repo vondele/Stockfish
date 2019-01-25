@@ -139,9 +139,6 @@ void ThreadPool::set(size_t requested) {
 
       // Reallocate the hash with the new threadpool size
       TT.resize(Options["Hash"]);
-
-      // Adjust cluster buffers
-      Cluster::ttSendRecvBuff_resize(requested);
   }
 }
 
@@ -195,7 +192,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   for (Thread* th : *this)
   {
-      th->nodes = th->tbHits = th->TTsaves = th->nmpMinPly = 0;
+      th->nodes = th->tbHits = th->TTsaves = th->sendRecvPosted = th->nmpMinPly = 0;
       th->rootDepth = th->completedDepth = DEPTH_ZERO;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);

@@ -23,8 +23,13 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <istream>
 #include <string>
+
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 
 #include "tt.h"
 
@@ -53,34 +58,28 @@ struct MoveInfo {
 
 #ifdef USE_MPI
 
-// store the TTEntry with its full key, so it can be saved on the receiver side
+/// store the TTEntry with its full key, so it can be saved on the receiver side
 using KeyedTTEntry = std::pair<Key, TTEntry>;
-constexpr std::size_t TTCacheSize = 16;
 
-// Threads locally cache their high-depth TT entries till a batch can be send by MPI
-template <std::size_t N> class TTCache : public std::array<KeyedTTEntry, N> {
-
-  struct Compare {
-      inline bool operator()(const KeyedTTEntry& lhs, const KeyedTTEntry& rhs) {
-          return lhs.second.depth() > rhs.second.depth();
-      }
-  };
-  Compare compare;
+/// Threads locally cache their high-depth TT entries till a batch can be send by MPI
+constexpr std::size_t TTCacheSize = 64;
+class ClusterCache
+{
 
 public:
 
-  // Keep a heap of entries replacing low depth with high depth entries
-  bool replace(const KeyedTTEntry& value) {
+   ClusterCache();
+   bool replace(const KeyedTTEntry& value);
+   void handle_buffer(std::atomic<long unsigned int>& sendRecvPosted);
+   void send_recv(std::atomic<uint64_t>& sendRecvPosted);
 
-      if (compare(value, this->front()))
-      {
-          std::pop_heap(this->begin(), this->end(), compare);
-          this->back() = value;
-          std::push_heap(this->begin(), this->end(), compare);
-          return true;
-      }
-      return false;
-  }
+   // Keep a heap of entries replacing low depth with high depth entries
+   std::array<KeyedTTEntry, TTCacheSize> buffer = {};
+   // The TTCacheCounter tracks the number of local elements that are ready to be sent.
+   uint64_t TTCacheCounter;
+   // The receive buffer is used to gather information from all ranks.
+   std::array<std::vector<Cluster::KeyedTTEntry>, 2> TTSendRecvBuffs;
+   std::array<MPI_Request, 2> reqsTTSendRecv;
 };
 
 void init();
@@ -91,16 +90,17 @@ int rank();
 inline bool is_root() { return rank() == 0; }
 void save(Thread* thread, TTEntry* tte, Key k, Value v, bool PvHit, Bound b, Depth d, Move m, Value ev);
 void pick_moves(MoveInfo& mi, std::string& PVLine);
-void ttSendRecvBuff_resize(size_t nThreads);
 uint64_t nodes_searched();
 uint64_t tb_hits();
 uint64_t TT_saves();
 void cluster_info(Depth depth);
 void signals_init();
 void signals_poll();
-void signals_sync();
+void mpi_sync();
 
 #else
+
+class ClusterCache { };
 
 inline void init() { }
 inline void finalize() { }
@@ -110,14 +110,13 @@ constexpr int rank() { return 0; }
 constexpr bool is_root() { return true; }
 inline void save(Thread*, TTEntry* tte, Key k, Value v, bool PvHit, Bound b, Depth d, Move m, Value ev) { tte->save(k, v, PvHit, b, d, m, ev); }
 inline void pick_moves(MoveInfo&, std::string&) { }
-inline void ttSendRecvBuff_resize(size_t) { }
 uint64_t nodes_searched();
 uint64_t tb_hits();
 uint64_t TT_saves();
 inline void cluster_info(Depth) { }
 inline void signals_init() { }
 inline void signals_poll() { }
-inline void signals_sync() { }
+inline void mpi_sync() { }
 
 #endif /* USE_MPI */
 

@@ -241,7 +241,7 @@ void MainThread::search() {
   Threads.stop = true;
 
   // Signal and synchronize all other ranks
-  Cluster::signals_sync();
+  Cluster::mpi_sync();
 
   // Wait until all threads have finished
   for (Thread* th : Threads)
