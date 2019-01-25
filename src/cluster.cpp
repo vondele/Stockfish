@@ -65,7 +65,7 @@ static MPI_Comm MoveComm = MPI_COMM_NULL;
 static MPI_Datatype MIDatatype = MPI_DATATYPE_NULL;
 
 ///
-ClusterInfo::ClusterInfo() {
+ClusterCache::ClusterCache() {
 
   for (int i : {0, 1})
   {
@@ -75,6 +75,21 @@ ClusterInfo::ClusterInfo() {
   reqsTTSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
   TTCacheCounter = sendRecvPosted = 0;
 }
+
+bool ClusterCache::replace(const KeyedTTEntry& value) {
+
+  auto compare = [](const KeyedTTEntry& lhs, const KeyedTTEntry& rhs)
+                   { return lhs.second.depth() > rhs.second.depth(); };
+  if (compare(value, buffer.front()))
+  {
+      std::pop_heap(buffer.begin(), buffer.end(), compare);
+      buffer.back() = value;
+      std::push_heap(buffer.begin(), buffer.end(), compare);
+      return true;
+  }
+  return false;
+}
+
 
 /// Initialize MPI and associated data types. Note that the MPI library must be configured
 /// to support MPI_THREAD_MULTIPLE, since multiple threads access MPI simultaneously.
@@ -314,7 +329,7 @@ void save(Thread* thread, TTEntry* tte,
      thread->TTsaves.fetch_add(1, std::memory_order_relaxed);
 
      // Add to thread's send buffer
-     thread->ttCache.buffer.replace(KeyedTTEntry(k,*tte));
+     thread->ttCache.replace(KeyedTTEntry(k,*tte));
      ++thread->ttCache.TTCacheCounter;
 
      // Try to communicate as soon we have collected sufficient data

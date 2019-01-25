@@ -75,7 +75,7 @@ public:
   ContinuationHistory continuationHistory;
   Score contempt;
 
-  Cluster::ClusterInfo ttCache;
+  Cluster::ClusterCache ttCache;
 
 };
 

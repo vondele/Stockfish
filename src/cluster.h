@@ -57,44 +57,21 @@ struct MoveInfo {
 
 #ifdef USE_MPI
 
-// store the TTEntry with its full key, so it can be saved on the receiver side
+/// store the TTEntry with its full key, so it can be saved on the receiver side
 using KeyedTTEntry = std::pair<Key, TTEntry>;
+
+/// Threads locally cache their high-depth TT entries till a batch can be send by MPI
 constexpr std::size_t TTCacheSize = 16;
-
-// Threads locally cache their high-depth TT entries till a batch can be send by MPI
-template <std::size_t N> class TTCache : public std::array<KeyedTTEntry, N> {
-
-  struct Compare {
-      inline bool operator()(const KeyedTTEntry& lhs, const KeyedTTEntry& rhs) {
-          return lhs.second.depth() > rhs.second.depth();
-      }
-  };
-  Compare compare;
-
-public:
-
-  // Keep a heap of entries replacing low depth with high depth entries
-  bool replace(const KeyedTTEntry& value) {
-
-      if (compare(value, this->front()))
-      {
-          std::pop_heap(this->begin(), this->end(), compare);
-          this->back() = value;
-          std::push_heap(this->begin(), this->end(), compare);
-          return true;
-      }
-      return false;
-  }
-};
-
-class ClusterInfo
+class ClusterCache
 {
 
 public:
 
-   ClusterInfo();
+   ClusterCache();
+   bool replace(const KeyedTTEntry& value);
 
-   TTCache<TTCacheSize> buffer = {};  // TODO remove template argument... this is fixed.
+   // Keep a heap of entries replacing low depth with high depth entries
+   std::array<KeyedTTEntry, TTCacheSize> buffer = {};
    // The receive buffer is used to gather information from all ranks.
    std::array<std::vector<Cluster::KeyedTTEntry>, 2> TTSendRecvBuffs;
    std::array<MPI_Request, 2> reqsTTSendRecv;
@@ -121,9 +98,7 @@ void signals_sync();
 
 #else
 
-class ClusterInfo
-{
-};
+class ClusterCache { };
 
 inline void init() { }
 inline void finalize() { }
