@@ -69,6 +69,7 @@ public:
 
    ClusterCache();
    bool replace(const KeyedTTEntry& value);
+   void send_recv();
 
    // Keep a heap of entries replacing low depth with high depth entries
    std::array<KeyedTTEntry, TTCacheSize> buffer = {};

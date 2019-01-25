@@ -76,8 +76,10 @@ ClusterCache::ClusterCache() {
   TTCacheCounter = sendRecvPosted = 0;
 }
 
+// add an entry to the clusterCache, maintaining the heap structure
 bool ClusterCache::replace(const KeyedTTEntry& value) {
 
+  ++TTCacheCounter;
   auto compare = [](const KeyedTTEntry& lhs, const KeyedTTEntry& rhs)
                    { return lhs.second.depth() > rhs.second.depth(); };
   if (compare(value, buffer.front()))
@@ -90,6 +92,17 @@ bool ClusterCache::replace(const KeyedTTEntry& value) {
   return false;
 }
 
+// sendrecv a ready prepared buffer
+void ClusterCache::send_recv() {
+
+   ++sendRecvPosted;
+   MPI_Irecv(TTSendRecvBuffs[sendRecvPosted       % 2].data(),
+             TTSendRecvBuffs[sendRecvPosted       % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
+             (rank() + size() - 1) % size(), 42, TTComm, &reqsTTSendRecv[0]);
+   MPI_Isend(TTSendRecvBuffs[(sendRecvPosted + 1) % 2].data(),
+             TTSendRecvBuffs[(sendRecvPosted + 1) % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
+             (rank() + 1         ) % size(), 42, TTComm, &reqsTTSendRecv[1]);
+}
 
 /// Initialize MPI and associated data types. Note that the MPI library must be configured
 /// to support MPI_THREAD_MULTIPLE, since multiple threads access MPI simultaneously.
@@ -222,19 +235,6 @@ void signals_process() {
 }
 
 // TODO
-void sendrecv_post(Thread* thread) {
-
-   ++sendRecvPosted;  // TODO needed for final sync only. Duplicates the threadLocal counters.
-   ++thread->ttCache.sendRecvPosted;
-   MPI_Irecv(thread->ttCache.TTSendRecvBuffs[thread->ttCache.sendRecvPosted       % 2].data(),
-             thread->ttCache.TTSendRecvBuffs[thread->ttCache.sendRecvPosted       % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
-             (rank() + size() - 1) % size(), 42, TTComm, &thread->ttCache.reqsTTSendRecv[0]);
-   MPI_Isend(thread->ttCache.TTSendRecvBuffs[(thread->ttCache.sendRecvPosted + 1) % 2].data(),
-             thread->ttCache.TTSendRecvBuffs[(thread->ttCache.sendRecvPosted + 1) % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
-             (rank() + 1         ) % size(), 42, TTComm, &thread->ttCache.reqsTTSendRecv[1]);
-}
-
-// TODO
 void sendrecv_sync(Thread * thread) {
 
   // TODO ... need to figure out how to properly finalize sendRecvs..
@@ -330,7 +330,6 @@ void save(Thread* thread, TTEntry* tte,
 
      // Add to thread's send buffer
      thread->ttCache.replace(KeyedTTEntry(k,*tte));
-     ++thread->ttCache.TTCacheCounter;
 
      // Try to communicate as soon we have collected sufficient data
      if (thread->ttCache.TTCacheCounter >= TTCacheSize)
@@ -369,7 +368,8 @@ void save(Thread* thread, TTEntry* tte,
              }
 
              // Start next communication
-             sendrecv_post(thread);
+             ++sendRecvPosted;  // TODO needed for final sync only. Duplicates the threadLocal counters.
+             thread->ttCache.send_recv();
 
 	     // Force check of time on the next occasion, the above actions might have taken some time.
              if (thread == Threads.main())
