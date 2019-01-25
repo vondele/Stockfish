@@ -92,8 +92,34 @@ bool ClusterCache::replace(const KeyedTTEntry& value) {
   return false;
 }
 
-// sendrecv a ready prepared buffer
-void ClusterCache::send_recv() {
+// handle a finished communication and a full TTCache.
+void ClusterCache::handle_buffer() {
+
+   // Save all received entries to TT, and store our TTCaches, ready for the next round of communication
+   for (size_t irank = 0; irank < size_t(size()) ; ++irank)
+   {
+       if (irank == size_t(rank())) // this is our part, fill the part of the buffer for sending
+       {
+          // Copy from the thread caches to the right spot in the buffer
+          size_t i = irank * TTCacheSize;
+          for (auto&& e : buffer)
+               TTSendRecvBuffs[sendRecvPosted % 2][i++] = e;
+
+          // Reset buffer
+          buffer = {};
+          TTCacheCounter = 0;
+       }
+       else // process data received from the corresponding rank.
+          for (size_t i = irank * TTCacheSize; i < (irank + 1) * TTCacheSize; ++i)
+          {
+              auto&& e = TTSendRecvBuffs[sendRecvPosted % 2][i];
+              bool found;
+              TTEntry* replace_tte;
+              replace_tte = TT.probe(e.first, found);
+              replace_tte->save(e.first, e.second.value(), e.second.pv_hit(), e.second.bound(), e.second.depth(),
+                                e.second.move(), e.second.eval());
+          }
+   }
 
    ++sendRecvPosted;
    MPI_Irecv(TTSendRecvBuffs[sendRecvPosted       % 2].data(),
@@ -341,35 +367,8 @@ void save(Thread* thread, TTEntry* tte,
          // Current communication is complete
          if (flag)
          {
-             // Save all received entries to TT, and store our TTCaches, ready for the next round of communication
-             for (size_t irank = 0; irank < size_t(size()) ; ++irank)
-             {
-                 if (irank == size_t(rank())) // this is our part, fill the part of the buffer for sending
-                 {
-                    // Copy from the thread caches to the right spot in the buffer
-                    size_t i = irank * TTCacheSize;
-                    for (auto&& e : thread->ttCache.buffer)
-                         thread->ttCache.TTSendRecvBuffs[thread->ttCache.sendRecvPosted % 2][i++] = e;
-
-                     // Reset thread's send buffer
-                    thread->ttCache.buffer = {};
-	            thread->ttCache.TTCacheCounter = 0;
-                 }
-                 else // process data received from the corresponding rank.
-                    for (size_t i = irank * TTCacheSize; i < (irank + 1) * TTCacheSize; ++i)
-                    {
-                        auto&& e = thread->ttCache.TTSendRecvBuffs[thread->ttCache.sendRecvPosted % 2][i];
-                        bool found;
-                        TTEntry* replace_tte;
-                        replace_tte = TT.probe(e.first, found);
-                        replace_tte->save(e.first, e.second.value(), e.second.pv_hit(), e.second.bound(), e.second.depth(),
-                                          e.second.move(), e.second.eval());
-                    }
-             }
-
-             // Start next communication
+             thread->ttCache.handle_buffer();
              ++sendRecvPosted;  // TODO needed for final sync only. Duplicates the threadLocal counters.
-             thread->ttCache.send_recv();
 
 	     // Force check of time on the next occasion, the above actions might have taken some time.
              if (thread == Threads.main())
