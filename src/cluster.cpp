@@ -303,6 +303,7 @@ void signals_sync() {
 void signals_init() {
 
   stopSignalsPosted = tbHitsOthers = TTsavesOthers = nodesSearchedOthers = 0;
+  signalsCallCounter = sendRecvPosted = 0;
 
   signalsSend[SIG_NODES] = signalsRecv[SIG_NODES] = 0;
   signalsSend[SIG_TB] = signalsRecv[SIG_TB] = 0;
