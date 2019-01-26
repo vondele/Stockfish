@@ -61,7 +61,7 @@ struct MoveInfo {
 using KeyedTTEntry = std::pair<Key, TTEntry>;
 
 /// Threads locally cache their high-depth TT entries till a batch can be send by MPI
-constexpr std::size_t TTCacheSize = 16;
+constexpr std::size_t TTCacheSize = 64;
 class ClusterCache
 {
 
