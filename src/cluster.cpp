@@ -120,6 +120,12 @@ void ClusterCache::handle_buffer(std::atomic<uint64_t>& sendRecvPosted) {
           }
    }
 
+   send_recv(sendRecvPosted);
+}
+
+// initiate a sendrecv iteration
+void ClusterCache::send_recv(std::atomic<uint64_t>& sendRecvPosted) {
+
    ++sendRecvPosted;
    MPI_Irecv(TTSendRecvBuffs[sendRecvPosted       % 2].data(),
              TTSendRecvBuffs[sendRecvPosted       % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
@@ -259,26 +265,9 @@ void signals_process() {
       Threads.stop = true;
 }
 
-// TODO
-void sendrecv_sync(Thread * thread) {
-
-  // TODO ... need to figure out how to properly finalize sendRecvs..
-
-  // Finalize outstanding messages in the sendRecv loop
-  // MPI_Allreduce(&sendRecvPosted, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
-  // while (sendRecvPosted < globalCounter)
-  // {
-  //     MPI_Waitall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
-  //     sendrecv_post();
-  // }
-  // assert(sendRecvPosted == globalCounter);
-  // MPI_Waitall(reqsTTSendRecv.size(), reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
-
-}
-
 /// During search, most message passing is asynchronous, but at the end of
 /// search it makes sense to bring them to a common, finalized state.
-void signals_sync() {
+void mpi_sync() {
 
   while(stopSignalsPosted < uint64_t(size()))
       signals_poll();
@@ -295,6 +284,25 @@ void signals_sync() {
   assert(signalsCallCounter == globalCounter);
   MPI_Wait(&reqSignals, MPI_STATUS_IGNORE);
   signals_process();
+
+  // Wait until all threads but main have finished
+  for (Thread* th : Threads)
+      if (th != Threads.main())
+          th->wait_for_search_finished();
+
+
+  // Finalize outstanding messages in the sendRecv loop
+  uint64_t sendRecvPosted = Threads.send_recvs();
+  MPI_Allreduce(&sendRecvPosted, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
+  while (Threads.send_recvs() < globalCounter)
+  {
+      MPI_Waitall(Threads.main()->ttCache.reqsTTSendRecv.size(),
+                  Threads.main()->ttCache.reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
+      Threads.main()->ttCache.send_recv(Threads.main()->sendRecvPosted);
+  }
+  assert(Threads.send_recvs() == globalCounter);
+  for (Thread* th : Threads)
+      MPI_Waitall(th->ttCache.reqsTTSendRecv.size(), th->ttCache.reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
 
 }
 

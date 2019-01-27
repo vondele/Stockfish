@@ -71,6 +71,7 @@ public:
    ClusterCache();
    bool replace(const KeyedTTEntry& value);
    void handle_buffer(std::atomic<long unsigned int>& sendRecvPosted);
+   void send_recv(std::atomic<uint64_t>& sendRecvPosted);
 
    // Keep a heap of entries replacing low depth with high depth entries
    std::array<KeyedTTEntry, TTCacheSize> buffer = {};
@@ -95,7 +96,7 @@ uint64_t TT_saves();
 void cluster_info(Depth depth);
 void signals_init();
 void signals_poll();
-void signals_sync();
+void mpi_sync();
 
 #else
 
@@ -115,7 +116,7 @@ uint64_t TT_saves();
 inline void cluster_info(Depth) { }
 inline void signals_init() { }
 inline void signals_poll() { }
-inline void signals_sync() { }
+inline void mpi_sync() { }
 
 #endif /* USE_MPI */
 
