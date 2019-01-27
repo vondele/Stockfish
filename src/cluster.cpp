@@ -58,7 +58,7 @@ static MPI_Comm InputComm = MPI_COMM_NULL;
 
 // TT entries are communicated with a dedicated communicator.
 MPI_Comm TTComm = MPI_COMM_NULL;
-std::atomic<uint64_t> sendRecvPosted = {};
+std::atomic<uint64_t> sendRecvPostedAll = {};
 
 // bestMove requires MoveInfo communicators and data types
 static MPI_Comm MoveComm = MPI_COMM_NULL;
@@ -303,7 +303,7 @@ void signals_sync() {
 void signals_init() {
 
   stopSignalsPosted = tbHitsOthers = TTsavesOthers = nodesSearchedOthers = 0;
-  signalsCallCounter = sendRecvPosted = 0;
+  signalsCallCounter = sendRecvPostedAll = 0;
 
   signalsSend[SIG_NODES] = signalsRecv[SIG_NODES] = 0;
   signalsSend[SIG_TB] = signalsRecv[SIG_TB] = 0;
@@ -334,7 +334,7 @@ void cluster_info(Depth depth) {
 
   sync_cout << "info depth " << depth / ONE_PLY << " cluster "
             << " signals " << signalsCallCounter << " sps " << signalsCallCounter * 1000 / elapsed
-            << " sendRecvs " << sendRecvPosted << " srpps " <<  TTCacheSize * size() * sendRecvPosted * 1000 / elapsed
+            << " sendRecvs " << sendRecvPostedAll << " srpps " <<  TTCacheSize * size() * sendRecvPostedAll * 1000 / elapsed
             << " TTSaves " << TTSaves << " TTSavesps " << TTSaves * 1000 / elapsed
             << sync_endl;
 }
@@ -369,7 +369,7 @@ void save(Thread* thread, TTEntry* tte,
          if (flag)
          {
              thread->ttCache.handle_buffer();
-             ++sendRecvPosted;  // TODO needed for final sync only. Duplicates the threadLocal counters.
+             ++sendRecvPostedAll;  // TODO needed for final sync only. Duplicates the threadLocal counters.
 
 	     // Force check of time on the next occasion, the above actions might have taken some time.
              if (thread == Threads.main())
