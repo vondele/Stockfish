@@ -58,7 +58,6 @@ static MPI_Comm InputComm = MPI_COMM_NULL;
 
 // TT entries are communicated with a dedicated communicator.
 MPI_Comm TTComm = MPI_COMM_NULL;
-std::atomic<uint64_t> sendRecvPostedAll = {};
 
 // bestMove requires MoveInfo communicators and data types
 static MPI_Comm MoveComm = MPI_COMM_NULL;
@@ -73,7 +72,7 @@ ClusterCache::ClusterCache() {
       std::fill(TTSendRecvBuffs[i].begin(), TTSendRecvBuffs[i].end(), KeyedTTEntry());
   }
   reqsTTSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
-  TTCacheCounter = sendRecvPosted = 0;
+  TTCacheCounter = 0;
 }
 
 // add an entry to the clusterCache, maintaining the heap structure
@@ -93,7 +92,7 @@ bool ClusterCache::replace(const KeyedTTEntry& value) {
 }
 
 // handle a finished communication and a full TTCache.
-void ClusterCache::handle_buffer() {
+void ClusterCache::handle_buffer(std::atomic<uint64_t>& sendRecvPosted) {
 
    // Save all received entries to TT, and store our TTCaches, ready for the next round of communication
    for (size_t irank = 0; irank < size_t(size()) ; ++irank)
@@ -303,7 +302,7 @@ void signals_sync() {
 void signals_init() {
 
   stopSignalsPosted = tbHitsOthers = TTsavesOthers = nodesSearchedOthers = 0;
-  signalsCallCounter = sendRecvPostedAll = 0;
+  signalsCallCounter = 0;
 
   signalsSend[SIG_NODES] = signalsRecv[SIG_NODES] = 0;
   signalsSend[SIG_TB] = signalsRecv[SIG_TB] = 0;
@@ -331,10 +330,11 @@ void cluster_info(Depth depth) {
 
   TimePoint elapsed = Time.elapsed() + 1;
   uint64_t TTSaves = TT_saves();
+  uint64_t sendRecvPosted = Threads.send_recvs();
 
   sync_cout << "info depth " << depth / ONE_PLY << " cluster "
             << " signals " << signalsCallCounter << " sps " << signalsCallCounter * 1000 / elapsed
-            << " sendRecvs " << sendRecvPostedAll << " srpps " <<  TTCacheSize * size() * sendRecvPostedAll * 1000 / elapsed
+            << " sendRecvs " << sendRecvPosted << " srpps " <<  TTCacheSize * size() * sendRecvPosted * 1000 / elapsed
             << " TTSaves " << TTSaves << " TTSavesps " << TTSaves * 1000 / elapsed
             << sync_endl;
 }
@@ -368,8 +368,7 @@ void save(Thread* thread, TTEntry* tte,
          // Current communication is complete
          if (flag)
          {
-             thread->ttCache.handle_buffer();
-             ++sendRecvPostedAll;  // TODO needed for final sync only. Duplicates the threadLocal counters.
+             thread->ttCache.handle_buffer(thread->sendRecvPosted);
 
 	     // Force check of time on the next occasion, the above actions might have taken some time.
              if (thread == Threads.main())

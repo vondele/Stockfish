@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <istream>
 #include <string>
 
@@ -69,16 +70,15 @@ public:
 
    ClusterCache();
    bool replace(const KeyedTTEntry& value);
-   void handle_buffer();
+   void handle_buffer(std::atomic<long unsigned int>& sendRecvPosted);
 
    // Keep a heap of entries replacing low depth with high depth entries
    std::array<KeyedTTEntry, TTCacheSize> buffer = {};
+   // The TTCacheCounter tracks the number of local elements that are ready to be sent.
+   uint64_t TTCacheCounter;
    // The receive buffer is used to gather information from all ranks.
    std::array<std::vector<Cluster::KeyedTTEntry>, 2> TTSendRecvBuffs;
    std::array<MPI_Request, 2> reqsTTSendRecv;
-   // The TTCacheCounter tracks the number of local elements that are ready to be sent.
-   uint64_t TTCacheCounter;
-   uint64_t sendRecvPosted;
 };
 
 void init();
