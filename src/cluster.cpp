@@ -41,23 +41,20 @@ static int world_size = 0;
 
 // Signals between ranks exchange basic info using a dedicated communicator
 static MPI_Comm signalsComm = MPI_COMM_NULL;
-static MPI_Request reqSignals = MPI_REQUEST_NULL;
 static uint64_t signalsCallCounter = 0;
 
 // Signals are the number of nodes searched, stop, table base hits, transposition table saves
-enum Signals : int { SIG_NODES = 0, SIG_STOP = 1, SIG_TB = 2, SIG_TTS = 3, SIG_NB = 4};
-static uint64_t signalsSend[SIG_NB] = {};
-static uint64_t signalsRecv[SIG_NB] = {};
-static uint64_t nodesSearchedOthers = 0;
-static uint64_t tbHitsOthers = 0;
-static uint64_t TTsavesOthers = 0;
-static uint64_t stopSignalsPosted = 0;
+enum Signals : int { SIG_STOP = 0, SIG_NODES = 1, SIG_TB = 2, SIG_TTS = 3, SIG_NB = 4};
+std::array<uint64_t, SIG_NB> sigOthers;
+std::array<std::array<uint64_t, SIG_NB>, 2> sigSendRecvBuffs;
+std::array<MPI_Request, 2> reqsSigSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
+std::vector<std::array<uint64_t, SIG_NB>> sigSendHistory;
 
 // The UCI threads of each rank exchange use a dedicated communicator
 static MPI_Comm InputComm = MPI_COMM_NULL;
 
 // TT entries are communicated with a dedicated communicator.
-MPI_Comm TTComm = MPI_COMM_NULL;
+static MPI_Comm TTComm = MPI_COMM_NULL;
 
 // bestMove requires MoveInfo communicators and data types
 static MPI_Comm MoveComm = MPI_COMM_NULL;
@@ -151,6 +148,8 @@ void init() {
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+  sigSendHistory.resize(world_size);
+
   const std::array<MPI_Aint, 5> MIdisps = {offsetof(MoveInfo, move),
                                            offsetof(MoveInfo, ponder),
                                            offsetof(MoveInfo, depth),
@@ -237,59 +236,95 @@ bool getline(std::istream& input, std::string& str) {
   return state;
 }
 
-/// Sending part of the signal communication loop
-void signals_send() {
+/// Initialize signal counters to zero.
+void signals_init() {
 
-  signalsSend[SIG_NODES] = Threads.nodes_searched();
-  signalsSend[SIG_TB] = Threads.tb_hits();
-  signalsSend[SIG_TTS] = Threads.TT_saves();
-  signalsSend[SIG_STOP] = Threads.stop;
-  MPI_Iallreduce(signalsSend, signalsRecv, SIG_NB, MPI_UINT64_T,
-                 MPI_SUM, signalsComm, &reqSignals);
-  ++signalsCallCounter;
+  signalsCallCounter = 0;
+  std::fill(sigSendHistory.begin(), sigSendHistory.end(), std::array<uint64_t, SIG_NB>());
+  sigOthers = {};
+  sigSendRecvBuffs = {};
 }
 
-/// Processing part of the signal communication loop.
+/// Processing part of the signal communication loop (message has arrived).
 /// For some counters (e.g. nodes) we only keep their sum on the other nodes
 /// allowing to add local counters at any time for more fine grained process,
 /// which is useful to indicate progress during early iterations, and to have
 /// node counts that exactly match the non-MPI code in the single rank case.
 /// This call also propagates the stop signal between ranks.
-void signals_process() {
+void signals_process(bool shouldWait) {
 
-  nodesSearchedOthers = signalsRecv[SIG_NODES] - signalsSend[SIG_NODES];
-  tbHitsOthers = signalsRecv[SIG_TB] - signalsSend[SIG_TB];
-  TTsavesOthers = signalsRecv[SIG_TTS] - signalsSend[SIG_TTS];
-  stopSignalsPosted = signalsRecv[SIG_STOP];
-  if (signalsRecv[SIG_STOP] > 0)
+  if (shouldWait)
+      MPI_Waitall(reqsSigSendRecv.size(), reqsSigSendRecv.data(), MPI_STATUSES_IGNORE);
+
+  std::array<uint64_t, SIG_NB> sigLocal = {uint64_t(Threads.stop), Threads.nodes_searched(), Threads.tb_hits(), Threads.TT_saves()};
+  for(int i = 0; i < SIG_NB; ++i)
+  {
+      sigSendRecvBuffs[signalsCallCounter % 2][i] -= sigSendHistory[signalsCallCounter % size()][i]; // remove what we had added
+      sigOthers[i] = sigSendRecvBuffs[signalsCallCounter % 2][i]; // copy what we received from others
+      sigSendHistory[signalsCallCounter % size()][i] = sigLocal[i];
+      sigSendRecvBuffs[signalsCallCounter % 2][i] += sigSendHistory[signalsCallCounter % size()][i]; // add new Info
+  }
+  if (sigOthers[SIG_STOP] > 0)
       Threads.stop = true;
+}
+
+/// Sending part of the signal communication loop
+void signals_send() {
+
+   ++signalsCallCounter;
+   MPI_Irecv(sigSendRecvBuffs[signalsCallCounter       % 2].data(),
+             sigSendRecvBuffs[signalsCallCounter       % 2].size(), MPI_UINT64_T,
+             (rank() + size() - 1) % size(), 43, signalsComm, &reqsSigSendRecv[0]);
+   MPI_Isend(sigSendRecvBuffs[(signalsCallCounter + 1) % 2].data(),
+             sigSendRecvBuffs[(signalsCallCounter + 1) % 2].size(), MPI_UINT64_T,
+             (rank() + 1         ) % size(), 43, signalsComm, &reqsSigSendRecv[1]);
+}
+
+/// Poll the signal loop, and start next round as needed.
+void signals_poll() {
+
+  int flag;
+  MPI_Testall(reqsSigSendRecv.size(), reqsSigSendRecv.data(), &flag, MPI_STATUSES_IGNORE);
+  if (flag)
+  {
+     signals_process(false);
+     signals_send();
+  }
 }
 
 /// During search, most message passing is asynchronous, but at the end of
 /// search it makes sense to bring them to a common, finalized state.
 void mpi_sync() {
 
-  while(stopSignalsPosted < uint64_t(size()))
-      signals_poll();
+  // stop threads on all ranks.
+  while(sigOthers[SIG_STOP] + 1 < uint64_t(size()))
+    signals_poll();
+
+  // signal that the polling loop can stop
+  MPI_Request req;
+  MPI_Ibarrier(MoveComm, &req);
+  int flag = 0;
+  while(!flag)
+  {
+    MPI_Test(&req, &flag, MPI_STATUS_IGNORE);
+    signals_poll();
+  }
 
   // Finalize outstanding messages of the signal loops.
   // We might have issued one call less than needed on some ranks.
   uint64_t globalCounter;
   MPI_Allreduce(&signalsCallCounter, &globalCounter, 1, MPI_UINT64_T, MPI_MAX, MoveComm);
-  if (signalsCallCounter < globalCounter)
+  while (signalsCallCounter < globalCounter)
   {
-      MPI_Wait(&reqSignals, MPI_STATUS_IGNORE);
+      signals_process(true);
       signals_send();
   }
-  assert(signalsCallCounter == globalCounter);
-  MPI_Wait(&reqSignals, MPI_STATUS_IGNORE);
-  signals_process();
+  signals_process(true);
 
   // Wait until all threads but main have finished
   for (Thread* th : Threads)
       if (th != Threads.main())
           th->wait_for_search_finished();
-
 
   // Finalize outstanding messages in the sendRecv loop
   uint64_t sendRecvPosted = Threads.send_recvs();
@@ -300,35 +335,8 @@ void mpi_sync() {
                   Threads.main()->ttCache.reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
       Threads.main()->ttCache.send_recv(Threads.main()->sendRecvPosted);
   }
-  assert(Threads.send_recvs() == globalCounter);
   for (Thread* th : Threads)
       MPI_Waitall(th->ttCache.reqsTTSendRecv.size(), th->ttCache.reqsTTSendRecv.data(), MPI_STATUSES_IGNORE);
-
-}
-
-/// Initialize signal counters to zero.
-void signals_init() {
-
-  stopSignalsPosted = tbHitsOthers = TTsavesOthers = nodesSearchedOthers = 0;
-  signalsCallCounter = 0;
-
-  signalsSend[SIG_NODES] = signalsRecv[SIG_NODES] = 0;
-  signalsSend[SIG_TB] = signalsRecv[SIG_TB] = 0;
-  signalsSend[SIG_TTS] = signalsRecv[SIG_TTS] = 0;
-  signalsSend[SIG_STOP] = signalsRecv[SIG_STOP] = 0;
-
-}
-
-/// Poll the signal loop, and start next round as needed.
-void signals_poll() {
-
-  int flag;
-  MPI_Test(&reqSignals, &flag, MPI_STATUS_IGNORE);
-  if (flag)
-  {
-     signals_process();
-     signals_send();
-  }
 }
 
 /// Provide basic info related the cluster performance, in particular, the number of signals send,
@@ -450,19 +458,19 @@ void pick_moves(MoveInfo& mi, std::string& PVLine) {
 /// Return nodes searched (lazily updated cluster wide in the signal loop)
 uint64_t nodes_searched() {
 
-  return nodesSearchedOthers + Threads.nodes_searched();
+  return sigOthers[SIG_NODES] + Threads.nodes_searched();
 }
 
 /// Return table base hits (lazily updated cluster wide in the signal loop)
 uint64_t tb_hits() {
 
-  return tbHitsOthers + Threads.tb_hits();
+  return sigOthers[SIG_TB] + Threads.tb_hits();
 }
 
 /// Return the number of saves to the TT buffers, (lazily updated cluster wide in the signal loop)
 uint64_t TT_saves() {
 
-  return TTsavesOthers + Threads.TT_saves();
+  return sigOthers[SIG_TTS] + Threads.TT_saves();
 }
 
 
