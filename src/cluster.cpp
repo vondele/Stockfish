@@ -70,6 +70,7 @@ ClusterCache::ClusterCache() {
   }
   reqsTTSendRecv = {MPI_REQUEST_NULL, MPI_REQUEST_NULL};
   TTCacheCounter = 0;
+  TTCacheCounterTarget = TTCacheSize;
 }
 
 // add an entry to the clusterCache, maintaining the heap structure
@@ -375,7 +376,7 @@ void save(Thread* thread, TTEntry* tte,
      thread->ttCache.replace(KeyedTTEntry(k,*tte));
 
      // Try to communicate as soon we have collected sufficient data
-     if (thread->ttCache.TTCacheCounter >= TTCacheSize)
+     if (thread->ttCache.TTCacheCounter >= thread->ttCache.TTCacheCounterTarget)
      {
          // Test communication status
          int flag;
@@ -385,12 +386,14 @@ void save(Thread* thread, TTEntry* tte,
          if (flag)
          {
              thread->ttCache.handle_buffer(thread->sendRecvPosted);
+             thread->ttCache.TTCacheCounterTarget = TTCacheSize;
 
 	     // Force check of time on the next occasion, the above actions might have taken some time.
              if (thread == Threads.main())
                  static_cast<MainThread*>(thread)->callsCnt = 0;
 
-         }
+         } else
+             thread->ttCache.TTCacheCounterTarget += thread->ttCache.TTCacheCounterTarget / 8;
      }
   }
 }

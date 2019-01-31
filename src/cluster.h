@@ -76,7 +76,7 @@ public:
    // Keep a heap of entries replacing low depth with high depth entries
    std::array<KeyedTTEntry, TTCacheSize> buffer = {};
    // The TTCacheCounter tracks the number of local elements that are ready to be sent.
-   uint64_t TTCacheCounter;
+   uint64_t TTCacheCounter, TTCacheCounterTarget;
    // The receive buffer is used to gather information from all ranks.
    std::array<std::vector<Cluster::KeyedTTEntry>, 2> TTSendRecvBuffs;
    std::array<MPI_Request, 2> reqsTTSendRecv;
