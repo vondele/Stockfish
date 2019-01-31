@@ -27,6 +27,7 @@
 #include <istream>
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "cluster.h"
 #include "thread.h"
@@ -34,6 +35,10 @@
 #include "timeman.h"
 
 namespace Cluster {
+
+// Guard some of the MPI ops with a mutex... shouldn't be needed,
+// but some MPI implemntations are not bug free..
+Mutex MPImutex;
 
 // Total number of ranks and rank within the communicator
 static int world_rank = MPI_PROC_NULL;
@@ -123,7 +128,7 @@ void ClusterCache::handle_buffer(std::atomic<uint64_t>& sendRecvPosted) {
 
 // initiate a sendrecv iteration
 void ClusterCache::send_recv(std::atomic<uint64_t>& sendRecvPosted) {
-
+   std::lock_guard<Mutex> lk(MPImutex);
    ++sendRecvPosted;
    MPI_Irecv(TTSendRecvBuffs[sendRecvPosted       % 2].data(),
              TTSendRecvBuffs[sendRecvPosted       % 2].size() * sizeof(KeyedTTEntry), MPI_BYTE,
@@ -271,7 +276,7 @@ void signals_process(bool shouldWait) {
 
 /// Sending part of the signal communication loop
 void signals_send() {
-
+   std::lock_guard<Mutex> lk(MPImutex);
    ++signalsCallCounter;
    MPI_Irecv(sigSendRecvBuffs[signalsCallCounter       % 2].data(),
              sigSendRecvBuffs[signalsCallCounter       % 2].size(), MPI_UINT64_T,
