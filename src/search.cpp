@@ -864,7 +864,8 @@ namespace {
         else
         {
            move = ttMove;
-           if (   move != MOVE_NONE
+           if (   depth >= 2 * ONE_PLY
+               && move != MOVE_NONE
                && move != excludedMove
                && pos.pseudo_legal(move)
                && pos.capture(move)
