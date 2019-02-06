@@ -830,8 +830,9 @@ namespace {
         &&  depth >= 5 * ONE_PLY
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
-        Value raisedBeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
+        Value raisedBeta;
+        Value raisedBeta0 = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
+        MovePicker mp(pos, ttMove, raisedBeta0 - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
@@ -839,6 +840,11 @@ namespace {
             if (move != excludedMove && pos.legal(move))
             {
                 probCutCount++;
+
+                if (move == ttMove)
+                    raisedBeta = raisedBeta0 - 48;
+                else
+                    raisedBeta = raisedBeta0;
 
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
