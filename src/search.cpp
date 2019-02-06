@@ -865,8 +865,9 @@ namespace {
         {
            move = ttMove;
            if (   move != MOVE_NONE
-               && pos.capture_or_promotion(move)
                && move != excludedMove
+               && pos.pseudo_legal(move)
+               && pos.capture(move)
                && pos.legal(move))
            {
                ss->currentMove = move;
