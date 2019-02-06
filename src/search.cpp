@@ -831,34 +831,56 @@ namespace {
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value raisedBeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
-        int probCutCount = 0;
+        if (depth >= 5 * ONE_PLY)
+        {
+            MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
+            int probCutCount = 0;
 
-        while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3)
-            if (move != excludedMove && pos.legal(move))
-            {
-                probCutCount++;
+            while (  (move = mp.next_move()) != MOVE_NONE
+                   && probCutCount < 3)
+                if (move != excludedMove && pos.legal(move))
+                {
+                    probCutCount++;
 
-                ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
+                    ss->currentMove = move;
+                    ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
 
-                assert(depth >= 5 * ONE_PLY);
+                    assert(depth >= 5 * ONE_PLY);
 
-                pos.do_move(move, st);
+                    pos.do_move(move, st);
 
-                // Perform a preliminary qsearch to verify that the move holds
-                value = -qsearch<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1);
+                    // Perform a preliminary qsearch to verify that the move holds
+                    value = -qsearch<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1);
 
-                // If the qsearch held perform the regular search
-                if (value >= raisedBeta)
-                    value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - 4 * ONE_PLY, !cutNode);
+                    // If the qsearch held perform the regular search
+                    if (value >= raisedBeta)
+                        value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - 4 * ONE_PLY, !cutNode);
 
-                pos.undo_move(move);
+                    pos.undo_move(move);
 
-                if (value >= raisedBeta)
-                    return value;
-            }
+                    if (value >= raisedBeta)
+                        return value;
+                }
+        }
+        else
+        {
+           move = ttMove;
+           if (   move != MOVE_NONE
+               && pos.capture_or_promotion(move)
+               && move != excludedMove
+               && pos.legal(move))
+           {
+               ss->currentMove = move;
+               ss->continuationHistory = &thisThread->continuationHistory[pos.moved_piece(move)][to_sq(move)];
+
+               pos.do_move(move, st);
+               value = -qsearch<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1);
+               pos.undo_move(move);
+
+               if (value >= raisedBeta)
+                   return value;
+           }
+        }
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)
