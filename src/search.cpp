@@ -1041,10 +1041,6 @@ moves_loop: // When in check, search starts from here
 
           if (!captureOrPromotion)
           {
-              // Increase reduction if ttMove is a capture (~0 Elo)
-              if (ttCapture)
-                  r += ONE_PLY;
-
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
                   r += 2 * ONE_PLY;
@@ -1070,7 +1066,7 @@ moves_loop: // When in check, search starts from here
                   r += ONE_PLY;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-              r -= ss->statScore / 20000 * ONE_PLY;
+              r -= ss->statScore / (60000 * ttCapture + 20000) * ONE_PLY;
           }
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
