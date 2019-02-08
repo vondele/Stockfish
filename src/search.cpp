@@ -881,7 +881,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
 
     skipQuiets = false;
-    ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    ttCapture = ttMove && pos.capture_or_promotion(ttMove) && PieceValue[MG][pos.piece_on(to_sq(ttMove))] >= PieceValue[MG][pos.piece_on(from_sq(ttMove))] ;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
