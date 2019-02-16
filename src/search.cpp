@@ -960,9 +960,13 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       else if (   pos.advanced_pawn_push(move)
-               && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB)) && (SquareBB[to_sq(move)] & (FileABB | FileBBB)))
-                   || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & (FileGBB | FileHBB)))))
+               && !pos.capture(move)
+               && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB)) && (SquareBB[to_sq(move)] & FileABB))
+                   || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & FileHBB))))
+      {
           extension = ONE_PLY;
+          // std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
+      }
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
