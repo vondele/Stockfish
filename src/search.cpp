@@ -959,15 +959,6 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
-      else if (   pos.advanced_pawn_push(move)
-               && !pos.capture(move)
-               && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB)) && (SquareBB[to_sq(move)] & FileABB))
-                   || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & FileHBB))))
-      {
-          extension = ONE_PLY;
-          // std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
-      }
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1024,6 +1015,13 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
+      bool pawnToKing =    depth >= 3 * ONE_PLY
+                        && !captureOrPromotion
+                        && pos.advanced_pawn_push(move)
+                        && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB)) && (SquareBB[to_sq(move)] & FileABB))
+                            || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & FileHBB)));
+      // if (pawnToKing)
+      //     std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1048,6 +1046,9 @@ moves_loop: // When in check, search starts from here
           {
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
+                  r += ONE_PLY;
+
+              if (pawnToKing)
                   r += ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
