@@ -1018,10 +1018,10 @@ moves_loop: // When in check, search starts from here
       bool pawnToKing =     type_of(movedPiece) == PAWN
                         && (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)])
                         && (SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB | FileCBB | FileGBB | FileHBB))
-                        && relative_rank(us, to_sq(move)) > RANK_4
+                        && relative_rank(us, to_sq(move)) > RANK_5
                         && distance<File>(to_sq(move), pos.square<KING>(~us)) <= 1;
-//      if (pawnToKing)
-//         std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
+      // if (pawnToKing)
+      //    std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
