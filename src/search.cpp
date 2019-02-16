@@ -1015,6 +1015,7 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
+      bool pawnToKing = pos.advanced_pawn_push(move) && (distance<File>(to_sq(move), pos.square<KING>(~us)) <= 1);
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1040,6 +1041,9 @@ moves_loop: // When in check, search starts from here
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r += ONE_PLY;
+
+              if (pawnToKing)
+                  r -= ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
