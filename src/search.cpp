@@ -1015,7 +1015,7 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
-      bool pawnToKing = pos.advanced_pawn_push(move) && (distance<File>(to_sq(move), pos.square<KING>(~us)) <= 1);
+      bool pawnToKing = type_of(movedPiece) == PAWN && (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)]) && (distance<File>(to_sq(move), pos.square<KING>(~us)) <= 1);
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
