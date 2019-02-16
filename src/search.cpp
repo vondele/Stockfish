@@ -1015,7 +1015,13 @@ moves_loop: // When in check, search starts from here
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
-      bool pawnToKing = type_of(movedPiece) == PAWN && (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)]) && (distance<File>(to_sq(move), pos.square<KING>(~us)) <= 1);
+      bool pawnToKing =     type_of(movedPiece) == PAWN
+                        && (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)])
+                        && (SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB | FileCBB | FileGBB | FileHBB))
+                        && relative_rank(us, to_sq(move)) > RANK_4
+                        && distance<File>(to_sq(move), pos.square<KING>(~us)) <= 1;
+//      if (pawnToKing)
+//         std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
