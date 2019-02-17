@@ -1018,8 +1018,8 @@ moves_loop: // When in check, search starts from here
       bool pawnToKing =    depth >= 3 * ONE_PLY
                         && !captureOrPromotion
                         && pos.advanced_pawn_push(move)
-                        && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB)) && (SquareBB[to_sq(move)] & FileABB))
-                            || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & FileHBB)));
+                        && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB | FileCBB)) && (SquareBB[to_sq(move)] & (FileABB | FileBBB | FileCBB)))
+                            || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & (FileHBB | FileGBB))));
       // if (pawnToKing)
       //     std::cout << pos << std::endl << UCI::move(move, false) << std::endl;
 
