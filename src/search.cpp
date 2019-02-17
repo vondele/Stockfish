@@ -1018,6 +1018,7 @@ moves_loop: // When in check, search starts from here
       bool pawnToKing =    depth >= 3 * ONE_PLY
                         && !captureOrPromotion
                         && type_of(movedPiece) == PAWN
+                        && relative_rank(us, to_sq(move)) > RANK_5
                         && (pos.pieces(~us, PAWN) & PawnAttacks[us][to_sq(move)])
                         && (   ((SquareBB[pos.square<KING>(~us)] & (FileABB | FileBBB | FileCBB)) && (SquareBB[to_sq(move)] & (FileABB | FileBBB | FileCBB)))
                             || ((SquareBB[pos.square<KING>(~us)] & (FileGBB | FileHBB)) && (SquareBB[to_sq(move)] & (FileHBB | FileGBB))));
