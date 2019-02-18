@@ -1071,9 +1071,11 @@ moves_loop: // When in check, search starts from here
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
-          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
+          Value redAlpha = alpha - (d != newDepth ? Value(2) : Value(0));
 
-          doFullDepthSearch = (value > alpha && d != newDepth);
+          value = -search<NonPV>(pos, ss+1, -(redAlpha+1), -redAlpha, d, true);
+
+          doFullDepthSearch = (value > redAlpha && d != newDepth);
       }
       else
           doFullDepthSearch = !PvNode || moveCount > 1;
