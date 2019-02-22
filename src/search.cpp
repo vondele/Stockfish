@@ -774,7 +774,7 @@ namespace {
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 23200
         &&  eval >= beta
-        && (pureStaticEval >= beta - 36 * depth / ONE_PLY + 225 || pos.rule50_count() > 20)
+        && pureStaticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
@@ -969,7 +969,8 @@ moves_loop: // When in check, search starts from here
       {
           if (   !captureOrPromotion
               && !givesCheck
-              && !pos.advanced_pawn_push(move))
+              && !pos.advanced_pawn_push(move)
+              && !(pos.rule50_count() > 20 && type_of(movedPiece) == PAWN))
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
