@@ -497,7 +497,7 @@ void Thread::search() {
           fallingEval        = std::max(0.5, std::min(1.5, fallingEval));
 
           // If the bestMove is stable, reduce time accordingly
-          timeReduction = std::min(1.8, 1.0 + 0.05 * double(completedDepth - lastBestMoveDepth));
+          timeReduction = std::min(2.0, 1.0 + 0.05 * double(completedDepth - lastBestMoveDepth));
 
           // Use part of the gained time from a previous stable move for the current move
           double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
