@@ -970,7 +970,7 @@ moves_loop: // When in check, search starts from here
           if (   !captureOrPromotion
               && !givesCheck
               && !pos.advanced_pawn_push(move)
-              && !(pos.rule50_count() > 20 && type_of(movedPiece) == PAWN))
+              && !(pos.rule50_count() > 20 && type_of(movedPiece) == PAWN) && ss->staticEval > 0)
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
