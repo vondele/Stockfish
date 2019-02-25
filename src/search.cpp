@@ -969,6 +969,7 @@ moves_loop: // When in check, search starts from here
       {
           if (   !captureOrPromotion
               && !givesCheck
+	      && !inCheck
               && !pos.advanced_pawn_push(move))
           {
               // Move count based pruning (~30 Elo)
