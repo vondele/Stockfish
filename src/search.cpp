@@ -913,10 +913,6 @@ moves_loop: // When in check, search starts from here
       movedPiece = pos.moved_piece(move);
       givesCheck = gives_check(pos, move);
 
-      // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-      moveCountPruning = depth < 16 * ONE_PLY
-                      && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY]
-                      && bestValue > VALUE_MATED_IN_MAX_PLY;
 
       // Step 13. Extensions (~70 Elo)
 
@@ -968,6 +964,10 @@ moves_loop: // When in check, search starts from here
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
+          // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
+          moveCountPruning =    depth < 16 * ONE_PLY
+                             && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+
           if (   !captureOrPromotion
               && !givesCheck
               && !pos.advanced_pawn_push(move))
