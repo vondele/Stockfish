@@ -873,7 +873,7 @@ namespace {
 
 /// evaluate tempo
 Value Eval::tempo(const Position& pos) {
-  Value t = std::max(Value(0), Value(29) * (32 - pos.rule50_count()) / 32);
+  Value t = pos.rule50_count() < 16 ? Value(28) : Value(14);
   return t;
 }
 
