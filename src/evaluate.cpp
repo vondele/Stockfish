@@ -866,11 +866,16 @@ namespace {
     }
 
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + std::max(Value(0), Eval::Tempo * (32 - pos.rule50_count()) / 32);
+           + Eval::tempo(pos);
   }
 
 } // namespace
 
+/// evaluate tempo
+Value Eval::tempo(const Position& pos) {
+  Value t = std::max(Value(0), Value(29) * (32 - pos.rule50_count()) / 32);
+  return t;
+}
 
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
