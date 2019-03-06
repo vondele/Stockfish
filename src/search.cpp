@@ -24,6 +24,7 @@
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 #include "evaluate.h"
 #include "misc.h"
@@ -814,10 +815,10 @@ namespace {
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value raisedBeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
+        std::unique_ptr<MovePicker> mp(new MovePicker(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory));
         int probCutCount = 0;
 
-        while (  (move = mp.next_move()) != MOVE_NONE
+        while (  (move = mp->next_move()) != MOVE_NONE
                && probCutCount < 2 + 2 * cutNode)
             if (move != excludedMove && pos.legal(move))
             {
@@ -862,11 +863,11 @@ moves_loop: // When in check, search starts from here
                                           nullptr, (ss-6)->continuationHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
+    std::unique_ptr<MovePicker> mp(new MovePicker(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers));
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
 
     moveCountPruning = false;
@@ -874,7 +875,7 @@ moves_loop: // When in check, search starts from here
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
+    while ((move = mp->next_move(moveCountPruning)) != MOVE_NONE)
     {
       assert(is_ok(move));
 
@@ -1317,13 +1318,13 @@ moves_loop: // When in check, search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
+    std::unique_ptr<MovePicker> mp(new MovePicker(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
-                                      to_sq((ss-1)->currentMove));
+                                      to_sq((ss-1)->currentMove)));
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
-    while ((move = mp.next_move()) != MOVE_NONE)
+    while ((move = mp->next_move()) != MOVE_NONE)
     {
       assert(is_ok(move));
 
