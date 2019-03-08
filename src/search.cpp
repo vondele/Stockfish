@@ -872,6 +872,11 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
+    bool logicalLine =    (ss-1)->moveCount == 1
+                       && (ss-2)->moveCount == 1
+                       && (ss-3)->moveCount == 1
+                       && (ss-4)->moveCount == 1;
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -943,6 +948,9 @@ moves_loop: // When in check, search starts from here
 
       // Castling extension
       else if (type_of(move) == CASTLING)
+          extension = ONE_PLY;
+
+      if (logicalLine)
           extension = ONE_PLY;
 
       // Calculate new depth for this move
