@@ -875,7 +875,9 @@ moves_loop: // When in check, search starts from here
     bool logicalLine =    (ss-1)->moveCount == 1
                        && (ss-2)->moveCount == 1
                        && (ss-3)->moveCount == 1
-                       && (ss-4)->moveCount == 1;
+                       && (ss-4)->moveCount == 1
+                       && (ss-5)->moveCount == 1
+                       && (ss-6)->moveCount == 1;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -951,7 +953,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       if (logicalLine)
-          extension = DEPTH_ZERO;
+          extension = ONE_PLY;
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
