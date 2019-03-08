@@ -953,7 +953,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       if (logicalLine)
-          extension = ONE_PLY;
+          extension = DEPTH_ZERO;
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
