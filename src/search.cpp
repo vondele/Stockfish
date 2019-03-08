@@ -872,12 +872,11 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
-    bool logicalLine =    (ss-1)->moveCount == 1
+    bool logicalLine =    depth >= 3 * ONE_PLY
+                       && (ss-1)->moveCount == 1
                        && (ss-2)->moveCount == 1
                        && (ss-3)->moveCount == 1
-                       && (ss-4)->moveCount == 1
-                       && (ss-5)->moveCount == 1
-                       && (ss-6)->moveCount == 1;
+                       && (ss-4)->moveCount == 1;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -952,9 +951,6 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
-      if (logicalLine)
-          extension = DEPTH_ZERO;
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1025,6 +1021,9 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
+              r -= ONE_PLY;
+
+          if (logicalLine)
               r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
