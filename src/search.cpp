@@ -873,6 +873,7 @@ moves_loop: // When in check, search starts from here
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     bool logicalLine =    depth >= 3 * ONE_PLY
+	               && depth <= 10 * ONE_PLY
                        && (ss-1)->moveCount == 1
                        && (ss-2)->moveCount == 1
                        && (ss-3)->moveCount == 1
@@ -1024,7 +1025,7 @@ moves_loop: // When in check, search starts from here
               r -= ONE_PLY;
 
           if (logicalLine)
-              r += ONE_PLY;
+              r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
