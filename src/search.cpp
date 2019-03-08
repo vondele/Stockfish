@@ -875,9 +875,7 @@ moves_loop: // When in check, search starts from here
     bool illogicalLine =   depth >= 3 * ONE_PLY
                        && (ss-1)->moveCount != 1
                        && (ss-2)->moveCount != 1
-                       && (ss-3)->moveCount != 1
-                       && (ss-4)->moveCount != 1
-                       && (ss-5)->moveCount != 1;
+                       && (ss-3)->moveCount != 1;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
