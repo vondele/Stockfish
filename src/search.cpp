@@ -872,8 +872,7 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
-    bool logicalLine =    depth >= 3 * ONE_PLY
-	               && depth <= 10 * ONE_PLY
+    bool logicalLine =    depth >= 7 * ONE_PLY
                        && (ss-1)->moveCount == 1
                        && (ss-2)->moveCount == 1
                        && (ss-3)->moveCount == 1
