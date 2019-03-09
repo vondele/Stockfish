@@ -74,8 +74,8 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[64]; // [depth or moveNumber]
 
-  template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(mn, 63)] / 1024;
+  template <bool PvNode> Depth reduction(bool i, Depth d, int mn, Value npm) {
+    int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(npm > MidgameLimit / 2 ? 1 + mn * 6 / 8 : mn, 63)] / 1024;
     return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
   }
 
@@ -966,7 +966,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
+              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount, pos.non_pawn_material(us)), DEPTH_ZERO) / ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 3 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
@@ -1012,7 +1012,7 @@ moves_loop: // When in check, search starts from here
           &&  moveCount > 1
           && (!captureOrPromotion || moveCountPruning))
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount);
+          Depth r = reduction<PvNode>(improving, depth, moveCount, pos.non_pawn_material(us));
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
