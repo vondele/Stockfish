@@ -954,7 +954,7 @@ moves_loop: // When in check, search starts from here
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
-          if (   !captureOrPromotion
+          if (   (!captureOrPromotion || moveCountPruning)
               && !givesCheck
               && !pos.advanced_pawn_push(move))
           {
