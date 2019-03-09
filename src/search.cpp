@@ -75,7 +75,7 @@ namespace {
   int Reductions[64]; // [depth or moveNumber]
 
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn, Value npm) {
-    int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(npm > MidgameLimit / 2 ? 1 + mn * 6 / 8 : mn, 63)] / 1024;
+    int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(npm < MidgameLimit / 2 ? 1 + mn * 6 / 8 : mn, 63)] / 1024;
     return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
   }
 
