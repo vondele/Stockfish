@@ -872,10 +872,10 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
-    bool illogicalLine =   depth >= 3 * ONE_PLY
-                       && (ss-1)->moveCount != 1
-                       && (ss-2)->moveCount != 1
-                       && (ss-3)->moveCount != 1;
+    bool logicalLine =     depth >= 5 * ONE_PLY
+                       && (ss-1)->moveCount == 1
+                       && (ss-2)->moveCount == 1
+                       && (ss-3)->moveCount == 1;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1022,7 +1022,7 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= ONE_PLY;
 
-          if (illogicalLine)
+          if (logicalLine)
               r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
