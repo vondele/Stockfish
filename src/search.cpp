@@ -944,6 +944,15 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
+      if (   (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
+          && depth >= 8 * ONE_PLY
+          && move == ttMove
+          && tte->depth() >= depth - 3 * ONE_PLY
+          && !givesCheck
+          && !captureOrPromotion
+          && pos.game_ply() < 40)
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
