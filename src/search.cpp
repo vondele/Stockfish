@@ -1020,11 +1020,11 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          if (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
-              r -= ONE_PLY;
-
           if (!captureOrPromotion)
           {
+              if (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
+                  r -= ONE_PLY;
+
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r += ONE_PLY;
