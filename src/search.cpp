@@ -944,15 +944,6 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
-      if (   (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
-          && depth >= 8 * ONE_PLY
-          && move == ttMove
-          && tte->depth() >= depth - 3 * ONE_PLY
-          && !givesCheck
-          && !captureOrPromotion
-          && pos.game_ply() < 40)
-          extension = ONE_PLY;
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1027,6 +1018,11 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
+              r -= ONE_PLY;
+
+          if (   (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
+              && !(type_of(pos.moved_piece(ttMove)) == ROOK || type_of(pos.moved_piece(ttMove)) == QUEEN)
+              && pos.game_ply() < 60)
               r -= ONE_PLY;
 
           if (!captureOrPromotion)
