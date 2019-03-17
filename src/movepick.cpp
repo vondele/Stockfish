@@ -120,7 +120,7 @@ void MovePicker::score() {
       else if (Type == QUIETS)
           m.value = quietScore(m);
       else if (pos.capture(m))   // Type == EVASIONS
-          m.value = captScore(m) - (!pos.see_ge(m)) * (1 << 29);
+          m.value = captScore(m) - ((*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))] < -8192) * (1 << 29);
       else
           m.value = quietScore(m) - (1 << 28);
 }
