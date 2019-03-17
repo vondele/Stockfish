@@ -1020,16 +1020,16 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          if (   (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
-              && !(type_of(pos.moved_piece(ttMove)) == ROOK || type_of(pos.moved_piece(ttMove)) == QUEEN)
-              && pos.game_ply() < 60)
-              r -= ONE_PLY;
-
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r += ONE_PLY;
+
+              if (   (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
+                  && quietCount < 4
+                  && pos.game_ply() > 20)
+                  r -= ONE_PLY;
 
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
