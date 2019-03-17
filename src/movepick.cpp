@@ -122,7 +122,7 @@ void MovePicker::score() {
       else if (pos.capture(m))   // Type == EVASIONS
           m.value = captScore(m);
       else
-          m.value = quietScore(m) - (1 << 15);
+          m.value = quietScore(m) - (1 << 14);
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
