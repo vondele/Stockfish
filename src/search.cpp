@@ -1021,7 +1021,7 @@ moves_loop: // When in check, search starts from here
               r -= ONE_PLY;
 
           if (   (type_of(movedPiece) == ROOK || type_of(movedPiece) == QUEEN)
-              && moveCount < 8
+              && ttPv
               && pos.game_ply() < 80)
               r -= ONE_PLY;
 
