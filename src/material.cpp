@@ -108,7 +108,7 @@ namespace {
 
     // cubic pawn difference bonus.
     int pawnDiff = pieceCount[Us][PAWN] - pieceCount[Them][PAWN];
-    bonus -= 64 * pawnDiff * pawnDiff * pawnDiff;
+    bonus += 64 * pawnDiff * pawnDiff * pawnDiff;
 
     return bonus;
   }
