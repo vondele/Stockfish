@@ -67,12 +67,17 @@ public:
 
   Position rootPos;
   Search::RootMoves rootMoves;
-  Depth rootDepth, completedDepth;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory;
   Score contempt;
+
+  double bestMoveChanges, previousTimeReduction;
+  Value previousScore, bestScore;
+  Depth completedDepth;
+  Move bestMove;
+  bool stopOnPonderhit;
 };
 
 
@@ -85,11 +90,7 @@ struct MainThread : public Thread {
   void search() override;
   void check_time();
 
-  double bestMoveChanges, previousTimeReduction;
-  Value previousScore;
   int callsCnt;
-  bool stopOnPonderhit;
-  std::atomic_bool ponder;
 };
 
 
@@ -107,7 +108,7 @@ struct ThreadPool : public std::vector<Thread*> {
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
 
-  std::atomic_bool stop;
+  std::atomic_bool stop, ponder;
 
 private:
   StateListPtr setupStates;

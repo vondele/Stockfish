@@ -65,6 +65,8 @@ void Thread::clear() {
           h->fill(0);
 
   continuationHistory[NO_PIECE][0]->fill(Search::CounterMovePruneThreshold - 1);
+  previousScore = VALUE_INFINITE;
+  previousTimeReduction = 1.0;
 }
 
 /// Thread::start_searching() wakes up the thread that will start the search
@@ -149,8 +151,6 @@ void ThreadPool::clear() {
       th->clear();
 
   main()->callsCnt = 0;
-  main()->previousScore = VALUE_INFINITE;
-  main()->previousTimeReduction = 1.0;
 }
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
@@ -161,8 +161,8 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   main()->wait_for_search_finished();
 
-  main()->stopOnPonderhit = stop = false;
-  main()->ponder = ponderMode;
+  stop = false;
+  ponder = ponderMode;
   Search::Limits = limits;
   Search::RootMoves rootMoves;
 
@@ -190,8 +190,11 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   for (Thread* th : *this)
   {
+      th->stopOnPonderhit = false;
       th->nodes = th->tbHits = th->nmpMinPly = 0;
-      th->rootDepth = th->completedDepth = DEPTH_ZERO;
+      th->completedDepth = DEPTH_ZERO;
+      th->bestMove = MOVE_NONE;
+      th->bestScore = VALUE_NONE;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);
   }

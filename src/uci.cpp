@@ -216,7 +216,7 @@ void UCI::loop(int argc, char* argv[]) {
       // user has played. We should continue searching but switch from pondering to
       // normal search.
       else if (token == "ponderhit")
-          Threads.main()->ponder = false; // Switch to normal search
+          Threads.ponder = false; // Switch to normal search
 
       else if (token == "uci")
           sync_cout << "id name " << engine_info(true)

@@ -113,6 +113,9 @@ namespace {
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietCount, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCount, int bonus);
+  Thread* find_best_thread(Thread* thisThread, Move m, Value s, Depth d);
+
+  Mutex bestThreadMutex;
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -164,7 +167,6 @@ void Search::clear() {
   Tablebases::init(Options["SyzygyPath"]); // Free mapped files
 }
 
-
 /// MainThread::search() is started when the program receives the UCI 'go'
 /// command. It searches from the root position and outputs the "bestmove".
 
@@ -203,7 +205,7 @@ void MainThread::search() {
   // GUI sends a "stop" or "ponderhit" command. We therefore simply wait here
   // until the GUI sends one of those commands.
 
-  while (!Threads.stop && (ponder || Limits.infinite))
+  while (!Threads.stop && (Threads.ponder || Limits.infinite))
   {} // Busy wait for a stop or a ponder reset
 
   // Stop the threads if not already stopped (also raise the stop if
@@ -220,39 +222,12 @@ void MainThread::search() {
   if (Limits.npmsec)
       Time.availableNodes += Limits.inc[us] - Threads.nodes_searched();
 
-  Thread* bestThread = this;
+  Thread* bestThread = find_best_thread(this, rootMoves[0].pv[0], rootMoves[0].score, completedDepth);
 
-  // Check if there are threads with a better score than main thread
-  if (    Options["MultiPV"] == 1
-      && !Limits.depth
-      && !Skill(Options["Skill Level"]).enabled()
-      &&  rootMoves[0].pv[0] != MOVE_NONE)
-  {
-      std::map<Move, int64_t> votes;
-      Value minScore = this->rootMoves[0].score;
-
-      // Find out minimum score and reset votes for moves which can be voted
-      for (Thread* th: Threads)
-          minScore = std::min(minScore, th->rootMoves[0].score);
-
-      // Vote according to score and depth
-      for (Thread* th : Threads)
-      {
-          int64_t s = th->rootMoves[0].score - minScore + 1;
-          votes[th->rootMoves[0].pv[0]] += 200 + s * s * int(th->completedDepth);
-      }
-
-      // Select best thread
-      auto bestVote = votes[this->rootMoves[0].pv[0]];
-      for (Thread* th : Threads)
-          if (votes[th->rootMoves[0].pv[0]] > bestVote)
-          {
-              bestVote = votes[th->rootMoves[0].pv[0]];
-              bestThread = th;
-          }
+  for (Thread* th : Threads) {
+     th->previousTimeReduction = bestThread->previousTimeReduction;
+     th->previousScore = bestThread->previousScore;
   }
-
-  previousScore = bestThread->rootMoves[0].score;
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
@@ -281,7 +256,8 @@ void Thread::search() {
   Move  pv[MAX_PLY+1];
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
-  Depth lastBestMoveDepth = DEPTH_ZERO;
+  Depth rootDepth = DEPTH_ZERO, lastBestMoveDepth = DEPTH_ZERO;
+  Thread* bestThread = nullptr;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
   Color us = rootPos.side_to_move();
@@ -294,8 +270,7 @@ void Thread::search() {
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
 
-  if (mainThread)
-      mainThread->bestMoveChanges = 0;
+  bestMoveChanges = 0;
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
@@ -327,8 +302,7 @@ void Thread::search() {
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
   {
       // Age out PV variability metric
-      if (mainThread)
-          mainThread->bestMoveChanges *= 0.517;
+      bestMoveChanges *= 0.517;
 
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -355,13 +329,13 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 5 * ONE_PLY)
           {
-              Value previousScore = rootMoves[pvIdx].previousScore;
+              Value moveScore = rootMoves[pvIdx].previousScore;
               delta = Value(20);
-              alpha = std::max(previousScore - delta,-VALUE_INFINITE);
-              beta  = std::min(previousScore + delta, VALUE_INFINITE);
+              alpha = std::max(moveScore - delta,-VALUE_INFINITE);
+              beta  = std::min(moveScore + delta, VALUE_INFINITE);
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
-              int dct = ct + 88 * previousScore / (abs(previousScore) + 200);
+              int dct = ct + 88 * moveScore / (abs(moveScore) + 200);
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
@@ -434,11 +408,11 @@ void Thread::search() {
       }
 
       if (!Threads.stop)
-          completedDepth = rootDepth;
+          bestThread = find_best_thread(this, rootMoves[0].pv[0], bestValue, rootDepth);
 
-      if (rootMoves[0].pv[0] != lastBestMove) {
-         lastBestMove = rootMoves[0].pv[0];
-         lastBestMoveDepth = rootDepth;
+      if (lastBestMove != rootMoves[0].pv[0]) {
+          lastBestMove = rootMoves[0].pv[0];
+          lastBestMoveDepth = rootDepth;
       }
 
       // Have we found a "mate in x"?
@@ -447,27 +421,25 @@ void Thread::search() {
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
           Threads.stop = true;
 
-      if (!mainThread)
-          continue;
-
       // If skill level is enabled and time is up, pick a sub-optimal best move
-      if (skill.enabled() && skill.time_to_pick(rootDepth))
+      if (mainThread && skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
 
       // Do we have time for the next iteration? Can we stop searching now?
       if (    Limits.use_time_management()
+          &&  this == bestThread
           && !Threads.stop
-          && !mainThread->stopOnPonderhit)
+          && !bestThread->stopOnPonderhit)
       {
-          double fallingEval = (306 + 9 * (mainThread->previousScore - bestValue)) / 581.0;
+          double fallingEval = (306 + 9 * (previousScore - bestValue)) / 581.0;
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 10 * ONE_PLY < completedDepth ? 1.95 : 1.0;
-          double reduction = std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
+          double reduction = std::pow(previousTimeReduction, 0.528) / timeReduction;
 
           // Use part of the gained time from a previous stable move for the current move
-          double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
+          double bestMoveInstability = 1.0 + bestMoveChanges;
 
           // Stop the search if we have only one legal move, or if available time elapsed
           if (   rootMoves.size() == 1
@@ -475,21 +447,19 @@ void Thread::search() {
           {
               // If we are allowed to ponder do not stop the search now but
               // keep pondering until the GUI sends "ponderhit" or "stop".
-              if (mainThread->ponder)
-                  mainThread->stopOnPonderhit = true;
+              if (Threads.ponder)
+                  stopOnPonderhit = true;
               else
                   Threads.stop = true;
           }
       }
   }
 
-  if (!mainThread)
-      return;
-
-  mainThread->previousTimeReduction = timeReduction;
+  previousTimeReduction = timeReduction;
+  previousScore = rootMoves[0].score;
 
   // If skill level is enabled, swap best PV line with the sub-optimal one
-  if (skill.enabled())
+  if (mainThread && skill.enabled())
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
@@ -1102,8 +1072,8 @@ moves_loop: // When in check, search starts from here
               // We record how often the best move has been changed in each
               // iteration. This information is used for time management: When
               // the best move changes frequently, we allocate some more time.
-              if (moveCount > 1 && thisThread == Threads.main())
-                  ++static_cast<MainThread*>(thisThread)->bestMoveChanges;
+              if (moveCount > 1)
+                  ++thisThread->bestMoveChanges;
           }
           else
               // All other moves but the PV are set to the lowest value: this
@@ -1411,6 +1381,51 @@ moves_loop: // When in check, search starts from here
     return bestValue;
   }
 
+  // find_best_thread()
+  // finds the best Thread, updating bestMove, bestScore and completedDepth of the calling thread under control of a lock.
+
+  Thread* find_best_thread(Thread* thisThread, Move m, Value s, Depth d) {
+
+    std::lock_guard<Mutex> lk(bestThreadMutex);
+
+    // update the information for this thread bestMove.
+    thisThread->bestMove = m;
+    thisThread->bestScore = s;
+    thisThread->completedDepth = d;
+
+    // Check if there are threads with a better score than main thread
+    Thread* bestThread = Threads[0];
+    if (    Options["MultiPV"] == 1
+        && !Limits.depth
+        && !Skill(Options["Skill Level"]).enabled()
+        &&  bestThread->bestMove != MOVE_NONE)
+    {
+        std::map<Move, int64_t> votes;
+
+        // Find out minimum score and reset votes for moves which can be voted
+        Value minScore = bestThread->bestScore;
+        for (Thread* th: Threads)
+            minScore = std::min(minScore, th->bestScore);
+
+        // Vote according to score and depth
+        for (Thread* th : Threads)
+        {
+            int64_t sd = th->bestScore - minScore + 1;
+            votes[th->bestMove] += 200 + sd * sd * int(th->completedDepth);
+        }
+
+        // Select best thread
+        auto bestVote = votes[bestThread->bestMove];
+        for (Thread* th : Threads)
+            if (votes[th->bestMove] > bestVote)
+            {
+                bestVote = votes[th->bestMove];
+                bestThread = th;
+            }
+    }
+
+    return bestThread;
+  }
 
   // value_to_tt() adjusts a mate score from "plies to mate from the root" to
   // "plies to mate from the current position". Non-mate scores are unchanged.
@@ -1568,7 +1583,7 @@ void MainThread::check_time() {
   }
 
   // We should not stop pondering until told so by the GUI
-  if (ponder)
+  if (Threads.ponder)
       return;
 
   if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
