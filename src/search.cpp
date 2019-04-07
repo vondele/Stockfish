@@ -37,6 +37,13 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
+#define CURL_STATICLIB
+extern "C" {
+#include <curl/curl.h>
+}
+#undef min
+#undef max
+
 namespace Search {
 
   LimitsType Limits;
@@ -146,10 +153,34 @@ namespace {
 
 /// Search::init() is called at startup to initialize various lookup tables
 
+CURL *g_cURL;
+std::string g_szRecv;
+size_t cURL_WriteFunc(void *contents, size_t size, size_t nmemb, std::string *s)
+{
+	size_t newLength = size * nmemb;
+	try
+	{
+		s->append((char*)contents, newLength);
+	}
+	catch (std::bad_alloc &e)
+	{
+		//handle memory problem
+		return 0;
+	}
+	return newLength;
+}
+
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int(22.9 * std::log(i));
+
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+  g_cURL = curl_easy_init();
+  curl_easy_setopt(g_cURL, CURLOPT_TIMEOUT, 1L);
+  curl_easy_setopt(g_cURL, CURLOPT_WRITEFUNCTION, cURL_WriteFunc);
+  curl_easy_setopt(g_cURL, CURLOPT_WRITEDATA, &g_szRecv);
+
 }
 
 
@@ -191,14 +222,46 @@ void MainThread::search() {
   }
   else
   {
-      for (Thread* th : Threads)
-      {
-          th->bestMoveChanges = 0;
-          if (th != this)
-              th->start_searching();
-      }
+    Move bookMove = MOVE_NONE;
+    if (!Limits.infinite && !Limits.mate)
+    {
+      CURLcode res;
+      char *szFen = curl_easy_escape(g_cURL, rootPos.fen().c_str(), 0);
+      std::string szURL = "http://www.chessdb.cn/cdb.php?action=querybest&board=";
+      szURL.append(szFen);
+      curl_easy_setopt(g_cURL, CURLOPT_URL, szURL.c_str());
 
-      Thread::search(); // Let's start searching!
+      /* Perform the request, res will get the return code */
+	  g_szRecv.clear();
+      res = curl_easy_perform(g_cURL);
+      /* Check for errors */
+      if (res == CURLE_OK)
+      {
+        g_szRecv.erase(std::find(g_szRecv.begin(), g_szRecv.end(), '\0'), g_szRecv.end());
+        if (g_szRecv.find("move:") >= 0)
+        {
+          bookMove = UCI::to_move(rootPos, g_szRecv.substr(5));
+        }
+      }
+      curl_free(szFen);
+    }
+
+    if (bookMove && std::count(rootMoves.begin(), rootMoves.end(), bookMove))
+    {
+      for (Thread* th : Threads)
+        std::swap(th->rootMoves[0], *std::find(th->rootMoves.begin(), th->rootMoves.end(), bookMove));
+    }
+    else
+    {
+        for (Thread* th : Threads)
+        {
+            th->bestMoveChanges = 0;
+            if (th != this)
+                th->start_searching();
+        }
+
+        Thread::search(); // Let's start searching!
+    }
   }
 
   // When we reach the maximum depth, we can arrive here without a raise of
