@@ -633,9 +633,10 @@ namespace {
                     update_quiet_stats(pos, ss, ttMove, nullptr, 0, stat_bonus(depth));
 
                 // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
-                if (    ((ss-1)->moveCount == 1 || (ss-1)->currentMove == (ss-1)->killers[0])
+                Depth bonusDepth = depth + 2 * ONE_PLY - (ss-1)->moveCount * ONE_PLY;
+                if (    bonusDepth > DEPTH_ZERO
                      && !pos.captured_piece())
-                        update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
+                        update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(bonusDepth));
             }
             // Penalty for a quiet ttMove that fails low
             else if (!pos.capture_or_promotion(ttMove))
