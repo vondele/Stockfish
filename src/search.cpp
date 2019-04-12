@@ -1238,7 +1238,11 @@ moves_loop: // When in check, search starts from here
         ss->pv[0] = MOVE_NONE;
     }
 
+    Thread* thisThread = pos.this_thread();
+    (ss+1)->ply = ss->ply + 1;
+    bestMove = MOVE_NONE;
     inCheck = pos.checkers();
+    moveCount = 0;
 
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
@@ -1307,10 +1311,6 @@ moves_loop: // When in check, search starts from here
         futilityBase = bestValue + 128;
     }
 
-    Thread* thisThread = pos.this_thread();
-    (ss+1)->ply = ss->ply + 1;
-    bestMove = MOVE_NONE;
-    moveCount = 0;
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
                                           nullptr, (ss-4)->continuationHistory,
                                           nullptr, (ss-6)->continuationHistory };
