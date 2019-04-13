@@ -338,6 +338,8 @@ void Thread::search() {
       size_t pvFirst = 0;
       pvLast = 0;
 
+      shuffleLimit = std::min(rootPos.rule50_count() + 2 * std::max(8, rootDepth / ONE_PLY), 99);
+
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
@@ -885,6 +887,13 @@ moves_loop: // When in check, search starts from here
       givesCheck = pos.gives_check(move);
 
       // Step 13. Extensions (~70 Elo)
+
+
+      // Extend narrowly to the 50 moves rule limit, if it is close.
+      if (   PvNode
+          && move == ttMove
+          && pos.rule50_count() > 16)
+          extension = ONE_PLY;
 
       // Singular extension search (~60 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),

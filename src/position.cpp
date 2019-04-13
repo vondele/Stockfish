@@ -1114,7 +1114,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 
 bool Position::is_draw(int ply) const {
 
-  if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size()))
+  if (st->rule50 > thisThread->shuffleLimit && (!checkers() || MoveList<LEGAL>(*this).size()))
       return true;
 
   int end = std::min(st->rule50, st->pliesFromNull);
