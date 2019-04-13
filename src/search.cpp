@@ -928,6 +928,12 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
+      // Extend narrowly to the 50 moves rule limit, if it is close.
+      else if (   PvNode
+               && depth < 3 * ONE_PLY
+               && pos.rule50_count() + 2 * thisThread->rootDepth / ONE_PLY - ss->ply > 99)
+          extension = ONE_PLY;
+
       // Passed pawn extension
       else if (   move == ss->killers[0]
                && pos.advanced_pawn_push(move)
