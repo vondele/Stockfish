@@ -256,6 +256,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
+  previousDepth = bestThread->completedDepth;
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
@@ -338,7 +339,7 @@ void Thread::search() {
       size_t pvFirst = 0;
       pvLast = 0;
 
-      shuffleLimit = clamp(rootPos.rule50_count() + 9 * rootDepth / (8 * ONE_PLY), std::min(99, rootPos.rule50_count() + 9), 99);
+      shuffleLimit = std::min(99, rootPos.rule50_count() + std::max(8, std::max(Threads.main()->previousDepth / ONE_PLY, rootDepth / ONE_PLY)) * 7 / 8);
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)

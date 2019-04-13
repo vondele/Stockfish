@@ -88,6 +88,7 @@ struct MainThread : public Thread {
 
   double previousTimeReduction;
   Value previousScore;
+  Depth previousDepth;
   int callsCnt;
   bool stopOnPonderhit;
   std::atomic_bool ponder;
