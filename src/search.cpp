@@ -338,7 +338,7 @@ void Thread::search() {
       size_t pvFirst = 0;
       pvLast = 0;
 
-      shuffleLimit = clamp(rootPos.rule50_count() + 8 * rootDepth / (8 * ONE_PLY), std::min(99, rootPos.rule50_count() + 9), 99);
+      shuffleLimit = clamp(rootPos.rule50_count() + 9 * rootDepth / (8 * ONE_PLY), std::min(99, rootPos.rule50_count() + 9), 99);
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
