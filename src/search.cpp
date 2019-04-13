@@ -886,6 +886,12 @@ moves_loop: // When in check, search starts from here
 
       // Step 13. Extensions (~70 Elo)
 
+      // Extend narrowly to the 50 moves rule limit, if it is close.
+      if (   PvNode
+          && move == ttMove
+          && pos.rule50_count() + 3 * thisThread->rootDepth / ONE_PLY - ss->ply > 99)
+          extension = ONE_PLY;
+
       // Singular extension search (~60 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
@@ -926,12 +932,6 @@ moves_loop: // When in check, search starts from here
 
       // Castling extension
       else if (type_of(move) == CASTLING)
-          extension = ONE_PLY;
-
-      // Extend narrowly to the 50 moves rule limit, if it is close.
-      else if (   PvNode
-               && depth < 3 * ONE_PLY
-               && pos.rule50_count() + 2 * thisThread->rootDepth / ONE_PLY - ss->ply > 99)
           extension = ONE_PLY;
 
       // Passed pawn extension
