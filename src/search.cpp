@@ -889,7 +889,8 @@ moves_loop: // When in check, search starts from here
       // Extend narrowly to the 50 moves rule limit, if it is close.
       if (   PvNode
           && move == ttMove
-          && pos.rule50_count() + 3 * thisThread->rootDepth / (2 * ONE_PLY) - ss->ply > 99)
+          && pos.rule50_count() > 16
+          && pos.rule50_count() + 3 * thisThread->rootDepth / ONE_PLY - ss->ply > 99)
           extension = ONE_PLY;
 
       // Singular extension search (~60 Elo). If all moves but one fail low on a
