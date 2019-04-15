@@ -602,6 +602,11 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
     tte = TT.probe(posKey, ttHit);
+    if (depth >= 8 * ONE_PLY && (!ttHit || (ttHit && !tte->move())))
+    {
+        search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
+        tte = TT.probe(posKey, ttHit);
+    }
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
@@ -826,16 +831,6 @@ namespace {
     }
 
 moves_loop: // When in check or for PvNodes, search starts from here
-
-    // Step 11. Internal iterative deepening (~2 Elo)
-    if (depth >= 8 * ONE_PLY && !ttMove)
-    {
-        search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
-
-        tte = TT.probe(posKey, ttHit);
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-        ttMove = ttHit ? tte->move() : MOVE_NONE;
-    }
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
                                           nullptr, (ss-4)->continuationHistory,
