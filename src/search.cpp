@@ -800,6 +800,7 @@ namespace {
         &&  ttMove
         &&  ttMove != excludedMove
         &&  pos.capture(ttMove)
+        &&  pos.pseudo_legal(ttMove)
         &&  pos.legal(ttMove)
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
