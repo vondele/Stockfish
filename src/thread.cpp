@@ -19,6 +19,7 @@
 */
 
 #include <cassert>
+#include <cmath>
 
 #include "movegen.h"
 #include "search.h"
@@ -138,6 +139,9 @@ void ThreadPool::set(size_t requested) {
 
       // Reallocate the hash with the new threadpool size
       TT.resize(Options["Hash"]);
+
+      // Adjust reductions with thread number
+      Search::threadLog = int(std::log(requested) / std::log(2.0));
   }
 }
 
