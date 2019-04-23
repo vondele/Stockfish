@@ -141,7 +141,7 @@ void ThreadPool::set(size_t requested) {
       TT.resize(Options["Hash"]);
 
       // Adjust reductions with thread number
-      Search::threadLog = int(std::log(requested) / std::log(3.0));
+      Search::threadLog = int(std::log(requested) / std::log(2.0));
   }
 }
 
