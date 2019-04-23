@@ -99,6 +99,7 @@ struct LimitsType {
 };
 
 extern LimitsType Limits;
+extern int threadLog;
 
 void init();
 void clear();
