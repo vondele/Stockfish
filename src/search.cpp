@@ -71,7 +71,7 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    int r = Reductions[d / ONE_PLY + std::min(threadLog, d / (2 * ONE_PLY))] * Reductions[mn] / 1024;
+    int r = Reductions[std::max(0, d / ONE_PLY - std::min(threadLog, d / (4 * ONE_PLY)))] * Reductions[mn] / 1024;
     return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
   }
 
