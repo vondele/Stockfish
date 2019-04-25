@@ -174,7 +174,7 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(*cur, Value(-cur->value / 8) - pos.rule50_count() * PawnValueMg / 16) ?
+                       return pos.see_ge(*cur, Value(-cur->value / 8) - (pos.rule50_count() / 16) * PawnValueMg) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
