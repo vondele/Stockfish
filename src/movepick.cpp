@@ -115,8 +115,7 @@ void MovePicker::score() {
                    + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2
-                   + ((pos.rule50_count() > 18 && type_of(pos.moved_piece(m)) == PAWN) ? 10692 : 0);
+                   + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2;
 
       else // Type == EVASIONS
       {
@@ -175,7 +174,7 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(*cur, Value(-55 * cur->value / 1024 - (pos.rule50_count() > 18 ? 2 * PawnValueMg : 0))) ?
+                       return pos.see_ge(*cur, Value(-cur->value / 8) - pos.rule50_count() * PawnValueMg / 16) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
