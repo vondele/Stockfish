@@ -927,6 +927,14 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
+      // Shuffle extension
+      else if(pos.rule50_count() > 18
+              && ss->ply > 18
+              && depth < 3 * ONE_PLY
+              && PvNode
+              && ss->ply < 3 * thisThread->rootDepth / ONE_PLY)	           // To avoid infinite loops
+          extension = ONE_PLY;
+
       // Passed pawn extension
       else if (   move == ss->killers[0]
                && pos.advanced_pawn_push(move)
