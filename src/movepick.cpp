@@ -167,7 +167,7 @@ top:
   case QCAPTURE_INIT:
       cur = endBadCaptures = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      captureBonus = -(pos.rule50_count() / 16) * PawnValueMg;
+      captureBonus = -(pos.rule50_count() / 32) * PawnValueMg;
 
       score<CAPTURES>();
       ++stage;
