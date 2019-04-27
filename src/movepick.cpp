@@ -206,7 +206,7 @@ top:
       score<QUIETS>();
       if (pos.rule50_count() > 8 && cur < endMoves)
       {
-          int bonus = pos.rule50_count() * 256;
+          int bonus = pos.rule50_count() * 1024;
           auto less = [&](const ExtMove& a, const ExtMove& b) { return   a.value + bonus * (type_of(pos.moved_piece(a.move)) == PAWN)
                                                                        < b.value + bonus * (type_of(pos.moved_piece(b.move)) == PAWN); };
           std::swap(*cur, *std::max_element(cur, endMoves, less));
