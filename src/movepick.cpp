@@ -204,6 +204,14 @@ top:
       endMoves = generate<QUIETS>(pos, cur);
 
       score<QUIETS>();
+      if (pos.rule50_count() > 8 && cur < endMoves)
+      {
+          int bonus = pos.rule50_count() * 512;
+          auto less = [&](const ExtMove& a, const ExtMove& b) { return   a.value + bonus * (type_of(pos.moved_piece(a.move)) == PAWN)
+                                                                       < b.value + bonus * (type_of(pos.moved_piece(b.move)) == PAWN); };
+          std::swap(*cur, *std::max_element(cur, endMoves, less));
+          cur->value += bonus;
+      }
       partial_insertion_sort(cur, endMoves, -4000 * depth / ONE_PLY);
       ++stage;
       /* fallthrough */
