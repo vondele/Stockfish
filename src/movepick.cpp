@@ -84,10 +84,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), threshold(th) {
+MovePicker::MovePicker(const Position& p, Move ttm, Depth d, Value th, const CapturePieceToHistory* cph)
+           : pos(p), captureHistory(cph), threshold(th), depth(d) {
 
   assert(!pos.checkers());
+  assert(d > DEPTH_ZERO);
 
   stage = PROBCUT_TT;
   ttMove =   ttm
@@ -167,7 +168,7 @@ top:
   case QCAPTURE_INIT:
       cur = endBadCaptures = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      captureBonus = -pos.rule50_count() * PawnValueMg / 64;
+      captureBonus = depth < 8 * ONE_PLY ? -pos.rule50_count() * PawnValueMg / 48 : 0;
 
       score<CAPTURES>();
       ++stage;
