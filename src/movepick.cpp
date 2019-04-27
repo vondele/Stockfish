@@ -167,7 +167,7 @@ top:
   case QCAPTURE_INIT:
       cur = endBadCaptures = moves;
       endMoves = generate<CAPTURES>(pos, cur);
-      needCapture = pos.rule50_count() > 18;
+      captureBonus = pos.rule50_count() > 18 ? -2 * PawnValueMg : 0;
 
       score<CAPTURES>();
       ++stage;
@@ -175,9 +175,9 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(*cur, Value(-55 * cur->value / 1024 - (needCapture ? 2 * PawnValueMg : 0))) ?
+                       return pos.see_ge(*cur, Value(-55 * cur->value / 1024 + captureBonus)) ?
                               // Move losing capture to endBadCaptures to be tried later
-                              (needCapture = false, true) : (*endBadCaptures++ = *cur, false); }))
+                              (captureBonus = 0, true) : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
 
       // Prepare the pointers to loop over the refutations array

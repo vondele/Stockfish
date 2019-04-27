@@ -146,7 +146,7 @@ private:
   Value threshold;
   Depth depth;
   ExtMove moves[MAX_MOVES];
-  bool needCapture;
+  int captureBonus;
 };
 
 #endif // #ifndef MOVEPICK_H_INCLUDED
