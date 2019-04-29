@@ -204,7 +204,7 @@ top:
       endMoves = generate<QUIETS>(pos, cur);
 
       score<QUIETS>();
-      if (pos.rule50_count() > 8 && depth > 3 && cur < endMoves)
+      if (pos.rule50_count() > 8 && depth < 4 && cur < endMoves)
       {
           int bonus = pos.rule50_count() * 1024;
           auto less = [&](const ExtMove& a, const ExtMove& b) { return   a.value + bonus * (type_of(pos.moved_piece(a.move)) == PAWN)
