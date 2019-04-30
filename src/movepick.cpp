@@ -19,8 +19,10 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "movepick.h"
+#include "uci.h"
 
 namespace {
 
@@ -105,6 +107,8 @@ void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
+  bool pawnPush = pos.rule50_count() > 18 && pos.count<PAWN>() > 10;
+
   for (auto& m : *this)
       if (Type == CAPTURES)
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
@@ -116,7 +120,7 @@ void MovePicker::score() {
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2
-		   + ((pos.rule50_count() > 18 && alpha > 0 && type_of(pos.moved_piece(m)) == PAWN) ? 10692 : 0)  ;
+		   + ((pawnPush && type_of(pos.moved_piece(m)) == PAWN) ? 10692 : 0);
 
       else // Type == EVASIONS
       {
