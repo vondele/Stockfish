@@ -107,7 +107,7 @@ void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-  bool pawnPush = pos.rule50_count() > 18 && pos.count<PAWN>() > 10;
+  bool pawnPush = pos.rule50_count() > 18 && pos.count<PAWN>() > 8;
 
   for (auto& m : *this)
       if (Type == CAPTURES)
