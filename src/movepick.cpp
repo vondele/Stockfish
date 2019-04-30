@@ -57,9 +57,9 @@ namespace {
 
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers)
+                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers, Value a)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d) {
+             refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d), alpha(a) {
 
   assert(d > DEPTH_ZERO);
 
@@ -116,7 +116,7 @@ void MovePicker::score() {
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2
-		   + ((pos.rule50_count() > 18 && type_of(pos.moved_piece(m)) == PAWN) ? 10692 : 0)  ;
+		   + ((pos.rule50_count() > 18 && alpha > 0 && type_of(pos.moved_piece(m)) == PAWN) ? 10692 : 0)  ;
 
       else // Type == EVASIONS
       {
