@@ -19,10 +19,8 @@
 */
 
 #include <cassert>
-#include <iostream>
 
 #include "movepick.h"
-#include "uci.h"
 
 namespace {
 
@@ -59,9 +57,9 @@ namespace {
 
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers, Value a)
+                       const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers)
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
-             refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d), alpha(a) {
+             refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d) {
 
   assert(d > DEPTH_ZERO);
 
@@ -107,12 +105,13 @@ void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-  bool pawnPush = pos.rule50_count() > 18 && pos.count<PAWN>() > 8;
+  bool pawnPush = pos.rule50_count() > 18 && pos.count<PAWN>() > 10;
 
   for (auto& m : *this)
       if (Type == CAPTURES)
           m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                   + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))] / 8;
+                   + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))] / 8
+		   + ((pawnPush && type_of(pos.moved_piece(m)) == PAWN) ? 10692 / 4 : 0);
 
       else if (Type == QUIETS)
           m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
