@@ -859,6 +859,7 @@ moves_loop: // When in check, search starts from here
 
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
+    bool firstExtension = true;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
@@ -945,8 +946,9 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       else if (   pos.rule50_count() > 18
+               && firstExtension
                && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
-          extension = ONE_PLY;
+          firstExtension=false, extension = ONE_PLY;
 
       // Passed pawn extension
       else if (   move == ss->killers[0]
