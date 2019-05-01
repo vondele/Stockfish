@@ -944,6 +944,10 @@ moves_loop: // When in check, search starts from here
                && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid infinite loops
           extension = ONE_PLY;
 
+      else if (   pos.rule50_count() > 18
+               && (type_of(pos.moved_piece(move)) == PAWN || pos.capture(move)))
+          extension = ONE_PLY;
+
       // Passed pawn extension
       else if (   move == ss->killers[0]
                && pos.advanced_pawn_push(move)
