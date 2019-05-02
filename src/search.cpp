@@ -589,7 +589,10 @@ namespace {
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
     if (depth > 10 * ONE_PLY)
+    {
        ss->availableMoves = MoveList<LEGAL>(pos).size();
+       // std::cout << "xxx " << ss->availableMoves << std::endl;
+    }
 
 
     // Initialize statScore to zero for the grandchildren of the current position.
@@ -1016,9 +1019,8 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= ONE_PLY;
 
-          if (   depth > 10
-              && ss->ply > 3
-              && (ss-2)->availableMoves - (ss-3)->availableMoves  < ss->availableMoves - (ss-1)->availableMoves)
+          if (   depth > 10 * ONE_PLY
+              && (ss-1)->availableMoves > 35)
               r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
