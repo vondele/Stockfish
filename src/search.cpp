@@ -588,6 +588,9 @@ namespace {
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
+    if (PvNode && depth > 8 * ONE_PLY)
+       ss->availableMoves = MoveList<LEGAL>(pos).size();
+
 
     // Initialize statScore to zero for the grandchildren of the current position.
     // So statScore is shared between all grandchildren and only the first grandchild
@@ -939,6 +942,12 @@ moves_loop: // When in check, search starts from here
       else if (   move == ss->killers[0]
                && pos.advanced_pawn_push(move)
                && pos.pawn_passed(us, to_sq(move)))
+          extension = ONE_PLY;
+
+      else if (   PvNode
+               && ss->ply > 2
+               && depth > 8
+               && (ss-2)->availableMoves + 1 < ss->availableMoves)
           extension = ONE_PLY;
 
       // Calculate new depth for this move
