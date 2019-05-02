@@ -588,7 +588,7 @@ namespace {
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
-    if (PvNode && depth > 8 * ONE_PLY)
+    if (PvNode && depth > 10 * ONE_PLY)
        ss->availableMoves = MoveList<LEGAL>(pos).size();
 
 
