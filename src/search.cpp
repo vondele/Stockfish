@@ -945,6 +945,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       else if (   PvNode
+               && false
                && move == ttMove
                && ss->ply > 3
                && depth > 8
