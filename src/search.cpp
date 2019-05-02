@@ -1021,7 +1021,7 @@ moves_loop: // When in check, search starts from here
 
           if (   depth > 10 * ONE_PLY
               && (ss-1)->availableMoves > 35)
-              r += ONE_PLY;
+              r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
