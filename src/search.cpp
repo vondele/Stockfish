@@ -945,9 +945,9 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
       else if (   PvNode
-               && ss->ply > 2
+               && ss->ply > 3
                && depth > 8
-               && (ss-2)->availableMoves + 1 < ss->availableMoves)
+               && (ss-2)->availableMoves - (ss-3)->availableMoves  < ss->availableMoves - (ss-1)->availableMoves)
           extension = ONE_PLY;
 
       // Calculate new depth for this move
