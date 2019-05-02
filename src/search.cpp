@@ -860,6 +860,8 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    Piece ttPiece = ttMove ? pos.moved_piece(ttMove) : NO_PIECE;
+    Square ttSquare = ttMove ? to_sq(ttMove) : SQ_NONE;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1020,6 +1022,9 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
+              r -= ONE_PLY;
+
+          if (movedPiece == ttPiece && to_sq(move) == ttSquare)
               r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
