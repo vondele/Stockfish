@@ -944,14 +944,6 @@ moves_loop: // When in check, search starts from here
                && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
 
-      else if (   PvNode
-               && false
-               && move == ttMove
-               && ss->ply > 3
-               && depth > 8
-               && (ss-2)->availableMoves - (ss-3)->availableMoves  < ss->availableMoves - (ss-1)->availableMoves)
-          extension = ONE_PLY;
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1022,6 +1014,11 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
+              r -= ONE_PLY;
+
+          if (   depth > 10
+              && ss->ply > 3
+              && (ss-2)->availableMoves - (ss-3)->availableMoves  < ss->availableMoves - (ss-1)->availableMoves)
               r -= ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
