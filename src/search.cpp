@@ -829,7 +829,7 @@ namespace {
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)
-    if (depth >= 8 * ONE_PLY && !ttMove)
+    if (depth >= 8 * ONE_PLY && (!ttMove || tte->depth() < depth - 7 * ONE_PLY))
     {
         search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
 
