@@ -933,7 +933,7 @@ moves_loop: // When in check, search starts from here
 
       // Shuffle extension
       else if (   PvNode
-               && pos.rule50_count() > 18
+               && (pos.rule50_count() > 18 || move == ttMove)
                && depth < 3 * ONE_PLY
                && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid too deep searches
           extension = ONE_PLY;
