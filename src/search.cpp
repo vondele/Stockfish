@@ -1041,7 +1041,7 @@ moves_loop: // When in check, search starts from here
                   r -= 2 * ONE_PLY;
 
               else if (type_of(movedPiece) == PAWN)
-                  r -= 2 * ONE_PLY;
+                  r -= ONE_PLY;
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
