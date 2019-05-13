@@ -1018,7 +1018,8 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2 * ONE_PLY;
 
-          if (!ttHit || tte->depth() < depth - 5 * ONE_PLY)
+          if (   depth >= 5 * ONE_PLY
+	      && (!ttHit || tte->depth() < depth - 5 * ONE_PLY))
               r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
