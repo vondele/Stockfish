@@ -299,7 +299,11 @@ void Thread::search() {
   beta = VALUE_INFINITE;
 
   size_t multiPV = Options["MultiPV"];
-  Skill skill(Options["Skill Level"]);
+  // pick integer skill levels, but allowing finer grained (float) input.
+  PRNG rng(now()); // PRNG sequence should be non-deterministic
+  int intLevel = int(Options["Skill Level"]) +
+        ((Options["Skill Level"] - int(Options["Skill Level"])) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+  Skill skill(intLevel);
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
