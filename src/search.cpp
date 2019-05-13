@@ -302,7 +302,7 @@ void Thread::search() {
   // pick integer skill levels, but allowing finer grained (float) input.
   PRNG rng(now()); // PRNG sequence should be non-deterministic
   int intLevel = int(Options["Skill Level"]) +
-        ((Options["Skill Level"] - int(Options["Skill Level"])) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+        ((Options["Skill Level"] - int(Options["Skill Level"]) + 0.5) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
 
   // When playing with strength handicap enable MultiPV search that we will
