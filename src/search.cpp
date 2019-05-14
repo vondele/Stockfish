@@ -1018,7 +1018,7 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2 * ONE_PLY;
 
-          if (   depth >= 4 * ONE_PLY
+          if (   depth >= 6 * ONE_PLY
 	      && (!ttHit || tte->depth() < depth - 5 * ONE_PLY))
               r += ONE_PLY;
 
