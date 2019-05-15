@@ -851,6 +851,7 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     int singularExtensionLMRmultiplier = 0;
+    int captCount = 0;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -984,8 +985,10 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY + captCount / 4))) // (~20 Elo)
                   continue;
+	  else
+	       captCount++;
       }
 
       // Speculative prefetch as early as possible
