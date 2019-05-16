@@ -260,10 +260,14 @@ void MainThread::search() {
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+  int mpvLine = std::min(1, std::min(int(Options["MultiPV"]), int(bestThread->rootMoves.size())) - 1);
 
+  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[mpvLine].pv[0], rootPos.is_chess960());
+
+  /*
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+  */
 
   std::cout << sync_endl;
 }
