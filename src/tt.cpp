@@ -37,7 +37,7 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 
   assert(d / ONE_PLY * ONE_PLY == d);
 
-  bool sameMove = move16 == (uint16_t)m && (k >> 48) == key16;
+  bool sameMove = m && move16 == (uint16_t)m && (k >> 48) == key16;
 
   // Preserve any existing move for the same position
   if (m || (k >> 48) != key16)
