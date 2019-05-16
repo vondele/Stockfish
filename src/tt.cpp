@@ -37,6 +37,8 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 
   assert(d / ONE_PLY * ONE_PLY == d);
 
+  bool sameMove = move16 == (uint16_t)m && (k >> 48) == key16;
+
   // Preserve any existing move for the same position
   if (m || (k >> 48) != key16)
       move16 = (uint16_t)m;
@@ -50,6 +52,8 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
       value16   = (int16_t)v;
       eval16    = (int16_t)ev;
       genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
+      if (sameMove)
+          d = std::max(d, depth());
       assert((d - DEPTH_NONE) / ONE_PLY >= 0);
       depth8    = (uint8_t)((d - DEPTH_NONE) / ONE_PLY);
   }
