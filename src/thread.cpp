@@ -138,7 +138,8 @@ void ThreadPool::set(size_t requested) {
       clear();
 
       // Reallocate the hash with the new threadpool size
-      TT.resize(Options["Hash"]);
+      for(int i=0;i<TTRep;i++)
+      TT[i].resize(Options["Hash"]);
   }
 }
 
