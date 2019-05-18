@@ -1634,7 +1634,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " nps "      << nodesSearched * 1000 / elapsed;
 
       if (elapsed > 1000) // Earlier makes little sense
-          ss << " hashfull " << TT[pos.this_thread()->pvIdx].hashfull();
+          ss << " hashfull " << TT[0].hashfull();
 
       ss << " tbhits "   << tbHits
          << " time "     << elapsed
@@ -1664,7 +1664,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
         return false;
 
     pos.do_move(pv[0], st);
-    TTEntry* tte = TT[pos.this_thread()->pvIdx].probe(pos.key(), ttHit);
+    TTEntry* tte = TT[0].probe(pos.key(), ttHit);
 
     if (ttHit)
     {
