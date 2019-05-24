@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -742,10 +743,17 @@ namespace {
     bool pawnsOnBothFlanks =   (pos.pieces(PAWN) & QueenSide)
                             && (pos.pieces(PAWN) & KingSide);
 
+    bool intrusion = more_than_one((Rank8BB | Rank7BB | Rank6BB) & pos.pieces(WHITE)) !=
+                     more_than_one((Rank1BB | Rank2BB | Rank3BB) & pos.pieces(BLACK));
+
+    if (intrusion)
+        std::cout << "xxx " << pos.fen() << std::endl;
+
     // Compute the initiative bonus for the attacking side
     int complexity =   9 * pe->passed_count()
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
+                    +  8 * intrusion
                     + 18 * pawnsOnBothFlanks
                     + 49 * !pos.non_pawn_material()
                     -103 ;
