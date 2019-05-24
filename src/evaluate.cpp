@@ -23,7 +23,6 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
-#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -745,9 +744,6 @@ namespace {
 
     bool intrusion = more_than_one((Rank8BB | Rank7BB | Rank6BB) & pos.pieces(WHITE)) !=
                      more_than_one((Rank1BB | Rank2BB | Rank3BB) & pos.pieces(BLACK));
-
-    if (intrusion)
-        std::cout << "xxx " << pos.fen() << std::endl;
 
     // Compute the initiative bonus for the attacking side
     int complexity =   9 * pe->passed_count()
