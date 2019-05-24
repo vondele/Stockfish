@@ -753,7 +753,7 @@ namespace {
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
     // that the endgame score will never change sign after the bonus.
-    int v = ((eg > 0) - (eg < 0)) * std::max(complexity, std::min(0, -abs(eg) + 4));
+    int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg) + int(2 * (pos.this_thread()->nodes.load(std::memory_order_relaxed) & 1) - 1));
 
     if (T)
         Trace::add(INITIATIVE, make_score(0, v));
