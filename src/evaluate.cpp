@@ -756,9 +756,9 @@ namespace {
     int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
     if (T)
-        Trace::add(INITIATIVE, make_score(0, v));
+        Trace::add(INITIATIVE, make_score(v / 4, v));
 
-    return make_score(0, v);
+    return make_score(v / 4, v);
   }
 
 
