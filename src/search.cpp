@@ -869,7 +869,7 @@ moves_loop: // When in check, search starts from here
                                   thisThread->rootMoves.begin() + thisThread->pvLast, move))
           continue;
 
-      ss->moveCount = ++moveCount;
+      ss->moveCount = ++moveCount + 8 * moveCountPruning;
 
       if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
           sync_cout << "info depth " << depth / ONE_PLY
