@@ -111,7 +111,7 @@ namespace {
        for(int i = 0; i < k && found; i++)
        {
            s = a * s + b;
-	   found = found && table[s % FHSize];
+	   found = table[s % FHSize];
        }
        return found;
     }
