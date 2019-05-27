@@ -244,7 +244,7 @@ void MainThread::search() {
       for (Thread* th : Threads)
       {
           votes[th->rootMoves[0].pv[0]] +=
-               (th->rootMoves[0].score - minScore + 10) * int(th->completedDepth);
+               (th->rootMoves[0].score - minScore + 20) * int(th->completedDepth);
 
           if (votes[th->rootMoves[0].pv[0]] > bestVote)
           {
