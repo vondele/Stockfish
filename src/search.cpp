@@ -91,6 +91,42 @@ namespace {
                                : VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
   }
 
+  // store FH moves in a bloom filter (XXX todo threading, capacity management XXX)
+  const size_t FHSize = 32768;
+  class FHT {
+    public:
+    void add(Key key, Move move)
+    {
+       uint64_t s = a * move + key;
+       for(int i = 0; i < k; i++)
+       {
+           s = a * s + b;
+	   table[s % FHSize] = true;
+       }
+    }
+    bool included(Key key, Move move)
+    {
+       bool found = true;
+       uint64_t s = key + a * move;
+       for(int i = 0; i < k && found; i++)
+       {
+           s = a * s + b;
+	   found = found && table[s % FHSize];
+       }
+       return found;
+    }
+    void clear()
+    {
+        table.fill(false);
+    }
+    private:
+    std::array<bool, FHSize> table;
+    static const int k = 4;
+    static const uint64_t a=6364136223846793005UL, b=1442695040888963407UL;
+  };
+
+  FHT fht;
+
   // Skill structure is used to implement strength limit
   struct Skill {
     explicit Skill(int l) : level(l) {}
@@ -181,6 +217,7 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
+  fht.clear();
 
   if (rootMoves.empty())
   {
@@ -1059,6 +1096,9 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 20000 * ONE_PLY;
           }
 
+	  if (PvNode && fht.included(posKey, move))
+              r -= ONE_PLY;
+
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
@@ -1132,6 +1172,8 @@ moves_loop: // When in check, search starts from here
           if (value > alpha)
           {
               bestMove = move;
+	      if (PvNode && depth > 3)
+                  fht.add(posKey, move);
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
