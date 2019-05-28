@@ -937,7 +937,7 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-	  if (fht.included(posKey, move))
+	  if (ss->ply < 12 && fht.included(posKey, move))
 	      extension = ONE_PLY;
 	  else
 	  {
@@ -949,7 +949,8 @@ moves_loop: // When in check, search starts from here
 
               if (value < singularBeta)
               {
-                  fht.add(posKey, move);
+		  if (ss->ply < 12)
+                      fht.add(posKey, move);
                   extension = ONE_PLY;
                   singularExtensionLMRmultiplier++;
                   if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
