@@ -1046,7 +1046,6 @@ moves_loop: // When in check, search starts from here
       // re-searched at full depth.
       if (    depth >= 3 * ONE_PLY
           &&  moveCount > 1 + 3 * rootNode
-	  && !(PvNode && ss->ply < 12 && fht.included(posKey, move))
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
@@ -1096,6 +1095,9 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 20000 * ONE_PLY;
           }
+
+	  if (ss->ply < 12 && fht.included(posKey, move))
+	      r -= ONE_PLY;
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
@@ -1169,9 +1171,10 @@ moves_loop: // When in check, search starts from here
 
           if (value > alpha)
           {
+	      if (ss->ply < 12 && depth > 5 && bestMove != MOVE_NONE)
+                  fht.add(posKey, bestMove);
+
               bestMove = move;
-	      if (PvNode && ss->ply < 12 && depth > 3)
-                  fht.add(posKey, move);
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
