@@ -1097,7 +1097,7 @@ moves_loop: // When in check, search starts from here
           }
 
 	  if (PvNode && ss->ply < 12 && fht.included(posKey, move))
-              r -= ONE_PLY;
+              r += ONE_PLY;
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
