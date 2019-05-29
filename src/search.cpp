@@ -1096,7 +1096,7 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 20000 * ONE_PLY;
           }
 
-	  if (PvNode && fht.included(posKey, move))
+	  if (PvNode && ss->ply < 12 && fht.included(posKey, move))
               r -= ONE_PLY;
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
@@ -1172,7 +1172,7 @@ moves_loop: // When in check, search starts from here
           if (value > alpha)
           {
               bestMove = move;
-	      if (PvNode && depth > 3)
+	      if (PvNode && ss->ply < 12 && depth > 3)
                   fht.add(posKey, move);
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
