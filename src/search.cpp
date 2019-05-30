@@ -945,6 +945,8 @@ moves_loop: // When in check, search starts from here
 
           if (value < singularBeta)
               {
+	      if (PvNode && depth > 5)
+                  fht.add(posKey, move);
               extension = ONE_PLY;
               singularExtensionLMRmultiplier++;
               if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
@@ -1171,9 +1173,6 @@ moves_loop: // When in check, search starts from here
 
           if (value > alpha)
           {
-	      if (PvNode && depth > 5 && bestMove != MOVE_NONE)
-                  fht.add(posKey, bestMove);
-
               bestMove = move;
 
               if (PvNode && !rootNode) // Update pv even in fail-high case
