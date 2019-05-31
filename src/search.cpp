@@ -61,7 +61,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
-  const int singularExtCountPF = 4;
+  const int singularExtCountPF = 1;
 
   // Razor and futility margins
   constexpr int RazorMargin = 600;
