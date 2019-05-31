@@ -583,6 +583,7 @@ namespace {
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
+    ss->singularExtCount = (ss-1)->singularExtCount;
 
     // Initialize statScore to zero for the grandchildren of the current position.
     // So statScore is shared between all grandchildren and only the first grandchild
@@ -1003,6 +1004,7 @@ moves_loop: // When in check, search starts from here
       ss->continuationHistory = &thisThread->continuationHistory[movedPiece][to_sq(move)];
 
       // Step 15. Make the move
+      ss->singularExtCount += (move == ttMove && singularExtensionLMRmultiplier > 0);
       pos.do_move(move, st, givesCheck);
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
@@ -1018,6 +1020,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
               r -= 2 * ONE_PLY;
+
+	  if (ss->singularExtCount > 8)
+              r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
@@ -1085,6 +1090,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 18. Undo move
       pos.undo_move(move);
+      ss->singularExtCount = (ss-1)->singularExtCount;
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1241,6 +1247,7 @@ moves_loop: // When in check, search starts from here
 
     Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
+    ss->singularExtCount = (ss-1)->singularExtCount;
     bestMove = MOVE_NONE;
     inCheck = pos.checkers();
     moveCount = 0;
