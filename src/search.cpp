@@ -61,6 +61,8 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
+  const int singularExtCountPF = 4;
+
   // Razor and futility margins
   constexpr int RazorMargin = 600;
   Value futility_margin(Depth d, bool improving) {
@@ -562,7 +564,7 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-            return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) - 2 * ss->singularExtCount
+            return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) + singularExtCountPF * ss->singularExtCount
                                                     : value_draw(depth, pos.this_thread());
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
@@ -700,7 +702,7 @@ namespace {
         // Never assume anything on values stored in TT
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
-            ss->staticEval = eval = evaluate(pos) - 2 * ss->singularExtCount;
+            ss->staticEval = eval = evaluate(pos) + singularExtCountPF * ss->singularExtCount;
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
@@ -713,7 +715,7 @@ namespace {
         {
             int bonus = -(ss-1)->statScore / 512;
 
-            ss->staticEval = eval = evaluate(pos) - 2 * ss->singularExtCount + bonus;
+            ss->staticEval = eval = evaluate(pos) + singularExtCountPF * ss->singularExtCount + bonus;
         }
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Eval::Tempo;
@@ -1252,7 +1254,7 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) - 2 * ss->singularExtCount : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) + singularExtCountPF * ss->singularExtCount : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1288,7 +1290,7 @@ moves_loop: // When in check, search starts from here
         {
             // Never assume anything on values stored in TT
             if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
-                ss->staticEval = bestValue = evaluate(pos) - 2 * ss->singularExtCount;
+                ss->staticEval = bestValue = evaluate(pos) + singularExtCountPF * ss->singularExtCount;
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
@@ -1297,7 +1299,7 @@ moves_loop: // When in check, search starts from here
         }
         else
             ss->staticEval = bestValue =
-            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos) - 2 * ss->singularExtCount
+            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos) + singularExtCountPF * ss->singularExtCount
                                              : -(ss-1)->staticEval + 2 * Eval::Tempo;
 
         // Stand pat. Return immediately if static value is at least beta
