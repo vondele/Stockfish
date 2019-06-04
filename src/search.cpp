@@ -1021,7 +1021,7 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2 * ONE_PLY;
 
-	  if (ss->singularExtCount > 8)
+	  if (ss->singularExtCount > thisThread->rootDepth / 4)
               r += ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
