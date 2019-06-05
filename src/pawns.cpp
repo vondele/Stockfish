@@ -67,9 +67,9 @@ namespace {
     constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Direction Up   = (Us == WHITE ? NORTH : SOUTH);
     constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
-    constexpr Bitboard SpaceMask =
-      Us == WHITE ? CenterFiles & (Rank2BB | Rank3BB | Rank4BB)
-                  : CenterFiles & (Rank7BB | Rank6BB | Rank5BB);
+    Bitboard SpaceMask =
+      Us == WHITE ? (CenterFiles & (Rank2BB | Rank3BB | Rank4BB)) | square_bb(SQ_B2) | square_bb(SQ_G2)
+                  : (CenterFiles & (Rank7BB | Rank6BB | Rank5BB)) | square_bb(SQ_B7) | square_bb(SQ_G7);
 
     Bitboard b, neighbours, stoppers, doubled, support, phalanx;
     Bitboard lever, leverPush;
