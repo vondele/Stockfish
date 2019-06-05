@@ -75,7 +75,6 @@ namespace {
 
   // Threshold for lazy and space evaluation
   constexpr Value LazyThreshold  = Value(1400);
-  constexpr Value SpaceThreshold = Value(12222);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
@@ -698,9 +697,6 @@ namespace {
 
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::space() const {
-
-    if (pos.non_pawn_material() < SpaceThreshold)
-        return SCORE_ZERO;
 
     int weight = pos.count<ALL_PIECES>(Us) - 1;
     Score score = make_score(pe->space_bonus(Us) * weight * weight / 16, 0);
