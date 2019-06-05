@@ -852,6 +852,9 @@ moves_loop: // When in check, search starts from here
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     int singularExtensionLMRmultiplier = 0;
 
+
+    int KingSafetyBonus = 0;
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -870,6 +873,12 @@ moves_loop: // When in check, search starts from here
           continue;
 
       ss->moveCount = ++moveCount;
+
+      if (moveCount == 3)
+      {
+          Pawns::Entry* pe = Pawns::probe(pos);
+          KingSafetyBonus = (WHITE == ~us ? mg_value(pe->king_safety<WHITE>(pos)) : mg_value(pe->king_safety<BLACK>(pos))) < -100;
+      }
 
       if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
           sync_cout << "info depth " << depth / ONE_PLY
@@ -984,7 +993,7 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY + KingSafetyBonus))) // (~20 Elo)
                   continue;
       }
 
