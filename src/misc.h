@@ -25,7 +25,7 @@
 #include <chrono>
 #include <ostream>
 #include <string>
-#include <vector>
+#include <array>
 
 #include "types.h"
 
@@ -47,12 +47,12 @@ inline TimePoint now() {
         (std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
-template<class Entry, int Size>
+template<class Entry, size_t Size> // Efficient for power of two Size
 struct HashTable {
-  Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
+  Entry* operator[](Key key) { return &table[key % Size]; }
 
 private:
-  std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
+  std::array<Entry, Size> table = {};
 };
 
 
