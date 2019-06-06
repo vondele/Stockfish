@@ -1036,8 +1036,10 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2 * ONE_PLY;
 
-              if (2 * ss->ply > thisThread->rootDepth && popcount(thisThread->rootPosMap ^ pos.pieces()) < 6)
+              if (pos.rule50_count() > 8 && 2 * ss->ply > thisThread->rootDepth && popcount(thisThread->rootPosMap ^ pos.pieces()) < 6)
+              {
                   r += ONE_PLY;
+              }
 
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
