@@ -65,6 +65,7 @@ public:
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
 
   Position rootPos;
+  Bitboard rootPosMap;
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth;
   CounterMoveHistory counterMoves;
