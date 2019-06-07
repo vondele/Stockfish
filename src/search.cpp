@@ -947,6 +947,12 @@ moves_loop: // When in check, search starts from here
                && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
 
+      else if (   pos.rule50_count() > 12
+               && ss->ply > 12
+               && popcount((ss-12)->posPieces ^ ss->posPieces) >
+                  popcount((ss-12)->posPieces ^ ((ss->posPieces | square_bb(to_sq(ttMove))) & ~square_bb(from_sq(ttMove)))))
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1043,12 +1049,6 @@ moves_loop: // When in check, search starts from here
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
                   r -= 2 * ONE_PLY;
-
-              if (   pos.rule50_count() > 12
-                  && ss->ply > 12
-                  && popcount((ss-12)->posPieces ^ ss->posPieces) >
-                     popcount((ss-12)->posPieces ^ ((ss->posPieces | square_bb(to_sq(move))) & ~square_bb(from_sq(move)))))
-                  r -= ONE_PLY;
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
