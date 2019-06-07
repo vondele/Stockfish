@@ -1037,7 +1037,7 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2 * ONE_PLY;
 
-              if (pos.rule50_count() > 8 && ss->ply > 8 && popcount((ss-8)->posPieces ^ ss->posPieces) < 6)
+              if (pos.rule50_count() > 14 && ss->ply > 14 && popcount((ss-14)->posPieces ^ ss->posPieces) < 6)
                   r -= ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
