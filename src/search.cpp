@@ -1046,8 +1046,9 @@ moves_loop: // When in check, search starts from here
 
               if (   pos.rule50_count() > 12
                   && ss->ply > 12
-                  && popcount((ss-12)->posPieces ^ ss->posPieces) < 6)
-                  r -= ONE_PLY;
+                  && popcount((ss-12)->posPieces ^ ss->posPieces) >
+                     popcount((ss-12)->posPieces ^ ((ss->posPieces | square_bb(to_sq(move))) & ~square_bb(from_sq(move)))))
+                  r += ONE_PLY;
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
