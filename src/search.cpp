@@ -1040,8 +1040,7 @@ moves_loop: // When in check, search starts from here
               if (   pos.rule50_count() > 12
                   && ss->ply > 12
                   && popcount((ss-12)->posPieces ^ ss->posPieces) < 6
-                  && ((ss-12)->posPieces & square_bb(from_sq(move)))
-                  && !((ss-12)->posPieces & square_bb(to_sq(move))))
+                  && (((ss-12)->posPieces & square_bb(from_sq(move))) || !((ss-12)->posPieces & square_bb(to_sq(move)))))
                   r -= ONE_PLY;
 
               // Decrease reduction for moves that escape a capture. Filter out
