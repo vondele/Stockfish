@@ -947,12 +947,6 @@ moves_loop: // When in check, search starts from here
                && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
 
-      else if (   pos.rule50_count() > 12
-               && ss->ply > 12
-               && popcount((ss-12)->posPieces ^ ss->posPieces) >
-                  popcount((ss-12)->posPieces ^ ((ss->posPieces | square_bb(to_sq(ttMove))) & ~square_bb(from_sq(ttMove)))))
-          extension = ONE_PLY;
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -991,6 +985,13 @@ moves_loop: // When in check, search starts from here
               // Prune moves with negative SEE (~10 Elo)
               if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
+
+             if (   depth < 4
+                 && ss->ply > 4
+                 && popcount((ss-4)->posPieces ^ ss->posPieces) >
+                    popcount((ss-4)->posPieces ^ ((ss->posPieces | square_bb(to_sq(move))) & ~square_bb(from_sq(move)))))
+                    continue;
+
           }
           else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
