@@ -987,9 +987,9 @@ moves_loop: // When in check, search starts from here
                   continue;
 
              if (   depth < 4
-                 && ss->ply > 4
-                 && popcount((ss-4)->posPieces ^ ss->posPieces) >
-                    popcount((ss-4)->posPieces ^ ((ss->posPieces | square_bb(to_sq(move))) & ~square_bb(from_sq(move)))))
+                 && ss->ply > 6
+                 && popcount((ss-6)->posPieces ^ ss->posPieces) >
+                    popcount((ss-6)->posPieces ^ ((ss->posPieces | square_bb(to_sq(move))) & ~square_bb(from_sq(move)))))
                     continue;
 
           }
