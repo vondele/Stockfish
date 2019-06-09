@@ -31,7 +31,7 @@
 /// value      16 bit
 /// eval value 16 bit
 /// generation  5 bit
-/// pv node     1 bit
+/// unused      1 bit
 /// bound type  2 bit
 /// depth       8 bit
 
@@ -41,9 +41,8 @@ struct TTEntry {
   Value value() const { return (Value)value16; }
   Value eval()  const { return (Value)eval16; }
   Depth depth() const { return (Depth)(depth8 * int(ONE_PLY)) + DEPTH_NONE; }
-  bool is_pv() const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
-  void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
+  void save(Key k, Value v, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
