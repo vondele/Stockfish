@@ -907,7 +907,7 @@ moves_loop: // When in check, search starts from here
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
       if (th.marked())
-	  extension = DEPTH_ZERO;
+	  extension = - ONE_PLY;
       else if (    depth >= 8 * ONE_PLY
           &&  move == ttMove
           && !rootNode
