@@ -102,6 +102,25 @@ namespace {
     Move best = MOVE_NONE;
   };
 
+  // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential extensions.
+  constexpr size_t breadcrumbSize = 1024;
+  std::array<std::atomic<Thread*>, breadcrumbSize> breadcrumbs;
+  struct ThreadHolding {
+    explicit ThreadHolding(Thread* t, std::atomic<Thread*>* l) : thisThread(t), location(l) {
+       owningThread = nullptr;
+       if (location && atomic_compare_exchange_strong(location, &owningThread, thisThread))
+           owningThread = thisThread;
+    }
+    ~ThreadHolding() {
+       if (owningThread == thisThread)
+           *location = nullptr;
+    }
+    bool extend() { return owningThread && owningThread != thisThread; }
+    Thread* owningThread;
+    Thread* thisThread;
+    std::atomic<Thread*>* location;
+  };
+
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
@@ -847,6 +866,8 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
+    ThreadHolding th(thisThread, depth > 3 ? &breadcrumbs[posKey & (breadcrumbSize -1)] : nullptr);
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -885,7 +906,9 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-      if (    depth >= 8 * ONE_PLY
+      if (th.extend())
+	  extension = ONE_PLY;
+      else if (    depth >= 8 * ONE_PLY
           &&  move == ttMove
           && !rootNode
           && !excludedMove // Avoid recursive singular search
