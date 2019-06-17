@@ -115,7 +115,7 @@ namespace {
        if (owningThread == thisThread)
            *location = nullptr;
     }
-    bool extend() { return owningThread && owningThread != thisThread; }
+    bool marked() { return owningThread && owningThread != thisThread; }
     Thread* owningThread;
     Thread* thisThread;
     std::atomic<Thread*>* location;
@@ -906,8 +906,8 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-      if (th.extend())
-	  extension = ONE_PLY;
+      if (th.marked())
+	  extension = DEPTH_ZERO;
       else if (    depth >= 8 * ONE_PLY
           &&  move == ttMove
           && !rootNode
