@@ -107,16 +107,17 @@ namespace {
   std::array<std::atomic<Thread*>, breadcrumbSize> breadcrumbs;
   struct ThreadHolding {
     explicit ThreadHolding(Thread* t, std::atomic<Thread*>* l) : thisThread(t), location(l) {
-       owningThread = nullptr;
-       if (location && atomic_compare_exchange_strong(location, &owningThread, thisThread))
-           owningThread = thisThread;
+       if (location && (*location).load(std::memory_order_relaxed) == nullptr)
+           (*location).store(thisThread, std::memory_order_relaxed);
     }
     ~ThreadHolding() {
-       if (owningThread == thisThread)
-           *location = nullptr;
+       if (location && (*location).load(std::memory_order_relaxed) == thisThread)
+           (*location).store(nullptr, std::memory_order_relaxed);
     }
-    bool marked() { return owningThread && owningThread != thisThread; }
-    Thread* owningThread;
+    bool marked() {
+       Thread* tmp = location ? (*location).load(std::memory_order_relaxed) : nullptr;
+       return tmp && tmp != thisThread;
+    }
     Thread* thisThread;
     std::atomic<Thread*>* location;
   };
