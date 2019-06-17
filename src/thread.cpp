@@ -30,6 +30,7 @@
 
 ThreadPool Threads; // Global object
 
+
 /// Thread constructor launches the thread and waits until it goes to sleep
 /// in idle_loop(). Note that 'searching' and 'exit' should be already set.
 
