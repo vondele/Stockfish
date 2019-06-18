@@ -106,20 +106,24 @@ namespace {
   constexpr size_t breadcrumbSize = 1024;
   std::array<std::atomic<Thread*>, breadcrumbSize> breadcrumbs;
   struct ThreadHolding {
-    explicit ThreadHolding(Thread* t, std::atomic<Thread*>* l) : thisThread(t), location(l) {
-       if (location && (*location).load(std::memory_order_relaxed) == nullptr)
-           (*location).store(thisThread, std::memory_order_relaxed);
+    explicit ThreadHolding(Thread* thisThread, std::atomic<Thread*>* l) : location(l) {
+       otherThread = false;
+       if (location)
+       {
+          Thread* tmp = (*location).load(std::memory_order_relaxed);
+          if (tmp == nullptr)
+              (*location).store(thisThread, std::memory_order_relaxed);
+          else if (tmp != thisThread)
+              otherThread = true;
+       }
     }
     ~ThreadHolding() {
-       if (location && (*location).load(std::memory_order_relaxed) == thisThread)
+       if (location && !otherThread)
            (*location).store(nullptr, std::memory_order_relaxed);
     }
-    bool marked() {
-       Thread* tmp = location ? (*location).load(std::memory_order_relaxed) : nullptr;
-       return tmp && tmp != thisThread;
-    }
-    Thread* thisThread;
+    bool marked() { return otherThread; }
     std::atomic<Thread*>* location;
+    bool otherThread;
   };
 
   template <NodeType NT>
