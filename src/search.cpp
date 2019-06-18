@@ -871,7 +871,7 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
-    ThreadHolding th(thisThread, depth > 3 ? &breadcrumbs[posKey & (breadcrumbSize -1)] : nullptr);
+    ThreadHolding th(thisThread, depth > 7 ? &breadcrumbs[posKey & (breadcrumbSize -1)] : nullptr);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
