@@ -103,30 +103,40 @@ namespace {
   };
 
   // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential extensions.
-  constexpr size_t breadcrumbsSize = 1024;
-  using Breadcrumb = std::pair<std::atomic<Thread*>, std::atomic<Key>>;
-  std::array<Breadcrumb, breadcrumbsSize> breadcrumbs;
+  struct Breadcrumb {
+    std::atomic<Thread*> thread;
+    std::atomic<Key> key;
+    std::atomic<Depth> depth;
+  };
+  std::array<Breadcrumb, 1024> breadcrumbs;
   struct ThreadHolding {
+
     explicit ThreadHolding(Thread* thisThread, Key posKey, Depth depth) {
-       location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbsSize -1)] : nullptr;
+       location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbs.size() -1)] : nullptr;
        otherThread = false;
        if (location)
        {
-          Thread* tmp = (*location).first.load(std::memory_order_relaxed);
+          Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
           if (tmp == nullptr)
           {
-              (*location).first.store(thisThread, std::memory_order_relaxed);
-              (*location).second.store(posKey, std::memory_order_relaxed);
+              (*location).thread.store(thisThread, std::memory_order_relaxed);
+              (*location).key.store(posKey, std::memory_order_relaxed);
+              (*location).depth.store(depth, std::memory_order_relaxed);
           }
-          else if (tmp != thisThread && (*location).second.load(std::memory_order_relaxed) == posKey)
+          else if (   tmp != thisThread
+                   && (*location).key.load(std::memory_order_relaxed) == posKey
+                   && (*location).depth.load(std::memory_order_relaxed) >= depth)
               otherThread = true;
        }
     }
+
     ~ThreadHolding() {
        if (location && !otherThread)
-           (*location).first.store(nullptr, std::memory_order_relaxed);
+           (*location).thread.store(nullptr, std::memory_order_relaxed);
     }
+
     bool marked() { return otherThread; }
+
     Breadcrumb* location;
     bool otherThread;
   };
