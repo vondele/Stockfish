@@ -114,6 +114,7 @@ namespace {
     explicit ThreadHolding(Thread* thisThread, Key posKey, Depth depth) {
        location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbs.size() -1)] : nullptr;
        otherThread = false;
+       owned = false;
        if (location)
        {
           Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
@@ -122,6 +123,7 @@ namespace {
               (*location).thread.store(thisThread, std::memory_order_relaxed);
               (*location).key.store(posKey, std::memory_order_relaxed);
               (*location).depth.store(depth, std::memory_order_relaxed);
+              owned = true;
           }
           else if (   tmp != thisThread
                    && (*location).key.load(std::memory_order_relaxed) == posKey
@@ -131,14 +133,14 @@ namespace {
     }
 
     ~ThreadHolding() {
-       if (location && !otherThread)
+       if (owned)
            (*location).thread.store(nullptr, std::memory_order_relaxed);
     }
 
     bool marked() { return otherThread; }
 
     Breadcrumb* location;
-    bool otherThread;
+    bool otherThread, owned;
   };
 
   template <NodeType NT>
