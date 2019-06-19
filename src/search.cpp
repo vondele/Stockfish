@@ -102,33 +102,38 @@ namespace {
     Move best = MOVE_NONE;
   };
 
-  // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential extensions.
-  constexpr size_t breadcrumbsSize = 1024;
-  using Breadcrumb = std::pair<std::atomic<Thread*>, std::atomic<Key>>;
-  std::array<Breadcrumb, breadcrumbsSize> breadcrumbs;
+  // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential reductions.
+  struct Breadcrumb {
+    std::atomic<Thread*> thread;
+    std::atomic<Key> key;
+  };
+  std::array<Breadcrumb, 1024> breadcrumbs;
   struct ThreadHolding {
     explicit ThreadHolding(Thread* thisThread, Key posKey, Depth depth) {
-       location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbsSize -1)] : nullptr;
+       location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
        otherThread = false;
+       owned = false;
        if (location)
        {
-          Thread* tmp = (*location).first.load(std::memory_order_relaxed);
+          Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
           if (tmp == nullptr)
           {
-              (*location).first.store(thisThread, std::memory_order_relaxed);
-              (*location).second.store(posKey, std::memory_order_relaxed);
+              (*location).thread.store(thisThread, std::memory_order_relaxed);
+              (*location).key.store(posKey, std::memory_order_relaxed);
+              owned = true;
           }
-          else if (tmp != thisThread && (*location).second.load(std::memory_order_relaxed) == posKey)
+          else if (   tmp != thisThread
+                   && (*location).key.load(std::memory_order_relaxed) == posKey)
               otherThread = true;
        }
     }
     ~ThreadHolding() {
-       if (location && !otherThread)
-           (*location).first.store(nullptr, std::memory_order_relaxed);
+       if (owned)
+           (*location).thread.store(nullptr, std::memory_order_relaxed);
     }
     bool marked() { return otherThread; }
     Breadcrumb* location;
-    bool otherThread;
+    bool otherThread, owned;
   };
 
   template <NodeType NT>
