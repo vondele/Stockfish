@@ -103,26 +103,31 @@ namespace {
   };
 
   // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential extensions.
-  constexpr size_t breadcrumbSize = 1024;
-  std::array<std::atomic<Thread*>, breadcrumbSize> breadcrumbs;
+  constexpr size_t breadcrumbsSize = 1024;
+  using Breadcrumb = std::pair<std::atomic<Thread*>, std::atomic<Key>>;
+  std::array<Breadcrumb, breadcrumbsSize> breadcrumbs;
   struct ThreadHolding {
-    explicit ThreadHolding(Thread* thisThread, std::atomic<Thread*>* l) : location(l) {
+    explicit ThreadHolding(Thread* thisThread, Key posKey, Depth depth) {
+       location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbsSize -1)] : nullptr;
        otherThread = false;
        if (location)
        {
-          Thread* tmp = (*location).load(std::memory_order_relaxed);
+          Thread* tmp = (*location).first.load(std::memory_order_relaxed);
           if (tmp == nullptr)
-              (*location).store(thisThread, std::memory_order_relaxed);
-          else if (tmp != thisThread)
+          {
+              (*location).first.store(thisThread, std::memory_order_relaxed);
+              (*location).second.store(posKey, std::memory_order_relaxed);
+          }
+          else if (tmp != thisThread && (*location).second.load(std::memory_order_relaxed) == posKey)
               otherThread = true;
        }
     }
     ~ThreadHolding() {
        if (location && !otherThread)
-           (*location).store(nullptr, std::memory_order_relaxed);
+           (*location).first.store(nullptr, std::memory_order_relaxed);
     }
     bool marked() { return otherThread; }
-    std::atomic<Thread*>* location;
+    Breadcrumb* location;
     bool otherThread;
   };
 
@@ -871,7 +876,7 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
-    ThreadHolding th(thisThread, depth > 7 ? &breadcrumbs[posKey & (breadcrumbSize -1)] : nullptr);
+    ThreadHolding th(thisThread, posKey, depth);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
