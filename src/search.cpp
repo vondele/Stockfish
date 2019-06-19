@@ -109,8 +109,8 @@ namespace {
   };
   std::array<Breadcrumb, 1024> breadcrumbs;
   struct ThreadHolding {
-    explicit ThreadHolding(Thread* thisThread, Key posKey, Depth depth) {
-       location = depth > 7 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
+    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
+       location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
        otherThread = false;
        owned = false;
        if (location)
@@ -881,7 +881,7 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
-    ThreadHolding th(thisThread, posKey, depth);
+    ThreadHolding th(thisThread, posKey, ss->ply);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
