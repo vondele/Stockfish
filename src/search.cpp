@@ -238,9 +238,10 @@ void MainThread::search() {
       if (res == CURLE_OK)
       {
         g_szRecv.erase(std::find(g_szRecv.begin(), g_szRecv.end(), '\0'), g_szRecv.end());
-        if (g_szRecv.find("move:") >= 0)
+        if (g_szRecv.find("move:") != std::string::npos)
         {
-          bookMove = UCI::to_move(rootPos, g_szRecv.substr(5));
+          std::string tmp = g_szRecv.substr(5);
+          bookMove = UCI::to_move(rootPos, tmp);
         }
       }
       curl_free(szFen);
