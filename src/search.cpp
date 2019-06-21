@@ -1014,7 +1014,7 @@ moves_loop: // When in check, search starts from here
           Depth r = reduction(improving, depth, moveCount);
 
           if (   ttHit
-              && tte->depth() >= depth)
+              && tte->depth() > depth)
               r += ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
