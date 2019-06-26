@@ -106,40 +106,55 @@ namespace {
   struct Breadcrumb {
     std::atomic<Thread*> thread;
     std::atomic<Key> key;
+    std::atomic<Depth> depth;
   };
   std::array<Breadcrumb, 1024> breadcrumbs;
 
   // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential reductions.
   // A free node will be marked upon entering the moves loop, and unmarked upon leaving that loop, by the ctor/dtor of this struct.
   struct ThreadHolding {
-    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
+    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply, Depth depth) {
        location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
        otherThread = false;
        owning = false;
        if (location)
        {
+          currentThread = thisThread;
           // see if another already marked this location, if not, mark it ourselves.
           Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
           if (tmp == nullptr)
           {
               (*location).thread.store(thisThread, std::memory_order_relaxed);
               (*location).key.store(posKey, std::memory_order_relaxed);
+              (*location).depth.store(depth, std::memory_order_relaxed);
               owning = true;
           }
-          else if (   tmp != thisThread
-                   && (*location).key.load(std::memory_order_relaxed) == posKey)
-              otherThread = true;
+          else if (   (*location).key.load(std::memory_order_relaxed) == posKey
+                   && tmp != thisThread)
+          {
+             if (depth <= (*location).depth.load(std::memory_order_relaxed))
+             {
+                 otherThread = true;
+             }
+             else
+             {
+                 (*location).thread.store(thisThread, std::memory_order_relaxed);
+                 (*location).depth.store(depth, std::memory_order_relaxed);
+                 owning = true;
+             }
+          }
        }
     }
 
     ~ThreadHolding() {
        if (owning) // free the marked location.
-           (*location).thread.store(nullptr, std::memory_order_relaxed);
+           std::atomic_compare_exchange_strong(&(*location).thread, &currentThread, static_cast<Thread*>(nullptr));
     }
 
     bool marked() { return otherThread; }
 
     private:
+    Thread* currentThread;
     Breadcrumb* location;
     bool otherThread, owning;
   };
@@ -890,7 +905,7 @@ moves_loop: // When in check, search starts from here
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     // Mark this node as being searched.
-    ThreadHolding th(thisThread, posKey, ss->ply);
+    ThreadHolding th(thisThread, posKey, ss->ply, depth);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
