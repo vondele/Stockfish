@@ -113,7 +113,7 @@ namespace {
   // A free node will be marked upon entering the moves loop, and unmarked upon leaving that loop, by the ctor/dtor of this struct.
   struct ThreadHolding {
     explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
-       location = ply < 6 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
+       location = ply < 4 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
        otherThread = false;
        owning = false;
        if (location)
