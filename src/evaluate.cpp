@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -771,6 +772,9 @@ namespace {
         else
             sf = std::min(40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf);
 
+        // For small Eg values scale more
+        if (PawnValueEg - std::abs(eg) > 0)
+           sf = ScaleFactor(sf * (PawnValueEg - std::abs(eg)) / PawnValueEg);
     }
 
     return ScaleFactor(sf);
@@ -830,6 +834,7 @@ namespace {
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
+
     v =  mg_value(score) * int(me->game_phase())
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
