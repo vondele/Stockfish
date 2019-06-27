@@ -942,6 +942,10 @@ moves_loop: // When in check, search starts from here
                && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
 
+      else if (   depth < 5 * ONE_PLY
+               && pos.rule50_count() == 3)
+	  extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
