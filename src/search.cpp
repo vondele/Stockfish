@@ -1365,7 +1365,7 @@ moves_loop: // When in check, search starts from here
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
           && (!givesCheck || !(pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
-          && !pos.see_ge(move, -Value(thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 16)))
+          && !pos.see_ge(move, Value(thisThread->captureHistory[pos.moved_piece(move)][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 16)))
           continue;
 
       // Speculative prefetch as early as possible
