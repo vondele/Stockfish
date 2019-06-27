@@ -774,7 +774,7 @@ namespace {
 
         // For small Eg values scale more
         if (PawnValueEg - std::abs(eg) > 0)
-           sf = ScaleFactor(sf * (PawnValueEg - std::abs(eg)) / PawnValueEg);
+           sf = ScaleFactor(sf * std::abs(eg) / PawnValueEg);
     }
 
     return ScaleFactor(sf);
