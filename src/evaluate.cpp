@@ -773,8 +773,8 @@ namespace {
             sf = std::min(40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf);
 
         // For small Eg values scale more
-        if (32 > std::abs(eg))
-           sf = ScaleFactor(sf * std::abs(eg) / 32);
+        if (16 > std::abs(eg))
+           sf = ScaleFactor(sf * std::abs(eg) / 16);
     }
 
     return ScaleFactor(sf);
