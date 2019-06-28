@@ -1019,7 +1019,7 @@ moves_loop: // When in check, search starts from here
           if (!(  !captureOrPromotion
                 || moveCountPruning
                 || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
-              r -= 2 * ONE_PLY;
+              r -= 3 * ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
