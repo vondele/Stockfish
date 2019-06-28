@@ -1016,11 +1016,6 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          if (!(  !captureOrPromotion
-                || moveCountPruning
-                || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
-              r -= 3 * ONE_PLY;
-
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
               r -= 2 * ONE_PLY;
@@ -1065,6 +1060,9 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 20000 * ONE_PLY;
           }
+          else if (   !moveCountPruning
+                   && ss->staticEval + PieceValue[EG][pos.captured_piece()] > alpha)
+              r -= 4 * ONE_PLY;
 
           Depth d = clamp(newDepth - r, ONE_PLY, newDepth);
 
