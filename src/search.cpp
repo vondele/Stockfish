@@ -1105,7 +1105,7 @@ moves_loop: // When in check, search starts from here
 
           // Increase reduction if other threads are searching this position.
 	  if (th.marked())
-              r = ((r / ONE_PLY) * 3 / 2) * ONE_PLY;
+              r = (((r / ONE_PLY) * 3 + 1) / 2) * ONE_PLY;
 
           Depth d = clamp(newDepth - r, ONE_PLY, newDepth);
 
