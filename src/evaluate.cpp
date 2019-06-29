@@ -806,7 +806,7 @@ namespace {
     // Early exit if score is high
     Value v = (mg_value(score) + eg_value(score)) / 2;
     if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
-       return (pos.side_to_move() == WHITE ? v : -v); // * pos.rule50_class() / 6;
+       return (pos.side_to_move() == WHITE ? v : -v)  * (80 + 8 * pos.rule50_class()) / 128;
 
     // Main evaluation begins here
 
@@ -845,7 +845,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return ((pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo); // * pos.rule50_class() / 6; // Side to move point of view
+    return ((pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo) * (80 + 8 * pos.rule50_class()) / 128; // Side to move point of view
   }
 
 } // namespace
