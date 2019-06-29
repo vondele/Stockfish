@@ -595,7 +595,7 @@ namespace {
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-    tte = TT.probe(posKey, ttHit);
+    tte = TT.probe(posKey, pos.rule50_class(), ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
@@ -824,7 +824,7 @@ namespace {
     {
         search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
 
-        tte = TT.probe(posKey, ttHit);
+        tte = TT.probe(posKey, pos.rule50_class(), ttHit);
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
@@ -993,7 +993,7 @@ moves_loop: // When in check, search starts from here
       }
 
       // Speculative prefetch as early as possible
-      prefetch(TT.first_entry(pos.key_after(move)));
+      prefetch(TT.first_entry(pos.key_after(move), pos.rule50_class_after(move)));
 
       // Check for legality just before making the move
       if (!rootNode && !pos.legal(move))
@@ -1264,7 +1264,7 @@ moves_loop: // When in check, search starts from here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
-    tte = TT.probe(posKey, ttHit);
+    tte = TT.probe(posKey, pos.rule50_class(), ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove = ttHit ? tte->move() : MOVE_NONE;
     pvHit = ttHit && tte->is_pv();
@@ -1375,7 +1375,7 @@ moves_loop: // When in check, search starts from here
           continue;
 
       // Speculative prefetch as early as possible
-      prefetch(TT.first_entry(pos.key_after(move)));
+      prefetch(TT.first_entry(pos.key_after(move), pos.rule50_class_after(move)));
 
       // Check for legality just before making the move
       if (!pos.legal(move))
@@ -1668,7 +1668,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
         return false;
 
     pos.do_move(pv[0], st);
-    TTEntry* tte = TT.probe(pos.key(), ttHit);
+    TTEntry* tte = TT.probe(pos.key(), pos.rule50_class(), ttHit);
 
     if (ttHit)
     {

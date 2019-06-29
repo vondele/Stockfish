@@ -79,14 +79,14 @@ class TranspositionTable {
 public:
  ~TranspositionTable() { free(mem); }
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
-  TTEntry* probe(const Key key, bool& found) const;
+  TTEntry* probe(const Key key, int class50mr, bool& found) const;
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
 
   // The 32 lowest order bits of the key are used to get the index of the cluster
-  TTEntry* first_entry(const Key key) const {
-    return &table[(uint32_t(key) * uint64_t(clusterCount)) >> 32].entry[0];
+  TTEntry* first_entry(const Key key, int class50mr) const {
+    return &table[(uint32_t(key + class50mr * 6364136223846793005UL) * uint64_t(clusterCount)) >> 32].entry[0];
   }
 
 private:
