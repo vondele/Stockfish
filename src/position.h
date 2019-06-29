@@ -158,6 +158,8 @@ public:
   bool has_game_cycle(int ply) const;
   bool has_repeated() const;
   int rule50_count() const;
+  int rule50_class() const;
+  int rule50_class_after(Move move) const;
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
   Value non_pawn_material() const;
@@ -365,6 +367,15 @@ inline int Position::game_ply() const {
 
 inline int Position::rule50_count() const {
   return st->rule50;
+}
+
+inline int Position::rule50_class() const {
+  return msb(103 - st->rule50);
+}
+
+inline int Position::rule50_class_after(Move move) const {
+  int rule50 = (type_of(moved_piece(move)) == PAWN || capture(move)) ? 0 : st->rule50 + 1;
+  return msb(103 - rule50);
 }
 
 inline bool Position::opposite_bishops() const {
