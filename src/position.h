@@ -364,12 +364,12 @@ inline int Position::rule50_count() const {
 }
 
 inline int Position::rule50_class() const {
-  return 6; // msb(103 - st->rule50);
+  return st->rule50 / 32;
 }
 
 inline int Position::rule50_class_after(Move move) const {
   int rule50 = (type_of(moved_piece(move)) == PAWN || capture(move)) ? 0 : st->rule50 + 1;
-  return 6 + 0 * rule50; // msb(103 - rule50);
+  return rule50 / 32;
 }
 
 inline bool Position::opposite_bishops() const {
