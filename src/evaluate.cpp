@@ -845,7 +845,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo - 5 * pos.rule50_class(); // Side to move point of view
+    return ((pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo) * (16 - pos.rule50_class()) / 16; // Side to move point of view
   }
 
 } // namespace
