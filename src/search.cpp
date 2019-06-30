@@ -713,7 +713,7 @@ namespace {
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Eval::Tempo;
 
-        tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval != VALUE_NONE ? eval * (1024 - pos.rule50_count()) / 1024 : VALUE_NONE);
+        tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval != VALUE_NONE ? eval * (1024 - 2 * pos.rule50_count()) / 1024 : VALUE_NONE);
     }
 
     // Step 7. Razoring (~2 Elo)
@@ -1207,7 +1207,7 @@ moves_loop: // When in check, search starts from here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  depth, bestMove, ss->staticEval != VALUE_NONE ? ss->staticEval * (1024 - pos.rule50_count()) / 1024 : VALUE_NONE);
+                  depth, bestMove, ss->staticEval != VALUE_NONE ? ss->staticEval * (1024 - 2 * pos.rule50_count()) / 1024 : VALUE_NONE);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -1306,7 +1306,7 @@ moves_loop: // When in check, search starts from here
         {
             if (!ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit, BOUND_LOWER,
-                          DEPTH_NONE, MOVE_NONE, ss->staticEval != VALUE_NONE ? ss->staticEval  * (1024 - pos.rule50_count()) / 1024 : VALUE_NONE);
+                          DEPTH_NONE, MOVE_NONE, ss->staticEval != VALUE_NONE ? ss->staticEval  * (1024 - 2 * pos.rule50_count()) / 1024 : VALUE_NONE);
 
             return bestValue;
         }
@@ -1422,7 +1422,7 @@ moves_loop: // When in check, search starts from here
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER :
               PvNode && bestValue > oldAlpha  ? BOUND_EXACT : BOUND_UPPER,
-              ttDepth, bestMove, ss->staticEval != VALUE_NONE ? ss->staticEval * (1024 - pos.rule50_count()) / 1024 : VALUE_NONE);
+              ttDepth, bestMove, ss->staticEval != VALUE_NONE ? ss->staticEval * (1024 - 2 * pos.rule50_count()) / 1024 : VALUE_NONE);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
