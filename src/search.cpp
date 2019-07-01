@@ -139,7 +139,7 @@ namespace {
            (*location).counter--;
     }
 
-    bool marked() { return counter > 1; }
+    int marked() { return counter / 2; }
 
     private:
     Breadcrumb* location;
@@ -1068,8 +1068,7 @@ moves_loop: // When in check, search starts from here
           Depth r = reduction(improving, depth, moveCount);
 
           // Reduction if other threads are searching this position.
-	  if (th.marked())
-              r += ONE_PLY;
+          r += ONE_PLY * th.marked();
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
