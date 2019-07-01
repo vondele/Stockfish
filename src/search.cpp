@@ -104,7 +104,7 @@ namespace {
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread.
   struct Breadcrumb {
-    std::atomic<Thread*> thread;
+    std::atomic<size_t> counter;
     std::atomic<Key> key;
   };
   std::array<Breadcrumb, 1024> breadcrumbs;
@@ -112,36 +112,39 @@ namespace {
   // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential reductions.
   // A free node will be marked upon entering the moves loop, and unmarked upon leaving that loop, by the ctor/dtor of this struct.
   struct ThreadHolding {
-    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
+    explicit ThreadHolding(Key posKey, int ply) {
        location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
-       otherThread = false;
+       counter = 0;
        owning = false;
        if (location)
        {
-          // see if another already marked this location, if not, mark it ourselves.
-          Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
-          if (tmp == nullptr)
+          // count the number of threads searching this position.
+          counter = (*location).counter;
+	  if (counter == 0)
           {
-              (*location).thread.store(thisThread, std::memory_order_relaxed);
-              (*location).key.store(posKey, std::memory_order_relaxed);
+              (*location).counter++;
               owning = true;
+              (*location).key = posKey;
           }
-          else if (   tmp != thisThread
-                   && (*location).key.load(std::memory_order_relaxed) == posKey)
-              otherThread = true;
+	  else if ((*location).key == posKey)
+	  {
+              (*location).counter++;
+              owning = true;
+	  }
        }
     }
 
     ~ThreadHolding() {
-       if (owning) // free the marked location.
-           (*location).thread.store(nullptr, std::memory_order_relaxed);
+       if (owning)
+           (*location).counter--;
     }
 
-    bool marked() { return otherThread; }
+    bool marked() { return counter > 1; }
 
     private:
     Breadcrumb* location;
-    bool otherThread, owning;
+    bool owning;
+    size_t counter;
   };
 
   template <NodeType NT>
@@ -890,7 +893,7 @@ moves_loop: // When in check, search starts from here
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     // Mark this node as being searched.
-    ThreadHolding th(thisThread, posKey, ss->ply);
+    ThreadHolding th(posKey, ss->ply);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
