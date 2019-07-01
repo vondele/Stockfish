@@ -139,7 +139,7 @@ namespace {
            (*location).counter--;
     }
 
-    int marked() { return counter / 2; }
+    int marked() { return counter; }
 
     private:
     Breadcrumb* location;
