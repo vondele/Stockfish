@@ -43,8 +43,8 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 
   // Overwrite less valuable entries
   if (  (k >> 48) != key16
-      ||(d - DEPTH_OFFSET) / ONE_PLY > depth8 - 4
-      || b == BOUND_EXACT)
+      || b == BOUND_EXACT
+      ||((d - DEPTH_OFFSET) / ONE_PLY - depth8) * (depth8 + 4) >= -16)
   {
       assert((d - DEPTH_OFFSET) / ONE_PLY >= 0);
 
