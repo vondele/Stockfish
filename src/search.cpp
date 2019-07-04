@@ -1071,7 +1071,7 @@ moves_loop: // When in check, search starts from here
 
           // Reduction if other threads are searching this position.
 	  if (th.marked())
-              r += ONE_PLY;
+              r += ttPv ? 2 * ONE_PLY : ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
