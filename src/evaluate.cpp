@@ -390,11 +390,20 @@ namespace {
 
     Bitboard weak, b1, b2, safe, unsafeChecks = 0;
     Bitboard rookChecks, queenChecks, bishopChecks, knightChecks;
-    int kingDanger = 0;
+    int kingDanger = 0, kingFlankAttacks;
     const Square ksq = pos.square<KING>(Us);
 
+    Score score = SCORE_ZERO;
+
+    // Penalty when our king is on a pawnless flank
+    if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))
+        score -= PawnlessFlank;
+
+    if (pos.non_pawn_material() <= 4 * BishopValueMg)
+	goto kingEvalDone;
+
     // Init the score with king shelter and enemy pawns storm
-    Score score = pe->king_safety<Us>(pos);
+    score += pe->king_safety<Us>(pos);
 
     // Attacked squares defended at most once by our queen or king
     weak =  attackedBy[Them][ALL_PIECES]
@@ -456,7 +465,7 @@ namespace {
     b1 = attackedBy[Them][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;
     b2 = b1 & attackedBy2[Them];
 
-    int kingFlankAttacks = popcount(b1) + popcount(b2);
+    kingFlankAttacks = popcount(b1) + popcount(b2);
 
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
                  +  69 * kingAttacksCount[Them]
@@ -474,12 +483,10 @@ namespace {
     if (kingDanger > 100)
         score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
 
-    // Penalty when our king is on a pawnless flank
-    if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))
-        score -= PawnlessFlank;
-
     // Penalty if king flank is under attack, potentially moving toward the king
     score -= FlankAttacks * kingFlankAttacks;
+
+kingEvalDone:
 
     if (T)
         Trace::add(KING, Us, score);
