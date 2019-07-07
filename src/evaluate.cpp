@@ -471,7 +471,7 @@ namespace {
                  -   7;
 
     kingDanger = kingDanger < 100 ? 0 :
-                 kingDanger * (KnightValueMg + pos.non_pawn_material(Them) - pos.non_pawn_material(Us)) / KnightValueMg;
+                 std::max(kingDanger / 2, kingDanger * (KnightValueMg + pos.non_pawn_material(Them) - pos.non_pawn_material(Us)) / KnightValueMg);
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
      score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
