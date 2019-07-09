@@ -138,6 +138,14 @@ namespace {
     }
 
     bool marked() { return otherThread; }
+    void unmark() {
+       if (owning) // free the marked location.
+       {
+           (*location).thread.store(nullptr, std::memory_order_relaxed);
+           owning = false;
+       }
+    }
+
 
     private:
     Breadcrumb* location;
@@ -1187,6 +1195,9 @@ moves_loop: // When in check, search starts from here
       if (value > bestValue)
       {
           bestValue = value;
+
+          if (moveCount > 1)
+             th.unmark();
 
           if (value > alpha)
           {
