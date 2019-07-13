@@ -653,7 +653,7 @@ namespace {
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-        && tte->depth() >= depth
+        && tte->depth() + recent >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
@@ -1073,9 +1073,6 @@ moves_loop: // When in check, search starts from here
 
           // Reduction if other threads are searching this position.
           if (th.marked())
-              r += ONE_PLY;
-
-	  if (recent)
               r += ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
