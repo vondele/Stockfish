@@ -1076,7 +1076,7 @@ moves_loop: // When in check, search starts from here
               r += ONE_PLY;
 
 	  if (recent)
-              r += ONE_PLY;
+              r -= ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
