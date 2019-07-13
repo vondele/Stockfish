@@ -647,6 +647,8 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = PvNode || (ttHit && tte->is_pv());
+    bool recent = thisThread->recent[posKey & (RecentSize - 1)] == posKey;
+    thisThread->recent[posKey & (RecentSize - 1)] = posKey;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1071,6 +1073,9 @@ moves_loop: // When in check, search starts from here
 
           // Reduction if other threads are searching this position.
           if (th.marked())
+              r += ONE_PLY;
+
+	  if (recent)
               r += ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
