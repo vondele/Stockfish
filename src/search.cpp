@@ -647,13 +647,14 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = PvNode || (ttHit && tte->is_pv());
-    bool recent = thisThread->recent[posKey & (RecentSize - 1)] == posKey;
-    thisThread->recent[posKey & (RecentSize - 1)] = posKey;
+    bool recent =    thisThread->recent[posKey & (RecentSize - 1)].first == posKey
+	          && thisThread->recent[posKey & (RecentSize - 1)].second >= depth;
+    thisThread->recent[posKey & (RecentSize - 1)] = std::pair<Key, Depth>(posKey, depth);
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-        && tte->depth() + 2 * recent >= depth
+        && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
@@ -1020,7 +1021,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
+              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount) - recent ? ONE_PLY : DEPTH_ZERO, DEPTH_ZERO);
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
