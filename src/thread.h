@@ -34,7 +34,7 @@
 #include "search.h"
 #include "thread_win32_osx.h"
 
-const size_t RecentSize = 64;
+const size_t RecentSize = 32;
 
 /// Thread class keeps together all the thread-related stuff. We use
 /// per-thread pawn and material hash tables so that once we get a
