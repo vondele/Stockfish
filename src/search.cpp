@@ -70,9 +70,9 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
-  Depth reduction(bool i, Depth d, int mn) {
+  Depth reduction(bool i, bool recent, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn];
-    return ((r + 512) / 1024 + (!i && r > 1024)) * ONE_PLY;
+    return ((r + 512) / 1024 + (!i && r > 1024) + recent) * ONE_PLY;
   }
 
   constexpr int futility_move_count(bool improving, int depth) {
@@ -1021,7 +1021,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
+              int lmrDepth = std::max(newDepth - reduction(improving, recent, depth, moveCount), DEPTH_ZERO);
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
@@ -1070,13 +1070,10 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
       {
-          Depth r = reduction(improving, depth, moveCount);
+          Depth r = reduction(improving, recent, depth, moveCount);
 
           // Reduction if other threads are searching this position.
           if (th.marked())
-              r += ONE_PLY;
-
-	  if (recent)
               r += ONE_PLY;
 
           // Decrease reduction if position is or has been on the PV
