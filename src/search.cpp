@@ -908,6 +908,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    int seriouslySingular = 0;
 
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -973,6 +974,14 @@ moves_loop: // When in check, search starts from here
 
               if (value < singularBeta - std::min(4 * depth / ONE_PLY, 36))
                   singularLMR++;
+
+              singularBeta = alpha - 2 * PawnValueMg;
+              ss->excludedMove = move;
+              value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
+              ss->excludedMove = MOVE_NONE;
+              if (value < singularBeta)
+                 seriouslySingular = 4;
+
           }
 
           // Multi-cut pruning
@@ -1011,12 +1020,12 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 14. Pruning at shallow depth (~170 Elo)
-      if (  !rootNode
-          && pos.non_pawn_material(us)
-          && bestValue > VALUE_MATED_IN_MAX_PLY)
+      if (   !rootNode
+          &&  pos.non_pawn_material(us)
+          &&  bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth / ONE_PLY);
+          moveCountPruning = moveCount + seriouslySingular >= futility_move_count(improving, depth / ONE_PLY);
 
           if (   !captureOrPromotion
               && !givesCheck
@@ -1027,7 +1036,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
+              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount + seriouslySingular), DEPTH_ZERO);
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
@@ -1046,7 +1055,7 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (  (!givesCheck || !extension)
+          else if (   !(extension && givesCheck)
                    && !pos.see_ge(move, Value(-199) * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
       }
@@ -1076,7 +1085,7 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
       {
-          Depth r = reduction(improving, depth, moveCount);
+          Depth r = reduction(improving, depth, moveCount + seriouslySingular);
 
           // Reduction if other threads are searching this position.
           if (th.marked())
@@ -1090,7 +1099,7 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
 
-          // Decrease reduction if move has been singularly extended
+          // Decrease reduction if ttMove has been singularly extended
           r -= singularLMR * ONE_PLY;
 
           if (!captureOrPromotion)
