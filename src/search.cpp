@@ -808,7 +808,6 @@ namespace {
         &&  ss->staticEval >= beta - 33 * depth / ONE_PLY + 299 - improving * 30
         && !excludedMove
         &&  pos.non_pawn_material(us)
-        &&  thisThread->checkIndex < 12800
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
@@ -1054,7 +1053,7 @@ moves_loop: // When in check, search starts from here
                   continue;
           }
           else if (  (!givesCheck || !extension)
-                   && !pos.see_ge(move, Value(-199) * (depth / ONE_PLY))) // (~20 Elo)
+                   && !pos.see_ge(move, Value(thisThread->checkIndex < 12800 ? -199 : -300) * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
       }
 
