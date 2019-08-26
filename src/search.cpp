@@ -749,10 +749,12 @@ namespace {
     }
 
     // Step 6. Static evaluation of the position
+    thisThread->checkIndex = thisThread->checkIndex * 255 / 256;
     if (inCheck)
     {
         ss->staticEval = eval = VALUE_NONE;
         improving = false;
+        thisThread->checkIndex += 256;
         goto moves_loop;  // Skip early pruning when in check
     }
     else if (ttHit)
@@ -852,6 +854,7 @@ namespace {
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
         &&  depth >= 5 * ONE_PLY
+        &&  thisThread->checkIndex < 12800
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value raisedBeta = std::min(beta + 191 - 46 * improving, VALUE_INFINITE);
