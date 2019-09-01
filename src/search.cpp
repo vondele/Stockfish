@@ -927,8 +927,7 @@ moves_loop: // When in check, search starts from here
 
       if (   ss->ply > 4
           && move == ttMove
-          && std::abs(eval - VALUE_DRAW) < 2
-          && (thisThread->nodes & 255) == 0)
+          && (thisThread->nodes & 1023) == 0)
           continue;
 
       // At root obey the "searchmoves" option and skip moves not listed in Root
