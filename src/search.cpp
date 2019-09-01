@@ -1130,7 +1130,7 @@ moves_loop: // When in check, search starts from here
                   ss->statScore = 0;
 
               // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
-              if (ss->statScore >= -99 && (ss-1)->statScore < -116)
+              if (ss->statScore >= -99 && (ss-1)->statScore < -116 && !th.marked())
                   r -= ONE_PLY;
 
               else if ((ss-1)->statScore >= -117 && ss->statScore < -144)
