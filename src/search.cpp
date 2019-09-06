@@ -327,7 +327,7 @@ void Thread::search() {
   // The latter is needed for statScores and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
-  Value bestValue, alpha, beta, delta;
+  Value bestValue, previousBestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
@@ -339,7 +339,7 @@ void Thread::search() {
      (ss-i)->continuationHistory = &this->continuationHistory[NO_PIECE][0]; // Use as sentinel
   ss->pv = pv;
 
-  bestValue = delta = alpha = -VALUE_INFINITE;
+  previousBestValue = bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
 
   size_t multiPV = Options["MultiPV"];
@@ -516,7 +516,7 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-          double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
+          double fallingEval = (354 + 10 * (mainThread->previousScore - std::min(previousBestValue, bestValue))) / 692.0;
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
@@ -543,6 +543,7 @@ void Thread::search() {
                   Threads.stop = true;
           }
       }
+      previousBestValue = bestValue;
   }
 
   if (!mainThread)
