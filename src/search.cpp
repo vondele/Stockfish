@@ -1093,7 +1093,7 @@ moves_loop: // When in check, search starts from here
               r -= 2 * ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
-          if ((ss-1)->moveCount > 15 && moveCount <= 3)
+          if ((ss-1)->moveCount > 15 && moveCount <= 5)
               r -= ONE_PLY;
 
           // Decrease reduction if move has been singularly extended
