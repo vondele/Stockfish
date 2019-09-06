@@ -517,7 +517,7 @@ void Thread::search() {
           && !mainThread->stopOnPonderhit)
       {
           Value usedValue = lastBestMoveDepth < rootDepth ? std::max(previousBestValue, bestValue)
-                                                          : std::min(previousBestValue, bestValue);
+                                                          : bestValue;
           double fallingEval = (354 + 10 * (mainThread->previousScore - usedValue)) / 692.0;
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
