@@ -516,7 +516,9 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-          double fallingEval = (354 + 10 * (mainThread->previousScore - std::max(previousBestValue, bestValue))) / 692.0;
+          Value usedValue = lastBestMoveDepth < rootDepth ? std::max(previousBestValue, bestValue)
+                                                          : std::min(previousBestValue, bestValue);
+          double fallingEval = (354 + 10 * (mainThread->previousScore - usedValue)) / 692.0;
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
