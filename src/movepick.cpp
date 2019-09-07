@@ -118,7 +118,7 @@ void MovePicker::score() {
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2
-                   + 256 * (to_sq(m) == ttmToSq);
+                   - 256 * (to_sq(m) == ttmToSq);
 
       else // Type == EVASIONS
       {
