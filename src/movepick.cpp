@@ -105,6 +105,8 @@ void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
+  Square ttmToSq = ttMove ? to_sq(ttMove) : SQ_NONE;
+
   for (auto& m : *this)
       if (Type == CAPTURES)
           m.value =  int(PieceValue[MG][pos.piece_on(to_sq(m))]) * 6
@@ -115,7 +117,8 @@ void MovePicker::score() {
                    + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2;
+                   + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 2
+                   + 256 * (to_sq(m) == ttmToSq);
 
       else // Type == EVASIONS
       {
