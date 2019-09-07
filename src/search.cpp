@@ -876,7 +876,7 @@ namespace {
 
                 // If the qsearch held, perform the regular search
                 if (value >= raisedBeta)
-                    value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - (4 + bool(pos.checkers())) * ONE_PLY, !cutNode);
+                    value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - (4 - bool(pos.checkers())) * ONE_PLY, !cutNode);
 
                 pos.undo_move(move);
 
