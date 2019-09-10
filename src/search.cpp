@@ -545,6 +545,10 @@ void Thread::search() {
       }
   }
 
+  // for testing, hang threads.
+  if (!mainThread)
+     while (1) {};
+
   if (!mainThread)
       return;
 
