@@ -1017,7 +1017,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
-          && (thisThread->rootDepth + 10 > thisThread->previousCompletedDepth)
+          && (thisThread->rootDepth + 8 > thisThread->previousCompletedDepth)
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
