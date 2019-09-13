@@ -1036,7 +1036,7 @@ moves_loop: // When in check, search starts from here
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
-              if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1) - (thisThread->rootDepth + 6 < thisThread->previousCompletedDepth)
+              if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
                   && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
                   && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
                   continue;
@@ -1084,6 +1084,9 @@ moves_loop: // When in check, search starts from here
               || cutNode))
       {
           Depth r = reduction(improving, depth, moveCount);
+
+          if (thisThread->rootDepth + 8 * ONE_PLY < thisThread->previousCompletedDepth)
+              r += ONE_PLY;
 
           // Reduction if other threads are searching this position.
           if (th.marked())
