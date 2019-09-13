@@ -301,6 +301,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
+  averageCompletedDepth = (averageCompletedDepth * 7 + bestThread->completedDepth) / 8; // running average
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
@@ -781,6 +782,7 @@ namespace {
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
+
     // Step 7. Razoring (~2 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
         &&  depth < 2 * ONE_PLY
@@ -789,6 +791,9 @@ namespace {
 
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
+
+    if (thisThread->rootDepth + 8 * ONE_PLY < thisThread->averageCompletedDepth)
+        goto moves_loop;
 
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !PvNode
