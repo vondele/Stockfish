@@ -301,6 +301,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
+  previousCompletedDepth = bestThread->completedDepth;
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
@@ -410,7 +411,7 @@ void Thread::search() {
           selDepth = 0;
 
           // Reset aspiration window starting size
-          if (rootDepth >= 4 * ONE_PLY)
+          if (rootDepth >= std::max(4 * ONE_PLY, (previousCompletedDepth / ONE_PLY / 4) * ONE_PLY))
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
               delta = Value(23);
