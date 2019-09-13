@@ -411,7 +411,7 @@ void Thread::search() {
           selDepth = 0;
 
           // Reset aspiration window starting size
-          if (rootDepth >= 4 * ONE_PLY + (2 * rootDepth < previousCompletedDepth) * ONE_PLY)
+          if (rootDepth >= 4 * ONE_PLY)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
               delta = Value(23);
@@ -1017,6 +1017,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
+          && (thisThread->rootDepth + 10 > thisThread->previousCompletedDepth)
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
