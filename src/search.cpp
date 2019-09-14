@@ -1085,7 +1085,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          if (thisThread->rootDepth + 6 * ONE_PLY < thisThread->previousCompletedDepth)
+          if (thisThread->rootDepth + 5 * ONE_PLY < thisThread->previousCompletedDepth)
               r -= ONE_PLY;
 
           // Reduction if other threads are searching this position.
