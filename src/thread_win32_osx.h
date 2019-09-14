@@ -34,6 +34,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <iostream>
 
 #if defined(_WIN32) && !defined(_MSC_VER)
 
@@ -73,7 +74,7 @@ typedef std::condition_variable ConditionVariable;
 /// adjust it to TH_STACK_SIZE. The implementation calls pthread_create() with
 /// proper stack size parameter.
 
-#if defined(__APPLE__)
+#if defined(__APPLE__)  || defined(__MINGW32__) || defined(__MINGW64__)
 
 #include <pthread.h>
 
@@ -97,8 +98,10 @@ public:
   explicit NativeThread(void(T::*fun)(), T* obj) {
     pthread_attr_t attr_storage, *attr = &attr_storage;
     pthread_attr_init(attr);
-    pthread_attr_setstacksize(attr, TH_STACK_SIZE);
     pthread_create(&thread, attr, start_routine<T>, new P(obj, fun));
+    size_t foo;
+    pthread_attr_getstacksize(attr, &foo);
+    std::cout << "size: " << foo << std::endl;
   }
   void join() { pthread_join(thread, NULL); }
 };
