@@ -301,7 +301,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
-  previousCompletedDepth = bestThread->completedDepth;
+  previousCompletedDepth = (previousCompletedDepth * 3 + bestThread->completedDepth) / 4; // running average
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
