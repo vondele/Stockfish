@@ -792,7 +792,7 @@ namespace {
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
 
-    if (thisThread->rootDepth + 10 * ONE_PLY < thisThread->averageCompletedDepth)
+    if (thisThread->rootDepth + 6 * ONE_PLY < thisThread->averageCompletedDepth)
         goto moves_loop;
 
     // Step 8. Futility pruning: child node (~30 Elo)
