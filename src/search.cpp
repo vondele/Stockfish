@@ -301,7 +301,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
-  previousCompletedDepth = (previousCompletedDepth * 3 + bestThread->completedDepth) / 4; // running average
+  averageCompletedDepth = (averageCompletedDepth * 3 + bestThread->completedDepth) / 4; // running average
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
@@ -1083,10 +1083,12 @@ moves_loop: // When in check, search starts from here
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode))
       {
-          Depth r = reduction(improving, depth, moveCount);
+          Depth r;
 
-          if (thisThread->rootDepth + 4 * ONE_PLY < thisThread->previousCompletedDepth)
-              r -= ONE_PLY;
+          if (thisThread->rootDepth + 4 * ONE_PLY < thisThread->averageCompletedDepth)
+              r=reduction(improving, depth, moveCount - moveCount / 4);
+          else
+              r=reduction(improving, depth, moveCount);
 
           // Reduction if other threads are searching this position.
           if (th.marked())

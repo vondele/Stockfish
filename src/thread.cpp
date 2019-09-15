@@ -161,7 +161,7 @@ void ThreadPool::clear() {
   main()->callsCnt = 0;
   main()->previousScore = VALUE_INFINITE;
   main()->previousTimeReduction = 1.0;
-  main()->previousCompletedDepth = DEPTH_ZERO;
+  main()->averageCompletedDepth = DEPTH_ZERO;
 }
 
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
@@ -203,7 +203,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   {
       th->shuffleExts = th->nodes = th->tbHits = th->nmpMinPly = 0;
       th->rootDepth = th->completedDepth = DEPTH_ZERO;
-      th->previousCompletedDepth = main()->previousCompletedDepth;
+      th->averageCompletedDepth = main()->averageCompletedDepth;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);
   }

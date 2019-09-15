@@ -67,7 +67,7 @@ public:
 
   Position rootPos;
   Search::RootMoves rootMoves;
-  Depth rootDepth, completedDepth, previousCompletedDepth;
+  Depth rootDepth, completedDepth, averageCompletedDepth;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
