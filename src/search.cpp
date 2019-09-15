@@ -808,7 +808,6 @@ namespace {
         &&  ss->staticEval >= beta - 33 * depth / ONE_PLY + 299 - improving * 30
         && !excludedMove
         &&  pos.non_pawn_material(us)
-        && !(thisThread->rootDepth + 8 * ONE_PLY < thisThread->averageCompletedDepth)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
@@ -855,6 +854,7 @@ namespace {
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
         &&  depth >= 5 * ONE_PLY
+        && !(thisThread->rootDepth + 8 * ONE_PLY < thisThread->averageCompletedDepth)
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value raisedBeta = std::min(beta + 191 - 46 * improving, VALUE_INFINITE);
