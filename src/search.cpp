@@ -301,7 +301,7 @@ void MainThread::search() {
   }
 
   previousScore = bestThread->rootMoves[0].score;
-  previousCompletedDepth = (previousCompletedDepth * 3 + bestThread->completedDepth) / 4; // running average
+  previousCompletedDepth = (previousCompletedDepth * 7 + bestThread->completedDepth) / 8; // running average
 
   // Send again PV info if we have a new best thread
   if (bestThread != this)
@@ -1085,7 +1085,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          if (thisThread->rootDepth + 5 * ONE_PLY < thisThread->previousCompletedDepth)
+          if (thisThread->rootDepth + 4 * ONE_PLY < thisThread->previousCompletedDepth)
               r -= ONE_PLY;
 
           // Reduction if other threads are searching this position.
