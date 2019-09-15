@@ -1083,12 +1083,8 @@ moves_loop: // When in check, search starts from here
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode))
       {
-          Depth r;
-
-          if (thisThread->rootDepth + 4 * ONE_PLY < thisThread->averageCompletedDepth)
-              r=reduction(improving, depth, 3 * moveCount / 4);
-          else
-              r=reduction(improving, depth, moveCount);
+          int effectiveCount = moveCount - (thisThread->rootDepth + 4 * ONE_PLY < thisThread->averageCompletedDepth);
+          Depth r = reduction(improving, depth, effectiveCount);
 
           // Reduction if other threads are searching this position.
           if (th.marked())
