@@ -1086,7 +1086,7 @@ moves_loop: // When in check, search starts from here
           Depth r;
 
           if (thisThread->rootDepth + 4 * ONE_PLY < thisThread->averageCompletedDepth)
-              r=reduction(improving, depth, moveCount - moveCount / 4);
+              r=reduction(improving, depth, 3 * moveCount / 4);
           else
               r=reduction(improving, depth, moveCount);
 
