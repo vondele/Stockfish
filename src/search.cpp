@@ -792,9 +792,6 @@ namespace {
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
 
-    if (thisThread->rootDepth + 6 * ONE_PLY < thisThread->averageCompletedDepth)
-        goto moves_loop;
-
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !PvNode
         &&  depth < 7 * ONE_PLY
@@ -811,6 +808,7 @@ namespace {
         &&  ss->staticEval >= beta - 33 * depth / ONE_PLY + 299 - improving * 30
         && !excludedMove
         &&  pos.non_pawn_material(us)
+        && !(thisThread->rootDepth + 8 * ONE_PLY < thisThread->averageCompletedDepth)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
