@@ -771,6 +771,9 @@ namespace {
         else
             sf = std::min(40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf);
 
+        if (pos.count<PAWN>(strongSide) == 0)
+            sf = 3 * sf / 4;
+
     }
 
     return ScaleFactor(sf);
