@@ -91,6 +91,15 @@ namespace {
                                : VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
   }
 
+  // update the maximum value in a thread safe way
+  template<typename T>
+  void update_maximum(std::atomic<T>& maximum_value, T const& value) noexcept
+  {
+      T prev_value = maximum_value;
+      while(prev_value < value &&
+              !maximum_value.compare_exchange_weak(prev_value, value));
+  }
+
   // Skill structure is used to implement strength limit
   struct Skill {
     explicit Skill(int l) : level(l) {}
@@ -395,6 +404,8 @@ void Thread::search() {
       size_t pvFirst = 0;
       pvLast = 0;
 
+      update_maximum(Threads.maxDepth, rootDepth);
+
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
@@ -413,7 +424,7 @@ void Thread::search() {
           if (rootDepth >= 4 * ONE_PLY)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-              delta = Value(23 - std::min(4, int(index())));
+              delta = Value(23 - 4 * (rootDepth < Threads.maxDepth));
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
