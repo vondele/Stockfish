@@ -841,6 +841,9 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
+    if (v == VALUE_DRAW)
+        v = pos.value_draw();
+
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
            + Eval::Tempo;
   }

@@ -122,7 +122,7 @@ Value Endgame<KXK>::operator()(const Position& pos) const {
 
   // Stalemate detection with lone king
   if (pos.side_to_move() == weakSide && !MoveList<LEGAL>(pos).size())
-      return VALUE_DRAW;
+      return pos.value_draw();
 
   Square winnerKSq = pos.square<KING>(strongSide);
   Square loserKSq = pos.square<KING>(weakSide);
@@ -182,7 +182,7 @@ Value Endgame<KPK>::operator()(const Position& pos) const {
   Color us = strongSide == pos.side_to_move() ? WHITE : BLACK;
 
   if (!Bitbases::probe(wksq, psq, bksq, us))
-      return VALUE_DRAW;
+      return pos.value_draw();
 
   Value result = VALUE_KNOWN_WIN + PawnValueEg + Value(rank_of(psq));
 
@@ -326,7 +326,7 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
 
 /// Some cases of trivial draws
-template<> Value Endgame<KNNK>::operator()(const Position&) const { return VALUE_DRAW; }
+template<> Value Endgame<KNNK>::operator()(const Position& pos) const { return pos.value_draw(); }
 
 
 /// KB and one or more pawns vs K. It checks for draws with rook pawns and
