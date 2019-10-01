@@ -1242,6 +1242,10 @@ void Position::flip() {
   assert(pos_is_ok());
 }
 
+/// Add a small random component to draw evaluations to avoid 3fold-blindness
+Value Position::value_draw() const {
+  return VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
+}
 
 /// Position::pos_is_ok() performs some consistency checks for the
 /// position object and raises an asserts if something wrong is detected.
