@@ -518,7 +518,7 @@ void Thread::search() {
           double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
-          double criticalEval = std::abs(bestValue) > PawnValueEg ? 1.05 : 1.00;
+          double criticalEval = std::abs(bestValue) > PawnValueEg ? 1.10 : 1.00;
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 * ONE_PLY < completedDepth ? 1.97 : 0.98;
