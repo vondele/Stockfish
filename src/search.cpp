@@ -1013,6 +1013,9 @@ moves_loop: // When in check, search starts from here
       if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
+      if (PvNode && depth == ONE_PLY && (ss->ply & 1) == 0)
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
