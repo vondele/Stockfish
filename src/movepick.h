@@ -126,7 +126,7 @@ public:
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
                                            Move,
-                                           Move*);
+                                           Move*, bool);
   Move next_move(bool skipQuiets = false);
 
 private:
@@ -145,6 +145,7 @@ private:
   Square recaptureSquare;
   Value threshold;
   Depth depth;
+  bool priorCapture;
   ExtMove moves[MAX_MOVES];
 };
 
