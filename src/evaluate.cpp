@@ -831,7 +831,7 @@ namespace {
     }
 
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + Eval::Tempo + Value((std::abs(mgc - egc) > 2 * PHASE_MIDGAME * PawnValueMg) ? 5 : -3);
+           + Eval::Tempo + Value((std::abs(mgc - egc) > 2 * PHASE_MIDGAME * PawnValueMg) ? 5 : -2);
   }
 
 } // namespace
