@@ -87,6 +87,10 @@ namespace {
     e->kingSquares[Us] = SQ_NONE;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
 
+    int bp = pos.pawns_on_same_color_squares(Us, SQ_A1);
+    int wp = pos.pawns_on_same_color_squares(Us, SQ_A2);
+    score -= make_score(2, 2) * (bp-wp) * (bp-wp);
+
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
     {
