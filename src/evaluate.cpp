@@ -815,9 +815,9 @@ namespace {
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
-    v =  mg_value(score) * int(me->game_phase())
-       + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
-
+    Value mgc = mg_value(score) * int(me->game_phase());
+    Value egc = eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
+    v =  mgc + egc;
     v /= PHASE_MIDGAME;
 
     // In case of tracing add all remaining individual evaluation terms
@@ -831,7 +831,7 @@ namespace {
     }
 
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + Eval::Tempo;
+           + Eval::Tempo + Value((std::abs(mgc - egc) > 2 * PHASE_MIDGAME * PawnValueMg) ? 5 : -3);
   }
 
 } // namespace
