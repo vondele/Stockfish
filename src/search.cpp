@@ -191,9 +191,9 @@ namespace {
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      ReductionsMoves[i] = int((23.4 + std::log(Threads.size()) / 2) * std::log(i));
+      ReductionsMoves[i] = int((20.0 + std::log(Threads.size()) / 2) * std::log(i) + 7.0 * std::log(1+std::log(i)));
   for (int i = 1; i < MAX_PLY; ++i)
-      ReductionsDepth[i] = int((20.0 + std::log(Threads.size()) / 2) * std::log(i) + 7.0 * std::log(1+std::log(i)));
+      ReductionsDepth[i] = int((23.4 + std::log(Threads.size()) / 2) * std::log(i));
 }
 
 
