@@ -183,8 +183,6 @@ namespace {
     return nodes;
   }
 
-  int bminp = 0, bdinp = 0;
-
 } // namespace
 
 
@@ -192,8 +190,8 @@ namespace {
 
 void Search::init() {
 
-  double bm = bminp, bd = bdinp;
-  double crossing = 15.0;
+  double bm = 0.0, bd = 26.5;
+  double crossing = 16.5;
 
   for (int i = 1; i < MAX_MOVES; ++i)
       ReductionsMoves[i] = int((23.4 - bm * std::log(1+std::log(crossing))/std::log(crossing) +
