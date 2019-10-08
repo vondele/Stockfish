@@ -151,7 +151,7 @@ namespace {
                      + WeakLever * more_than_one(lever);
     }
 
-    if (!e->passedPawns[Us])
+    if (e->passedPawns[Us])
     {
        int bp = pos.pawns_on_same_color_squares(Us, SQ_A1);
        int wp = pos.pawns_on_same_color_squares(Us, SQ_A2);
