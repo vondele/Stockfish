@@ -183,6 +183,8 @@ namespace {
     return nodes;
   }
 
+  int bminp = 0, bdinp = 0;
+
 } // namespace
 
 
@@ -190,12 +192,15 @@ namespace {
 
 void Search::init() {
 
-  double bm = 0, bd = 32;
+  double bm = bminp, bd = bdinp;
+  double crossing = 15.0;
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      ReductionsMoves[i] = int((23.4 - bm * std::log(1+std::log(15))/std::log(15) + std::log(Threads.size()) / 2) * std::log(i)) + bm * std::log(1+std::log(i));
+      ReductionsMoves[i] = int((23.4 - bm * std::log(1+std::log(crossing))/std::log(crossing) +
+                               std::log(Threads.size()) / 2) * std::log(i)) + bm * std::log(1+std::log(i));
   for (int i = 1; i < MAX_PLY; ++i)
-      ReductionsDepth[i] = int((23.4 - bd * std::log(1+std::log(15))/std::log(15) + std::log(Threads.size()) / 2) * std::log(i)) + bd * std::log(1+std::log(i));
+      ReductionsDepth[i] = int((23.4 - bd * std::log(1+std::log(crossing))/std::log(crossing) +
+                               std::log(Threads.size()) / 2) * std::log(i)) + bd * std::log(1+std::log(i));
 }
 
 
