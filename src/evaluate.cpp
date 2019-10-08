@@ -718,7 +718,7 @@ namespace {
 
     int phaseDiff = 0;
     if (int(eg) * int(mg) < 0)
-       phaseDiff = abs(int(eg-mg)) / 64;
+       phaseDiff = std::min(10, abs(int(eg-mg)) / 64);
 
     // Compute the initiative bonus for the attacking side
     int complexity =   9 * pe->passed_count()
