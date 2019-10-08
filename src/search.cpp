@@ -184,7 +184,7 @@ namespace {
   }
 
   int bminp = 0, bdinp = 256, crossinp = 120;
-  TUNE(SetRange(-512, 512), bminp, bdinp, SetRange(64, 256), Search::init);
+  TUNE(SetRange(-512, 512), bminp, bdinp, SetRange(64, 256), crossinp, Search::init);
 
 } // namespace
 
