@@ -183,7 +183,8 @@ namespace {
     return nodes;
   }
 
-  int bminp = 0, bdinp = 0;
+  int bminp = 0, bdinp = 64;
+  TUNE(SetRange(-512, 512), bminp, bdinp, Search::init);
 
 } // namespace
 
@@ -192,7 +193,7 @@ namespace {
 
 void Search::init() {
 
-  double bm = bminp, bd = bdinp;
+  double bm = bminp / 8.0, bd = bdinp / 8.0;
   double crossing = 15.0;
 
   for (int i = 1; i < MAX_MOVES; ++i)
