@@ -151,6 +151,13 @@ namespace {
                      + WeakLever * more_than_one(lever);
     }
 
+    if (!e->passedPawns[Us])
+    {
+       int bp = pos.pawns_on_same_color_squares(Us, SQ_A1);
+       int wp = pos.pawns_on_same_color_squares(Us, SQ_A2);
+       score -= make_score(0, (bp-wp) * (bp-wp) / 2);
+    }
+
     return score;
   }
 
