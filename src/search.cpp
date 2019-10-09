@@ -190,7 +190,7 @@ namespace {
 
 void Search::init() {
 
-  double bm = 0.0, bd = 26.5;
+  double bm = -5.5, bd = 29.0;
   double crossing = 16.5;
 
   for (int i = 1; i < MAX_MOVES; ++i)
