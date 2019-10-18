@@ -1018,9 +1018,6 @@ moves_loop: // When in check, search starts from here
       if (type_of(move) == CASTLING)
           extension = 1;
 
-      if (PvNode && thisThread->lastPvKey == posKey)
-         extension += 1;
-
       // Calculate new depth for this move
       newDepth = depth - 1 + extension;
 
@@ -1095,6 +1092,9 @@ moves_loop: // When in check, search starts from here
 
           // Reduction if other threads are searching this position.
           if (th.marked())
+              r++;
+
+          if (PvNode && thisThread->lastPvKey == posKey)
               r++;
 
           // Decrease reduction if position is or has been on the PV
