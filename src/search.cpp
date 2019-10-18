@@ -393,6 +393,7 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
+      tipExt = rootDepth / 2;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
@@ -1012,6 +1013,12 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       if (type_of(move) == CASTLING)
           extension = 1;
+
+      if (PvNode && depth == 1)
+      {
+         extension += thisThread->tipExt;
+         thisThread->tipExt = 0;
+      }
 
       // Calculate new depth for this move
       newDepth = depth - 1 + extension;
