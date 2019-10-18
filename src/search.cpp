@@ -340,6 +340,7 @@ void Thread::search() {
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
+  PvKey = 0;
 
   size_t multiPV = Options["MultiPV"];
 
@@ -393,7 +394,8 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
-      tipExt = rootDepth / 2;
+      tipExt = rootDepth / 4;
+      lastPvKey = PvKey;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
@@ -916,6 +918,9 @@ moves_loop: // When in check, search starts from here
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
+    if (PvNode && ss->ply == thisThread->rootDepth / 2)
+        thisThread->PvKey = posKey;
+
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
 
@@ -1014,9 +1019,7 @@ moves_loop: // When in check, search starts from here
       if (type_of(move) == CASTLING)
           extension = 1;
 
-      if (   PvNode
-          && depth == 5
-          && pos.rule50_count() + depth + thisThread->tipExt > 99)
+      if (PvNode && thisThread->lastPvKey == posKey)
       {
          extension += thisThread->tipExt;
          thisThread->tipExt = 0;
