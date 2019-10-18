@@ -1056,9 +1056,8 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (  !(givesCheck && extension)
-                   && (   captureCount >= futility_move_count(improving, depth)
-                       || !pos.see_ge(move, Value(-199) * depth))) // (~20 Elo)
+          else if (   !(givesCheck && extension)
+                   && !pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
                   continue;
       }
 
@@ -1149,6 +1148,8 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 16384;
           }
+          else
+              r+= captureCount / 4;
 
           Depth d = clamp(newDepth - r, 1, newDepth);
 
