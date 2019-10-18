@@ -944,6 +944,9 @@ moves_loop: // When in check, search starts from here
       if (PvNode)
           (ss+1)->pv = nullptr;
 
+      bool littleChoice =     pos.count<QUEEN>(us) == 1
+                          && (pos.attackers_to(pos.square<QUEEN>(us)) & pos.pieces(~us));
+
       extension = 0;
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
@@ -1087,6 +1090,9 @@ moves_loop: // When in check, search starts from here
 
           // Reduction if other threads are searching this position.
           if (th.marked())
+              r++;
+
+          if (littleChoice)
               r++;
 
           // Decrease reduction if position is or has been on the PV
