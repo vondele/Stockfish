@@ -1056,10 +1056,13 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (  !(givesCheck && extension)
-                   && (   captureCount >= futility_move_count(improving, depth)
+          else
+          {
+             if (  !(givesCheck && extension)
+                   && (   8 * captureCount >= (5 + depth * depth) * (1 + improving)
                        || !pos.see_ge(move, Value(-199) * depth))) // (~20 Elo)
                   continue;
+          }
       }
 
       // Speculative prefetch as early as possible
