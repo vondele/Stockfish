@@ -747,6 +747,9 @@ namespace {
         }
     }
 
+    bool littleChoice = inCheck
+                        || (pos.count<QUEEN>(us) == 1 && (pos.attackers_to(pos.square<QUEEN>(us)) & pos.pieces(~us)));
+
     // Step 6. Static evaluation of the position
     if (inCheck)
     {
@@ -867,7 +870,7 @@ namespace {
                 probCutCount++;
 
                 ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][pos.moved_piece(move)][to_sq(move)];
+                ss->continuationHistory = &thisThread->continuationHistory[littleChoice][priorCapture][pos.moved_piece(move)][to_sq(move)];
 
                 assert(depth >= 5);
 
@@ -1068,7 +1071,7 @@ moves_loop: // When in check, search starts from here
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][movedPiece][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[littleChoice][priorCapture][movedPiece][to_sq(move)];
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1420,6 +1423,10 @@ moves_loop: // When in check, search starts from here
                                       contHist,
                                       to_sq((ss-1)->currentMove));
 
+    Color us = pos.side_to_move();
+    bool littleChoice = inCheck
+                        || (pos.count<QUEEN>(us) == 1 && (pos.attackers_to(pos.square<QUEEN>(us)) & pos.pieces(~us)));
+
     // Loop through the moves until no moves remain or a beta cutoff occurs
     while ((move = mp.next_move()) != MOVE_NONE)
     {
@@ -1460,7 +1467,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
-          && (!givesCheck || !(pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
+          && (!givesCheck || !(pos.blockers_for_king(~us) & from_sq(move)))
           && !pos.see_ge(move))
           continue;
 
@@ -1475,7 +1482,7 @@ moves_loop: // When in check, search starts from here
       }
 
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][pos.moved_piece(move)][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[littleChoice][priorCapture][pos.moved_piece(move)][to_sq(move)];
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
