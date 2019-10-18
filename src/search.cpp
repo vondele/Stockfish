@@ -394,7 +394,6 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
-      tipExt = rootDepth / 4;
       lastPvKey = PvKey;
 
       // MultiPV loop. We perform a full root search for each PV line
@@ -1020,10 +1019,7 @@ moves_loop: // When in check, search starts from here
           extension = 1;
 
       if (PvNode && thisThread->lastPvKey == posKey)
-      {
-         extension += thisThread->tipExt;
-         thisThread->tipExt = 0;
-      }
+         extension += 1;
 
       // Calculate new depth for this move
       newDepth = depth - 1 + extension;
