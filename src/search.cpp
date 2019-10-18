@@ -1149,7 +1149,7 @@ moves_loop: // When in check, search starts from here
               r -= ss->statScore / 16384;
           }
           else
-              r+= captureCount / 4;
+              r+= (captureCount > 3);
 
           Depth d = clamp(newDepth - r, 1, newDepth);
 
