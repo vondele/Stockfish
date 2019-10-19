@@ -1059,7 +1059,7 @@ moves_loop: // When in check, search starts from here
           else
           {
              if (   !(givesCheck && extension)
-                 && !pos.see_ge(move, Value(-209 + 10 * captureCount) * depth)) // (~20 Elo)
+                 && !pos.see_ge(move, Value(-199 + 5 * captureCount) * depth)) // (~20 Elo)
                   continue;
           }
       }
