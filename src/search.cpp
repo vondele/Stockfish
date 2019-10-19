@@ -67,6 +67,8 @@ namespace {
     return Value(198 * (d - improving));
   }
 
+  int capturePruneMargins[4] = {-199, -199, -199, -199};
+
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
@@ -1057,7 +1059,7 @@ moves_loop: // When in check, search starts from here
                   continue;
           }
           else if (  !(givesCheck && extension)
-                   && !pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
+                   && !pos.see_ge(move, Value(capturePruneMargins[std::min(captureCount,3)]) * depth)) // (~20 Elo)
                   continue;
       }
 
