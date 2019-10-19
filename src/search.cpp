@@ -68,6 +68,7 @@ namespace {
   }
 
   int capturePruneMargins[4] = {-199, -199, -199, -199};
+  TUNE(capturePruneMargins);
 
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
