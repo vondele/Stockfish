@@ -1058,9 +1058,8 @@ moves_loop: // When in check, search starts from here
           }
           else
           {
-             if (  !(givesCheck && extension)
-                   && (   8 * captureCount >= (5 + depth * depth) * (1 + improving)
-                       || !pos.see_ge(move, Value(-199) * depth))) // (~20 Elo)
+             if (   !(givesCheck && extension)
+                 && !pos.see_ge(move, Value(-209 + 10 * captureCount) * depth)) // (~20 Elo)
                   continue;
           }
       }
