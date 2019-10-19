@@ -67,7 +67,7 @@ namespace {
     return Value(198 * (d - improving));
   }
 
-  int capturePruneMargins[4] = {-199, -199, -199, -199};
+  int capturePruneMargins[4] = {-189, -183, -199, -202};
 
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
