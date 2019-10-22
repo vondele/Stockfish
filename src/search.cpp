@@ -1283,9 +1283,9 @@ moves_loop: // When in check, search starts from here
         // Quiet best move: update move sorting heuristics
         if (!pos.capture_or_promotion(bestMove))
             update_quiet_stats(pos, ss, bestMove, quietsSearched, quietCount,
-                               stat_bonus(depth + (bestValue > beta + PawnValueMg)));
+                               stat_bonus(depth + (bestValue > beta + PawnValueMg) + pos.gives_check(bestMove)));
 
-        update_capture_stats(pos, bestMove, capturesSearched, captureCount, stat_bonus(depth + 1 + pos.gives_check(bestMove)));
+        update_capture_stats(pos, bestMove, capturesSearched, captureCount, stat_bonus(depth + 1));
 
         // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
         if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
