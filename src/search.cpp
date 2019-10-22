@@ -1104,7 +1104,7 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if ttMove has been singularly extended
           if (singularLMR)
-              r -= depth < 9 ? 2 : 1;
+              r -= depth > 6 ? 2 : 1;
 
           if (!captureOrPromotion)
           {
