@@ -1287,7 +1287,7 @@ moves_loop: // When in check, search starts from here
                                stat_bonus(depth + (bestValue > beta + PawnValueMg)));
 
         update_capture_stats(pos, bestMove, capturesSearched, captureCount,
-                             (stat_bonus(depth + 1) + stat_bonus(depth + 1 + bestMoveGivesCheck)) / 2);
+                             stat_bonus(depth + 1 + 2 * bestMoveGivesCheck));
 
         // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
         if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
