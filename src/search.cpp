@@ -1286,29 +1286,32 @@ moves_loop: // When in check, search starts from here
         PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
 
         if (!pos.capture_or_promotion(bestMove))
+        {
             update_quiet_stats(pos, ss, bestMove, quietBonus);
+            // Decrease all the non-best quiet moves
+            for (int i = 0; i < quietCount; ++i)
+            {
+                thisThread->mainHistory[us][from_to(quietsSearched[i])] << -quietBonus;
+                update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -quietBonus);
+            }
+        }
         else
+        {
             captureHistory[moved_piece][to_sq(bestMove)][captured] << captBonus;
+            // Decrease all the non-best capture moves
+            for (int i = 0; i < captureCount; ++i)
+            {
+                moved_piece = pos.moved_piece(capturesSearched[i]);
+                captured = type_of(pos.piece_on(to_sq(capturesSearched[i])));
+                captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -captBonus;
+            }
+        }
 
         // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
         if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
             && !priorCapture)
                 update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -captBonus);
 
-        // Decrease all the non-best quiet moves
-        for (int i = 0; i < quietCount; ++i)
-        {
-            thisThread->mainHistory[us][from_to(quietsSearched[i])] << -quietBonus;
-            update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -quietBonus);
-        }
-
-        // Decrease all the non-best capture moves
-        for (int i = 0; i < captureCount; ++i)
-        {
-            moved_piece = pos.moved_piece(capturesSearched[i]);
-            captured = type_of(pos.piece_on(to_sq(capturesSearched[i])));
-            captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -captBonus;
-        }
     }
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 3 || PvNode)
