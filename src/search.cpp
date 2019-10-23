@@ -154,6 +154,8 @@ namespace {
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus);
+  void final_stats_update(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
+                          Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -1277,41 +1279,11 @@ moves_loop: // When in check, search starts from here
     if (!moveCount)
         bestValue = excludedMove ? alpha
                    :     inCheck ? mated_in(ss->ply) : VALUE_DRAW;
+
     else if (bestMove)
-    {
-        int captBonus = stat_bonus(depth + 1);
-        int quietBonus = bestValue > beta + PawnValueMg ? captBonus : stat_bonus(depth);
-        CapturePieceToHistory& captureHistory = thisThread->captureHistory;
-        Piece moved_piece = pos.moved_piece(bestMove);
-        PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
+        final_stats_update(pos, ss, bestMove, bestValue, beta, prevSq,
+                           quietsSearched, quietCount, capturesSearched, captureCount, depth);
 
-        if (!pos.capture_or_promotion(bestMove))
-        {
-            update_quiet_stats(pos, ss, bestMove, quietBonus);
-
-            // Decrease all the non-best quiet moves
-            for (int i = 0; i < quietCount; ++i)
-            {
-                thisThread->mainHistory[us][from_to(quietsSearched[i])] << -quietBonus;
-                update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -quietBonus);
-            }
-        }
-        else
-            captureHistory[moved_piece][to_sq(bestMove)][captured] << captBonus;
-
-        // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
-        if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
-            && !priorCapture)
-                update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -captBonus);
-
-        // Decrease all the non-best capture moves
-        for (int i = 0; i < captureCount; ++i)
-        {
-            moved_piece = pos.moved_piece(capturesSearched[i]);
-            captured = type_of(pos.piece_on(to_sq(capturesSearched[i])));
-            captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -captBonus;
-        }
-    }
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 3 || PvNode)
              && !priorCapture)
@@ -1582,6 +1554,48 @@ moves_loop: // When in check, search starts from here
     for (*pv++ = move; childPv && *childPv != MOVE_NONE; )
         *pv++ = *childPv++;
     *pv = MOVE_NONE;
+  }
+
+
+  // final_stats_update() updates stats at the end of searching a position when a bestMove is found
+
+  void final_stats_update(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
+                          Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount,  Depth depth) {
+
+    Color us = pos.side_to_move();
+    Thread* thisThread = pos.this_thread();
+    int largeBonus = stat_bonus(depth + 1);
+    int quietBonus = bestValue > beta + PawnValueMg ? largeBonus : stat_bonus(depth);
+    CapturePieceToHistory& captureHistory = thisThread->captureHistory;
+    Piece moved_piece = pos.moved_piece(bestMove);
+    PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
+
+    if (!pos.capture_or_promotion(bestMove))
+    {
+        update_quiet_stats(pos, ss, bestMove, quietBonus);
+
+        // Decrease all the non-best quiet moves
+        for (int i = 0; i < quietCount; ++i)
+        {
+            thisThread->mainHistory[us][from_to(quietsSearched[i])] << -quietBonus;
+            update_continuation_histories(ss, pos.moved_piece(quietsSearched[i]), to_sq(quietsSearched[i]), -quietBonus);
+        }
+    }
+    else
+        captureHistory[moved_piece][to_sq(bestMove)][captured] << largeBonus;
+
+    // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
+    if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
+        && !pos.captured_piece())
+            update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -largeBonus);
+
+    // Decrease all the non-best capture moves
+    for (int i = 0; i < captureCount; ++i)
+    {
+        moved_piece = pos.moved_piece(capturesSearched[i]);
+        captured = type_of(pos.piece_on(to_sq(capturesSearched[i])));
+        captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -largeBonus;
+    }
   }
 
 
