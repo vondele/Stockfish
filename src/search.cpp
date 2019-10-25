@@ -1580,10 +1580,7 @@ moves_loop: // When in check, search starts from here
         }
     }
     else
-    {
-        int captureBonus = pos.gives_check(bestMove) ? stat_bonus(depth + 2) : largeBonus;
-        captureHistory[moved_piece][to_sq(bestMove)][captured] << captureBonus;
-    }
+        captureHistory[moved_piece][to_sq(bestMove)][captured] << largeBonus;
 
     // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
     if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
@@ -1591,11 +1588,12 @@ moves_loop: // When in check, search starts from here
             update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -largeBonus);
 
     // Decrease all the non-best capture moves
+    int captureBonus = pos.gives_check(bestMove) ? -stat_bonus(depth + 2) : -largeBonus;
     for (int i = 0; i < captureCount; ++i)
     {
         moved_piece = pos.moved_piece(capturesSearched[i]);
         captured = type_of(pos.piece_on(to_sq(capturesSearched[i])));
-        captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << -largeBonus;
+        captureHistory[moved_piece][to_sq(capturesSearched[i])][captured] << captureBonus;
     }
   }
 
