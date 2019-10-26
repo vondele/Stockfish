@@ -671,7 +671,6 @@ namespace {
         && ttHit
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
-        && std::abs(ttValue) < VALUE_MATE_IN_MAX_PLY
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
     {
@@ -695,7 +694,7 @@ namespace {
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
-        return ttValue;
+        return clamp(ttValue, -VALUE_MATE_IN_MAX_PLY, VALUE_MATE_IN_MAX_PLY);
     }
 
     // Step 5. Tablebases probe
