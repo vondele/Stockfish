@@ -42,6 +42,7 @@ namespace Zobrist {
   Key enpassant[FILE_NB];
   Key castling[CASTLING_RIGHT_NB];
   Key side, noPawns;
+  Key m50c[5];
 }
 
 namespace {
@@ -163,6 +164,9 @@ void Position::init() {
           Zobrist::castling[cr] ^= k ? k : rng.rand<Key>();
       }
   }
+
+  for (int i=0; i<5; i++)
+      Zobrist::m50c[i] = rng.rand<Key>();
 
   Zobrist::side = rng.rand<Key>();
   Zobrist::noPawns = rng.rand<Key>();
@@ -397,6 +401,8 @@ void Position::set_state(StateInfo* si) const {
       si->key ^= Zobrist::side;
 
   si->key ^= Zobrist::castling[si->castlingRights];
+
+  si->key ^= Zobrist::m50c[msb(13 - si->rule50 / 8)];
 
   for (Piece pc : Pieces)
       for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
@@ -724,6 +730,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
   Key k = st->key ^ Zobrist::side;
+  k ^= Zobrist::m50c[msb(13 - st->rule50 / 8)];
 
   // Copy some fields of the old state to our new StateInfo object except the
   // ones which are going to be recalculated from scratch anyway and then switch
@@ -858,6 +865,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
       // Reset rule 50 draw counter
       st->rule50 = 0;
   }
+
+  k ^= Zobrist::m50c[msb(13 - st->rule50 / 8)];
 
   // Set capture piece
   st->capturedPiece = captured;
