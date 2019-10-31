@@ -1100,7 +1100,7 @@ moves_loop: // When in check, search starts from here
               r -= 2;
 
 	  if (!ttHit)
-	      r -= 1;
+	      r += 1;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
