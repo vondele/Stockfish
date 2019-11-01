@@ -340,6 +340,7 @@ void Thread::search() {
   ss->pv = pv;
 
   bestValue = delta = alpha = -VALUE_INFINITE;
+  bestMove = MOVE_NONE;
   beta = VALUE_INFINITE;
 
   size_t multiPV = Options["MultiPV"];
@@ -494,6 +495,7 @@ void Thread::search() {
           completedDepth = rootDepth;
 
       if (rootMoves[0].pv[0] != lastBestMove) {
+         bestMove.store(rootMoves[0].pv[0], std::memory_order_relaxed);
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
       }
@@ -530,6 +532,9 @@ void Thread::search() {
               th->bestMoveChanges = 0;
           }
           double bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
+
+	  if (3 * Threads.equal_best_moves(rootMoves[0].pv[0]) < 2 * Threads.size())
+             bestMoveInstability *= 1.5;
 
           // Stop the search if we have only one legal move, or if available time elapsed
           if (   rootMoves.size() == 1
@@ -1084,6 +1089,7 @@ moves_loop: // When in check, search starts from here
       if (    depth >= 3
           &&  moveCount > 1 + 2 * rootNode
           && (!rootNode || thisThread->best_move_count(move) == 0)
+          && (!rootNode || Threads.equal_best_moves(move) == 0)
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
