@@ -798,7 +798,7 @@ namespace {
         &&  depth < 7
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
-        return eval;
+        return beta;
 
     // Step 9. Null move search with verification search (~40 Elo)
     if (   !PvNode
