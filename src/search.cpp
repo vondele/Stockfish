@@ -340,6 +340,7 @@ void Thread::search() {
   ss->pv = pv;
 
   bestValue = delta = alpha = -VALUE_INFINITE;
+  bestMove = MOVE_NONE;
   beta = VALUE_INFINITE;
 
   size_t multiPV = Options["MultiPV"];
@@ -494,6 +495,7 @@ void Thread::search() {
           completedDepth = rootDepth;
 
       if (rootMoves[0].pv[0] != lastBestMove) {
+         bestMove.store(rootMoves[0].pv[0], std::memory_order_relaxed);
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
       }
@@ -1083,6 +1085,7 @@ moves_loop: // When in check, search starts from here
       // re-searched at full depth.
       if (    depth >= 3
           &&  moveCount > 1 + 2 * rootNode
+	  && (!rootNode || Threads.equal_best_moves(move) == 0)
           && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
               || moveCountPruning

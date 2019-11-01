@@ -64,6 +64,7 @@ public:
   int selDepth, nmpMinPly;
   Color nmpColor;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
+  std::atomic<Move> bestMove;
 
   Position rootPos;
   Search::RootMoves rootMoves;
@@ -106,6 +107,15 @@ struct ThreadPool : public std::vector<Thread*> {
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
+
+  uint64_t equal_best_moves(Move m) const {
+
+    uint64_t sum = 0;
+    for (Thread* th : *this)
+        sum += (th->bestMove).load(std::memory_order_relaxed) == m ? 1 : 0;
+    return sum;
+
+  }
 
   std::atomic_bool stop;
 
