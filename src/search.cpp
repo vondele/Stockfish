@@ -370,7 +370,7 @@ void Thread::search() {
   double bt = Limits.time[BLACK] + 16 * Limits.inc[BLACK];
 
   if (wt && bt)
-     ct += 20 * clamp(std::log2(us == WHITE ? wt / bt : bt / wt), -2., 2.);
+     ct += 10 * clamp(std::log2(us == WHITE ? wt / bt : bt / wt), -2., 2.);
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
