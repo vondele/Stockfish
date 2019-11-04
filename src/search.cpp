@@ -366,6 +366,12 @@ void Thread::search() {
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
+  double wt = Limits.time[WHITE] + 16 * Limits.inc[WHITE];
+  double bt = Limits.time[BLACK] + 16 * Limits.inc[BLACK];
+
+  if (wt && bt)
+     ct += int(20 * clamp(std::log2(us == WHITE ? wt / bt : bt / wt), -4., 4.)) * PawnValueEg / 100;
+
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
       ct =  Options["Analysis Contempt"] == "Off"  ? 0
