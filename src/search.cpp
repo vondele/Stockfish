@@ -956,14 +956,12 @@ moves_loop: // When in check, search starts from here
       givesCheck = pos.gives_check(move);
 
       // Step 13. Extensions (~70 Elo)
-      if (false) {
-
       // Singular extension search (~60 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-      if (    depth >= 6
+      if (    depth >= 6 && false
           &&  move == ttMove
           && !rootNode
           && !excludedMove // Avoid recursive singular search
@@ -1009,8 +1007,6 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       if (type_of(move) == CASTLING)
           extension = 1;
-
-      }
 
       // Calculate new depth for this move
       newDepth = depth - 1 + extension;
