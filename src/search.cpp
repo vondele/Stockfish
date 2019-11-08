@@ -853,7 +853,7 @@ namespace {
     // Step 10. ProbCut (~10 Elo)
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
-    if (   !PvNode && false
+    if (   !PvNode
         &&  depth >= 5
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
@@ -894,7 +894,7 @@ namespace {
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)
-    if (depth >= 7 && !ttMove)
+    if (depth >= 7 && !ttMove && false)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
