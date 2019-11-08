@@ -1046,7 +1046,7 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (  !(givesCheck && extension) && false
+          else if (  !(givesCheck && extension)
                    && !pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
                   continue;
       }
@@ -1073,7 +1073,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth.
-      if (    depth >= 3
+      if (    depth >= 3 && false
           &&  moveCount > 1 + 2 * rootNode
           && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
