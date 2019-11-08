@@ -894,7 +894,7 @@ namespace {
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)
-    if (depth >= 7 && !ttMove && false)
+    if (depth >= 7 && !ttMove)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
@@ -956,6 +956,7 @@ moves_loop: // When in check, search starts from here
       givesCheck = pos.gives_check(move);
 
       // Step 13. Extensions (~70 Elo)
+      if (false) {
 
       // Singular extension search (~60 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
@@ -1008,6 +1009,8 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       if (type_of(move) == CASTLING)
           extension = 1;
+
+      }
 
       // Calculate new depth for this move
       newDepth = depth - 1 + extension;
