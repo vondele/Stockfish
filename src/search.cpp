@@ -1073,7 +1073,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth.
-      if (    depth >= 3 && false
+      if (    depth >= 3
           &&  moveCount > 1 + 2 * rootNode
           && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
@@ -1088,7 +1088,7 @@ moves_loop: // When in check, search starts from here
               r++;
 
           // Decrease reduction if position is or has been on the PV
-          if (ttPv)
+          if (ttPv && false)
               r -= 2;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
