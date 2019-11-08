@@ -1096,13 +1096,13 @@ moves_loop: // When in check, search starts from here
               r--;
 
           // Decrease reduction if ttMove has been singularly extended
-          if (singularLMR && false)
+          if (singularLMR)
               r -= 2;
 
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~0 Elo)
-              if (ttCapture)
+              if (ttCapture && false)
                   r++;
 
               // Increase reduction for cut nodes (~5 Elo)
