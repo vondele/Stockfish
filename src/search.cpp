@@ -893,16 +893,6 @@ namespace {
             }
     }
 
-    // Step 11. Internal iterative deepening (~2 Elo)
-    if (depth >= 7 && !ttMove)
-    {
-        search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
-
-        tte = TT.probe(posKey, ttHit);
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-        ttMove = ttHit ? tte->move() : MOVE_NONE;
-    }
-
 moves_loop: // When in check, search starts from here
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
