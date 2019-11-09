@@ -748,6 +748,11 @@ namespace {
         else
             sf = std::min(sf, 36 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide));
 
+        if (   pos.count<PAWN>(strongSide) == 0
+            && (   pos.non_pawn_material(strongSide) - pos.non_pawn_material(~strongSide) < QueenValueMg - RookValueMg
+                || pos.non_pawn_material(strongSide) - pos.non_pawn_material(~strongSide) == 2 * KnightValueMg))
+            sf = sf / 2;
+
         sf = std::max(0, sf - (pos.rule50_count() - 12) / 4);
     }
 
