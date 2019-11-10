@@ -794,7 +794,7 @@ namespace {
                || (ss-2)->staticEval == VALUE_NONE;
 
     // Step 8. Futility pruning: child node (~30 Elo)
-    if (   !PvNode && false
+    if (   !PvNode
         &&  depth < 7
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -962,7 +962,7 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-      if (    depth >= 6
+      if (    depth >= 6 && false
           &&  move == ttMove
           && !rootNode
           && !excludedMove // Avoid recursive singular search
