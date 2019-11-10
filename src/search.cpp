@@ -751,7 +751,7 @@ namespace {
     // Step 6. Static evaluation of the position
     if (inCheck)
     {
-        ss->staticEval = eval = VALUE_NONE;
+        ss->staticEval = eval = VALUE_KNOWN_WIN;
         improving = false;
         goto moves_loop;  // Skip early pruning when in check
     }
