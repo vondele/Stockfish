@@ -793,7 +793,7 @@ namespace {
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
-    if (16 * thisThread->ttProgress > 8 * ttProgressResolution * ttProgressWindow && !ttHit)
+    if (16 * thisThread->ttProgress > 9 * ttProgressResolution * ttProgressWindow && !ttHit)
         goto moves_loop;
 
     // Step 7. Razoring (~2 Elo)
