@@ -793,7 +793,10 @@ namespace {
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
-    if (16 * thisThread->ttProgress > 10 * ttProgressResolution * ttProgressWindow && !ttHit)
+    improving =   ss->staticEval >= (ss-2)->staticEval
+               || (ss-2)->staticEval == VALUE_NONE;
+
+    if (16 * thisThread->ttProgress > 8 * ttProgressResolution * ttProgressWindow && !ttHit)
         goto moves_loop;
 
     // Step 7. Razoring (~2 Elo)
@@ -801,9 +804,6 @@ namespace {
         &&  depth < 2
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-
-    improving =   ss->staticEval >= (ss-2)->staticEval
-               || (ss-2)->staticEval == VALUE_NONE;
 
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !PvNode
