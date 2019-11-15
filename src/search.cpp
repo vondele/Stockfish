@@ -1091,7 +1091,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          if (16 * thisThread->ttProgress > 8 * ttProgressResolution * ttProgressWindow)
+          if (16 * thisThread->ttProgress > 9 * ttProgressResolution * ttProgressWindow)
              r--;
 
           // Reduction if other threads are searching this position.
