@@ -796,7 +796,7 @@ namespace {
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
 
-    if (16 * thisThread->ttProgress > 9 * ttProgressResolution * ttProgressWindow && !ttHit)
+    if (16 * thisThread->ttProgress > 10 * ttProgressResolution * ttProgressWindow && !ttHit)
         goto moves_loop;
 
     // Step 7. Razoring (~2 Elo)
