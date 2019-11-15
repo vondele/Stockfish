@@ -61,6 +61,8 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
+  constexpr int ttProgressWindow = 4096, ttProgressResolution = 16;
+
   // Razor and futility margins
   constexpr int RazorMargin = 661;
   Value futility_margin(Depth d, bool improving) {
@@ -363,6 +365,7 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
+  ttProgress = (ttProgressWindow / 2) * ttProgressResolution;
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
@@ -665,6 +668,7 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = PvNode || (ttHit && tte->is_pv());
+    thisThread->ttProgress = (ttProgressWindow - 1) * thisThread->ttProgress / ttProgressWindow + ttProgressResolution * ttHit;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1081,6 +1085,9 @@ moves_loop: // When in check, search starts from here
               || cutNode))
       {
           Depth r = reduction(improving, depth, moveCount);
+
+          if (thisThread->ttProgress > ttProgressResolution * ttProgressWindow / 2)
+             r--;
 
           // Reduction if other threads are searching this position.
           if (th.marked())
