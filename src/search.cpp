@@ -61,7 +61,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
-  constexpr int ttProgressWindow = 4096, ttProgressResolution = 16;
+  constexpr int ttProgressWindow = 4096, ttProgressResolution = 1024;
 
   // Razor and futility margins
   constexpr int RazorMargin = 661;
