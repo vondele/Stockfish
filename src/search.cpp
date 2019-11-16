@@ -61,7 +61,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
-  constexpr int ttProgressWindow = 4096, ttProgressResolution = 1024;
+  constexpr size_t ttProgressWindow = 4096, ttProgressResolution = 1024;
 
   // Razor and futility margins
   constexpr int RazorMargin = 661;
@@ -1086,7 +1086,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          if (thisThread->ttProgress > ttProgressResolution * ttProgressWindow / 2)
+          if (1024 * thisThread->ttProgress > 544 * ttProgressResolution * ttProgressWindow)
              r--;
 
           // Reduction if other threads are searching this position.
