@@ -61,7 +61,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
-  constexpr uint64_t ttHitAverageWindow     = 2048;
+  constexpr uint64_t ttHitAverageWindow     = 8192;
   constexpr uint64_t ttHitAverageResolution = 1024;
 
   // Razor and futility margins
