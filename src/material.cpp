@@ -154,7 +154,9 @@ Entry* probe(const Position& pos) {
   if (sf)
   {
       e->scalingFunction[sf->strongSide] = sf; // Only strong color assigned
-      return e;
+
+      if (!sf->is_tbstat())
+          return e;
   }
 
   // We didn't find any specialized scaling function, so fall back on generic
@@ -198,10 +200,14 @@ Entry* probe(const Position& pos) {
   if (!pos.count<PAWN>(WHITE) && npm_w - npm_b <= BishopValueMg)
       e->factor[WHITE] = uint8_t(npm_w <  RookValueMg   ? SCALE_FACTOR_DRAW :
                                  npm_b <= BishopValueMg ? 4 : 14);
+  else if (sf && sf->strongSide == WHITE)
+      e->factor[WHITE] = (*sf)(pos);
 
   if (!pos.count<PAWN>(BLACK) && npm_b - npm_w <= BishopValueMg)
       e->factor[BLACK] = uint8_t(npm_b <  RookValueMg   ? SCALE_FACTOR_DRAW :
                                  npm_w <= BishopValueMg ? 4 : 14);
+  else if (sf && sf->strongSide == BLACK)
+      e->factor[BLACK] = (*sf)(pos);
 
   // Evaluate the material imbalance. We use PIECE_TYPE_NONE as a place holder
   // for the bishop pair "extended piece", which allows us to be more flexible
