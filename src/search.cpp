@@ -804,7 +804,6 @@ namespace {
     if (   !PvNode
         &&  depth < 7
         &&  eval - futility_margin(depth, improving) >= beta
-        &&  thisThread->ttHitAverage < 765 * ttHitAverageResolution * ttHitAverageWindow / 1024
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
@@ -815,6 +814,7 @@ namespace {
         &&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
+        &&  thisThread->ttHitAverage < 800 * ttHitAverageResolution * ttHitAverageWindow / 1024
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
