@@ -804,6 +804,7 @@ namespace {
     if (   !PvNode
         &&  depth < 7
         &&  eval - futility_margin(depth, improving) >= beta
+        &&  thisThread->ttHitAverage < 765 * ttHitAverageResolution * ttHitAverageWindow / 1024
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
