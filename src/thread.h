@@ -61,7 +61,7 @@ public:
   Pawns::Table pawnsTable;
   Material::Table materialTable;
   size_t pvIdx, pvLast;
-  uint64_t ttHitAverage;
+  uint64_t ttHitAverage, inCheckAverage;
   int selDepth, nmpMinPly;
   Color nmpColor;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;

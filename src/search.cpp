@@ -63,6 +63,8 @@ namespace {
 
   constexpr uint64_t ttHitAverageWindow     = 4096;
   constexpr uint64_t ttHitAverageResolution = 1024;
+  constexpr uint64_t inCheckAverageWindow     = 4096;
+  constexpr uint64_t inCheckAverageResolution = 1024;
 
   // Razor and futility margins
   constexpr int RazorMargin = 661;
@@ -367,6 +369,7 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = ttHitAverageWindow * ttHitAverageResolution / 2;
+  inCheckAverage = 0;
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
@@ -672,6 +675,9 @@ namespace {
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
     thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
                                 + ttHitAverageResolution * ttHit;
+    // thisThread->inCheckAverage can be used to approximate the running average of inCheck
+    thisThread->inCheckAverage =   (inCheckAverageWindow - 1) * thisThread->inCheckAverage / inCheckAverageWindow
+                                + inCheckAverageResolution * inCheck;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -815,6 +821,7 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
         && !excludedMove
+	&& thisThread->inCheckAverage < 120 * inCheckAverageResolution * inCheckAverageWindow / 1024
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
