@@ -821,7 +821,6 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
         && !excludedMove
-	&& thisThread->inCheckAverage < 130 * inCheckAverageResolution * inCheckAverageWindow / 1024
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
@@ -1098,6 +1097,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 544 * ttHitAverageResolution * ttHitAverageWindow / 1024)
               r--;
+
+	  if (thisThread->inCheckAverage > 130 * inCheckAverageResolution * inCheckAverageWindow / 1024)
+	      r--;
 
           // Reduction if other threads are searching this position.
           if (th.marked())
