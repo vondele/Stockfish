@@ -918,7 +918,7 @@ moves_loop: // When in check, search starts from here
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
-    Value captureBoost = (alpha >= VALUE_ZERO - 1) ? Value(pos.rule50_count() * pos.rule50_count() / 64) : VALUE_ZERO;
+    Value captureBoost = (beta >= VALUE_ZERO - 1) ? Value(pos.rule50_count() * pos.rule50_count() / 64) : VALUE_ZERO;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
