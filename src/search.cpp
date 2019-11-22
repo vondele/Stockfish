@@ -918,11 +918,13 @@ moves_loop: // When in check, search starts from here
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
+    Value captureBoost = alpha > VALUE_ZERO ? Value(pos.rule50_count() * pos.rule50_count() / 64) : VALUE_ZERO;
+
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
                                       countermove,
-                                      ss->killers);
+                                      ss->killers, captureBoost);
 
     value = bestValue;
     singularLMR = moveCountPruning = false;
