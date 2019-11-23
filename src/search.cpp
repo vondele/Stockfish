@@ -804,6 +804,7 @@ namespace {
     if (   !PvNode
         &&  depth < 7
         &&  eval - futility_margin(depth, improving) >= beta
+        && !(ss-1)->singularLMR
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
@@ -815,7 +816,6 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
         && !excludedMove
-        && !(ss-1)->singularLMR
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
