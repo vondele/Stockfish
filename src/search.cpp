@@ -1046,7 +1046,8 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
       else if (    givesCheck
-               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
+               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
+               && thisThread->inCheckAverage < 110 * inCheckAverageResolution * inCheckAverageWindow / 1024)
           extension = 1;
 
       // Passed pawn extension
@@ -1098,9 +1099,6 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 544 * ttHitAverageResolution * ttHitAverageWindow / 1024)
               r--;
-
-	  if (thisThread->inCheckAverage > 100 * inCheckAverageResolution * inCheckAverageWindow / 1024)
-	      r++;
 
           // Reduction if other threads are searching this position.
           if (th.marked())
