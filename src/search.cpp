@@ -600,7 +600,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue;
     bool ttHit, ttPv, inCheck, givesCheck, improving, didLMR, priorCapture;
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularLMR;
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
 
@@ -815,6 +815,7 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
         && !excludedMove
+        && !(ss-1)->singularLMR
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
@@ -925,7 +926,7 @@ moves_loop: // When in check, search starts from here
                                       ss->killers);
 
     value = bestValue;
-    singularLMR = moveCountPruning = false;
+    ss->singularLMR = moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     // Mark this node as being searched
@@ -1025,7 +1026,7 @@ moves_loop: // When in check, search starts from here
           if (value < singularBeta)
           {
               extension = 1;
-              singularLMR = true;
+              ss->singularLMR = true;
           }
 
           // Multi-cut pruning
@@ -1106,7 +1107,7 @@ moves_loop: // When in check, search starts from here
               r--;
 
           // Decrease reduction if ttMove has been singularly extended
-          if (singularLMR)
+          if (ss->singularLMR)
               r -= 2;
 
           if (!captureOrPromotion)
