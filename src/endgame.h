@@ -120,7 +120,7 @@ struct TBStat {
     float loss_ratio(Color stm) const { return lossRatio[stm]; }
 };
 
-const int TB_STAT_COUNT = 1001;
+const int TB_STAT_COUNT = 1511;
 extern TBStat TBstats[TB_STAT_COUNT];
 
 
