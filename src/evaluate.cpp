@@ -827,7 +827,7 @@ namespace {
     }
 
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + (pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK) ? 2 : -2) + Eval::Tempo;
+           + (pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK) ? -2 : 2) + Eval::Tempo;
   }
 
 } // namespace
