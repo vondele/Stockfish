@@ -779,6 +779,8 @@ namespace {
     // the position object (material + piece square tables) and the material
     // imbalance. Score is computed internally from the white point of view.
     Score score = pos.psq_score() + me->imbalance() + pos.this_thread()->contempt;
+    score += pos.side_to_move() == WHITE ? make_score(Eval::Tempo, Eval::Tempo) :
+                                           make_score(-Eval::Tempo, -Eval::Tempo);
 
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
@@ -826,8 +828,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + Eval::Tempo;
+    return pos.side_to_move() == WHITE ? v : -v; // Side to move point of view
   }
 
 } // namespace
