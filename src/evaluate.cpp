@@ -699,8 +699,9 @@ namespace {
   template<Tracing T>
   Score Evaluation<T>::initiative(Score score) const {
 
-    Value mg = mg_value(score);
-    Value eg = eg_value(score);
+    int tempo = pos.side_to_move() == WHITE ? Eval::Tempo : - Eval::Tempo;
+    Value mg = mg_value(score) + tempo;
+    Value eg = eg_value(score) + tempo;
 
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -779,8 +780,6 @@ namespace {
     // the position object (material + piece square tables) and the material
     // imbalance. Score is computed internally from the white point of view.
     Score score = pos.psq_score() + me->imbalance() + pos.this_thread()->contempt;
-    score += pos.side_to_move() == WHITE ? make_score(Eval::Tempo, Eval::Tempo) :
-                                           make_score(-Eval::Tempo, -Eval::Tempo);
 
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
