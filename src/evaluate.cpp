@@ -700,8 +700,9 @@ namespace {
   Score Evaluation<T>::initiative(Score score) const {
 
     int tempo = pos.side_to_move() == WHITE ? Eval::Tempo : - Eval::Tempo;
-    Value mg = mg_value(score) + tempo;
-    Value eg = eg_value(score) + tempo;
+    Value mg = mg_value(score);
+    Value eg = eg_value(score);
+
 
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -719,6 +720,7 @@ namespace {
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
                     + 51 * !pos.non_pawn_material()
+                    +      tempo
                     - 43 * almostUnwinnable
                     - 95 ;
 
@@ -827,7 +829,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    return (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo / 2; // Side to move point of view
+    return pos.side_to_move() == WHITE ? v : -v; // Side to move point of view
   }
 
 } // namespace
