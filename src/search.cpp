@@ -224,7 +224,7 @@ void MainThread::search() {
   }
 
   Color us = rootPos.side_to_move();
-  Time.init(Limits, us, rootPos.game_ply(), std::abs(previousScore) < 10 ? rootPos.rule50_count() : 100);
+  Time.init(Limits, us, rootPos.game_ply(), std::abs(previousScore) < 10 ? rootPos.rule50_count() : 0);
   TT.new_search();
 
   if (rootMoves.empty())
