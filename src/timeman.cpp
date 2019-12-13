@@ -106,8 +106,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply, int c50
 
   startTime = limits.startTime;
   optimumTime = maximumTime = std::max(limits.time[us], minThinkingTime);
-
-  const int maxMTG = limits.movestogo ? std::min(limits.movestogo, (100 - c50mr) / 2) : (100 - c50mr) / 2;
+  int moveHorizon = std::max(10, (100 - c50mr) / 2);
+  const int maxMTG = limits.movestogo ? std::min(limits.movestogo, moveHorizon) : moveHorizon; 
 
   // We calculate optimum time usage for different hypothetical "moves to go" values
   // and choose the minimum of calculated search time values. Usually the greatest
