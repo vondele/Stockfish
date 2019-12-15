@@ -86,7 +86,7 @@ public:
 
   // The 32 lowest order bits of the key are used to get the index of the cluster
   TTEntry* first_entry(const Key key, int class50mr) const {
-    return &table[(uint32_t(key ^ class50mr * 6364136223846793005ULL) * uint64_t(clusterCount)) >> 32].entry[0];
+    return &table[(uint32_t(key ^ (uint32_t(class50mr) * 6364136223846793005ULL)) * uint64_t(clusterCount)) >> 32].entry[0];
   }
 
 private:
