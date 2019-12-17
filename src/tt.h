@@ -84,9 +84,13 @@ public:
   void resize(size_t mbSize);
   void clear();
 
-  // The 32 lowest order bits of the key are used to get the index of the cluster
+  // Keys are supposed to be random, typically higher bits dominate the index
   TTEntry* first_entry(const Key key) const {
-    return &table[(uint32_t(key) * uint64_t(clusterCount)) >> 32].entry[0];
+#ifdef __SIZEOF_INT128__
+     return &table[(uint64_t(key) * __uint128_t(clusterCount)) >> 64].entry[0];
+#else
+    return &table[(uint32_t(key >> 32) * uint64_t(clusterCount)) >> 32].entry[0];
+#endif
   }
 
 private:

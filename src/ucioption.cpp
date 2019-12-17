@@ -56,8 +56,13 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 
 void init(OptionsMap& o) {
 
+#ifdef __SIZEOF_INT128__
+  // limit to 4TB for now.
+  constexpr int MaxHashMB = Is64Bit ? 4194304 : 2048;
+#else
   // at most 2^32 clusters.
   constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
+#endif
 
   o["Debug Log File"]        << Option("", on_logger);
   o["Contempt"]              << Option(24, -100, 100);
