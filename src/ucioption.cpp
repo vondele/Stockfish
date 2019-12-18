@@ -56,7 +56,7 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 
 void init(OptionsMap& o) {
 
-#ifdef __SIZEOF_INT128__
+#ifdef USE_LARGE_HASH
   // limit to 4TB for now.
   constexpr int MaxHashMB = Is64Bit ? 4194304 : 2048;
 #else

@@ -86,7 +86,7 @@ public:
 
   // Keys are supposed to be random, typically higher bits dominate the index
   TTEntry* first_entry(const Key key) const {
-#ifdef __SIZEOF_INT128__
+#ifdef USE_LARGE_HASH
      return &table[(uint64_t(key) * __uint128_t(clusterCount)) >> 64].entry[0];
 #else
     return &table[(uint32_t(key >> 32) * uint64_t(clusterCount)) >> 32].entry[0];
