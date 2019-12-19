@@ -777,6 +777,10 @@ namespace {
         improving = false;
         goto moves_loop;  // Skip early pruning when in check
     }
+    else if (excludedMove)
+    {
+        eval = ss->staticEval;
+    }
     else if (ttHit)
     {
         // Never assume anything about values stored in TT
