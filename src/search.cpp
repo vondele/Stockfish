@@ -678,7 +678,17 @@ namespace {
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
-    posKey = excludedMove ? 0 : pos.key();
+    if (excludedMove)
+    {
+       tte = nullptr;
+       posKey = 0;
+       improving = ttPv = ttHit = false;
+       ttValue = VALUE_NONE;
+       ttMove = MOVE_NONE;
+       eval = ss->staticEval;
+       goto moves_loop;
+    }
+    posKey = pos.key();
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
@@ -777,10 +787,6 @@ namespace {
         improving = false;
         goto moves_loop;  // Skip early pruning when in check
     }
-    else if (excludedMove)
-    {
-        eval = ss->staticEval;
-    }
     else if (ttHit)
     {
         // Never assume anything about values stored in TT
@@ -833,7 +839,6 @@ namespace {
         &&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
-        && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
@@ -889,7 +894,7 @@ namespace {
 
         while (  (move = mp.next_move()) != MOVE_NONE
                && probCutCount < 2 + 2 * cutNode)
-            if (move != excludedMove && pos.legal(move))
+            if (pos.legal(move))
             {
                 assert(pos.capture_or_promotion(move));
                 assert(depth >= 5);
