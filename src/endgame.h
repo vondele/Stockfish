@@ -59,7 +59,11 @@ enum EndgameCode {
   KBPKN,   // KBP vs KN
   KNPK,    // KNP vs K
   KNPKB,   // KNP vs KB
-  KPKP     // KP vs KP
+  KPKP,    // KP vs KP
+  KRBKRP,
+  KRBKRPP,
+  KRNKRP,
+  KRNKRPP
 };
 
 

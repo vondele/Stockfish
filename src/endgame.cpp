@@ -106,6 +106,10 @@ namespace Endgames {
     add<KBPKN>("KBPKN");
     add<KBPPKB>("KBPPKB");
     add<KRPPKRP>("KRPPKRP");
+    add<KRBKRP>("KRBKRP");
+    add<KRBKRPP>("KRBKRPP");
+    add<KRNKRP>("KRNKRP");
+    add<KRNKRPP>("KRNKRPP");
   }
 }
 
@@ -243,7 +247,7 @@ Value Endgame<KRKB>::operator()(const Position& pos) const {
   assert(verify_material(pos, strongSide, RookValueMg, 0));
   assert(verify_material(pos, weakSide, BishopValueMg, 0));
 
-  Value result = Value(PushToEdges[pos.square<KING>(weakSide)]);
+  Value result = Value(PushToEdges[pos.square<KING>(weakSide)]) / 4;
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -258,7 +262,7 @@ Value Endgame<KRKN>::operator()(const Position& pos) const {
 
   Square bksq = pos.square<KING>(weakSide);
   Square bnsq = pos.square<KNIGHT>(weakSide);
-  Value result = Value(PushToEdges[bksq] + PushAway[distance(bksq, bnsq)]);
+  Value result = Value(PushToEdges[bksq] + PushAway[distance(bksq, bnsq)]) / 4;
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -327,6 +331,32 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
 /// Some cases of trivial draws
 template<> Value Endgame<KNNK>::operator()(const Position&) const { return VALUE_DRAW; }
+
+/// drawish endgames
+template<>
+ScaleFactor Endgame<KRBKRP>::operator()(const Position& pos) const {
+  assert(pos.non_pawn_material(strongSide) == BishopValueMg + RookValueMg);
+  assert(pos.count<PAWN>(~strongSide) == 1);
+  return ScaleFactor(21);
+}
+template<>
+ScaleFactor Endgame<KRNKRP>::operator()(const Position& pos) const {
+  assert(pos.non_pawn_material(strongSide) == KnightValueMg + RookValueMg);
+  assert(pos.count<PAWN>(~strongSide) == 1);
+  return ScaleFactor(21);
+}
+template<>
+ScaleFactor Endgame<KRBKRPP>::operator()(const Position& pos) const {
+  assert(pos.non_pawn_material(strongSide) == BishopValueMg + RookValueMg);
+  assert(pos.count<PAWN>(~strongSide) == 2);
+  return ScaleFactor(42);
+}
+template<>
+ScaleFactor Endgame<KRNKRPP>::operator()(const Position& pos) const {
+  assert(pos.non_pawn_material(strongSide) == KnightValueMg + RookValueMg);
+  assert(pos.count<PAWN>(~strongSide) == 2);
+  return ScaleFactor(42);
+}
 
 
 /// KB and one or more pawns vs K. It checks for draws with rook pawns and
