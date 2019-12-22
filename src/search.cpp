@@ -1146,7 +1146,7 @@ moves_loop: // When in check, search starts from here
               r--;
 
           if (thisThread->pvDraw)
-             r--;
+             r -= 2;
 
           // Decrease reduction if ttMove has been singularly extended
           if (singularLMR)
