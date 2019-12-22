@@ -828,6 +828,9 @@ namespace {
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
+    if (thisThread->pvDraw > ss->ply)
+        goto moves_loop;
+
     // Step 7. Razoring (~2 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
         &&  depth < 2
@@ -1155,9 +1158,6 @@ moves_loop: // When in check, search starts from here
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r++;
-
-              if (thisThread->pvDraw > ss->ply)
-                  r--;
 
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
