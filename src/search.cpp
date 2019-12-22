@@ -1151,7 +1151,7 @@ moves_loop: // When in check, search starts from here
               r -= 2;
 
           if (thisThread->pvDraw > ss->ply)
-              r--;
+              r -= 2;
 
           if (!captureOrPromotion)
           {
