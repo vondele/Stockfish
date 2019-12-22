@@ -360,7 +360,7 @@ void Thread::search() {
       (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
 
   ss->pv = pv;
-  pvDraw = false;
+  pvDraw = 0;
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
@@ -525,8 +525,7 @@ void Thread::search() {
 
       }
 
-      pvDraw =    std::abs(bestValue) < 2
-               && pv_is_draw(rootPos);
+      pvDraw = (std::abs(bestValue) < 2 && pv_is_draw(rootPos) ? rootMoves[0].pv.size() : 0);
 
       if (!Threads.stop)
           completedDepth = rootDepth;
@@ -1151,14 +1150,14 @@ moves_loop: // When in check, search starts from here
           if (singularLMR)
               r -= 2;
 
+          if (thisThread->pvDraw > ss->ply)
+              r--;
+
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r++;
-
-              if (thisThread->pvDraw)
-                 r--;
 
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
