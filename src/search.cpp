@@ -1007,7 +1007,7 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth) + 2 * thisThread->pvDraw;
+          moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           if (   !captureOrPromotion
               && !givesCheck)
@@ -1144,6 +1144,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r--;
+
+          if (thisThread->pvDraw)
+             r--;
 
           // Decrease reduction if ttMove has been singularly extended
           if (singularLMR)
