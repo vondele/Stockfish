@@ -523,8 +523,10 @@ void Thread::search() {
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
-          pvDraw = std::abs(bestValue) < 2 && pv_is_draw(rootPos);
       }
+
+      pvDraw =    std::abs(bestValue) < 2
+               && pv_is_draw(rootPos);
 
       if (!Threads.stop)
           completedDepth = rootDepth;
@@ -1145,9 +1147,6 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 15)
               r--;
 
-          if (thisThread->pvDraw)
-             r--;
-
           // Decrease reduction if ttMove has been singularly extended
           if (singularLMR)
               r -= 2;
@@ -1157,6 +1156,9 @@ moves_loop: // When in check, search starts from here
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r++;
+
+              if (thisThread->pvDraw)
+                 r--;
 
               // Increase reduction for cut nodes (~5 Elo)
               if (cutNode)
