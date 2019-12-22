@@ -523,7 +523,7 @@ void Thread::search() {
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
-          pvDraw = pv_is_draw(rootPos);
+          pvDraw = std::abs(bestValue) < 2 && pv_is_draw(rootPos);
       }
 
       if (!Threads.stop)
@@ -1146,7 +1146,7 @@ moves_loop: // When in check, search starts from here
               r--;
 
           if (thisThread->pvDraw)
-             r -= 2;
+             r--;
 
           // Decrease reduction if ttMove has been singularly extended
           if (singularLMR)
