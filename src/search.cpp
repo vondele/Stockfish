@@ -525,7 +525,7 @@ void Thread::search() {
 
       }
 
-      pvDraw = (std::abs(bestValue) < 2 && pv_is_draw(rootPos) ? rootMoves[0].pv.size() : 0);
+      pvDraw = (std::abs(bestValue) < 2 && pv_is_draw(rootPos)) ? rootMoves[0].pv.size() : 0;
 
       if (!Threads.stop)
           completedDepth = rootDepth;
@@ -828,6 +828,9 @@ namespace {
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
+    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval >= (ss-4)->staticEval
+              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval >= (ss-2)->staticEval;
+
     if (thisThread->pvDraw > ss->ply)
         goto moves_loop;
 
@@ -836,9 +839,6 @@ namespace {
         &&  depth < 2
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-
-    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval >= (ss-4)->staticEval
-              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval >= (ss-2)->staticEval;
 
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !PvNode
