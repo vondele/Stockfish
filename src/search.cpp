@@ -452,7 +452,7 @@ void Thread::search() {
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
-              int dct = ct + 4 * std::min(pvDraw, 4) + (102 - ct / 2) * previousScore / (abs(previousScore) + 157);
+              int dct = ct + (102 - ct / 2) * previousScore / (abs(previousScore) + 157);
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
@@ -558,7 +558,7 @@ void Thread::search() {
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
-          timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.94 : 0.91;
+          timeReduction = (lastBestMoveDepth + 9 < completedDepth && !pvDraw) ? 1.94 : 0.91;
           double reduction = (1.41 + mainThread->previousTimeReduction) / (2.27 * timeReduction);
 
           // Use part of the gained time from a previous stable move for the current move
