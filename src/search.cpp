@@ -447,7 +447,7 @@ void Thread::search() {
           if (rootDepth >= 4)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-              delta = Value(21 + abs(previousScore) / 256);
+              delta = Value(21 + abs(previousScore) / 256 + 2 * pvDraw);
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
@@ -525,7 +525,7 @@ void Thread::search() {
 
       }
 
-      pvDraw = (std::abs(bestValue) < 2 && pv_is_draw(rootPos)) ? rootMoves[0].pv.size() : 0;
+      pvDraw = (std::abs(bestValue) < 2 && pv_is_draw(rootPos)) ? pvDraw + 1 : 0;
 
       if (!Threads.stop)
           completedDepth = rootDepth;
@@ -849,7 +849,6 @@ namespace {
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 23405
-        &&  ss->ply > thisThread->pvDraw
         &&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 32 * depth + 317 - improving * 30
