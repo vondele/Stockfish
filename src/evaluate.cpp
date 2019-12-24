@@ -712,11 +712,15 @@ namespace {
                            &&  outflanking < 0
                            && !pawnsOnBothFlanks;
 
+    bool imbalance = (pos.count<QUEEN>(WHITE) != pos.count<QUEEN>(BLACK)) ||
+                     (pos.count<ROOK>(WHITE) != pos.count<ROOK>(BLACK));
+
     // Compute the initiative bonus for the attacking side
     int complexity =   9 * pe->passed_count()
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
+                    +  4 * imbalance
                     + 51 * !pos.non_pawn_material()
                     - 43 * almostUnwinnable
                     - 95 ;
