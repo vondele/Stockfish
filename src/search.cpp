@@ -590,7 +590,7 @@ namespace {
     // if the opponent had an alternative move earlier to this position.
     if (   pos.rule50_count() >= 3
         && alpha < VALUE_DRAW
-        && !rootNode
+        && !PvNode
         && pos.has_game_cycle(ss->ply))
     {
         alpha = value_draw(pos.this_thread());
