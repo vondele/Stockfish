@@ -18,7 +18,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
 #include <cassert>
 #include <numeric>
 #include <vector>
@@ -28,7 +27,8 @@
 
 namespace {
 
-  // There are 24 possible pawn squares: the first 4 files and ranks from 2 to 7
+  // There are 24 possible pawn squares: files A to D and ranks from 2 to 7.
+  // Positions with the pawn on files E to H will be mirrored before probing.
   constexpr unsigned MAX_INDEX = 2*24*64*64; // stm * psq * wksq * bksq = 196608
 
   // Each uint32_t stores results of 32 positions, one per bit
@@ -44,7 +44,7 @@ namespace {
   // bit 13-14: white pawn file (from FILE_A to FILE_D)
   // bit 15-17: white pawn RANK_7 - rank (from RANK_7 - RANK_7 to RANK_7 - RANK_2)
   unsigned index(Color us, Square bksq, Square wksq, Square psq) {
-    return wksq | (bksq << 6) | (us << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
+    return int(wksq) | (bksq << 6) | (us << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
   }
 
   enum Result {
