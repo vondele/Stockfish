@@ -106,7 +106,7 @@ public:
 /// called to set group affinity for each thread. Original code from Texel by
 /// Peter Österlund.
 
-namespace WinProcGroup {
+namespace ProcGroup {
   void bindThisThread(size_t idx);
 }
 

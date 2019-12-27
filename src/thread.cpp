@@ -112,7 +112,7 @@ void Thread::idle_loop() {
   // just check if running threads are below a threshold, in this case all this
   // NUMA machinery is not needed.
   if (Options["Threads"] > 8)
-      WinProcGroup::bindThisThread(idx);
+      ProcGroup::bindThisThread(idx);
 
   while (true)
   {

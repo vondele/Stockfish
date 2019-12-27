@@ -217,13 +217,9 @@ void prefetch(void* addr) {
 
 #endif
 
-namespace WinProcGroup {
+namespace ProcGroup {
 
-#ifndef _WIN32
-
-void bindThisThread(size_t) {}
-
-#else
+#ifdef _WIN32
 
 /// best_group() retrieves logical processor information using Windows specific
 /// API and returns the best group id for the thread with index idx. Original
@@ -319,6 +315,18 @@ void bindThisThread(size_t idx) {
       fun3(GetCurrentThread(), &affinity, nullptr);
 }
 
+#else
+
+#include <pthread.h>
+
+void bindThisThread(size_t idx)
+{
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(idx, &cpuset); //FIXME wrapparound?
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+}
+
 #endif
 
-} // namespace WinProcGroup
+} // namespace ProcGroup

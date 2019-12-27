@@ -93,7 +93,7 @@ void TranspositionTable::clear() {
 
           // Thread binding gives faster search on systems with a first-touch policy
           if (Options["Threads"] > 8)
-              WinProcGroup::bindThisThread(idx);
+              ProcGroup::bindThisThread(idx);
 
           // Each thread will zero its part of the hash table
           const size_t stride = clusterCount / Options["Threads"],
