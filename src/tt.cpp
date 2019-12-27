@@ -18,9 +18,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>   // aligned_alloc, malloc
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <thread>
+
+#ifdef USE_MADVISE_HUGEPAGE
+#include <sys/mman.h>
+#endif
 
 #include "bitboard.h"
 #include "misc.h"
@@ -61,12 +66,23 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 
 void TranspositionTable::resize(size_t mbSize) {
 
+  size_t allocSize;
+
   Threads.main()->wait_for_search_finished();
 
   clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
 
   free(mem);
-  mem = malloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
+  allocSize = clusterCount * sizeof(Cluster) + CacheLineSize - 1;
+
+#ifdef USE_MADVISE_HUGEPAGE
+  // align by 2 MB to make the allocation huge page friendly
+  mem = aligned_alloc(2 * 1024 * 1024, allocSize);
+#else
+  // we'll use the plain old alloc when huge pages are not
+  // enabled. aligned_alloc() is necessarily not available on Windows.
+  mem = malloc(allocSize);
+#endif
 
   if (!mem)
   {
@@ -74,6 +90,14 @@ void TranspositionTable::resize(size_t mbSize) {
                 << "MB for transposition table." << std::endl;
       exit(EXIT_FAILURE);
   }
+
+#ifdef USE_MADVISE_HUGEPAGE
+  // Request huge pages in case aligned_alloc() didn't already provide them. We
+  // don't care if this call fails, and the call may fail if transparent huge
+  // pages are not enable at all. Note that MADV_HUGEPAGE may not be available
+  // on every platform that supports madvise().
+  madvise(mem, allocSize, MADV_HUGEPAGE);
+#endif
 
   table = (Cluster*)((uintptr_t(mem) + CacheLineSize - 1) & ~(CacheLineSize - 1));
   clear();
