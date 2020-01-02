@@ -86,6 +86,8 @@ namespace {
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
 
+  constexpr int complexityParams[8] = {6, 13, 5, 12, 90, 63, 33, 19};
+
 #define S(mg, eg) make_score(mg, eg)
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
@@ -713,18 +715,18 @@ namespace {
                            && !pawnsOnBothFlanks;
 
     // Compute the initiative bonus for the attacking side
-    int complexity =   9 * pe->passed_count()
-                    + 11 * pos.count<PAWN>()
-                    +  9 * outflanking
-                    + 21 * pawnsOnBothFlanks
-                    + 51 * !pos.non_pawn_material()
-                    - 43 * almostUnwinnable
-                    - 95 ;
+    int complexity =  complexityParams[0] * pe->passed_count()
+                    + complexityParams[1] * pos.count<PAWN>()
+                    + complexityParams[2] * outflanking
+                    + complexityParams[3] * pawnsOnBothFlanks
+                    + complexityParams[4] * !pos.non_pawn_material()
+                    - complexityParams[5] * almostUnwinnable
+                    - complexityParams[6] ;
 
     // Now apply the bonus: note that we find the attacking side by extracting the
     // sign of the midgame or endgame values, and that we carefully cap the bonus
     // so that the midgame and endgame scores do not change sign after the bonus.
-    int u = ((mg > 0) - (mg < 0)) * std::max(std::min(complexity + 50, 0), -abs(mg));
+    int u = ((mg > 0) - (mg < 0)) * std::max(std::min(complexity + complexityParams[7], 0), -abs(mg));
     int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
     if (T)
