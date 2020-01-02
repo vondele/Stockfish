@@ -86,7 +86,7 @@ namespace {
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
 
-  constexpr int complexityParams[8] = {7, 7, 3, 16, 71, 58, 56, 45};
+  constexpr int complexityParams[8] = {14, 16, 9, 25, 88, 69, 26, 47};
 
 #define S(mg, eg) make_score(mg, eg)
 
