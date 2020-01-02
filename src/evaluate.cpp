@@ -86,6 +86,8 @@ namespace {
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
 
+  constexpr int kingDangerParams[13] = {1, 185, 148, 98, 69, 3, 1, -873, -100, -6, -4, 37, 100};
+
 #define S(mg, eg) make_score(mg, eg)
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
@@ -444,21 +446,21 @@ namespace {
     int kingFlankAttack = popcount(b1) + popcount(b2);
     int kingFlankDefense = popcount(b3);
 
-    kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
-                 + 185 * popcount(kingRing[Us] & weak)
-                 + 148 * popcount(unsafeChecks)
-                 +  98 * popcount(pos.blockers_for_king(Us))
-                 +  69 * kingAttacksCount[Them]
-                 +   3 * kingFlankAttack * kingFlankAttack / 8
-                 +       mg_value(mobility[Them] - mobility[Us])
-                 - 873 * !pos.count<QUEEN>(Them)
-                 - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
-                 -   6 * mg_value(score) / 8
-                 -   4 * kingFlankDefense
-                 +  37;
+    kingDanger +=  kingDangerParams[ 0] * kingAttackersCount[Them] * kingAttackersWeight[Them]
+                 + kingDangerParams[ 1] * popcount(kingRing[Us] & weak)
+                 + kingDangerParams[ 2] * popcount(unsafeChecks)
+                 + kingDangerParams[ 3] * popcount(pos.blockers_for_king(Us))
+                 + kingDangerParams[ 4] * kingAttacksCount[Them]
+                 + kingDangerParams[ 5] * kingFlankAttack * kingFlankAttack / 8
+                 + kingDangerParams[ 6] * mg_value(mobility[Them] - mobility[Us])
+                 + kingDangerParams[ 7] * !pos.count<QUEEN>(Them)
+                 + kingDangerParams[ 8] * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
+                 + kingDangerParams[ 9] * mg_value(score) / 8
+                 + kingDangerParams[10] * kingFlankDefense
+                 + kingDangerParams[11];
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
-    if (kingDanger > 100)
+    if (kingDanger > kingDangerParams[12])
         score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
 
     // Penalty when our king is on a pawnless flank
