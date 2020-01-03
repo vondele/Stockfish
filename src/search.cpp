@@ -108,14 +108,14 @@ namespace {
     std::atomic<Thread*> thread;
     std::atomic<Key> key;
   };
-  std::array<Breadcrumb, 4096> breadcrumbs;
+  std::array<Breadcrumb, 1024> breadcrumbs;
 
   // ThreadHolding structure keeps track of which thread left breadcrumbs at the given
   // node for potential reductions. A free node will be marked upon entering the moves
   // loop by the constructor, and unmarked upon leaving that loop by the destructor.
   struct ThreadHolding {
     explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
-       location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
+       location = ply < 6 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
        otherThread = false;
        owning = false;
        if (location)
