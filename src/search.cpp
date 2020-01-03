@@ -1312,10 +1312,19 @@ moves_loop: // When in check, search starts from here
         bestValue = std::min(bestValue, maxValue);
 
     if (!excludedMove)
-        tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv,
-                  bestValue >= beta ? BOUND_LOWER :
-                  PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
+    {
+        Bound b = bestValue >= beta  ? BOUND_LOWER :
+                  PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER;
+
+        // increase depth stored in TT for high scores
+        bool cond = abs(bestValue) > Value(1400)
+            && (bestValue > 0 ? b & BOUND_LOWER : b & BOUND_UPPER);
+        if (cond)
+            depth = std::min(depth + 2, MAX_PLY - 1);
+
+        tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv, b,
                   depth, bestMove, ss->staticEval);
+    }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
