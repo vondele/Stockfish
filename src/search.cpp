@@ -108,7 +108,7 @@ namespace {
     std::atomic<Thread*> thread;
     std::atomic<Key> key;
   };
-  std::array<Breadcrumb, 2048> breadcrumbs;
+  std::array<Breadcrumb, 4096> breadcrumbs;
 
   // ThreadHolding structure keeps track of which thread left breadcrumbs at the given
   // node for potential reductions. A free node will be marked upon entering the moves
