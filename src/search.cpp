@@ -1320,7 +1320,7 @@ moves_loop: // When in check, search starts from here
         bool cond = abs(bestValue) > Value(1400)
             && (bestValue > 0 ? b & BOUND_LOWER : b & BOUND_UPPER);
         if (cond)
-            depth = std::min(depth + 1, MAX_PLY - 1);
+            depth = std::min(depth + 3, MAX_PLY - 1);
 
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv, b,
                   depth, bestMove, ss->staticEval);
