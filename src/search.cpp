@@ -394,10 +394,10 @@ void Thread::search() {
                           : -make_score(ct, ct / 2));
 
   // Iterative deepening loop until requested to stop or the target depth is reached
-  // all threads search irrespective of Limits.depth, mainThread stops search
+  // First thread to reach Limits.depth stops search
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
-         && !(Limits.depth && mainThread && rootDepth > Limits.depth))
+         && !(Limits.depth && rootDepth > Limits.depth))
   {
       // Age out PV variability metric
       if (mainThread)
@@ -519,6 +519,10 @@ void Thread::search() {
           && bestValue >= VALUE_MATE_IN_MAX_PLY
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
           Threads.stop = true;
+
+      if (   Limits.depth
+	  && rootDepth == Limits.depth)
+	  Threads.stop = true
 
       if (!mainThread)
           continue;
