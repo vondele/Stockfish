@@ -86,7 +86,9 @@ namespace {
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
 
-  constexpr int complexityParams[8] = {9, 11, 9, 21, 51, 43, 95, 50};
+  int complexityParams[8] = {9, 11, 9, 21, 51, 43, 95, 50};
+  auto myfunc = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(m - 40, m + 40);};
+  TUNE(SetRange(myfunc), complexityParams);
 
 #define S(mg, eg) make_score(mg, eg)
 
