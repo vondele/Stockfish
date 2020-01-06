@@ -397,7 +397,7 @@ void Thread::search() {
   // All threads search up to Limits.depth
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
-         && !(Limits.depth && rootDepth > Limits.depth))
+         && !(Limits.depth && Threads.depthReached == Threads.size()))
   {
       // Age out PV variability metric
       if (mainThread)
