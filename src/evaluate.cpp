@@ -86,7 +86,7 @@ namespace {
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
 
-  int complexityParams[8] = {9, 11, 9, 21, 51, 43, 95, 50};
+  int complexityParams[9] = {9, 11, 9, 21, 51, 12, 43, 100, 50};
   auto myfunc = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(m - 40, m + 40);};
   TUNE(SetRange(myfunc), complexityParams);
 
@@ -716,19 +716,23 @@ namespace {
                            &&  outflanking < 0
                            && !pawnsOnBothFlanks;
 
+    bool kingInfiltration =   rank_of(pos.square<KING>(WHITE)) > RANK_4
+                           || rank_of(pos.square<KING>(BLACK)) < RANK_5;
+
     // Compute the initiative bonus for the attacking side
     int complexity =  complexityParams[0] * pe->passed_count()
                     + complexityParams[1] * pos.count<PAWN>()
                     + complexityParams[2] * outflanking
                     + complexityParams[3] * pawnsOnBothFlanks
                     + complexityParams[4] * !pos.non_pawn_material()
-                    - complexityParams[5] * almostUnwinnable
-                    - complexityParams[6] ;
+                    + complexityParams[5] * kingInfiltration
+                    - complexityParams[6] * almostUnwinnable
+                    - complexityParams[7] ;
 
     // Now apply the bonus: note that we find the attacking side by extracting the
     // sign of the midgame or endgame values, and that we carefully cap the bonus
     // so that the midgame and endgame scores do not change sign after the bonus.
-    int u = ((mg > 0) - (mg < 0)) * std::max(std::min(complexity + complexityParams[7], 0), -abs(mg));
+    int u = ((mg > 0) - (mg < 0)) * std::max(std::min(complexity + complexityParams[8], 0), -abs(mg));
     int v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
     if (T)
