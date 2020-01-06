@@ -519,10 +519,11 @@ void Thread::search() {
           && bestValue >= VALUE_MATE_IN_MAX_PLY
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
           Threads.stop = true;
-
+/*
       if (   Limits.depth
 	  && rootDepth == Limits.depth)
 	  Threads.stop = true
+*/
 
       if (!mainThread)
           continue;
