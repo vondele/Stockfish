@@ -132,6 +132,22 @@ namespace {
         else if (token == "infinite")  limits.infinite = 1;
         else if (token == "ponder")    ponderMode = true;
 
+    Threads.showBestMove = false;
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.start_thinking(pos, states, limits, ponderMode);
+    Threads.main()->wait_for_search_finished();
+    Threads.showBestMove = true;
     Threads.start_thinking(pos, states, limits, ponderMode);
   }
 
