@@ -110,6 +110,7 @@ struct ThreadPool : public std::vector<Thread*> {
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
 
   std::atomic_bool stop;
+  std::atomic<size_t> depthReached;
 
 private:
   StateListPtr setupStates;

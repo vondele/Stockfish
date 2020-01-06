@@ -252,7 +252,7 @@ void MainThread::search() {
   // GUI sends a "stop" or "ponderhit" command. We therefore simply wait here
   // until the GUI sends one of those commands.
 
-  while (!Threads.stop && (ponder || Limits.infinite))
+  while (!Threads.stop && (ponder || Limits.infinite || (Limits.depth && (Threads.depthReached != Threads.size() && rootMoves[0].pv[0]!=MOVE_NONE))))
   {} // Busy wait for a stop or a ponder reset
 
   // Stop the threads if not already stopped (also raise the stop if
@@ -394,7 +394,7 @@ void Thread::search() {
                           : -make_score(ct, ct / 2));
 
   // Iterative deepening loop until requested to stop or the target depth is reached
-  // First thread to reach Limits.depth stops search
+  // All threads search up to Limits.depth
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
          && !(Limits.depth && rootDepth > Limits.depth))
@@ -519,11 +519,10 @@ void Thread::search() {
           && bestValue >= VALUE_MATE_IN_MAX_PLY
           && VALUE_MATE - bestValue <= 2 * Limits.mate)
           Threads.stop = true;
-/*
+
       if (   Limits.depth
 	  && rootDepth == Limits.depth)
-	  Threads.stop = true
-*/
+	  Threads.depthReached++;
 
       if (!mainThread)
           continue;
