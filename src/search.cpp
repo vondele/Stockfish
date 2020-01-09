@@ -1212,6 +1212,14 @@ moves_loop: // When in check, search starts from here
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
       }
 
+      if (PvNode && moveCount > 1 && value > bestValue)
+      {
+          (ss+1)->pv = pv;
+          (ss+1)->pv[0] = MOVE_NONE;
+
+          value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
+      }
+
       // Step 18. Undo move
       pos.undo_move(move);
 
