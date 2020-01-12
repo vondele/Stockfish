@@ -411,7 +411,6 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
-      bool aspiAdjust = false;
 
       if (!Threads.increaseDepth)
          searchAgainCounter++;
@@ -484,14 +483,12 @@ void Thread::search() {
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
                   failedHighCnt = 0;
-                  aspiAdjust = true;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-                  aspiAdjust = true;
                   ++failedHighCnt;
               }
               else
@@ -518,7 +515,7 @@ void Thread::search() {
 
       if (rootMoves[0].pv[0] != lastBestMove)
       {
-	 if (   !aspiAdjust
+	 if (   mainThread->previousScore > bestValue
              && Threads.increaseDepth)
              searchAgainCounter++;
          lastBestMove = rootMoves[0].pv[0];
