@@ -411,6 +411,7 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
+      bool aspiAdjust = false;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
@@ -480,12 +481,14 @@ void Thread::search() {
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 
                   failedHighCnt = 0;
+                  aspiAdjust = true;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+                  aspiAdjust = true;
                   ++failedHighCnt;
               }
               else
@@ -511,7 +514,7 @@ void Thread::search() {
           completedDepth = rootDepth;
 
       if (rootMoves[0].pv[0] != lastBestMove) {
-	 if (mainThread->previousScore < bestValue) newMoveCounter++;
+	 if (!aspiAdjust) newMoveCounter++;
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
       }
