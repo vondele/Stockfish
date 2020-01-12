@@ -518,7 +518,8 @@ void Thread::search() {
 
       if (rootMoves[0].pv[0] != lastBestMove)
       {
-	 if (!aspiAdjust && Threads.increaseDepth)
+	 if (   !aspiAdjust
+             && Threads.increaseDepth)
              searchAgainCounter++;
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
