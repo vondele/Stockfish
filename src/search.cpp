@@ -1115,7 +1115,7 @@ moves_loop: // When in check, search starts from here
       // Step 16. Reduced depth search (LMR, ~200 Elo). If the move fails high it will be
       // re-searched at full depth.
       if (    depth >= 3
-          &&  moveCount > 1 + 2 * rootNode
+          &&  moveCount > 1 + 2 * rootNode + (rootNode && bestValue < alpha)
           && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
               || moveCountPruning
@@ -1124,9 +1124,6 @@ moves_loop: // When in check, search starts from here
               || thisThread->ttHitAverage < 375 * ttHitAverageResolution * ttHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);
-
-	  if (rootNode && bestValue < alpha)
-         	  r--;
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
