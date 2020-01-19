@@ -73,17 +73,17 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
+  Depth reduction(bool i, Depth d, int mn) {
+    int r = Reductions[d] * Reductions[mn];
+    return (r + 511) / 1024 + (!i && r > 1007);
+  }
+
   int npmra = 0, npmrb = 3318;
   TUNE(SetRange(-20,20), npmra);
   TUNE(SetRange(0, 10000), npmrb);
 
-  Depth reduction(bool i, Depth d, int mn, int npm) {
-    int r = Reductions[d] * Reductions[mn];
-    return (r + 511) / 1024 + (!i && r > 1007) + npmra * (npm - npmrb) / 32768;
-  }
-
-  constexpr int futility_move_count(bool improving, Depth depth) {
-    return (5 + depth * depth) * (1 + improving) / 2 - 1;
+  int futility_move_count(bool improving, Depth depth, int npm) {
+    return (5 + depth * depth) * (1 + improving) / 2 - 1 + npmra * (npm - npmrb) / 32768;
   }
 
   // History and stats update bonus, based on depth
@@ -1004,13 +1004,13 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth, npm_us);
 
           if (   !captureOrPromotion
               && !givesCheck)
           {
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, npm_us), 0);
+              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
 
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
@@ -1128,7 +1128,7 @@ moves_loop: // When in check, search starts from here
               || cutNode
               || thisThread->ttHitAverage < 375 * ttHitAverageResolution * ttHitAverageWindow / 1024))
       {
-          Depth r = reduction(improving, depth, moveCount, npm_us);
+          Depth r = reduction(improving, depth, moveCount);
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
