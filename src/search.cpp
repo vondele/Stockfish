@@ -74,6 +74,8 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
   int npmra = 0, npmrb = 3318;
+  TUNE(SetRange(-20,20), npmra);
+  TUNE(SetRange(0, 10000), npmrb);
 
   Depth reduction(bool i, Depth d, int mn, int npm) {
     int r = Reductions[d] * Reductions[mn];
