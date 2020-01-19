@@ -78,8 +78,10 @@ namespace {
     return (r + 511) / 1024 + (!i && r > 1007);
   }
 
-  constexpr int futility_move_count(bool improving, Depth depth) {
-    return (5 + depth * depth) * (1 + improving) / 2 - 1;
+  constexpr int npmra = 16, npmrb = 748;
+
+  int futility_move_count(bool improving, Depth depth, int npm) {
+    return (5 + depth * depth) * (1 + improving) / 2 - 1 + npmra * (npm - npmrb) / 32768;
   }
 
   // History and stats update bonus, based on depth
@@ -955,6 +957,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue;
     singularLMR = moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    int npm_us = pos.non_pawn_material(us);
 
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -995,11 +998,11 @@ moves_loop: // When in check, search starts from here
 
       // Step 13. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
-          && pos.non_pawn_material(us)
+          && npm_us
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth, npm_us);
 
           if (   !captureOrPromotion
               && !givesCheck)
