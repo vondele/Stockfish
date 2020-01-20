@@ -78,7 +78,7 @@ namespace {
     return (r + 511) / 1024 + (!i && r > 1007);
   }
 
-  constexpr int npmra = 16, npmrb = 748;
+  constexpr int npmra = 21, npmrb = 76;
 
   int futility_move_count(bool improving, Depth depth, int npm) {
     return (5 + depth * depth) * (1 + improving) / 2 - 1 + npmra * (npm - npmrb) / 32768;
