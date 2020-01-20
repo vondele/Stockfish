@@ -640,6 +640,7 @@ namespace {
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     maxValue = VALUE_INFINITE;
+    ss->pvDist = PvNode ? 0 : (ss-1)->pvDist + 1;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1002,7 +1003,7 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth) + (ss->ply < 9 ? npmra * (npm_us - npmrb) / 32768 : 0);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth) + (ss->pvDist < 9 ? npmra * (npm_us - npmrb) / 32768 : 0);
 
           if (   !captureOrPromotion
               && !givesCheck)
