@@ -81,7 +81,7 @@ namespace {
   constexpr int npmra = 21, npmrb = 76;
 
   int futility_move_count(bool improving, Depth depth, int npm) {
-    return (5 + depth * depth) * (1 + improving) / 2 - 1 + npmra * (npm - npmrb) / 32768;
+    return (5 + depth * depth) * (1 + improving) / 2 - 1 + (depth < 7 ? npmra * (npm - npmrb) / 32768 : 0);
   }
 
   // History and stats update bonus, based on depth
