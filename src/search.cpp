@@ -80,8 +80,8 @@ namespace {
 
   constexpr int npmra = 21, npmrb = 76;
 
-  int futility_move_count(bool improving, Depth depth, int npm) {
-    return (5 + depth * depth) * (1 + improving) / 2 - 1 + (depth < 7 ? npmra * (npm - npmrb) / 32768 : 0);
+  constexpr int futility_move_count(bool improving, Depth depth) {
+    return (5 + depth * depth) * (1 + improving) / 2 - 1;
   }
 
   // History and stats update bonus, based on depth
@@ -1002,7 +1002,7 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth, npm_us);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth) + (ss->ply < 9 ? npmra * (npm_us - npmrb) / 32768 : 0);
 
           if (   !captureOrPromotion
               && !givesCheck)
