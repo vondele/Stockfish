@@ -1059,14 +1059,6 @@ moves_loop: // When in check, search starts from here
               extension = 1;
               singularLMR = true;
           }
-
-          // Multi-cut pruning
-          // Our ttMove is assumed to fail high, and now we failed high also on a reduced
-          // search without the ttMove. So we assume this expected Cut-node is not singular,
-          // that multiple moves fail high, and we can prune the whole subtree by returning
-          // a soft bound.
-          else if (singularBeta >= beta)
-              return singularBeta;
       }
 
       // Check extension (~2 Elo)
