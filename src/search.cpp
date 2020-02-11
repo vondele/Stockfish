@@ -1579,9 +1579,12 @@ moves_loop: // When in check, search starts from here
 
   Value value_from_tt(Value v, int ply, int r50c) {
 
-    return  v == VALUE_NONE             ? VALUE_NONE
-          : v >= VALUE_MATE_IN_MAX_PLY  ? VALUE_MATE - v > 99 - r50c ? VALUE_MATE_IN_MAX_PLY  : v - ply
-          : v <= VALUE_MATED_IN_MAX_PLY ? VALUE_MATE + v > 99 - r50c ? VALUE_MATED_IN_MAX_PLY : v + ply : v;
+    return  v >= VALUE_MATE_IN_MAX_PLY ?
+              ( v == VALUE_NONE ? VALUE_NONE  // assume VALUE_NONE>0
+              : v >= VALUE_MATE - MAX_PLY && VALUE_MATE - v > 99 - r50c ? VALUE_MATE - MAX_PLY - 1 : v - ply )
+          : v <= VALUE_MATED_IN_MAX_PLY ?
+              ( v <= -VALUE_MATE + MAX_PLY && VALUE_MATE + v > 99 - r50c ? -VALUE_MATE + MAX_PLY + 1 : v + ply )
+          : v;
   }
 
 
