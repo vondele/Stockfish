@@ -930,7 +930,7 @@ namespace {
     }
 
     // Step 11. Internal iterative deepening (~1 Elo)
-    if (depth >= 7 && !ttMove)
+    if (depth >= 7 && !ttMove && !PvNode)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
