@@ -422,104 +422,17 @@ ScaleFactor Endgame<KQKRPs>::operator()(const Position& pos) const {
 }
 
 
-/// KRP vs KR. This function knows a handful of the most important classes of
-/// drawn positions, but is far from perfect. It would probably be a good idea
-/// to add more knowledge in the future.
-///
-/// It would also be nice to rewrite the actual code for this function,
-/// which is mostly copied from Glaurung 1.x, and isn't very pretty.
 template<>
 ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
 
   assert(verify_material(pos, strongSide, RookValueMg, 1));
   assert(verify_material(pos, weakSide,   RookValueMg, 0));
 
-  // Assume strongSide is white and the pawn is on files A-D
-  Square wksq = normalize(pos, strongSide, pos.square<KING>(strongSide));
-  Square bksq = normalize(pos, strongSide, pos.square<KING>(weakSide));
-  Square wrsq = normalize(pos, strongSide, pos.square<ROOK>(strongSide));
-  Square wpsq = normalize(pos, strongSide, pos.square<PAWN>(strongSide));
-  Square brsq = normalize(pos, strongSide, pos.square<ROOK>(weakSide));
+  Square weakksq = pos.square<KING>(weakSide);
+  Square psq = pos.square<PAWN>(strongSide);
+  Square queeningSq = make_square(file_of(psq), relative_rank(strongSide, RANK_8));
 
-  File f = file_of(wpsq);
-  Rank r = rank_of(wpsq);
-  Square queeningSq = make_square(f, RANK_8);
-  int tempo = (pos.side_to_move() == strongSide);
-
-  // If the pawn is not too far advanced and the defending king defends the
-  // queening square, use the third-rank defence.
-  if (   r <= RANK_5
-      && distance(bksq, queeningSq) <= 1
-      && wksq <= SQ_H5
-      && (rank_of(brsq) == RANK_6 || (r <= RANK_3 && rank_of(wrsq) != RANK_6)))
-      return SCALE_FACTOR_DRAW;
-
-  // The defending side saves a draw by checking from behind in case the pawn
-  // has advanced to the 6th rank with the king behind.
-  if (   r == RANK_6
-      && distance(bksq, queeningSq) <= 1
-      && rank_of(wksq) + tempo <= RANK_6
-      && (rank_of(brsq) == RANK_1 || (!tempo && distance<File>(brsq, wpsq) >= 3)))
-      return SCALE_FACTOR_DRAW;
-
-  if (   r >= RANK_6
-      && bksq == queeningSq
-      && rank_of(brsq) == RANK_1
-      && (!tempo || distance(wksq, wpsq) >= 2))
-      return SCALE_FACTOR_DRAW;
-
-  // White pawn on a7 and rook on a8 is a draw if black's king is on g7 or h7
-  // and the black rook is behind the pawn.
-  if (   wpsq == SQ_A7
-      && wrsq == SQ_A8
-      && (bksq == SQ_H7 || bksq == SQ_G7)
-      && file_of(brsq) == FILE_A
-      && (rank_of(brsq) <= RANK_3 || file_of(wksq) >= FILE_D || rank_of(wksq) <= RANK_5))
-      return SCALE_FACTOR_DRAW;
-
-  // If the defending king blocks the pawn and the attacking king is too far
-  // away, it's a draw.
-  if (   r <= RANK_5
-      && bksq == wpsq + NORTH
-      && distance(wksq, wpsq) - tempo >= 2
-      && distance(wksq, brsq) - tempo >= 2)
-      return SCALE_FACTOR_DRAW;
-
-  // Pawn on the 7th rank supported by the rook from behind usually wins if the
-  // attacking king is closer to the queening square than the defending king,
-  // and the defending king cannot gain tempi by threatening the attacking rook.
-  if (   r == RANK_7
-      && f != FILE_A
-      && file_of(wrsq) == f
-      && wrsq != queeningSq
-      && (distance(wksq, queeningSq) < distance(bksq, queeningSq) - 2 + tempo)
-      && (distance(wksq, queeningSq) < distance(bksq, wrsq) + tempo))
-      return ScaleFactor(SCALE_FACTOR_MAX - 2 * distance(wksq, queeningSq));
-
-  // Similar to the above, but with the pawn further back
-  if (   f != FILE_A
-      && file_of(wrsq) == f
-      && wrsq < wpsq
-      && (distance(wksq, queeningSq) < distance(bksq, queeningSq) - 2 + tempo)
-      && (distance(wksq, wpsq + NORTH) < distance(bksq, wpsq + NORTH) - 2 + tempo)
-      && (  distance(bksq, wrsq) + tempo >= 3
-          || (    distance(wksq, queeningSq) < distance(bksq, wrsq) + tempo
-              && (distance(wksq, wpsq + NORTH) < distance(bksq, wrsq) + tempo))))
-      return ScaleFactor(  SCALE_FACTOR_MAX
-                         - 8 * distance(wpsq, queeningSq)
-                         - 2 * distance(wksq, queeningSq));
-
-  // If the pawn is not far advanced and the defending king is somewhere in
-  // the pawn's path, it's probably a draw.
-  if (r <= RANK_4 && bksq > wpsq)
-  {
-      if (file_of(bksq) == file_of(wpsq))
-          return ScaleFactor(10);
-      if (   distance<File>(bksq, wpsq) == 1
-          && distance(wksq, bksq) > 2)
-          return ScaleFactor(24 - 2 * distance(wksq, bksq));
-  }
-  return SCALE_FACTOR_NONE;
+  return ScaleFactor(29 + 15 * distance(weakksq, queeningSq));
 }
 
 template<>
