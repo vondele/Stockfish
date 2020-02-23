@@ -91,7 +91,7 @@ typedef Stats<int16_t, 10692, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> Butterf
 /// LowPlyHistory at higher depths records successful quiet moves on plies 0 to 3
 /// and quiet moves which are/were in the PV (ttPv)
 /// It get cleared with each new search and get filled during iterative deepening
-constexpr int MAX_LPH = 5;
+constexpr int MAX_LPH = 6;
 typedef Stats<int16_t, 10692, MAX_LPH, int(SQUARE_NB) * int(SQUARE_NB)> LowPlyHistory;
 
 /// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
