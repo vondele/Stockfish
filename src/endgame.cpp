@@ -60,6 +60,8 @@ namespace {
 
   // Pawn Rank based scaling factors used in KRPPKRP endgame
   constexpr int KRPPKRPScaleFactors[RANK_NB] = { 0, 9, 10, 14, 21, 44, 0, 0 };
+  int rpvrp1 = 16, rpvrp2 = 64, rpvrp3 = 16, rpvrp4 = 10, rpvrp5 = 24, rpvrp6 = 16;
+
 
 #ifndef NDEBUG
   bool verify_material(const Position& pos, Color c, Value npm, int pawnsCnt) {
@@ -485,6 +487,7 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
       && distance(wksq, brsq) - tempo >= 2)
       return SCALE_FACTOR_DRAW;
 
+
   // Pawn on the 7th rank supported by the rook from behind usually wins if the
   // attacking king is closer to the queening square than the defending king,
   // and the defending king cannot gain tempi by threatening the attacking rook.
@@ -494,7 +497,7 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
       && wrsq != queeningSq
       && (distance(wksq, queeningSq) < distance(bksq, queeningSq) - 2 + tempo)
       && (distance(wksq, queeningSq) < distance(bksq, wrsq) + tempo))
-      return ScaleFactor(SCALE_FACTOR_MAX - 2 * distance(wksq, queeningSq));
+      return ScaleFactor(SCALE_FACTOR_MAX - rpvrp1 * distance(wksq, queeningSq) / 8);
 
   // Similar to the above, but with the pawn further back
   if (   f != FILE_A
@@ -506,18 +509,18 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
           || (    distance(wksq, queeningSq) < distance(bksq, wrsq) + tempo
               && (distance(wksq, wpsq + NORTH) < distance(bksq, wrsq) + tempo))))
       return ScaleFactor(  SCALE_FACTOR_MAX
-                         - 8 * distance(wpsq, queeningSq)
-                         - 2 * distance(wksq, queeningSq));
+                         - rpvrp2 * distance(wpsq, queeningSq) / 8
+                         - rpvrp3 * distance(wksq, queeningSq) / 8);
 
   // If the pawn is not far advanced and the defending king is somewhere in
   // the pawn's path, it's probably a draw.
   if (r <= RANK_4 && bksq > wpsq)
   {
       if (file_of(bksq) == file_of(wpsq))
-          return ScaleFactor(10);
+          return ScaleFactor(rpvrp4);
       if (   distance<File>(bksq, wpsq) == 1
           && distance(wksq, bksq) > 2)
-          return ScaleFactor(24 - 2 * distance(wksq, bksq));
+          return ScaleFactor(rpvrp5 - rpvrp6 * distance(wksq, bksq) / 8);
   }
   return SCALE_FACTOR_NONE;
 }
