@@ -59,8 +59,10 @@ namespace {
   constexpr int PushAway [8] = { 0, 5, 20, 40, 60, 80, 90, 100 };
 
   // Pawn Rank based scaling factors used in KRPPKRP endgame
-  constexpr int KRPPKRPScaleFactors[RANK_NB] = { 0, 9, 10, 14, 21, 44, 0, 0 };
+  int KRPPKRPScaleFactors[RANK_NB] = { 0, 9, 10, 14, 21, 44, 0, 0 };
   int rpvrp1 = 16, rpvrp2 = 64, rpvrp3 = 16, rpvrp4 = 10, rpvrp5 = 24, rpvrp6 = 16;
+  auto myfunc = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(m - 20, m + 20);};
+  TUNE(SetRange(myfunc), KRPPKRPScaleFactors, rpvrp1, rpvrp2, rpvrp3, rpvrp4, rpvrp5, rpvrp6);
 
 
 #ifndef NDEBUG
