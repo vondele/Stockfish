@@ -1137,7 +1137,7 @@ moves_loop: // When in check, search starts from here
               r--;
 
           // Reduction if other threads are searching this position.
-          if (th.marked())
+          if (!ttPv && th.marked())
               r++;
 
           // Decrease reduction if position is or has been on the PV (~10 Elo)
