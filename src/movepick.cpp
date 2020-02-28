@@ -46,6 +46,8 @@ namespace {
         }
   }
 
+  constexpr int MPParams[] = {242, 144, 111, 202, 157, 423};
+
 } // namespace
 
 
@@ -111,12 +113,16 @@ void MovePicker::score() {
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   + 2 * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   + 2 * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
-                   + (ply < MAX_LPH ?  4 * (*lowPlyHistory)[ply][from_to(m)] : 0);
+      {
+          m.value =  MPParams[0] * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                   + MPParams[1] * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                   + MPParams[2] * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                   + MPParams[3] * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                   + MPParams[4] * (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+                   + MPParams[5] * (ply < MAX_LPH ?  (*lowPlyHistory)[ply][from_to(m)] : 0);
+          m.value /= 128;
+      }
+
 
       else // Type == EVASIONS
       {
