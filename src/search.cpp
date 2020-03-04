@@ -694,6 +694,7 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
+    ttHit = ttHit && (ttMove == MOVE_NONE || pos.pseudo_legal(ttMove));
     ttPv = PvNode || (ttHit && tte->is_pv());
 
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
@@ -709,8 +710,7 @@ namespace {
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
-                            : (tte->bound() & BOUND_UPPER))
-        && (ttMove == MOVE_NONE || pos.pseudo_legal(ttMove)))
+                            : (tte->bound() & BOUND_UPPER)))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit
         if (ttMove)
