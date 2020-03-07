@@ -99,6 +99,7 @@ namespace Endgames {
     add<KNPKB>("KNPKB");
     add<KRPKR>("KRPKR");
     add<KRPKB>("KRPKB");
+    add<KRPKBP>("KRPKBP");
     add<KBPKB>("KBPKB");
     add<KBPKN>("KBPKN");
     add<KBPPKB>("KBPPKB");
@@ -524,7 +525,7 @@ ScaleFactor Endgame<KRPKB>::operator()(const Position& pos) const {
   assert(verify_material(pos, weakSide, BishopValueMg, 0));
 
   // Test for a rook pawn
-  if (pos.pieces(PAWN) & (FileABB | FileHBB))
+  if (pos.pieces(strongSide, PAWN) & (FileABB | FileHBB))
   {
       Square ksq = pos.square<KING>(weakSide);
       Square bsq = pos.square<BISHOP>(weakSide);
@@ -559,6 +560,37 @@ ScaleFactor Endgame<KRPKB>::operator()(const Position& pos) const {
   }
 
   return SCALE_FACTOR_NONE;
+}
+
+template<>
+ScaleFactor Endgame<KRPKBP>::operator()(const Position& pos) const {
+
+  Square sksq = pos.square<KING>(strongSide);
+  Square spsq = pos.square<PAWN>(strongSide);
+  Square sqsq = relative_square(strongSide, make_square(file_of(spsq), RANK_8));
+  Square wksq = pos.square<KING>(weakSide);
+  Square wpsq = pos.square<PAWN>(weakSide);
+  Square bsq  = pos.square<BISHOP>(weakSide);
+
+  if (distance(wksq, wpsq) - distance(sksq, wpsq) <= -1)
+     if (distance(spsq, sqsq) <= 5)
+        if (opposite_colors(bsq, wpsq))
+           return ScaleFactor(16);
+        else
+           if (distance(sksq, wpsq) - distance(wksq, spsq) <= 0)
+              return ScaleFactor(44);
+           else
+              return ScaleFactor(23);
+     else
+        return ScaleFactor(47);
+  else
+     if (pos.attacks_from<PAWN>(wpsq, weakSide) & bsq)
+        return ScaleFactor(21);
+     else
+        if (distance(sksq, wpsq) - distance(wksq, spsq) <= -2)
+           return ScaleFactor(47);
+        else
+           return ScaleFactor(37);
 }
 
 /// KRPP vs KRP. There is just a single rule: if the stronger side has no passed
