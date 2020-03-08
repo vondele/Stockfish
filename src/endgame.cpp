@@ -54,6 +54,10 @@ namespace {
      4160, 4480, 4800, 5120, 5440, 5760, 6080, 6400
   };
 
+  int paramKRPKBP[] = {16, 44, 23, 47, 21, 47, 37};
+  auto myfunc = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(m - 16, m + 16);};
+  TUNE(SetRange(myfunc), paramKRPKBP);
+
   // Drive a piece close to or away from another piece
   inline int push_close(Square s1, Square s2) { return 140 - 20 * distance(s1, s2); }
   inline int push_away(Square s1, Square s2) { return 120 - push_close(s1, s2); }
@@ -575,22 +579,22 @@ ScaleFactor Endgame<KRPKBP>::operator()(const Position& pos) const {
   if (distance(wksq, wpsq) - distance(sksq, wpsq) <= -1)
      if (distance(spsq, sqsq) <= 5)
         if (opposite_colors(bsq, wpsq))
-           return ScaleFactor(16);
+           return ScaleFactor(paramKRPKBP[0]);
         else
            if (distance(sksq, wpsq) - distance(wksq, spsq) <= 0)
-              return ScaleFactor(44);
+              return ScaleFactor(paramKRPKBP[1]);
            else
-              return ScaleFactor(23);
+              return ScaleFactor(paramKRPKBP[2]);
      else
-        return ScaleFactor(47);
+        return ScaleFactor(paramKRPKBP[3]);
   else
      if (pos.attacks_from<PAWN>(wpsq, weakSide) & bsq)
-        return ScaleFactor(21);
+        return ScaleFactor(paramKRPKBP[4]);
      else
         if (distance(sksq, wpsq) - distance(wksq, spsq) <= -2)
-           return ScaleFactor(47);
+           return ScaleFactor(paramKRPKBP[5]);
         else
-           return ScaleFactor(37);
+           return ScaleFactor(paramKRPKBP[6]);
 }
 
 /// KRPP vs KRP. There is just a single rule: if the stronger side has no passed
