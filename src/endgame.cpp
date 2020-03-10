@@ -561,22 +561,22 @@ ScaleFactor Endgame<KRPKBP>::operator()(const Position& pos) const {
   if (distance(wksq, wpsq) - distance(sksq, wpsq) <= -1)
      if (distance(spsq, sqsq) <= 5)
         if (opposite_colors(bsq, wpsq))
-           return ScaleFactor(16);
+           return ScaleFactor(18);
         else
            if (distance(sksq, wpsq) - distance(wksq, spsq) <= 0)
-              return ScaleFactor(44);
+              return ScaleFactor(49);
            else
-              return ScaleFactor(23);
+              return ScaleFactor(26);
      else
-        return ScaleFactor(47);
+        return ScaleFactor(52);
   else
      if (pos.attacks_from<PAWN>(wpsq, weakSide) & bsq)
-        return ScaleFactor(21);
+        return ScaleFactor(23);
      else
         if (distance(sksq, wpsq) - distance(wksq, spsq) <= -2)
-           return ScaleFactor(47);
+           return ScaleFactor(52);
         else
-           return ScaleFactor(37);
+           return ScaleFactor(41);
 }
 
 /// KRPP vs KRP. There is just a single rule: if the stronger side has no passed
