@@ -28,6 +28,8 @@
 
 using std::string;
 
+bool writeEval = false;
+
 namespace {
 
   // Used to drive the king towards the edge of the board
@@ -562,7 +564,7 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
   Square wksq = pos.square<KING>(strongSide);
   Square bksq = pos.square<KING>(weakSide);
   Square bpsq = pos.square<PAWN>(weakSide);
-/*
+
   Tablebases::ProbeState err;
   Tablebases::WDLScore wdl = Tablebases::probe_wdl(const_cast<Position&>(pos), &err);
 
@@ -578,9 +580,8 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
             << distance(wksq, bksq) << " "
             << relative_rank(strongSide, bksq) << " "
             << relative_rank(strongSide, wksq) << " "
-            << relative_rank(strongSide, bpsq) << " "
-            << std::endl;
-*/
+            << relative_rank(strongSide, bpsq) << " ";
+  writeEval = true;
 
   if (std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 2) {
      if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {

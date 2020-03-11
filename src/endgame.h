@@ -33,6 +33,8 @@
 
 /// EndgameCode lists all supported endgame functions by corresponding codes
 
+extern bool writeEval;
+
 enum EndgameCode {
 
   EVALUATION_FUNCTIONS,
