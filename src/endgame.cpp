@@ -19,10 +19,12 @@
 */
 
 #include <cassert>
+#include <iostream>
 
 #include "bitboard.h"
 #include "endgame.h"
 #include "movegen.h"
+#include "syzygy/tbprobe.h"
 
 using std::string;
 
@@ -557,8 +559,48 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
 
   Square wpsq1 = pos.squares<PAWN>(strongSide)[0];
   Square wpsq2 = pos.squares<PAWN>(strongSide)[1];
+  Square wksq = pos.square<KING>(strongSide);
   Square bksq = pos.square<KING>(weakSide);
+  Square bpsq = pos.square<PAWN>(weakSide);
+/*
+  Tablebases::ProbeState err;
+  Tablebases::WDLScore wdl = Tablebases::probe_wdl(const_cast<Position&>(pos), &err);
 
+  std::cout << "FEN: " << pos.fen() << " class " << (std::abs(wdl) == Tablebases::WDLWin) << " features "
+            << (pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) << " "
+            << relative_rank(strongSide, wpsq1) << " "
+            << relative_rank(strongSide, wpsq2) << " "
+            << std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) << " "
+            << distance<File>(bksq, wpsq1) << " "
+            << distance<File>(bksq, wpsq2) << " "
+            << std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) << " "
+            << std::min(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) << " "
+            << distance(wksq, bksq) << " "
+            << relative_rank(strongSide, bksq) << " "
+            << relative_rank(strongSide, wksq) << " "
+            << relative_rank(strongSide, bpsq) << " "
+            << std::endl;
+*/
+
+  if (std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 2) {
+     if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
+        return ScaleFactor(11); // [[50265.  4874.]]
+     } else {
+        return ScaleFactor(33); // [[86635. 29191.]]
+     }
+  } else {
+     if (relative_rank(strongSide, wksq) <= 2) {
+        if (std::min(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 3) {
+           return ScaleFactor(34); // [[93488. 32009.]]
+        } else {
+           return ScaleFactor(65); // [[9444. 8874.]]
+        }
+     } else {
+        return ScaleFactor(62); // [[46461. 40278.]]
+     }
+  }
+
+/*
   // Does the stronger side have a passed pawn?
   if (pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2))
       return SCALE_FACTOR_NONE;
@@ -573,6 +615,7 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
       return ScaleFactor(7 * r);
   }
   return SCALE_FACTOR_NONE;
+*/
 }
 
 
