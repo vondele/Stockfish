@@ -580,7 +580,10 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
             << distance(wksq, bksq) << " "
             << relative_rank(strongSide, bksq) << " "
             << relative_rank(strongSide, wksq) << " "
-            << relative_rank(strongSide, bpsq) << " ";
+            << relative_rank(strongSide, bpsq) << " "
+            << (pos.side_to_move() == strongSide) << " "
+            << rank_of(frontmost_sq(strongSide, pos.pieces(strongSide, PAWN))) << " "
+            << rank_of(frontmost_sq(weakSide, pos.pieces(weakSide, PAWN))) << " ";
   writeEval = true;
 
   if (std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 2) {
