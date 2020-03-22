@@ -817,11 +817,11 @@ namespace {
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
-    if (writeEval) std::cout << " eval " << eg_value(score) << std::endl;
     v =  mg_value(score) * int(me->game_phase())
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
     v /= PHASE_MIDGAME;
+    if (writeEval) std::cout << " eval " << v << std::endl;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
