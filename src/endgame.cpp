@@ -67,6 +67,7 @@ namespace {
   }
 
   int sfp[] = {64, 64, 64, 64, 64, 64, 64};
+  TUNE(sfp);
 
 } // namespace
 
