@@ -563,64 +563,54 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
   Square wpsq2 = pos.squares<PAWN>(strongSide)[1];
   Square wksq = pos.square<KING>(strongSide);
   Square bksq = pos.square<KING>(weakSide);
-  Square bpsq = pos.square<PAWN>(weakSide);
 
-  Tablebases::ProbeState err;
-  Tablebases::WDLScore wdl = Tablebases::probe_wdl(const_cast<Position&>(pos), &err);
-
-  std::cout << "FEN: " << pos.fen() << " class " << (std::abs(wdl) == Tablebases::WDLWin) << " features "
-            << (pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) << " "
-            << relative_rank(strongSide, wpsq1) << " "
-            << relative_rank(strongSide, wpsq2) << " "
-            << std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) << " "
-            << distance<File>(bksq, wpsq1) << " "
-            << distance<File>(bksq, wpsq2) << " "
-            << std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) << " "
-            << std::min(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) << " "
-            << distance(wksq, bksq) << " "
-            << relative_rank(strongSide, bksq) << " "
-            << relative_rank(strongSide, wksq) << " "
-            << relative_rank(strongSide, bpsq) << " "
-            << (pos.side_to_move() == strongSide) << " "
-            << rank_of(frontmost_sq(strongSide, pos.pieces(strongSide, PAWN))) << " "
-            << rank_of(frontmost_sq(weakSide, pos.pieces(weakSide, PAWN))) << " ";
-  writeEval = true;
-
-/*
-  if (std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 2) {
-     if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
-        return ScaleFactor(11); // [[50265.  4874.]]
-     } else {
-        return ScaleFactor(33); // [[86635. 29191.]]
-     }
-  } else {
-     if (relative_rank(strongSide, wksq) <= 2) {
-        if (std::min(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 3) {
-           return ScaleFactor(34); // [[93488. 32009.]]
-        } else {
-           return ScaleFactor(65); // [[9444. 8874.]]
-        }
-     } else {
-        return ScaleFactor(62); // [[46461. 40278.]]
-     }
-  }
-*/
+  ScaleFactor sf;
 
   // Does the stronger side have a passed pawn?
   if (pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2))
-      return SCALE_FACTOR_NONE;
-
-  Rank r = std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2));
-
-  if (   distance<File>(bksq, wpsq1) <= 1
-      && distance<File>(bksq, wpsq2) <= 1
-      && relative_rank(strongSide, bksq) > r)
   {
-      assert(r > RANK_1 && r < RANK_7);
-      return ScaleFactor(7 * r);
+     sf = SCALE_FACTOR_NORMAL;
   }
-  return SCALE_FACTOR_NONE;
+  else
+  {
+     Rank r = std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2));
 
+     if (   distance<File>(bksq, wpsq1) <= 1
+         && distance<File>(bksq, wpsq2) <= 1
+         && relative_rank(strongSide, bksq) > r)
+     {
+         assert(r > RANK_1 && r < RANK_7);
+         sf = ScaleFactor(7 * r);
+     }
+     else
+         sf = SCALE_FACTOR_NORMAL;
+  }
+
+if (std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) <= 3) {
+   if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
+      return ScaleFactor(int(sf) * 54 / 64); // [[6745.37957222 1182.64186934]]
+   } else {
+      if ((pos.side_to_move() == strongSide) <= 0) {
+         if (relative_rank(strongSide, wksq) <= 1) {
+            return ScaleFactor(int(sf) * 38 / 64); // [[3663.11667507 2403.43347639]]
+         } else {
+            return ScaleFactor(int(sf) * 24 / 64); // [[4369.75288499 7159.43411222]]
+         }
+      } else {
+         return ScaleFactor(int(sf) * 42 / 64); // [[13588.65584858  6828.80305198]]
+      }
+   }
+} else {
+   if ((pos.side_to_move() == strongSide) <= 0) {
+      if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
+         return ScaleFactor(int(sf) * 35 / 64); // [[809.87273428 635.82896201]]
+      } else {
+         return ScaleFactor(int(sf) * 13 / 64); // [[ 3398.4989172  12662.53377841]]
+      }
+   } else {
+      return ScaleFactor(int(sf) * 28 / 64); // [[7424.72336765 9127.32474964]]
+   }
+}
 
 }
 

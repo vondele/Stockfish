@@ -821,7 +821,6 @@ namespace {
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
     v /= PHASE_MIDGAME;
-    if (writeEval) std::cout << " eval " << v << std::endl;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
