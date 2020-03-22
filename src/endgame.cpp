@@ -586,6 +586,7 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
             << rank_of(frontmost_sq(weakSide, pos.pieces(weakSide, PAWN))) << " ";
   writeEval = true;
 
+/*
   if (std::max(distance<File>(bksq, wpsq1), distance<File>(bksq, wpsq2)) <= 2) {
      if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
         return ScaleFactor(11); // [[50265.  4874.]]
@@ -603,8 +604,8 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
         return ScaleFactor(62); // [[46461. 40278.]]
      }
   }
+*/
 
-/*
   // Does the stronger side have a passed pawn?
   if (pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2))
       return SCALE_FACTOR_NONE;
@@ -619,7 +620,8 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
       return ScaleFactor(7 * r);
   }
   return SCALE_FACTOR_NONE;
-*/
+
+
 }
 
 

@@ -1870,7 +1870,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
     if (Cardinality >= popcount(pos.pieces()) && !pos.can_castle(ANY_CASTLING))
     {
         // Rank moves using DTZ tables
-        RootInTB = false; // root_probe(pos, rootMoves);
+        RootInTB = root_probe(pos, rootMoves);
 
         if (!RootInTB)
         {
