@@ -565,55 +565,33 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
   Square wpsq1 = pos.squares<PAWN>(strongSide)[0];
   Square wpsq2 = pos.squares<PAWN>(strongSide)[1];
   Square wksq = pos.square<KING>(strongSide);
-  Square bksq = pos.square<KING>(weakSide);
 
-  ScaleFactor sf;
-
-  // Does the stronger side have a passed pawn?
-  if (pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2))
-  {
-     sf = SCALE_FACTOR_NORMAL;
-  }
-  else
-  {
-     Rank r = std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2));
-
-     if (   distance<File>(bksq, wpsq1) <= 1
-         && distance<File>(bksq, wpsq2) <= 1
-         && relative_rank(strongSide, bksq) > r)
-     {
-         assert(r > RANK_1 && r < RANK_7);
-         sf = ScaleFactor(7 * r);
+  if ((pos.side_to_move() == strongSide) <= 0) {
+     if (std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) <= 3) {
+        if (relative_rank(strongSide, wksq) <= 1) {
+           return ScaleFactor(sfp[0]);
+        } else {
+           return ScaleFactor(sfp[1]);
+        }
+     } else {
+        return ScaleFactor(sfp[2]);
      }
-     else
-         sf = SCALE_FACTOR_NORMAL;
+  } else {
+     if (std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) <= 3) {
+        if (relative_rank(strongSide, wksq) <= 2) {
+           return ScaleFactor(sfp[3]);
+        } else {
+           return ScaleFactor(sfp[4]);
+        }
+     } else {
+        if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
+           return ScaleFactor(sfp[5]);
+        } else {
+           return ScaleFactor(sfp[6]);
+        }
+     }
   }
 
-if (std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) <= 3) {
-   if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
-      return ScaleFactor(int(sf) * sfp[0] / 64); // [[6745.37957222 1182.64186934]]
-   } else {
-      if ((pos.side_to_move() == strongSide) <= 0) {
-         if (relative_rank(strongSide, wksq) <= 1) {
-            return ScaleFactor(int(sf) * sfp[1] / 64); // [[3663.11667507 2403.43347639]]
-         } else {
-            return ScaleFactor(int(sf) * sfp[2] / 64); // [[4369.75288499 7159.43411222]]
-         }
-      } else {
-         return ScaleFactor(int(sf) * sfp[3] / 64); // [[13588.65584858  6828.80305198]]
-      }
-   }
-} else {
-   if ((pos.side_to_move() == strongSide) <= 0) {
-      if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
-         return ScaleFactor(int(sf) * sfp[4] / 64); // [[809.87273428 635.82896201]]
-      } else {
-         return ScaleFactor(int(sf) * sfp[5] / 64); // [[ 3398.4989172  12662.53377841]]
-      }
-   } else {
-      return ScaleFactor(int(sf) * sfp[6] / 64); // [[7424.72336765 9127.32474964]]
-   }
-}
 
 }
 
