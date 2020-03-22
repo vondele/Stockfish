@@ -66,6 +66,8 @@ namespace {
     return strongSide == WHITE ? sq : flip_rank(sq);
   }
 
+  int sfp[] = {64, 64, 64, 64, 64, 64, 64};
+
 } // namespace
 
 
@@ -588,27 +590,27 @@ ScaleFactor Endgame<KRPPKRP>::operator()(const Position& pos) const {
 
 if (std::max(relative_rank(strongSide, wpsq1), relative_rank(strongSide, wpsq2)) <= 3) {
    if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
-      return ScaleFactor(int(sf) * 54 / 64); // [[6745.37957222 1182.64186934]]
+      return ScaleFactor(int(sf) * sfp[0] / 64); // [[6745.37957222 1182.64186934]]
    } else {
       if ((pos.side_to_move() == strongSide) <= 0) {
          if (relative_rank(strongSide, wksq) <= 1) {
-            return ScaleFactor(int(sf) * 38 / 64); // [[3663.11667507 2403.43347639]]
+            return ScaleFactor(int(sf) * sfp[1] / 64); // [[3663.11667507 2403.43347639]]
          } else {
-            return ScaleFactor(int(sf) * 24 / 64); // [[4369.75288499 7159.43411222]]
+            return ScaleFactor(int(sf) * sfp[2] / 64); // [[4369.75288499 7159.43411222]]
          }
       } else {
-         return ScaleFactor(int(sf) * 42 / 64); // [[13588.65584858  6828.80305198]]
+         return ScaleFactor(int(sf) * sfp[3] / 64); // [[13588.65584858  6828.80305198]]
       }
    }
 } else {
    if ((pos.side_to_move() == strongSide) <= 0) {
       if ((pos.pawn_passed(strongSide, wpsq1) || pos.pawn_passed(strongSide, wpsq2)) <= 0) {
-         return ScaleFactor(int(sf) * 35 / 64); // [[809.87273428 635.82896201]]
+         return ScaleFactor(int(sf) * sfp[4] / 64); // [[809.87273428 635.82896201]]
       } else {
-         return ScaleFactor(int(sf) * 13 / 64); // [[ 3398.4989172  12662.53377841]]
+         return ScaleFactor(int(sf) * sfp[5] / 64); // [[ 3398.4989172  12662.53377841]]
       }
    } else {
-      return ScaleFactor(int(sf) * 28 / 64); // [[7424.72336765 9127.32474964]]
+      return ScaleFactor(int(sf) * sfp[6] / 64); // [[7424.72336765 9127.32474964]]
    }
 }
 
