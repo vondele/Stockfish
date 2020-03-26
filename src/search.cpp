@@ -1153,7 +1153,7 @@ moves_loop: // When in check, search starts from here
               r -= 1 + (ttPv && !PvNode);
 
           if (!givesCheck && ttCheck)
-              r++;
+              r--;
 
           if (!captureOrPromotion)
           {
