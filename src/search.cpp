@@ -962,6 +962,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue;
     singularLMR = moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    bool ttCheck = ttMove && pos.gives_check(ttMove);
 
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -1150,6 +1151,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularLMR)
               r -= 1 + (ttPv && !PvNode);
+
+          if (!givesCheck && ttCheck)
+              r++;
 
           if (!captureOrPromotion)
           {
