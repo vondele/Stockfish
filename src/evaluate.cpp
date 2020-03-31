@@ -720,7 +720,7 @@ namespace {
                     + 21 * pawnsOnBothFlanks
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
-                    +      (pos.side_to_move() == WHITE ? 4 : -4)
+                    +      (pos.side_to_move() == WHITE ? 2 : -2)
                     - 43 * almostUnwinnable
                     -110 ;
 
