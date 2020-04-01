@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -144,7 +145,9 @@ namespace {
   constexpr Score ThreatByKing        = S( 24, 89);
   constexpr Score ThreatByPawnPush    = S( 48, 39);
   constexpr Score ThreatBySafePawn    = S(173, 94);
-  constexpr Score TrappedRook         = S( 52, 10);
+  Score TrappedRook         = S( 52, 10);
+  Score TrappedRook2        = S( 52, 10);
+  TUNE(TrappedRook, TrappedRook2);
   constexpr Score WeakQueen           = S( 49, 15);
   constexpr Score WeakQueenProtection = S( 14,  0);
 
@@ -349,7 +352,10 @@ namespace {
             {
                 File kf = file_of(pos.square<KING>(Us));
                 if ((kf < FILE_E) == (file_of(s) < kf))
+                {
                     score -= TrappedRook * (1 + !pos.castling_rights(Us));
+                    score -= TrappedRook2 * (s == relative_square(Us, SQ_F1));
+                }
             }
         }
 
