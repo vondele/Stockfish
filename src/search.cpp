@@ -61,9 +61,6 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
-  constexpr uint64_t ttHitAverageWindow     = 4096;
-  constexpr uint64_t ttHitAverageResolution = 1024;
-
   // Razor and futility margins
   constexpr int RazorMargin = 531;
   Value futility_margin(Depth d, bool improving) {
@@ -379,6 +376,7 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = ttHitAverageWindow * ttHitAverageResolution / 2;
+  r50cAverage = 0;
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
@@ -703,6 +701,11 @@ namespace {
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
     thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
                                 + ttHitAverageResolution * ttHit;
+
+    // keep an average rule50_count to judge draw tendency of position
+    if (depth > 4)
+        thisThread->r50cAverage =   (ttHitAverageWindow - 1) * thisThread->r50cAverage / ttHitAverageWindow
+                                  + ttHitAverageResolution * pos.rule50_count();
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode

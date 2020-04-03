@@ -104,6 +104,9 @@ typedef uint64_t Bitboard;
 constexpr int MAX_MOVES = 256;
 constexpr int MAX_PLY   = 246;
 
+constexpr uint64_t ttHitAverageWindow     = 4096;
+constexpr uint64_t ttHitAverageResolution = 1024;
+
 /// A move needs 16 bits to be stored
 ///
 /// bit  0- 5: destination square (from 0 to 63)
