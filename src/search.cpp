@@ -1098,9 +1098,6 @@ moves_loop: // When in check, search starts from here
       if (type_of(move) == CASTLING)
           extension = 1;
 
-      if (ss->oppBis != (ss-1)->oppBis)
-          extension = 1;
-
       // Add extension to new depth
       newDepth += extension;
 
@@ -1140,6 +1137,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
               r--;
+
+          if (ss->oppBis != (ss-1)->oppBis)
+              r++;
 
           // Reduction if other threads are searching this position.
           if (th.marked())
