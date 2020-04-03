@@ -757,7 +757,7 @@ namespace {
             sf = std::min(sf, 36 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide));
 
         int ar50c = int(pos.this_thread()->r50cAverage / (ttHitAverageWindow * ttHitAverageResolution));
-        sf = std::max(4, sf - (2 * ar50c - 12) / 4);
+        sf = std::max(4, sf - ar50c + 3);
     }
 
     return ScaleFactor(sf);
