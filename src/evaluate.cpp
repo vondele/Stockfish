@@ -821,8 +821,7 @@ namespace {
     v /= PHASE_MIDGAME;
     int r50c = pos.rule50_count() / 8;
     r50c = r50c * r50c;
-    r50c = r50c * r50c;
-    v = v * (32768 - r50c) / 32768;
+    v = v * (157 - r50c) / 157;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
