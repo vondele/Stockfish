@@ -822,7 +822,7 @@ namespace {
     int r50c = pos.rule50_count() / 8;
     r50c = r50c * r50c;
     r50c = r50c * r50c;
-    v = v * (24416 - r50c) / 24416;
+    v = v * (32768 - r50c) / 32768;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
