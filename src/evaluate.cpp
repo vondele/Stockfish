@@ -819,6 +819,10 @@ namespace {
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
     v /= PHASE_MIDGAME;
+    int r50c = pos.rule50_count() / 8;
+    r50c = r50c * r50c;
+    r50c = r50c * r50c;
+    v = v * (24416 - r50c) / 24416;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
