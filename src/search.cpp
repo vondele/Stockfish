@@ -64,6 +64,9 @@ namespace {
   constexpr uint64_t ttHitAverageWindow     = 4096;
   constexpr uint64_t ttHitAverageResolution = 1024;
 
+  int dctp1 = 102, dctp2 = 128, dctp3 = 157;
+  TUNE(dctp1, dctp2, dctp3);
+
   // Razor and futility margins
   constexpr int RazorMargin = 531;
   Value futility_margin(Depth d, bool improving) {
@@ -439,7 +442,7 @@ void Thread::search() {
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
-              int dct = ct + (102 - ct / 2) * previousScore / (abs(previousScore) + 157);
+              int dct = ct + (dctp1 - dctp2 * ct / 256) * previousScore / (abs(previousScore) + dctp3);
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
