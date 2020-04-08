@@ -439,7 +439,7 @@ void Thread::search() {
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
-              int scoreShift = previousScore - 20;
+              int scoreShift = previousScore + 20;
               int dct = ct + (102 - ct / 2) * scoreShift / (abs(scoreShift) + 157);
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
