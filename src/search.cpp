@@ -1166,6 +1166,8 @@ moves_loop: // When in check, search starts from here
           if (singularLMR)
               r -= 1 + formerPv;
 
+          r += (2 * (thisThread->nodes & 1) - 1) * moveCount / 8;
+
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~5 Elo)
