@@ -1108,9 +1108,9 @@ moves_loop: // When in check, search starts from here
           extension = 1;
 
       if (   move == ttMove
-          && pos.rule50_count() > 80
+          && pos.rule50_count() > 60
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
-          extension = 2;
+          extension = 1;
 
       // Add extension to new depth
       newDepth += extension;
