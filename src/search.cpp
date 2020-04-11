@@ -1166,7 +1166,7 @@ moves_loop: // When in check, search starts from here
           if (singularLMR)
               r -= 1 + formerPv;
 
-          if (depth < 10)
+          if (depth > 6)
              r += (thisThread->nodes & 1) * moveCount / 8;
 
           if (!captureOrPromotion)
