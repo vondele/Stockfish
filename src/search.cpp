@@ -1160,6 +1160,10 @@ moves_loop: // When in check, search starts from here
           if (th.marked())
               r++;
 
+          if (  pos.rule50_count() > 80
+              && (captureOrPromotion || type_of(movedPiece) == PAWN))
+              r--;
+
           // Decrease reduction if position is or has been on the PV (~10 Elo)
           if (ttPv)
               r -= 2;
