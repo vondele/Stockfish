@@ -32,7 +32,7 @@ namespace {
 
   enum TimeType { OptimumTime, MaxTime };
 
-  constexpr int MoveHorizon   = 40;   // Plan time management at most this many moves ahead
+  constexpr int MoveHorizon   = 45;   // Plan time management at most this many moves ahead
   constexpr double MaxRatio   = 7.3;  // When in trouble, we can step over reserved time with this ratio
   constexpr double StealRatio = 0.34; // However we must not steal time from remaining moves over this ratio
 
