@@ -1120,8 +1120,7 @@ moves_loop: // When in check, search starts from here
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
           extension = 2;
 
-      if (   move == ttMove
-          && more_than_one(pos.checkers()))
+      if (more_than_one(pos.checkers()))
           extension = 1;
 
       // Add extension to new depth
