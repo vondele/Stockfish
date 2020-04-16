@@ -1169,7 +1169,7 @@ moves_loop: // When in check, search starts from here
               r -= 2;
 
           if (more_than_one(pos.checkers()))
-              r++;
+              r--;
 
           if (moveCountPruning && !formerPv)
               r++;
