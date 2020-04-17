@@ -860,7 +860,7 @@ namespace {
 Value Eval::evaluate(const Position& pos) {
   Value v =  Evaluation<NO_TRACE>(pos).value();
   // std::cout << "xxx " << v << std::endl;
-  return v >= 0 ? v + 2 : v - 2;
+  return v >= 0 ? v + 1 : v - 2;
 }
 
 
