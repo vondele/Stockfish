@@ -775,7 +775,7 @@ namespace {
             bool pawnsOnBothFlanks =   (pos.pieces(strongSide, PAWN) & QueenSide)
                                     && (pos.pieces(strongSide, PAWN) & KingSide);
 
-            sf = std::min(sf, 36 + (pawnsOnBothFlanks ? 8 : 4) * pos.count<PAWN>(strongSide));
+            sf = std::min(sf, 36 + (pawnsOnBothFlanks ? 8 : 4) * pos.count<PAWN>(strongSide) + pe->passed_count());
         }
         else
             sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide));
