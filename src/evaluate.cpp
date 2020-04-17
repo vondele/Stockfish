@@ -857,8 +857,7 @@ namespace {
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
-  Value v= Evaluation<NO_TRACE>(pos).value();
-  return v >= 0 ? std::max(Value(2), v) : std::min(v, Value(-2));
+  return Evaluation<NO_TRACE>(pos).value();
 }
 
 
