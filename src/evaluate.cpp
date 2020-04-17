@@ -23,6 +23,7 @@
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
@@ -857,7 +858,9 @@ namespace {
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
-  return Evaluation<NO_TRACE>(pos).value();
+  Value v =  Evaluation<NO_TRACE>(pos).value();
+  // std::cout << "xxx " << v << std::endl;
+  return v > 0 ? v + 2 : v - 2;
 }
 
 
