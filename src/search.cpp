@@ -91,7 +91,12 @@ namespace {
   Value value_draw(const Position& pos) {
     Value v = eg_value(pos.psq_score());
     v = pos.side_to_move() == WHITE ? v : -v;
-    v = v < 0 ? Value(-1) : Value(1);
+    if (v < -50)
+       v = Value(-1);
+    else if (v > 50)
+       v = Value(1);
+    else
+       v = Value(0);
     return VALUE_DRAW + Value(2 * (pos.this_thread()->nodes & 1) - 1) + v;
   }
 
