@@ -769,6 +769,14 @@ namespace {
             else
                 sf = 22 + 3 * pos.count<ALL_PIECES>(strongSide);
         }
+        else if (   pos.non_pawn_material(WHITE) == RookValueMg
+                 && pos.non_pawn_material(BLACK) == RookValueMg)
+        {
+            bool pawnsOnBothFlanks =   (pos.pieces(strongSide, PAWN) & QueenSide)
+                                    && (pos.pieces(strongSide, PAWN) & KingSide);
+
+            sf = std::min(sf, 36 + (pawnsOnBothFlanks ? 8 : 2) * pos.count<PAWN>(strongSide));
+        }
         else
             sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide));
 
