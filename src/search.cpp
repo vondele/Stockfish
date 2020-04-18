@@ -1174,8 +1174,8 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 14)
               r--;
 
-          if (std::abs(bestValue) < 2)
-             r++;
+          if (std::abs(bestValue) < 2 && PvNode)
+             r--;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularLMR)
