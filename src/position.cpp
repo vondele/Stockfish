@@ -1113,17 +1113,18 @@ bool Position::see_ge(Move m, Value threshold) const {
 
 /// Position::is_draw() tests whether the position is drawn by 50-move rule
 /// or by repetition. It does not detect stalemates.
+template<bool PvNode>
+bool Position::is_draw(int ply) const {
 
-bool Position::is_draw(int ply, bool PvNode) const {
-
-  if (st->rule50 > 99 - 20 * !PvNode && (!checkers() || MoveList<LEGAL>(*this).size()))
+  if (st->rule50 > 99 && (!PvNode || !checkers() || MoveList<LEGAL>(*this).size()))
       return true;
 
   // Return a draw score if a position repeats once earlier but strictly
   // after the root, or repeats twice before or at the root.
   return st->repetition && st->repetition < ply;
 }
-
+template bool Position::is_draw<true>(int ply) const;
+template bool Position::is_draw<false>(int ply) const;
 
 // Position::has_repeated() tests whether there has been at least one repetition
 // of positions since the last capture or pawn move.
