@@ -1116,7 +1116,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 
 bool Position::is_draw(int ply, bool PvNode) const {
 
-  if (st->rule50 > 99 && (!PvNode || !checkers() || MoveList<LEGAL>(*this).size()))
+  if (st->rule50 > 99 - 20 * !PvNode && (!checkers() || MoveList<LEGAL>(*this).size()))
       return true;
 
   // Return a draw score if a position repeats once earlier but strictly
