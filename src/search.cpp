@@ -293,7 +293,7 @@ void MainThread::search() {
       for (Thread* th : Threads)
       {
           votes[th->rootMoves[0].pv[0]] +=
-              (th->rootMoves[0].score - minScore + 14) * (aDepth + Utility::clamp(int(th->completedDepth) - aDepth, -2, 2));
+              (th->rootMoves[0].score - minScore + 14) * (aDepth + Utility::clamp(int(th->completedDepth) - aDepth, -1, 1));
 
           if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
           {
