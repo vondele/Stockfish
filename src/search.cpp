@@ -91,7 +91,7 @@ namespace {
   Value value_draw(const Position& pos, Depth depth) {
     // Value v = eg_value(pos.psq_score());
     // v = pos.side_to_move() == WHITE ? v : -v;
-    int v = depth > 10 ? +1 : -1;
+    int v = depth > 10 ? -1 : +1;
     return VALUE_DRAW + Value(2 * (pos.this_thread()->nodes & 1) - 1) + v;
   }
 
