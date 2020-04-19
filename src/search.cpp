@@ -88,10 +88,10 @@ namespace {
   }
 
   // Add a small random component to draw evaluations to avoid 3fold-blindness
-  Value value_draw(const Position& pos, int ply) {
+  Value value_draw(const Position& pos, Depth depth) {
     // Value v = eg_value(pos.psq_score());
     // v = pos.side_to_move() == WHITE ? v : -v;
-    int v = ply > pos.this_thread()->rootDepth / 2 ? -1 : +1;
+    int v = depth > 5 ? -1 : +1;
     return VALUE_DRAW + Value(2 * (pos.this_thread()->nodes & 1) - 1) + v;
   }
 
@@ -608,7 +608,7 @@ namespace {
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = value_draw(pos, ss->ply);
+        alpha = value_draw(pos, depth);
         if (alpha >= beta)
             return alpha;
     }
@@ -658,7 +658,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
-                                                    : value_draw(pos, ss->ply);
+                                                    : value_draw(pos, depth);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -810,7 +810,7 @@ namespace {
             ss->staticEval = eval = evaluate(pos);
 
         if (eval == VALUE_DRAW)
-            eval = value_draw(pos, ss->ply);
+            eval = value_draw(pos, depth);
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
