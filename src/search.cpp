@@ -281,14 +281,19 @@ void MainThread::search() {
       Value minScore = this->rootMoves[0].score;
 
       // Find minimum score
+      int aDepth = 0;
       for (Thread* th: Threads)
+      {
           minScore = std::min(minScore, th->rootMoves[0].score);
+          aDepth += int(th->completedDepth);
+      }
+      aDepth /= Threads.size();
 
       // Vote according to score and depth, and select the best thread
       for (Thread* th : Threads)
       {
           votes[th->rootMoves[0].pv[0]] +=
-              (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
+              (th->rootMoves[0].score - minScore + 14) * (aDepth + Utility::clamp(int(th->completedDepth) - aDepth, -3, 3));
 
           if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
           {
