@@ -622,6 +622,7 @@ namespace {
     Move pv[MAX_PLY+1], capturesSearched[32], quietsSearched[64];
     StateInfo st;
     TTEntry* tte;
+    TTEntry tted;
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
@@ -692,10 +693,11 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
     tte = TT.probe(posKey, ttHit);
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    tted = *tte;
+    ttValue = ttHit ? value_from_tt(tted.value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
-            : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = PvNode || (ttHit && tte->is_pv());
+            : ttHit    ? tted.move() : MOVE_NONE;
+    ttPv = PvNode || (ttHit && tted.is_pv());
     formerPv = ttPv && !PvNode;
 
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
@@ -708,10 +710,10 @@ namespace {
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-        && tte->depth() >= depth
+        && tted.depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
-        && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
-                            : (tte->bound() & BOUND_UPPER)))
+        && (ttValue >= beta ? (tted.bound() & BOUND_LOWER)
+                            : (tted.bound() & BOUND_UPPER)))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit
         if (ttMove)
@@ -802,7 +804,7 @@ namespace {
     else if (ttHit)
     {
         // Never assume anything about values stored in TT
-        ss->staticEval = eval = tte->eval();
+        ss->staticEval = eval = tted.eval();
         if (eval == VALUE_NONE)
             ss->staticEval = eval = evaluate(pos);
 
@@ -811,7 +813,7 @@ namespace {
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
-            && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
+            && (tted.bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
             eval = ttValue;
     }
     else
@@ -909,7 +911,7 @@ namespace {
         while (   (move = mp.next_move()) != MOVE_NONE
                && probCutCount < 2 + 2 * cutNode
                && !(   move == ttMove
-                    && tte->depth() >= depth - 4
+                    && tted.depth() >= depth - 4
                     && ttValue < raisedBeta))
             if (move != excludedMove && pos.legal(move))
             {
@@ -947,8 +949,9 @@ namespace {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
         tte = TT.probe(posKey, ttHit);
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-        ttMove = ttHit ? tte->move() : MOVE_NONE;
+        tted = *tte;
+        ttValue = ttHit ? value_from_tt(tted.value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+        ttMove = ttHit ? tted.move() : MOVE_NONE;
     }
 
 moves_loop: // When in check, search starts from here
@@ -1068,8 +1071,8 @@ moves_loop: // When in check, search starts from here
           && !excludedMove // Avoid recursive singular search
        /* &&  ttValue != VALUE_NONE Already implicit in the next condition */
           &&  abs(ttValue) < VALUE_KNOWN_WIN
-          && (tte->bound() & BOUND_LOWER)
-          &&  tte->depth() >= depth - 3
+          && (tted.bound() & BOUND_LOWER)
+          &&  tted.depth() >= depth - 3
           &&  pos.legal(move))
       {
           Value singularBeta = ttValue - ((formerPv + 4) * depth) / 2;
@@ -1409,6 +1412,7 @@ moves_loop: // When in check, search starts from here
     Move pv[MAX_PLY+1];
     StateInfo st;
     TTEntry* tte;
+    TTEntry  tted;
     Key posKey;
     Move ttMove, move, bestMove;
     Depth ttDepth;
@@ -1444,16 +1448,17 @@ moves_loop: // When in check, search starts from here
     // Transposition table lookup
     posKey = pos.key();
     tte = TT.probe(posKey, ttHit);
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-    ttMove = ttHit ? tte->move() : MOVE_NONE;
-    pvHit = ttHit && tte->is_pv();
+    tted = *tte;
+    ttValue = ttHit ? value_from_tt(tted.value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ttMove = ttHit ? tted.move() : MOVE_NONE;
+    pvHit = ttHit && tted.is_pv();
 
     if (  !PvNode
         && ttHit
-        && tte->depth() >= ttDepth
+        && tted.depth() >= ttDepth
         && ttValue != VALUE_NONE // Only in case of TT access race
-        && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
-                            : (tte->bound() & BOUND_UPPER)))
+        && (ttValue >= beta ? (tted.bound() & BOUND_LOWER)
+                            : (tted.bound() & BOUND_UPPER)))
         return ttValue;
 
     // Evaluate the position statically
@@ -1467,12 +1472,12 @@ moves_loop: // When in check, search starts from here
         if (ttHit)
         {
             // Never assume anything about values stored in TT
-            if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
+            if ((ss->staticEval = bestValue = tted.eval()) == VALUE_NONE)
                 ss->staticEval = bestValue = evaluate(pos);
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
-                && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
+                && (tted.bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttValue;
         }
         else
