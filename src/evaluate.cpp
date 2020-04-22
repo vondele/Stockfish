@@ -257,9 +257,11 @@ namespace {
     constexpr Bitboard OutpostRanks = (Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
                                                    : Rank5BB | Rank4BB | Rank3BB);
     const Square* pl = pos.squares<Pt>(Us);
+	constexpr Piece movedPiece = make_piece(Us, Pt);
 
     Bitboard b, bb;
     Score score = SCORE_ZERO;
+    Thread *thisThread = pos.this_thread();
 
     attackedBy[Us][Pt] = 0;
 
@@ -284,9 +286,22 @@ namespace {
             kingAttacksCount[Us] += popcount(b & attackedBy[Them][KING]);
         }
 
-        int mob = popcount(b & mobilityArea[Us]);
+        bb = b & mobilityArea[Us];
+        int mob = popcount(bb);
 
         mobility[Us] += MobilityBonus[Pt - 2][mob];
+
+        int hist = -std::max(thisThread->mainHistory.divisor, thisThread->captureHistory.divisor);
+        while (bb)
+        {
+            Square to = pop_lsb(&bb);
+            Piece captured = pos.piece_on(to);
+            int h = captured ? thisThread->captureHistory[movedPiece][to][type_of(captured)] :
+                               thisThread->mainHistory[movedPiece][to];
+            hist = std::max(h, hist);
+        }
+        volatile bool switchOn = false;
+	score += switchOn ? make_score(hist / 100000, hist / 100000) : SCORE_ZERO;
 
         if (Pt == BISHOP || Pt == KNIGHT)
         {

@@ -64,6 +64,8 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 {
   typedef Stats<T, D, Size, Sizes...> stats;
 
+  static constexpr int divisor = D;
+
   void fill(const T& v) {
 
     // For standard-layout 'this' points to first struct member
