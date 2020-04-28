@@ -1133,7 +1133,7 @@ moves_loop: // When in check, search starts from here
 
       // Extend pawn moves in blocked positions
       if (   move == ttMove
-          && depth > 5
+          && depth > 7
           && type_of(pos.moved_piece(move)) == PAWN)
       {
          Pawns::Entry* pe = Pawns::probe(pos);
