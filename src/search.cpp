@@ -1131,6 +1131,15 @@ moves_loop: // When in check, search starts from here
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
           extension = 2;
 
+      // Extend pawn moves in blocked positions
+      if (   depth > 7
+          && type_of(pos.moved_piece(move)) == PAWN)
+      {
+         Pawns::Entry* pe = Pawns::probe(pos);
+         if (pe->blocked_count() >= 4)
+            extension = 1;
+      }
+
       // Add extension to new depth
       newDepth += extension;
 
