@@ -1137,7 +1137,7 @@ moves_loop: // When in check, search starts from here
           && type_of(pos.moved_piece(move)) == PAWN)
       {
          Pawns::Entry* pe = Pawns::probe(pos);
-         if (pe->blocked_count() >= 6)
+         if (pe->blocked_count() >= 4)
             extension = 1;
       }
 
