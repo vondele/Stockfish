@@ -983,6 +983,13 @@ moves_loop: // When in check, search starts from here
       if (move == excludedMove)
           continue;
 
+      if (   PvNode
+          && move == ttMove
+          && ttValue < 2
+          && ss->ply % 2 == 1
+          && thisThread->nodes % 128 == 0)
+          continue;
+
       // At root obey the "searchmoves" option and skip moves not listed in Root
       // Move List. As a consequence any illegal move is also skipped. In MultiPV
       // mode we also skip PV moves which have been already searched and those
