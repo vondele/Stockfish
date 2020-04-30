@@ -983,7 +983,7 @@ moves_loop: // When in check, search starts from here
       if (move == excludedMove)
           continue;
 
-      if (   PvNode
+      if (   !PvNode
           && move == ttMove
           && ttValue < 2
           && ss->ply % 2 == 1
