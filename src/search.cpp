@@ -985,9 +985,9 @@ moves_loop: // When in check, search starts from here
 
       if (   !PvNode
           && move == ttMove
-          && ttValue < 2
+          && std::abs(ttValue) < Tempo + 10
           && ss->ply % 2 == 1
-          && thisThread->nodes % 128 == 0)
+          && thisThread->nodes % 64 == 0)
           continue;
 
       // At root obey the "searchmoves" option and skip moves not listed in Root
