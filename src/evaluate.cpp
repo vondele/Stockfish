@@ -71,6 +71,19 @@ namespace Trace {
 
 using namespace Trace;
 
+Value PawnValueMg   = Value(128),   PawnValueEg   = Value(213),
+                KnightValueMg = Value(781),   KnightValueEg = Value(854),
+                BishopValueMg = Value(825),   BishopValueEg = Value(915),
+                RookValueMg   = Value(1276),  RookValueEg   = Value(1380),
+                QueenValueMg  = Value(2538),  QueenValueEg  = Value(2682);
+
+Value PieceValue[PHASE_NB][PIECE_NB] = {
+  { VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO,
+    VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO },
+  { VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO,
+    VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO }
+};
+
 namespace {
 
   // Threshold for lazy and space evaluation

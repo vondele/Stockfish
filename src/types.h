@@ -181,11 +181,6 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
-  PawnValueMg   = 128,   PawnValueEg   = 213,
-  KnightValueMg = 781,   KnightValueEg = 854,
-  BishopValueMg = 825,   BishopValueEg = 915,
-  RookValueMg   = 1276,  RookValueEg   = 1380,
-  QueenValueMg  = 2538,  QueenValueEg  = 2682,
   Tempo = 28,
 
   MidgameLimit  = 15258, EndgameLimit  = 3915
@@ -204,12 +199,13 @@ enum Piece {
   PIECE_NB = 16
 };
 
-constexpr Value PieceValue[PHASE_NB][PIECE_NB] = {
-  { VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO,
-    VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO },
-  { VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO,
-    VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO }
-};
+extern Value PawnValueMg,  PawnValueEg,
+             KnightValueMg, KnightValueEg,
+             BishopValueMg, BishopValueEg,
+             RookValueMg, RookValueEg,
+             QueenValueMg, QueenValueEg;
+
+extern Value PieceValue[PHASE_NB][PIECE_NB];
 
 typedef int Depth;
 
