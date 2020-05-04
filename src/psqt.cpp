@@ -29,7 +29,7 @@ Value PawnValueMg   = Value(128),   PawnValueEg   = Value(213),
       RookValueMg   = Value(1276),  RookValueEg   = Value(1380),
       QueenValueMg  = Value(2538),  QueenValueEg  = Value(2682);
 
-Value PieceValue[PHASE_NB][PIECE_NB];
+Value PieceValue[PHASE_NB][PIECE_NB] = {};
 
 namespace PSQT {
 
@@ -114,15 +114,16 @@ Score psq[PIECE_NB][SQUARE_NB];
 // tables are initialized by flipping and changing the sign of the white scores.
 void init() {
 
-  int i = 0;
-  for(Value v : { VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO,
-                  VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO })
-     PieceValue[MG][i++] = v;
+  for(int j : {W_PAWN, B_PAWN})
+  {
+     int i = j;
+     for (Value v : { PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg })
+         PieceValue[MG][i++] = v;
 
-  i = 0;
-  for(Value v : { VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO,
-                  VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO })
-     PieceValue[EG][i++] = v;
+     i = j;
+     for (Value v : { PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg })
+         PieceValue[EG][i++] = v;
+  }
 
   for (Piece pc = W_PAWN; pc <= W_KING; ++pc)
   {
@@ -139,3 +140,6 @@ void init() {
 }
 
 } // namespace PSQT
+
+auto myfunc = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(m - 32, m + 32);};
+TUNE(SetRange(myfunc), PawnValueMg, PawnValueEg, KnightValueMg, KnightValueEg, BishopValueMg, BishopValueEg, RookValueMg, RookValueEg, QueenValueMg, QueenValueEg, PSQT::init);
