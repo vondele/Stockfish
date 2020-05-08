@@ -866,7 +866,7 @@ namespace {
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
-  return Evaluation<NO_TRACE>(pos).value();
+  return Evaluation<NO_TRACE>(pos).value() + Value(2 * (pos.this_thread()->nodes & 3) - 3);
 }
 
 
