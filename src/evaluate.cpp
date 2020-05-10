@@ -829,7 +829,7 @@ namespace {
             + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
             + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
 
-    score += (mobility[WHITE] - mobility[BLACK]) * (128 - 8) / 128;
+    score += (mobility[WHITE] - mobility[BLACK]) * (128 - 11) / 128;
 
     // More complex interactions that require fully populated attack bitboards
     score +=  king<   WHITE>() - king<   BLACK>()
@@ -856,7 +856,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    int rv = Value((2 * (pos.this_thread()->nodes & 255) - 255) * 9 / 256);
+    int rv = Value((2 * (pos.this_thread()->nodes & 255) - 255) * 12 / 256);
     return  (pos.side_to_move() == WHITE ? v : -v) + Tempo + rv; // Side to move point of view
   }
 
