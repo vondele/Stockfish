@@ -856,7 +856,7 @@ namespace {
         Trace::add(TOTAL, score);
     }
 
-    int rv = Value((2 * (pos.this_thread()->nodes & 255) - 255) * 12 / 256);
+    int rv = Value((2 * (pos.this_thread()->nodes & 15) - 15) * 12 / 16);
     return  (pos.side_to_move() == WHITE ? v : -v) + Tempo + rv; // Side to move point of view
   }
 
