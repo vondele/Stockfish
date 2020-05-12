@@ -856,13 +856,7 @@ namespace {
     }
 
     // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v) + Tempo; 
-
-    // Damp down the eval after 25 moves of shuffling
-    if (pos.rule50_count() > 50)
-        v = v * (6 + 5 * (100 - pos.rule50_count())) / 256;
-
-    return v;
+    return  (pos.side_to_move() == WHITE ? v : -v) + Tempo;
   }
 
 } // namespace
