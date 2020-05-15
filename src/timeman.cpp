@@ -62,8 +62,8 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   startTime = limits.startTime;
 
   //Maximum move horizon of 50 moves
-  int ptg = (130 - std::min(100, ply)) * 2 / 3;
-  int mtg = limits.movestogo ? std::min(limits.movestogo, 50) : ptg / 2;
+  int mtgdyn = 58 - std::min(128, ply) / 8 ;
+  int mtg = limits.movestogo ? std::min(limits.movestogo, 50) : mtgdyn; 
 
   // Adjust moveOverhead if there are tiny increments
   moveOverhead = std::max(10, std::min<int>(limits.inc[us] / 2, moveOverhead));
