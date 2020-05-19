@@ -63,6 +63,7 @@ struct BoolConditions {
 };
 
 extern BoolConditions Conditions;
+extern std::vector<std::tuple<std::string, int, int, int>> TuneDefaults;
 
 inline void set_conditions() { Conditions.set(); }
 

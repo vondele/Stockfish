@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <tuple>
+#include <vector>
 
 #include "types.h"
 #include "misc.h"
@@ -32,6 +34,7 @@ bool Tune::update_on_last;
 const UCI::Option* LastOption = nullptr;
 BoolConditions Conditions;
 static std::map<std::string, int> TuneResults;
+std::vector<std::tuple<std::string, int, int, int>> TuneDefaults;
 
 string Tune::next(string& names, bool pop) {
 
@@ -69,6 +72,7 @@ static void make_option(const string& n, int v, const SetRange& r) {
 
   Options[n] << UCI::Option(v, r(v).first, r(v).second, on_tune);
   LastOption = &Options[n];
+  TuneDefaults.push_back(std::make_tuple(n, v, r(v).first, r(v).second));
 
   // Print formatted parameters, ready to be copy-pasted in fishtest
   std::cout << n << ","

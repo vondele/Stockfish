@@ -29,6 +29,7 @@
 #include "material.h"
 #include "pawns.h"
 #include "thread.h"
+#include "uci.h"
 
 namespace Trace {
 
@@ -151,8 +152,9 @@ namespace {
   constexpr Score ThreatByPawnPush    = S( 48, 39);
   constexpr Score ThreatBySafePawn    = S(173, 94);
   constexpr Score TrappedRook         = S( 55, 13);
-  constexpr Score WeakQueen           = S( 51, 14);
-  constexpr Score WeakQueenProtection = S( 15,  0);
+  Score WeakQueen           = S( 51, 14);
+  Score WeakQueenProtection = S( 15,  0);
+  TUNE(WeakQueen, WeakQueenProtection);
 
 #undef S
 
@@ -884,15 +886,39 @@ std::string Eval::trace(const Position& pos) {
   if (pos.checkers())
       return "Total evaluation: none (in check)";
 
-  std::memset(scores, 0, sizeof(scores));
-
   pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
+
+  std::stringstream ss;
+
+  if (TuneDefaults.size() > 0)
+  {
+     ss << "\nDerivatives: {";
+     for (auto p : TuneDefaults)
+     {
+       int c = std::max(1, (std::get<3>(p) - std::get<2>(p)) / 6);
+       int pp1 = std::min(std::get<3>(p), std::get<1>(p) + c);
+       int pm1 = std::max(std::get<2>(p), pp1 - 2 * c);
+       pp1 = pm1 + 2 * c;
+
+       Options[std::get<0>(p)] = std::to_string(pp1);
+       Value vp1 = Evaluation<NO_TRACE>(pos).value();
+
+       Options[std::get<0>(p)] = std::to_string(pm1);
+       Value vm1 = Evaluation<NO_TRACE>(pos).value();
+
+       ss << "\'" << std::get<0>(p) << "\': " << float(vp1 - vm1) / (2 * c) << ", ";
+
+       Options[std::get<0>(p)] = std::to_string(std::get<1>(p));
+     }
+     ss << "}\n\n";
+  }
+
+  std::memset(scores, 0, sizeof(scores));
 
   Value v = Evaluation<TRACE>(pos).value();
 
   v = pos.side_to_move() == WHITE ? v : -v; // Trace scores are from white's point of view
 
-  std::stringstream ss;
   ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
      << "     Term    |    White    |    Black    |    Total   \n"
      << "             |   MG    EG  |   MG    EG  |   MG    EG \n"
