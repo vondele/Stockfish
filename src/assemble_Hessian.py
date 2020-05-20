@@ -6,6 +6,7 @@ from numpy import linalg as LA
 
 print("Starting stockfish")
 # book must contain a wide variety of positions, not just openings. Eval is called on these EPDs only.
+command = "cat derivs.out | grep Deriv"
 command = "./stockfish bench 128 1 1 variedbook.epd eval 2>&1 | grep Deriv"
 process = Popen(command, shell=True, stdout=PIPE)
 output  = process.communicate()[0]
@@ -28,11 +29,26 @@ print("Variables: ")
 print(keys)
 
 Hessian = np.zeros(Nkeys * Nkeys, dtype=np.float64).reshape(Nkeys, Nkeys)
+Corr = np.zeros(Nkeys * Nkeys, dtype=np.float64).reshape(Nkeys, Nkeys)
+Derivs = np.zeros(Nkeys, dtype=np.float64)
 
 for d in dicts:
   for i in range(0, Nkeys):
+    Derivs[i] = Derivs[i] + d[keys[i]] / Ndicts
     for j in range(0, Nkeys):
       Hessian[i, j] = Hessian[i, j] + d[keys[i]] * d[keys[j]] / Ndicts
+
+print()
+print("Average derivatives (probably close to zero):")
+print(Derivs)
+
+for i in range(0, Nkeys):
+  for j in range(0, Nkeys):
+    Corr[i, j] = Hessian[i, j] / math.sqrt(Hessian[i, i] * Hessian[j, j])
+
+print()
+print("Correlation matrix: ")
+print(Corr)
 
 print()
 print("Hessian: ")

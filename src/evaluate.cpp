@@ -154,7 +154,8 @@ namespace {
   constexpr Score TrappedRook         = S( 55, 13);
   Score WeakQueen           = S( 51, 14);
   Score WeakQueenProtection = S( 15,  0);
-  TUNE(WeakQueen, WeakQueenProtection);
+  int coef1 = 185;
+  TUNE(WeakQueen, WeakQueenProtection, coef1);
 
 #undef S
 
@@ -462,7 +463,7 @@ namespace {
     int kingFlankDefense = popcount(b3);
 
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
-                 + 185 * popcount(kingRing[Us] & weak)
+                 + coef1 * popcount(kingRing[Us] & weak)
                  + 148 * popcount(unsafeChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))
                  +  69 * kingAttacksCount[Them]
