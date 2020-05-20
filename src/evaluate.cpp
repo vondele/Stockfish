@@ -155,7 +155,6 @@ namespace {
   Score WeakQueen           = S( 51, 14);
   Score WeakQueenProtection = S( 15,  0);
   int coef1 = 185;
-  TUNE(WeakQueen, WeakQueenProtection, coef1);
 
 #undef S
 

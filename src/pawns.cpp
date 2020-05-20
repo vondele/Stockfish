@@ -37,6 +37,8 @@ namespace {
   constexpr Score Isolated      = S( 5, 15);
   constexpr Score WeakLever     = S( 0, 56);
   constexpr Score WeakUnopposed = S(13, 27);
+  Score BlockedStorm[RANK_NB]  = {S( 0,  0), S( 0,  0), S( 82,  82), S( 0,  0), S( 0,  0), S( 0,  0), S( 0,  0)};
+  TUNE(SetRange(-100,100), BlockedStorm);
 
   constexpr Score BlockedStorm[RANK_NB]  = {S( 0, 0), S( 0, 0), S( 76, 78), S(-10, 15), S(-7, 10), S(-4, 6), S(-1, 2)};
 
