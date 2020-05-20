@@ -892,6 +892,12 @@ std::string Eval::trace(const Position& pos) {
 
   if (TuneDefaults.size() > 0)
   {
+
+     // Needed to reset the content of these tables, in case the tuning
+     // parameter changes these terms. Much faster than clearing the full table on tune.
+     Material::Entry* me = Material::probe(pos);
+     Pawns::Entry* pe = Pawns::probe(pos);;
+
      ss << "\nDerivatives: {";
      for (auto p : TuneDefaults)
      {
@@ -901,14 +907,17 @@ std::string Eval::trace(const Position& pos) {
        pp1 = pm1 + 2 * c;
 
        Options[std::get<0>(p)] = std::to_string(pp1);
+       me->key = pe->key = 0;
        Value vp1 = Evaluation<NO_TRACE>(pos).value();
 
        Options[std::get<0>(p)] = std::to_string(pm1);
+       me->key = pe->key = 0;
        Value vm1 = Evaluation<NO_TRACE>(pos).value();
 
        ss << "\'" << std::get<0>(p) << "\': " << float(vp1 - vm1) / (2 * c) << ", ";
 
        Options[std::get<0>(p)] = std::to_string(std::get<1>(p));
+       me->key = pe->key = 0;
      }
      ss << "}\n\n";
   }
