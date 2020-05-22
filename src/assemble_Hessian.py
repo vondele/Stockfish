@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 import ast
+import sys
 import numpy as np
 import math
 from numpy import linalg as LA
@@ -11,14 +12,14 @@ book = "variedbook.epd"
 command = "./stockfish bench 128 1 1 %s eval 2>&1 | grep Deriv" % book
 print("Starting stockfish with book: %s " % book)
 process = Popen(command, shell=True, stdout=PIPE)
-output  = process.communicate()[0]
+output = process.communicate()[0]
 if process.returncode != 0:
-   sys.exit("failed to execute command: %s\n" % command)
+    sys.exit("failed to execute command: %s\n" % command)
 
 dicts = []
 for line in output.decode("utf-8").splitlines():
     if line.startswith("Derivatives:"):
-       dicts.append(ast.literal_eval(line[13:])) 
+        dicts.append(ast.literal_eval(line[13:]))
 
 Ndicts = len(dicts)
 print()
@@ -35,18 +36,18 @@ Corr = np.zeros(Nkeys * Nkeys, dtype=np.float64).reshape(Nkeys, Nkeys)
 Derivs = np.zeros(Nkeys, dtype=np.float64)
 
 for d in dicts:
-  for i in range(0, Nkeys):
-    Derivs[i] = Derivs[i] + float(d[keys[i]]) / Ndicts
-    for j in range(0, Nkeys):
-      Hessian[i, j] = Hessian[i, j] + float(d[keys[i]] * d[keys[j]]) / Ndicts
+    for i in range(0, Nkeys):
+        Derivs[i] = Derivs[i] + float(d[keys[i]]) / Ndicts
+        for j in range(0, Nkeys):
+            Hessian[i, j] = Hessian[i, j] + float(d[keys[i]] * d[keys[j]]) / Ndicts
 
 print()
 print("Average derivatives (probably close to zero):")
 print(Derivs)
 
 for i in range(0, Nkeys):
-  for j in range(0, Nkeys):
-    Corr[i, j] = Hessian[i, j] / math.sqrt(Hessian[i, i] * Hessian[j, j])
+    for j in range(0, Nkeys):
+        Corr[i, j] = Hessian[i, j] / math.sqrt(Hessian[i, i] * Hessian[j, j])
 
 print()
 print("Correlation matrix: ")
@@ -59,7 +60,7 @@ print(Hessian)
 print()
 diag = [Hessian[i, i] for i in range(0, Nkeys)]
 print("Diagonal: ", diag)
-lengthscales = [ 1/math.sqrt(Hessian[i, i])  for i in range(0, Nkeys)]
+lengthscales = [1 / math.sqrt(Hessian[i, i]) for i in range(0, Nkeys)]
 print("Lenghtscales: ", lengthscales)
 
 # based on the coef1 testcase of https://github.com/glinscott/fishtest/issues/535
@@ -76,7 +77,7 @@ for i in range(0, Nkeys):
     maxval, maxind = -1, -1
     for j in available:
         if abs(v[i, j]) > maxval:
-           maxval, maxind = abs(v[i ,j]), j
+            maxval, maxind = abs(v[i, j]), j
     reorder.append(maxind)
     available.remove(maxind)
 
@@ -85,7 +86,7 @@ e = e[reorder]
 
 print()
 print("Eigenvalues: ", e)
-lengthscales = [ 1/math.sqrt(e[i]) if e[i] > 0 else 0 for i in range(0, Nkeys)]
+lengthscales = [1 / math.sqrt(e[i]) if e[i] > 0 else 0 for i in range(0, Nkeys)]
 print("Lenghtscales: ", lengthscales)
 print()
 print("Eigenvectors: ")
