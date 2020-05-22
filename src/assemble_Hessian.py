@@ -6,8 +6,8 @@ from numpy import linalg as LA
 
 print("Starting stockfish")
 # book must contain a wide variety of positions, not just openings. Eval is called on these EPDs only.
-command = "./stockfish bench 128 1 1 variedbook.epd eval 2>&1 | grep Deriv"
 command = "./stockfish bench 128 1 1 t.epd eval 2>&1 | grep Deriv"
+command = "./stockfish bench 128 1 1 variedbook.epd eval 2>&1 | grep Deriv"
 process = Popen(command, shell=True, stdout=PIPE)
 output  = process.communicate()[0]
 if process.returncode != 0:
