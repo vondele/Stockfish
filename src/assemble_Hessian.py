@@ -25,6 +25,7 @@ Ndicts = len(dicts)
 print()
 print("Found %d matching output lines" % Ndicts)
 keys = [k for k in dicts[0]]
+keys.sort()
 Nkeys = len(keys)
 
 print()
