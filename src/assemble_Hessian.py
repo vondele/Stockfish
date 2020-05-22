@@ -4,11 +4,12 @@ import numpy as np
 import math
 from numpy import linalg as LA
 
-print("Starting stockfish")
 # book must contain a wide variety of positions, not just openings. Eval is called on these EPDs only.
-command = "./stockfish bench 128 1 1 t.epd eval 2>&1 | grep Deriv"
-command = "./stockfish bench 128 1 1 quiet-labeled.v7.epd eval 2>&1 | grep Deriv"
-command = "./stockfish bench 128 1 1 variedbook.epd eval 2>&1 | grep Deriv"
+book = "t.epd"
+book = "quiet-labeled.v7.epd"
+book = "variedbook.epd"
+command = "./stockfish bench 128 1 1 %s eval 2>&1 | grep Deriv" % book
+print("Starting stockfish with book: %s " % book)
 process = Popen(command, shell=True, stdout=PIPE)
 output  = process.communicate()[0]
 if process.returncode != 0:
