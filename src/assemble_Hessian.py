@@ -7,6 +7,7 @@ from numpy import linalg as LA
 print("Starting stockfish")
 # book must contain a wide variety of positions, not just openings. Eval is called on these EPDs only.
 command = "./stockfish bench 128 1 1 t.epd eval 2>&1 | grep Deriv"
+command = "./stockfish bench 128 1 1 quiet-labeled.v7.epd eval 2>&1 | grep Deriv"
 command = "./stockfish bench 128 1 1 variedbook.epd eval 2>&1 | grep Deriv"
 process = Popen(command, shell=True, stdout=PIPE)
 output  = process.communicate()[0]
@@ -34,9 +35,9 @@ Derivs = np.zeros(Nkeys, dtype=np.float64)
 
 for d in dicts:
   for i in range(0, Nkeys):
-    Derivs[i] = Derivs[i] + d[keys[i]] / Ndicts
+    Derivs[i] = Derivs[i] + float(d[keys[i]]) / Ndicts
     for j in range(0, Nkeys):
-      Hessian[i, j] = Hessian[i, j] + d[keys[i]] * d[keys[j]] / Ndicts
+      Hessian[i, j] = Hessian[i, j] + float(d[keys[i]] * d[keys[j]]) / Ndicts
 
 print()
 print("Average derivatives (probably close to zero):")
