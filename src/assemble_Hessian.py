@@ -6,8 +6,8 @@ import math
 from numpy import linalg as LA
 
 # book must contain a wide variety of positions, not just openings. Eval is called on these EPDs only.
-book = "t.epd"
 book = "quiet-labeled.v7.epd"
+book = "t.epd"
 book = "variedbook.epd"
 command = "./stockfish bench 128 1 1 %s eval 2>&1 | grep Deriv" % book
 print("Starting stockfish with book: %s " % book)
@@ -33,14 +33,22 @@ print("Variables: ")
 print(keys)
 
 Hessian = np.zeros(Nkeys * Nkeys, dtype=np.float64).reshape(Nkeys, Nkeys)
+HessianM2 = np.zeros(Nkeys * Nkeys, dtype=np.float64).reshape(Nkeys, Nkeys)
 Corr = np.zeros(Nkeys * Nkeys, dtype=np.float64).reshape(Nkeys, Nkeys)
 Derivs = np.zeros(Nkeys, dtype=np.float64)
 
+idict = 0
 for d in dicts:
+    idict = idict + 1
     for i in range(0, Nkeys):
         Derivs[i] = Derivs[i] + float(d[keys[i]]) / Ndicts
         for j in range(0, Nkeys):
-            Hessian[i, j] = Hessian[i, j] + float(d[keys[i]] * d[keys[j]]) / Ndicts
+            dx = float(d[keys[i]] * d[keys[j]])
+            delta = dx - Hessian[i, j]
+            Hessian[i, j] += delta / idict
+            HessianM2[i, j] += delta * (dx - Hessian[i, j])
+
+HessianM2_ci = 1.96 * np.sqrt(HessianM2 / (idict - 1)) / math.sqrt(idict)
 
 print()
 print("Average derivatives (probably close to zero):")
@@ -57,6 +65,10 @@ print(Corr)
 print()
 print("Hessian: ")
 print(Hessian)
+
+print()
+print("Hessian confidence interval : +- ")
+print(HessianM2_ci)
 
 print()
 diag = [Hessian[i, i] for i in range(0, Nkeys)]
