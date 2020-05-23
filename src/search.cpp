@@ -1196,10 +1196,10 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2;
 
-          if (thisThread->count3fold>0)
+          if (thisThread->count3fold>0 && ((thisThread->nodes & 7) == 0))
           {
              r--;
-             thisThread->count3fold -= 1;
+             thisThread->count3fold -= 2;
           }
 
           if (moveCountPruning && !formerPv)
@@ -1455,10 +1455,7 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-    {
-        ++thisThread->count3fold;
         return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
-    }
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
