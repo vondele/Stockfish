@@ -1199,7 +1199,7 @@ moves_loop: // When in check, search starts from here
           if (thisThread->count3fold>0)
           {
              r--;
-             thisThread->count3fold -= 10;
+             thisThread->count3fold -= 4;
           }
 
           if (moveCountPruning && !formerPv)
