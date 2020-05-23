@@ -398,6 +398,7 @@ void Thread::search() {
                           : -make_score(ct, ct / 2));
 
   int searchAgainCounter = 0;
+  count3fold = 0;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -610,7 +611,10 @@ namespace {
     {
         alpha = value_draw(pos.this_thread());
         if (alpha >= beta)
+        {
+            ++pos.this_thread()->count3fold;
             return alpha;
+        }
     }
 
     // Dive into quiescence search when the depth reaches zero
@@ -657,8 +661,11 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
+        {
+            ++thisThread->count3fold;
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
                                                     : value_draw(pos.this_thread());
+        }
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1188,6 +1195,12 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if position is or has been on the PV (~10 Elo)
           if (ttPv)
               r -= 2;
+
+          if (thisThread->count3fold>0)
+          {
+             r--;
+             thisThread->count3fold--;
+          }
 
           if (moveCountPruning && !formerPv)
               r++;
