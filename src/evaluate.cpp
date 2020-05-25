@@ -813,8 +813,11 @@ namespace {
     if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
        return pos.side_to_move() == WHITE ? v : -v;
 
-    if (abs(v) > 300)
-       score = make_score(mg_value(score) * 120 / 128, eg_value(score) * 120 / 128);
+    if (v > 300)
+       score = make_score(300 + (mg_value(score) - 300) * 120 / 128, 300 + (eg_value(score) - 300) * 120 / 128);
+
+    if (v < -300)
+       score = make_score(-300 + (mg_value(score) + 300) * 120 / 128, -300 + (eg_value(score) + 300) * 120 / 128);
 
     // Main evaluation begins here
 
