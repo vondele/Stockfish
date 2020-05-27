@@ -70,9 +70,9 @@ namespace {
     return Value(217 * (d - improving));
   }
 
-  Depth reduction(bool i, Depth d, int mn) {
-    int r = 16384 * d * mn / ((16 + mn) * (16 + d));
-    return (r + 511) / 1024 + (!i && r > 1007);
+  Depth reduction(bool improving, Depth d, int mn) {
+    int r = 16559 * d * mn / ((13 + mn) * (17 + d));
+    return (r + 511) / 1024 + (!improving && r > 1007);
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
