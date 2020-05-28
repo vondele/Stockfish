@@ -1181,6 +1181,9 @@ moves_loop: // When in check, search starts from here
           if (thisThread->ttHitAverage > 500 * TtHitAverageResolution * TtHitAverageWindow / 1024)
               r--;
 
+          if (PvNode && abs(bestValue) < 2)
+              r--;
+
           // Reduction if other threads are searching this position.
           if (th.marked())
               r++;
