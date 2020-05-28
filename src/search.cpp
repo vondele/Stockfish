@@ -1187,7 +1187,7 @@ moves_loop: // When in check, search starts from here
           if (thisThread->ttHitAverage > 500 * AverageResolution * AverageWindow / 1024)
               r--;
 
-          if (thisThread->threeFoldAverage > 32 * AverageResolution * AverageWindow / 1024)
+          if (thisThread->threeFoldAverage > 8 * AverageResolution * AverageWindow / 1024)
               r--;
 
           // Reduction if other threads are searching this position.
