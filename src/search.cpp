@@ -382,6 +382,7 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = AverageWindow * AverageResolution / 2;
+  threeFoldAverage = 0;
 
   int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
@@ -600,14 +601,17 @@ namespace {
 
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
+    Thread* thisThread = pos.this_thread();
 
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
+    thisThread->threeFoldAverage = (AverageWindow - 1) * thisThread->threeFoldAverage / AverageWindow;
     if (   pos.rule50_count() >= 3
         && alpha < VALUE_DRAW
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
+        thisThread->threeFoldAverage += AverageResolution;
         alpha = value_draw(pos.this_thread());
         if (alpha >= beta)
             return alpha;
@@ -635,7 +639,6 @@ namespace {
     int moveCount, captureCount, quietCount;
 
     // Step 1. Initialize node
-    Thread* thisThread = pos.this_thread();
     ss->inCheck = pos.checkers();
     priorCapture = pos.captured_piece();
     Color us = pos.side_to_move();
@@ -657,8 +660,11 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
+        {
+            thisThread->threeFoldAverage += AverageResolution;
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
-                                                    : value_draw(pos.this_thread());
+                                                        : value_draw(pos.this_thread());
+        }
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1179,6 +1185,9 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * AverageResolution * AverageWindow / 1024)
+              r--;
+
+          if (thisThread->threeFoldAverage > 16 * AverageResolution * AverageWindow / 1024)
               r--;
 
           // Reduction if other threads are searching this position.
