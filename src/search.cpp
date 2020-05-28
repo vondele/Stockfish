@@ -1035,6 +1035,7 @@ moves_loop: // When in check, search starts from here
               if (   lmrDepth < 6
                   && !ss->inCheck
                   && ss->staticEval + 235 + 172 * lmrDepth <= alpha
+                  && !(PvNode && abs(bestValue) < 2)
                   &&  (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
                     + (*contHist[3])[movedPiece][to_sq(move)] < 27400)
@@ -1179,9 +1180,6 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * TtHitAverageResolution * TtHitAverageWindow / 1024)
-              r--;
-
-          if (PvNode && abs(bestValue) < 2)
               r--;
 
           // Reduction if other threads are searching this position.
