@@ -63,7 +63,7 @@ struct Entry {
   int blockedCount;
 };
 
-typedef HashTable<Entry, 131072> Table;
+typedef HashTable<Entry, 524288> Table;
 
 Entry* probe(const Position& pos);
 
