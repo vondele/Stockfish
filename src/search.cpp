@@ -544,6 +544,10 @@ void Thread::search() {
                                     + 6 * (mainThread->iterValue[iterIdx] - bestValue)) / 704.0;
           fallingEval = Utility::clamp(fallingEval, 0.5, 1.5);
 
+          // if draw eval adjust time use.
+          if (abs(bestValue) < 2)
+             fallingEval *= 1.05;
+
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.94 : 0.91;
           double reduction = (1.41 + mainThread->previousTimeReduction) / (2.27 * timeReduction);
