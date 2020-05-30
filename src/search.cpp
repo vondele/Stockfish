@@ -546,7 +546,7 @@ void Thread::search() {
 
           // if draw eval adjust time use.
           if (abs(bestValue) < 2)
-             fallingEval *= 1.05;
+             fallingEval *= 0.95;
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.94 : 0.91;
