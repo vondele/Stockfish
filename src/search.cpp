@@ -560,7 +560,7 @@ void Thread::search() {
 
           if (mainThread->firstMove)
           {
-              totalTime *= 1.5;
+              totalTime *= 1.25;
               mainThread->firstMove = false;
           }
 
