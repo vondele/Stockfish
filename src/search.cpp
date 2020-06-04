@@ -341,6 +341,7 @@ void Thread::search() {
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
       (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
+  (ss-1)->moveCountHistory = 1;
 
   ss->pv = pv;
 
@@ -643,6 +644,7 @@ namespace {
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     maxValue = VALUE_INFINITE;
+    ss->moveCountHistory = (ss-1)->moveCountHistory;
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1157,6 +1159,7 @@ moves_loop: // When in check, search starts from here
       }
 
       // Update the current move (this must be done after singular extension search)
+      ss->moveCountHistory = (ss-1)->moveCountHistory * moveCount;
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                 [captureOrPromotion]
@@ -1178,6 +1181,9 @@ moves_loop: // When in check, search starts from here
               || thisThread->ttHitAverage < 375 * TtHitAverageResolution * TtHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);
+
+          if (256 * msb(ss->moveCountHistory) > 350 * thisThread->rootDepth)
+              r--;
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * TtHitAverageResolution * TtHitAverageWindow / 1024)

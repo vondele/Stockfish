@@ -50,6 +50,7 @@ struct Stack {
   int statScore;
   int moveCount;
   bool inCheck;
+  uint64_t moveCountHistory;
 };
 
 
