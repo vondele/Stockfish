@@ -817,9 +817,9 @@ namespace {
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
     // Early exit if score is high
-    Value v = (mg_value(score) + eg_value(score)) / 2;
-    if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
-       return pos.side_to_move() == WHITE ? v : -v;
+    Value lazyEval = (mg_value(score) + eg_value(score)) / 2;
+    if (abs(lazyEval) > LazyThreshold + pos.non_pawn_material() / 64)
+       return pos.side_to_move() == WHITE ? lazyEval : -lazyEval;
 
     // Main evaluation begins here
 
@@ -845,10 +845,12 @@ namespace {
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
-    v =  mg_value(score) * int(me->game_phase())
-       + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
+    Value v =  mg_value(score) * int(me->game_phase())
+             + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
     v /= PHASE_MIDGAME;
+
+    v += lazyEval / 128;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
