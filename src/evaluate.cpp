@@ -850,7 +850,8 @@ namespace {
 
     v /= PHASE_MIDGAME;
 
-    v += lazyEval / 128;
+    if (v == 0)
+        v += lazyEval / 128;
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
