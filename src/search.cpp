@@ -1183,7 +1183,7 @@ moves_loop: // When in check, search starts from here
           Depth r = reduction(improving, depth, moveCount);
 
           if (256 * msb(ss->moveCountHistory) > 350 * thisThread->rootDepth)
-              r--;
+              r++;
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 500 * TtHitAverageResolution * TtHitAverageWindow / 1024)
