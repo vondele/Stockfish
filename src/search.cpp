@@ -1096,9 +1096,7 @@ moves_loop: // When in check, search starts from here
           {
               extension = 1;
               singularQuietLMR = !ttCapture;
-              if (   singularQuietLMR
-                  && abs(ttValue) < 2
-                  && !priorCapture
+              if (  !priorCapture
                   && (ss->ply & 1)
                   && (ss-1)->moveCount <= 2)
                   update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth - 1));
