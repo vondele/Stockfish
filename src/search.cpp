@@ -1099,6 +1099,7 @@ moves_loop: // When in check, search starts from here
               if (   singularQuietLMR
                   && abs(ttValue)
                   && !priorCapture
+                  && (ss->ply & 1)
                   && (ss-1)->moveCount <= 2)
                   update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth - 1));
           }
