@@ -746,7 +746,7 @@ namespace {
                     - 32 * !pos.count<QUEEN>()
                     - 43 * almostUnwinnable
                     -  2 * pos.rule50_count()
-                    -110 ;
+                    -100 ;
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
