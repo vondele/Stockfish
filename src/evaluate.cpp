@@ -743,10 +743,10 @@ namespace {
                     + 21 * pawnsOnBothFlanks
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
-                    - 32 * !pos.count<QUEEN>()
+                    - 16 * !pos.count<QUEEN>()
                     - 43 * almostUnwinnable
                     -  2 * pos.rule50_count()
-                    -100 ;
+                    -105 ;
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
