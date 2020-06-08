@@ -743,6 +743,7 @@ namespace {
                     + 21 * pawnsOnBothFlanks
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
+                    + 10 * pos.count<QUEEN>()
                     - 43 * almostUnwinnable
                     -  2 * pos.rule50_count()
                     -110 ;
