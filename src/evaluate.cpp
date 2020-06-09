@@ -783,7 +783,7 @@ namespace {
        + eg * int(PHASE_MIDGAME - me->game_phase()) * ScaleFactor(sf) / SCALE_FACTOR_NORMAL;
     v /= PHASE_MIDGAME;
 
-    if (abs(v) < 10)
+    if (abs(v) < 20)
        v = VALUE_ZERO;
 
     if (T)
