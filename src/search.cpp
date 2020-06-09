@@ -396,6 +396,7 @@ void Thread::search() {
   // Evaluation score is from the white point of view
   contempt = (us == WHITE ?  make_score(ct, ct / 2)
                           : -make_score(ct, ct / 2));
+  int dctp = ct;
 
   int searchAgainCounter = 0;
 
@@ -443,6 +444,8 @@ void Thread::search() {
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
               int dct = ct + (102 - ct / 2) * prev / (abs(prev) + 157);
+              dct = (4 * dct + 4 * dctp) / 8;
+              dctp = dct;
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
