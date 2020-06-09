@@ -444,7 +444,7 @@ void Thread::search() {
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
               int dct = ct + (102 - ct / 2) * prev / (abs(prev) + 157);
-              dct = (2 * dct + 6 * dctp) / 8;
+              dct = (6 * dct + 2 * dctp) / 8;
               dctp = dct;
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
