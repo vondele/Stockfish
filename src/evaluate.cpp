@@ -783,6 +783,9 @@ namespace {
        + eg * int(PHASE_MIDGAME - me->game_phase()) * ScaleFactor(sf) / SCALE_FACTOR_NORMAL;
     v /= PHASE_MIDGAME;
 
+    if (abs(v) < 10)
+       v = VALUE_ZERO;
+
     if (T)
     {
         Trace::add(WINNABLE, make_score(u, eg * ScaleFactor(sf) / SCALE_FACTOR_NORMAL - eg_value(score)));
