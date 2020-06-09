@@ -1098,16 +1098,10 @@ moves_loop: // When in check, search starts from here
               singularQuietLMR = !ttCapture;
               if (abs(ttValue) < 2)
               {
-                 if (ss->ply & 1)
-                 {
-                    if (!priorCapture)
-                       update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth - 1));
-                 }
-                 else
-                 {
-                    if (singularQuietLMR)
-                       update_continuation_histories(ss, movedPiece, to_sq(move), -stat_bonus(depth - 1));
-                 }
+                 if ((ss->ply & 1) && !priorCapture)
+                    update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth - 1));
+                 else if (!(ss->ply & 1) && singularQuietLMR)
+                    update_continuation_histories(ss, movedPiece, to_sq(move), stat_bonus(depth - 1));
               }
           }
 
