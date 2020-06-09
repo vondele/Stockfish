@@ -21,6 +21,7 @@
 #include <cassert>
 
 #include "movepick.h"
+#include "thread.h"
 
 namespace {
 
@@ -169,7 +170,7 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
+                       return pos.see_ge(*cur, std::abs(pos.this_thread()->rootMoves[pos.this_thread()->pvIdx].previousScore) > 1 ? Value(-69 * cur->value / 1024) : Value(1)) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
