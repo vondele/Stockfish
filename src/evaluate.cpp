@@ -30,6 +30,8 @@
 #include "pawns.h"
 #include "thread.h"
 
+Value Tempo[] = {Value(28), Value(27), Value(27), Value(27), Value(26), Value(26), Value(26), Value(26), Value(25), Value(25), Value(25), Value(24), Value(24), Value(24), Value(24), Value(23), Value(23), Value(23), Value(22), Value(22), Value(22), Value(22), Value(21), Value(21), Value(21), Value(21), Value(20), Value(20), Value(20), Value(19), Value(19), Value(19), Value(19), Value(18), Value(18), Value(18), Value(17), Value(17), Value(17), Value(17), Value(16), Value(16), Value(16), Value(15), Value(15), Value(15), Value(15), Value(14), Value(14), Value(14), Value(14), Value(13), Value(13), Value(13), Value(12), Value(12), Value(12), Value(12), Value(11), Value(11), Value(11), Value(10), Value(10), Value(10), Value(10), Value(9), Value(9), Value(9), Value(8), Value(8), Value(8), Value(8), Value(7), Value(7), Value(7), Value(7), Value(6), Value(6), Value(6), Value(5), Value(5), Value(5), Value(5), Value(4), Value(4), Value(4), Value(3), Value(3), Value(3), Value(3), Value(2), Value(2), Value(2), Value(1), Value(1), Value(1), Value(1), Value(0), Value(0), Value(0), Value(0)};
+
 namespace Trace {
 
   enum Tracing { NO_TRACE, TRACE };
@@ -857,7 +859,7 @@ namespace {
     }
 
     // Side to move point of view
-    return (pos.side_to_move() == WHITE ? v : -v) + Tempo;
+    return (pos.side_to_move() == WHITE ? v : -v) + Tempo[pos.rule50_count()];
   }
 
 } // namespace
