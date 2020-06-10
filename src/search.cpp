@@ -1101,6 +1101,13 @@ moves_loop: // When in check, search starts from here
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
+      // Shuffle extension
+      if (   PvNode
+          && pos.rule50_count() > 18
+          && depth < 3
+          && abs(bestValue) > 2 * Tempo)
+          extension = 1;
+
       // Castling extension
       if (type_of(move) == CASTLING)
           extension = 1;
