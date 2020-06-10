@@ -1096,6 +1096,13 @@ moves_loop: // When in check, search starts from here
                && pos.pawn_passed(us, to_sq(move)))
           extension = 1;
 
+      // Shuffle extension
+      else if (   PvNode
+               && pos.rule50_count() > 18
+               && depth < 3
+               && (abs(bestValue) > 1 || moveCount == 1))
+          extension = 1;
+
       // Last captures extension
       else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
                && pos.non_pawn_material() <= 2 * RookValueMg)
