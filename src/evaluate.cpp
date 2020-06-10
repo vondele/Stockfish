@@ -855,7 +855,7 @@ namespace {
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
 
-    v = (v / 32) * 32;
+    v = (v / 8) * 8;
 
     // Side to move point of view
     v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
