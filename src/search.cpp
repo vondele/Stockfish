@@ -937,7 +937,7 @@ moves_loop: // When in check, search starts from here
                                       contHist,
                                       countermove,
                                       ss->killers,
-                                      ss->ply);
+                                      depth > 12 ? ss->ply : MAX_PLY);
 
     value = bestValue;
     singularQuietLMR = moveCountPruning = false;
