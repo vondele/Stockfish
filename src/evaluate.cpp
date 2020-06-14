@@ -351,8 +351,8 @@ namespace {
         if (Pt == ROOK)
         {
             // Bonus for rook on the same file as a queen
-            if (file_bb(s) & pos.pieces(QUEEN))
-                score += RookOnQueenFile;
+            // if (file_bb(s) & pos.pieces(QUEEN))
+            //     score += RookOnQueenFile;
 
             // Bonus for rook on an open or semi-open file
             if (pos.is_on_semiopen_file(Us, s))
@@ -538,10 +538,10 @@ namespace {
     }
 
     // Bonus for restricting their piece moves
-    // b =   attackedBy[Them][ALL_PIECES]
-    //    & ~stronglyProtected
-    //    &  attackedBy[Us][ALL_PIECES];
-    // score += RestrictedPiece * popcount(b);
+    b =   attackedBy[Them][ALL_PIECES]
+       & ~stronglyProtected
+       &  attackedBy[Us][ALL_PIECES];
+    score += RestrictedPiece * popcount(b);
 
     // Protected or unattacked squares
     safe = ~attackedBy[Them][ALL_PIECES] | attackedBy[Us][ALL_PIECES];
