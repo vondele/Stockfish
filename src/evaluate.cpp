@@ -313,8 +313,8 @@ namespace {
                 score += MinorBehindPawn;
 
             // Penalty if the piece is far from the king
-            score -= (Pt == KNIGHT ? KnightKingProtector
-                                   : BishopKingProtector) * distance(pos.square<KING>(Us), s);
+            // score -= (Pt == KNIGHT ? KnightKingProtector
+            //                        : BishopKingProtector) * distance(pos.square<KING>(Us), s);
 
             if (Pt == BISHOP)
             {
@@ -480,7 +480,7 @@ namespace {
         score -= PawnlessFlank;
 
     // Penalty if king flank is under attack, potentially moving toward the king
-    // score -= FlankAttacks * kingFlankAttack;
+    score -= FlankAttacks * kingFlankAttack;
 
     if (T)
         Trace::add(KING, Us, score);
