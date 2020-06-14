@@ -313,8 +313,8 @@ namespace {
                 score += MinorBehindPawn;
 
             // Penalty if the piece is far from the king
-            // score -= (Pt == KNIGHT ? KnightKingProtector
-            //                        : BishopKingProtector) * distance(pos.square<KING>(Us), s);
+            score -= (Pt == KNIGHT ? KnightKingProtector
+                                   : BishopKingProtector) * distance(pos.square<KING>(Us), s);
 
             if (Pt == BISHOP)
             {
@@ -538,10 +538,10 @@ namespace {
     }
 
     // Bonus for restricting their piece moves
-    b =   attackedBy[Them][ALL_PIECES]
-       & ~stronglyProtected
-       &  attackedBy[Us][ALL_PIECES];
-    score += RestrictedPiece * popcount(b);
+    // b =   attackedBy[Them][ALL_PIECES]
+    //    & ~stronglyProtected
+    //    &  attackedBy[Us][ALL_PIECES];
+    // score += RestrictedPiece * popcount(b);
 
     // Protected or unattacked squares
     safe = ~attackedBy[Them][ALL_PIECES] | attackedBy[Us][ALL_PIECES];
