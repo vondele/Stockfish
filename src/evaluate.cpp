@@ -782,8 +782,7 @@ namespace {
        + eg * int(PHASE_MIDGAME - me->game_phase()) * ScaleFactor(sf) / SCALE_FACTOR_NORMAL;
     v /= PHASE_MIDGAME;
 
-    if (pos.game_ply() > 80)
-       v = v * 512 / (512 - 80 + pos.game_ply());
+    v = v * (512 + 80 - Utility::clamp(pos.game_ply(), 80, 256)) / 512;
 
     if (T)
     {
