@@ -783,7 +783,7 @@ namespace {
     v /= PHASE_MIDGAME;
 
     if (pos.game_ply() > 80)
-       v = v * 256 / (256 - 80 + pos.game_ply());
+       v = v * 512 / (512 - 80 + pos.game_ply());
 
     if (T)
     {
