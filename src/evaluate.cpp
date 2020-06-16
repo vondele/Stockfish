@@ -786,7 +786,7 @@ namespace {
              + 5 * pos.count<ROOK>() + 9 * pos.count<QUEEN>();
 
     if (mat < 22)
-       v = v * 1024 / ( 2048 - 46 * mat);
+       v = v * (512 + 1024 * 1024 / ( 2048 - 46 * mat)) / 1024;
 
     if (T)
     {
