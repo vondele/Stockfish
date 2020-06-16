@@ -782,6 +782,12 @@ namespace {
        + eg * int(PHASE_MIDGAME - me->game_phase()) * ScaleFactor(sf) / SCALE_FACTOR_NORMAL;
     v /= PHASE_MIDGAME;
 
+    int mat =  pos.count<PAWN>() + 3 * pos.count<BISHOP>() + 3 * pos.count<KNIGHT>()
+             + 5 * pos.count<ROOK>() + 9 * pos.count<QUEEN>();
+
+    if (mat < 22)
+       v = v * 1024 / ( 2048 - 46 * mat);
+
     if (T)
     {
         Trace::add(WINNABLE, make_score(u, eg * ScaleFactor(sf) / SCALE_FACTOR_NORMAL - eg_value(score)));
