@@ -1102,7 +1102,7 @@ moves_loop: // When in check, search starts from here
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
-      if (PvNode && depth == 1 && (ss->ply & 1) == 0)
+      if (PvNode && depth == 1 && (ss->ply & 1) == 1)
           extension = 1;
 
       // Castling extension
