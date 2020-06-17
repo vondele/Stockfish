@@ -861,7 +861,7 @@ namespace {
     // Side to move point of view
     v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
 
-    v -= ((v < 0) - (0 < v)) * pos.game_ply() / 8;
+    v -= ((v < 0) - (0 < v)) * pos.game_ply() / 16;
 
     // Damp down the evaluation linearly when shuffling
     v = v * (100 - pos.rule50_count()) / 100;
