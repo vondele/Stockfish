@@ -859,7 +859,7 @@ namespace {
     v = (v / 16) * 16;
 
     // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
+    v = (pos.side_to_move() == WHITE ? v : -v) + Tempo - pos.game_ply() / 16;
 
     // Damp down the evaluation linearly when shuffling
     v = v * (100 - pos.rule50_count()) / 100;
