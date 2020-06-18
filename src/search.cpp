@@ -88,9 +88,9 @@ namespace {
   }
 
   // Add a small random component to draw evaluations to avoid 3fold-blindness
-  Value value_draw(const Position& pos) {
+  Value value_draw(const Position& pos, int ply) {
     Value plyBonus = Value(std::min(15, pos.game_ply() / 16));
-    if (pos.this_thread()->isPositive)
+    if (pos.this_thread()->isPositive && ((ply & 1) == 0))
        plyBonus = -plyBonus;
     return VALUE_DRAW + plyBonus + Value(2 * (pos.this_thread()->nodes & 1) - 1);
   }
@@ -582,7 +582,7 @@ namespace {
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = value_draw(pos);
+        alpha = value_draw(pos, ss->ply);
         if (alpha >= beta)
             return alpha;
     }
@@ -633,7 +633,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
-                                                    : value_draw(pos);
+                                                    : value_draw(pos, ss->ply);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -785,7 +785,7 @@ namespace {
             ss->staticEval = eval = evaluate(pos);
 
         if (eval == VALUE_DRAW)
-            eval = value_draw(pos);
+            eval = value_draw(pos, ss->ply);
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
