@@ -90,7 +90,7 @@ namespace {
   // Add a small random component to draw evaluations to avoid 3fold-blindness
   Value value_draw(const Position& pos, int ply) {
     Value plyBonus = Value(std::min(15, pos.game_ply() / 16));
-    if (!(pos.this_thread()->isPositive && ((ply & 1) == 0)))
+    if (pos.this_thread()->isPositive == ((ply & 1) == 0))
        plyBonus = -plyBonus;
     return VALUE_DRAW + plyBonus + Value(2 * (pos.this_thread()->nodes & 1) - 1);
   }
