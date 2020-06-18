@@ -90,7 +90,9 @@ namespace {
   // Add a small random component to draw evaluations to avoid 3fold-blindness
   Value value_draw(const Position& pos) {
     Value plyBonus = Value(std::min(15, pos.game_ply() / 16));
-    return VALUE_DRAW - plyBonus + Value(2 * (pos.this_thread()->nodes & 1) - 1);
+    if (!pos.this_thread()->isPositive)
+       plyBonus = -plyBonus;
+    return VALUE_DRAW + plyBonus + Value(2 * (pos.this_thread()->nodes & 1) - 1);
   }
 
   // Skill structure is used to implement strength limit
@@ -483,6 +485,9 @@ void Thread::search() {
 
       if (!Threads.stop)
           completedDepth = rootDepth;
+
+      if (abs(bestValue) > 2)
+         isPositive = bestValue > 0;
 
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
