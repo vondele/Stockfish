@@ -1030,6 +1030,12 @@ moves_loop: // When in check, search starts from here
                   && ss->staticEval + 267 + 391 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
                   continue;
 
+              // Prune underpromotions
+              if (   lmrDepth < 10
+                  && type_of(move) == PROMOTION
+                  && promotion_type(move) != QUEEN)
+                  continue;
+
               // See based pruning
               if (!pos.see_ge(move, Value(-202) * depth)) // (~25 Elo)
                   continue;
