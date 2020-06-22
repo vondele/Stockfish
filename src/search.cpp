@@ -522,8 +522,12 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
 
-          double totalTime = rootMoves.size() == 1 ? 0 :
+          double totalTime = rootMoves.size() == 1 ? 1 :
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
+
+          totalTime = std::max(1.0, totalTime);
+
+          Threads.timeUsedFraction = 1000 * Time.elapsed() / totalTime;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search
           if (Time.elapsed() > totalTime)
@@ -984,6 +988,7 @@ moves_loop: // When in check, search starts from here
       // Step 13. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
           && pos.non_pawn_material(us)
+          && Threads.timeUsedFraction.load(std::memory_order_relaxed) > 4
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold

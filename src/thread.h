@@ -114,6 +114,7 @@ struct ThreadPool : public std::vector<Thread*> {
   void wait_for_search_finished() const;
 
   std::atomic_bool stop, increaseDepth;
+  std::atomic_int  timeUsedFraction;
 
 private:
   StateListPtr setupStates;
