@@ -525,7 +525,7 @@ void Thread::search() {
           double totalTime = rootMoves.size() == 1 ? 0 :
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
-          Threads.lotsOfTimeLeft = Time.elapsed() < totalTime / 16;
+          Threads.lotsOfTimeLeft = Time.elapsed() < totalTime / 64;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search.
           if (Time.elapsed() > totalTime)
@@ -810,6 +810,9 @@ namespace {
 
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
+
+    if (Threads.lotsOfTimeLeft.load(std::memory_order_relaxed))
+        goto moves_loop;
 
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
@@ -1152,10 +1155,6 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 473 * TtHitAverageResolution * TtHitAverageWindow / 1024)
-              r--;
-
-          // Less reduction if lots of time left
-          if (Threads.lotsOfTimeLeft.load(std::memory_order_relaxed))
               r--;
 
           // Reduction if other threads are searching this position.
