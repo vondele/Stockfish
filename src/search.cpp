@@ -303,7 +303,6 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
-  lotsOfTimeLeft = true;
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
@@ -526,7 +525,7 @@ void Thread::search() {
           double totalTime = rootMoves.size() == 1 ? 0 :
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
-          lotsOfTimeLeft = Time.elapsed() < totalTime / 8;
+          Threads.lotsOfTimeLeft = Time.elapsed() < totalTime / 16;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search.
           if (Time.elapsed() > totalTime)
@@ -1156,7 +1155,7 @@ moves_loop: // When in check, search starts from here
               r--;
 
           // Less reduction if lots of time left
-          if (thisThread->lotsOfTimeLeft)
+          if (Threads.lotsOfTimeLeft.load(std::memory_order_relaxed))
               r--;
 
           // Reduction if other threads are searching this position.

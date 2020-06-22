@@ -75,7 +75,6 @@ public:
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
   Score contempt;
-  bool lotsOfTimeLeft;
 };
 
 
@@ -94,6 +93,7 @@ struct MainThread : public Thread {
   int callsCnt;
   bool stopOnPonderhit;
   std::atomic_bool ponder;
+  std::atomic_bool lotsOfTimeLeft;
 };
 
 
@@ -114,7 +114,7 @@ struct ThreadPool : public std::vector<Thread*> {
   void start_searching();
   void wait_for_search_finished() const;
 
-  std::atomic_bool stop, increaseDepth;
+  std::atomic_bool stop, increaseDepth, lotsOfTimeLeft;
 
 private:
   StateListPtr setupStates;
