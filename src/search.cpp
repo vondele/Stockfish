@@ -522,8 +522,12 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
 
-          double totalTime = rootMoves.size() == 1 ? 0 :
+          double totalTime = rootMoves.size() == 1 ? 1 :
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
+
+          totalTime = std::max(1.0, totalTime);
+
+          Threads.timeUsedFraction = 1000 * Time.elapsed() / totalTime;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search
           if (Time.elapsed() > totalTime)
@@ -826,6 +830,7 @@ namespace {
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
         &&  pos.non_pawn_material(us)
+        &&  Threads.timeUsedFraction.load(std::memory_order_relaxed) > 8
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
