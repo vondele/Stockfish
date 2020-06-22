@@ -1031,9 +1031,9 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Prune underpromotions
-              if (   lmrDepth < 10
+              if (   lmrDepth < 12
                   && type_of(move) == PROMOTION
-                  && promotion_type(move) != QUEEN)
+                  && (promotion_type(move) == ROOK || promotion_type(move) == BISHOP))
                   continue;
 
               // See based pruning
