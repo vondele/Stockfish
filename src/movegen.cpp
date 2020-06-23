@@ -238,8 +238,6 @@ namespace {
             static_assert(true, "Unsupported type in generate_all()");
     }
 
-    moveList = generate_moves<Us,  QUEEN, Checks>(pos, moveList, target);
-
     if (Type != QUIET_CHECKS && Type != EVASIONS)
     {
         Square ksq = pos.square<KING>(Us);
@@ -253,10 +251,11 @@ namespace {
                     *moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));
     }
 
-    moveList = generate_pawn_moves<Us, Type>(pos, moveList, target);
-    moveList = generate_moves<Us, KNIGHT, Checks>(pos, moveList, target);
-    moveList = generate_moves<Us, BISHOP, Checks>(pos, moveList, target);
     moveList = generate_moves<Us,   ROOK, Checks>(pos, moveList, target);
+    moveList = generate_moves<Us,  QUEEN, Checks>(pos, moveList, target);
+    moveList = generate_moves<Us, BISHOP, Checks>(pos, moveList, target);
+    moveList = generate_moves<Us, KNIGHT, Checks>(pos, moveList, target);
+    moveList = generate_pawn_moves<Us, Type>(pos, moveList, target);
 
     return moveList;
   }
