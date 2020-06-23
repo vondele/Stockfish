@@ -811,9 +811,6 @@ namespace {
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
-    if (Threads.lotsOfTimeLeft.load(std::memory_order_relaxed))
-        goto moves_loop;
-
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6
@@ -830,6 +827,7 @@ namespace {
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
         &&  pos.non_pawn_material(us)
+        && !Threads.lotsOfTimeLeft.load(std::memory_order_relaxed)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
