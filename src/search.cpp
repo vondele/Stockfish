@@ -315,12 +315,9 @@ void Thread::search() {
 
   if (mainThread)
   {
-      if (mainThread->bestPreviousScore == VALUE_INFINITE)
+          Value bestPrevScore = mainThread->bestPreviousScore == VALUE_INFINITE?VALUE_ZERO: mainThread->bestPreviousScore;
           for (int i = 0; i < 4; ++i)
-              mainThread->iterValue[i] = VALUE_ZERO;
-      else
-          for (int i = 0; i < 4; ++i)
-              mainThread->iterValue[i] = mainThread->bestPreviousScore;
+              mainThread->iterValue[i] = bestPrevScore;
   }
 
   std::copy(&lowPlyHistory[2][0], &lowPlyHistory.back().back() + 1, &lowPlyHistory[0][0]);
