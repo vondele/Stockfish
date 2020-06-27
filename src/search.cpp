@@ -1857,7 +1857,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " multipv "  << i + 1
          << " score "    << UCI::value(v);
 
-      if (Options["UCI_ShowWDL"])
+      if (Options["UCI_ShowWDL"] && elapsed > 1000)
       {
           int wdl_w = win_rate_model(pos.game_ply(), v);
           int wdl_l = win_rate_model(pos.game_ply(), -v);
