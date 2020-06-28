@@ -830,7 +830,7 @@ namespace {
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
         &&  pos.non_pawn_material(us)
-        &&  Threads.timeUsedFraction.load(std::memory_order_relaxed) > 8
+        &&  Threads.timeUsedFraction.load(std::memory_order_relaxed) > 4
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
