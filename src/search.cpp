@@ -1111,7 +1111,7 @@ moves_loop: // When in check, search starts from here
 
       if (   PvNode
           && pos.rule50_count() > 20
-          && depth < 3)
+          && depth < 2)
           extension = 1;
 
       // Late irreversible move extension
