@@ -1111,6 +1111,7 @@ moves_loop: // When in check, search starts from here
 
       if (   PvNode
           && depth < 2
+          && pos.rule50_count() > 5
           && pos.rule50_count() < 90
           && pos.opposite_bishops()
           && pos.non_pawn_material(WHITE) == BishopValueMg 
