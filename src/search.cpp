@@ -1113,8 +1113,8 @@ moves_loop: // When in check, search starts from here
           && depth < 3
           && pos.rule50_count() < 90
           && pos.opposite_bishops()
-          && pos.non_pawn_material(WHITE) == BishopValueMg
-          && pos.non_pawn_material(BLACK) == BishopValueMg)
+          && pos.non_pawn_material(WHITE) <= BishopValueMg + RookValueMg 
+          && pos.non_pawn_material(BLACK) <= BishopValueMg + RookValueMg)
           extension = 1;
 
       // Late irreversible move extension
