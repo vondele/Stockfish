@@ -749,7 +749,7 @@ namespace {
                      || rank_of(pos.square<KING>(BLACK)) < RANK_5;
 
     bool goodQueen =    pos.count<QUEEN>(strongSide) > 0
-                     && pos.count<PAWN>() > 8;
+                     && pos.opposite_bishops();
 
     // Compute the initiative bonus for the attacking side
     int complexity =   9 * pe->passed_count()
