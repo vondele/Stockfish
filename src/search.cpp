@@ -670,6 +670,14 @@ namespace {
     ttPv = PvNode || (ttHit && tte->is_pv());
     formerPv = ttPv && !PvNode;
 
+    if (   PvNode
+        && ttHit
+        && depth > 7
+        && pos.rule50_count() > 20)
+    {
+        tte->updateEval(evaluate(pos));
+    }
+
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !priorCapture && is_ok((ss-1)->currentMove))
         thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
 
