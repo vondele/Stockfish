@@ -303,6 +303,7 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
+  lazyShift = VALUE_ZERO;
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
@@ -422,6 +423,7 @@ void Thread::search() {
           {
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
+              lazyShift = us == WHITE ? -bestValue : bestValue;
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
