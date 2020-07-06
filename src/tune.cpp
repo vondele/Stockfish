@@ -74,7 +74,7 @@ static void make_option(const string& n, int v, const SetRange& r) {
   LastOption = &Options[n];
   TuneDefaults.push_back(std::make_tuple(n, v, r(v).first, r(v).second));
 
-  // Print formatted parameters, ready to be copy-pasted in fishtest
+  // Print formatted parameters, ready to be copy-pasted in Fishtest
   std::cout << n << ","
             << v << ","
             << r(v).first << "," << r(v).second << ","
