@@ -873,7 +873,7 @@ namespace {
 
     // Damp down the evaluation linearly when shuffling
     int gamePlyShift = 1 + pos.game_ply();
-    v = v * std::max(4, 100 - pos.rule50_count() - msb(gamePlyShift)) / 100;
+    v = v * std::max(4, 100 - pos.rule50_count() - msb(gamePlyShift * gamePlyShift)) / 100;
 
     return v;
   }
