@@ -135,7 +135,8 @@ namespace {
 
   // Assorted bonuses and penalties
   constexpr Score BishopOnKingRing    = S( 24,  0);
-  constexpr Score BishopPawns         = S(  3,  7);
+  Score BishopPawns         = S( 24, 56);
+  TUNE(BishopPawns);
   constexpr Score BishopXRayPawns     = S(  4,  5);
   constexpr Score CorneredBishop      = S( 50, 50);
   constexpr Score FlankAttacks        = S(  8,  0);
@@ -330,7 +331,7 @@ namespace {
                 Bitboard blocked = pos.pieces(Us, PAWN) & shift<Down>(pos.pieces());
 
                 score -= BishopPawns * pos.pawns_on_same_color_squares(Us, s)
-                                     * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles));
+                                     * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles)) / 8;
 
                 // Penalty for all enemy pawns x-rayed
                 score -= BishopXRayPawns * popcount(attacks_bb<BISHOP>(s) & pos.pieces(Them, PAWN));
