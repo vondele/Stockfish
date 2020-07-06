@@ -872,7 +872,8 @@ namespace {
     v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
 
     // Damp down the evaluation linearly when shuffling
-    v = v * std::max(4, 100 - pos.rule50_count() - pos.game_ply() / 8) / 100;
+    int gamePlyShift = 1 + pos.game_ply();
+    v = v * std::max(4, 100 - pos.rule50_count() - msb(gamePlyShift)) / 100;
 
     return v;
   }
