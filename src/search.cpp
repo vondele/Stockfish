@@ -407,7 +407,7 @@ void Thread::search() {
               // Adjust contempt based on root move's previousScore (dynamic contempt)
               int64_t p3 = prev;
               p3 = p3 * p3 * p3;
-              dct = ct + int64_t(PawnValueEg / 2) * p3 / (std::abs(p3) + (1 << 18));
+              dct = ct + int64_t(PawnValueEg / 2) * p3 / (std::abs(p3) + (1 << 20));
           }
 
           // Evaluation score is from the white point of view
