@@ -46,6 +46,10 @@ namespace Trace {
     scores[idx][c] = s;
   }
 
+  bool random_magic(const Position& pos, Bitboard b) {
+    return pos.this_thread()->nodes & 1 ? more_than_one(b) : popcount(b) > 2;
+  }
+
   void add(int idx, Score w, Score b = SCORE_ZERO) {
     scores[idx][WHITE] = w;
     scores[idx][BLACK] = b;
@@ -134,6 +138,7 @@ namespace {
   };
 
   // Assorted bonuses and penalties
+  constexpr Score BadOutpost          = S( -7, 36);
   constexpr Score BishopOnKingRing    = S( 24,  0);
   constexpr Score BishopPawns         = S(  3,  7);
   constexpr Score BishopXRayPawns     = S(  4,  5);
@@ -310,7 +315,12 @@ namespace {
         {
             // Bonus if piece is on an outpost square or can reach one
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
-            if (bb & s)
+            if (   Pt == KNIGHT
+                && bb & s & ~CenterFiles
+                && !(b & pos.pieces(Them) & ~pos.pieces(PAWN))
+                && !random_magic(pos, (pos.pieces(Them) & ~pos.pieces(PAWN)) & ((s & QueenSide) ? QueenSide : KingSide)))
+                score += BadOutpost;
+            else if (bb & s)
                 score += Outpost[Pt == BISHOP];
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
                 score += ReachableOutpost;
