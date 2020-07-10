@@ -61,6 +61,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
+  constexpr int mcountScale = 2;
   constexpr uint64_t TtHitAverageWindow     = 4096;
   constexpr uint64_t TtHitAverageResolution = 1024;
 
@@ -768,6 +769,11 @@ namespace {
 
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
 
+    if (depth > 8)
+       ss->mcount = ((ss-2)->mcount * 6 + MoveList<LEGAL>(pos).size() * 2) / 8;
+    else
+       ss->mcount = (ss-2)->mcount;
+
     // Step 6. Static evaluation of the position
     if (ss->inCheck)
     {
@@ -781,7 +787,7 @@ namespace {
         // Never assume anything about values stored in TT
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
-            ss->staticEval = eval = evaluate(pos);
+            ss->staticEval = eval = evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale;
 
         if (eval == VALUE_DRAW)
             eval = value_draw(thisThread);
@@ -797,7 +803,7 @@ namespace {
         {
             int bonus = -(ss-1)->statScore / 512;
 
-            ss->staticEval = eval = evaluate(pos) + bonus;
+            ss->staticEval = eval = evaluate(pos) + bonus + (ss->mcount - (ss-1)->mcount) * mcountScale;
         }
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Tempo;
@@ -1416,11 +1422,12 @@ moves_loop: // When in check, search starts from here
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
     moveCount = 0;
+    ss->mcount = (ss-2)->mcount;
 
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1456,7 +1463,7 @@ moves_loop: // When in check, search starts from here
         {
             // Never assume anything about values stored in TT
             if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
-                ss->staticEval = bestValue = evaluate(pos);
+                ss->staticEval = bestValue = evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale;
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
@@ -1465,7 +1472,7 @@ moves_loop: // When in check, search starts from here
         }
         else
             ss->staticEval = bestValue =
-            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
+            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale
                                              : -(ss-1)->staticEval + 2 * Tempo;
 
         // Stand pat. Return immediately if static value is at least beta
