@@ -308,6 +308,7 @@ void Thread::search() {
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
       (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
+  (ss-2)->mcount = (ss-1)->mcount = MoveList<LEGAL>(rootPos).size();
 
   ss->pv = pv;
 
@@ -768,11 +769,13 @@ namespace {
     }
 
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
+    int mcount;
 
     if (depth > 8)
-       ss->mcount = ((ss-2)->mcount * 6 + MoveList<LEGAL>(pos).size() * 2) / 8;
+       mcount = ((ss-2)->mcount * 6 + MoveList<LEGAL>(pos).size() * 2 + 7) / 8;
     else
-       ss->mcount = (ss-2)->mcount;
+       mcount = (ss-2)->mcount;
+    ss->mcount = mcount;
 
     // Step 6. Static evaluation of the position
     if (ss->inCheck)
@@ -787,7 +790,7 @@ namespace {
         // Never assume anything about values stored in TT
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
-            ss->staticEval = eval = evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale;
+            ss->staticEval = eval = evaluate(pos) + (ss->mcount - (ss-1)->mcount) / mcountScale;
 
         if (eval == VALUE_DRAW)
             eval = value_draw(thisThread);
@@ -803,7 +806,7 @@ namespace {
         {
             int bonus = -(ss-1)->statScore / 512;
 
-            ss->staticEval = eval = evaluate(pos) + bonus + (ss->mcount - (ss-1)->mcount) * mcountScale;
+            ss->staticEval = eval = evaluate(pos) + bonus + (ss->mcount - (ss-1)->mcount) / mcountScale;
         }
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Tempo;
@@ -869,6 +872,7 @@ namespace {
             thisThread->nmpColor = us;
 
             Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false);
+            ss->mcount = mcount;
 
             thisThread->nmpMinPly = 0;
 
@@ -928,6 +932,7 @@ namespace {
     if (depth >= 7 && !ttMove)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
+        ss->mcount = mcount;
 
         tte = TT.probe(posKey, ttHit);
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
@@ -1070,6 +1075,7 @@ moves_loop: // When in check, search starts from here
           Depth singularDepth = (depth - 1 + 3 * formerPv) / 2;
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
+          ss->mcount = mcount;
           ss->excludedMove = MOVE_NONE;
 
           if (value < singularBeta)
@@ -1092,6 +1098,7 @@ moves_loop: // When in check, search starts from here
           {
               ss->excludedMove = move;
               value = search<NonPV>(pos, ss, beta - 1, beta, (depth + 3) / 2, cutNode);
+              ss->mcount = mcount;
               ss->excludedMove = MOVE_NONE;
 
               if (value >= beta)
@@ -1427,7 +1434,7 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) + (ss->mcount - (ss-1)->mcount) / mcountScale : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1463,7 +1470,7 @@ moves_loop: // When in check, search starts from here
         {
             // Never assume anything about values stored in TT
             if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
-                ss->staticEval = bestValue = evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale;
+                ss->staticEval = bestValue = evaluate(pos) + (ss->mcount - (ss-1)->mcount) / mcountScale;
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
@@ -1472,7 +1479,7 @@ moves_loop: // When in check, search starts from here
         }
         else
             ss->staticEval = bestValue =
-            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos) + (ss->mcount - (ss-1)->mcount) * mcountScale
+            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos) + (ss->mcount - (ss-1)->mcount) / mcountScale
                                              : -(ss-1)->staticEval + 2 * Tempo;
 
         // Stand pat. Return immediately if static value is at least beta
