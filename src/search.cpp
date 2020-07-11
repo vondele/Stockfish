@@ -1182,6 +1182,9 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2;
 
+          if (pos.rule50_count() > 30 && pos.rule50_count() < 70)
+              r--;
+
           if (moveCountPruning && !formerPv)
               r++;
 
