@@ -134,8 +134,8 @@ constexpr bool more_than_two(Bitboard b) {
   return more_than_one(b & (b - 1));
 }
 
-constexpr bool magic_more_than_two(Bitboard b) {
-  return b & ((1ULL << SQ_A1) | (1ULL << SQ_A8)) ? more_than_two(b) : more_than_one(b);
+constexpr bool magic_more_than_two(Bitboard b, Square sq) {
+  return (b & (1ULL << sq)) ? more_than_two(b) : more_than_one(b);
 }
 
 constexpr bool magic_more_than_two_orig(Bitboard b) {
