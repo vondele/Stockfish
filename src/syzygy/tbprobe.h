@@ -47,10 +47,10 @@ enum ProbeState {
 extern int MaxCardinality;
 
 void init(const std::string& paths);
-WDLScore probe_wdl(Position& pos, ProbeState* result);
-int probe_dtz(Position& pos, ProbeState* result);
-bool root_probe(Position& pos, Search::RootMoves& rootMoves);
-bool root_probe_wdl(Position& pos, Search::RootMoves& rootMoves);
+template<bool UseNNUE> WDLScore probe_wdl(Position& pos, ProbeState* result);
+template<bool UseNNUE> int probe_dtz(Position& pos, ProbeState* result);
+template<bool UseNNUE> bool root_probe(Position& pos, Search::RootMoves& rootMoves);
+template<bool UsenNUE> bool root_probe_wdl(Position& pos, Search::RootMoves& rootMoves);
 void rank_root_moves(Position& pos, Search::RootMoves& rootMoves);
 
 inline std::ostream& operator<<(std::ostream& os, const WDLScore v) {

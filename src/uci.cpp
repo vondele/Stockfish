@@ -68,13 +68,14 @@ namespace {
         return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
-    pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+    pos.set(fen, Options["UCI_Chess960"], Options["Use NNUE"], &states->back(), Threads.main());
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
-        pos.do_move(m, states->back());
+        Options["Use NNUE"] ? pos.do_move<true>(m, states->back()) :
+                              pos.do_move<false>(m, states->back());
     }
   }
 
@@ -166,7 +167,7 @@ namespace {
                nodes += Threads.nodes_searched();
             }
             else
-               sync_cout << "\n" << Eval::trace(pos) << sync_endl;
+               sync_cout << "\n" << Eval::trace(pos, Options["Use NNUE"]) << sync_endl;
         }
         else if (token == "setoption")  setoption(is);
         else if (token == "position")   position(pos, is, states);
@@ -236,7 +237,7 @@ void UCI::loop(int argc, char* argv[]) {
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));
 
-  pos.set(StartFEN, false, &states->back(), Threads.main());
+  pos.set(StartFEN, false, Options["Use NNUE"], &states->back(), Threads.main());
 
   if (argc > 1)
      init_nnue(Options["EvalFile"]);
@@ -285,10 +286,10 @@ void UCI::loop(int argc, char* argv[]) {
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
-      else if (token == "flip")     pos.flip();
+      else if (token == "flip")     pos.flip(Options["Use NNUE"]);
       else if (token == "bench")    bench(pos, is, states);
       else if (token == "d")        sync_cout << pos << sync_endl;
-      else if (token == "eval")     sync_cout << Eval::trace(pos) << sync_endl;
+      else if (token == "eval")     sync_cout << Eval::trace(pos, Options["Use NNUE"]) << sync_endl;
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else
           sync_cout << "Unknown command: " << cmd << sync_endl;

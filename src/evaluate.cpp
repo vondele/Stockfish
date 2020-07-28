@@ -30,10 +30,6 @@
 #include "pawns.h"
 #include "thread.h"
 
-namespace Eval {
-   bool useNNUE;
-}
-
 namespace Trace {
 
   enum Tracing { NO_TRACE, TRACE };
@@ -902,20 +898,22 @@ make_v:
 
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
-
+template<bool UseNNUE>
 Value Eval::evaluate(const Position& pos) {
-  if (Eval::useNNUE)
+  if (UseNNUE)
     return NNUE::evaluate(pos);
   else
     return Evaluation<NO_TRACE>(pos).value();
 }
 
+template Value Eval::evaluate<true>(const Position& pos);
+template Value Eval::evaluate<false>(const Position& pos);
+
 /// trace() is like evaluate(), but instead of returning a value, it returns
 /// a string (suitable for outputting to stdout) that contains the detailed
 /// descriptions and values of each evaluation term. Useful for debugging.
 /// Trace scores are from white's point of view
-
-std::string Eval::trace(const Position& pos) {
+std::string Eval::trace(const Position& pos, bool useNNUE) {
 
   if (pos.checkers())
       return "Final evaluation: none (in check)";
@@ -925,7 +923,7 @@ std::string Eval::trace(const Position& pos) {
 
   Value v;
 
-  if (Eval::useNNUE)
+  if (useNNUE)
   {
     v = NNUE::evaluate(pos);
   }

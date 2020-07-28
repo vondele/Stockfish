@@ -86,7 +86,7 @@ public:
   Position& operator=(const Position&) = delete;
 
   // FEN string input/output
-  Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
+  Position& set(const std::string& fenStr, bool isChess960, bool useNNUE, StateInfo* si, Thread* th);
   Position& set(const std::string& code, Color c, StateInfo* si);
   const std::string fen() const;
 
@@ -138,10 +138,10 @@ public:
   int  pawns_on_same_color_squares(Color c, Square s) const;
 
   // Doing and undoing moves
-  void do_move(Move m, StateInfo& newSt);
-  void do_move(Move m, StateInfo& newSt, bool givesCheck);
-  void undo_move(Move m);
-  void do_null_move(StateInfo& newSt);
+  template<bool UseNNUE> void do_move(Move m, StateInfo& newSt);
+  template<bool UseNNUE> void do_move(Move m, StateInfo& newSt, bool givesCheck);
+  template<bool UseNNUE> void undo_move(Move m);
+  template<bool UseNNUE> void do_null_move(StateInfo& newSt);
   void undo_null_move();
 
   // Static Exchange Evaluation
@@ -168,7 +168,7 @@ public:
 
   // Position consistency check, for debugging
   bool pos_is_ok() const;
-  void flip();
+  void flip(bool useNNUE);
 
   // Used by NNUE
   StateInfo* state() const;
@@ -184,7 +184,7 @@ private:
   void put_piece(Piece pc, Square s);
   void remove_piece(Square s);
   void move_piece(Square from, Square to);
-  template<bool Do>
+  template<bool Do, bool UseNNUE>
   void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
 
   // ID of a piece on a given square
@@ -440,8 +440,9 @@ inline void Position::move_piece(Square from, Square to) {
   psq += PSQT::psq[pc][to] - PSQT::psq[pc][from];
 }
 
+template<bool UseNNUE>
 inline void Position::do_move(Move m, StateInfo& newSt) {
-  do_move(m, newSt, gives_check(m));
+  do_move<UseNNUE>(m, newSt, gives_check(m));
 }
 
 #endif // #ifndef POSITION_H_INCLUDED

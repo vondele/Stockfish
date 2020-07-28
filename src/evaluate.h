@@ -29,9 +29,8 @@ class Position;
 
 namespace Eval {
 
-std::string trace(const Position& pos);
-Value evaluate(const Position& pos);
-extern bool useNNUE;
+std::string trace(const Position& pos, bool useNNUE);
+template<bool UseNNUE> Value evaluate(const Position& pos);
 
 namespace NNUE {
 

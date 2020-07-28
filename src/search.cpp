@@ -146,10 +146,10 @@ namespace {
     bool otherThread, owning;
   };
 
-  template <NodeType NT>
+  template <NodeType NT, bool UseNNUE>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
-  template <NodeType NT>
+  template <NodeType NT, bool UseNNUE>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
 
   Value value_to_tt(Value v, int ply);
@@ -175,10 +175,10 @@ namespace {
             cnt = 1, nodes++;
         else
         {
-            pos.do_move(m, st);
+            pos.do_move<false>(m, st);
             cnt = leaf ? MoveList<LEGAL>(pos).size() : perft<false>(pos, depth - 1);
             nodes += cnt;
-            pos.undo_move(m);
+            pos.undo_move<false>(m);
         }
         if (Root)
             sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
@@ -327,6 +327,7 @@ void Thread::search() {
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
   size_t multiPV = size_t(Options["MultiPV"]);
+  bool useNNUE = Options["Use NNUE"];
 
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
@@ -421,7 +422,8 @@ void Thread::search() {
           while (true)
           {
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
-              bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
+              bestValue = useNNUE ? ::search<PV, true>(rootPos, ss, alpha, beta, adjustedDepth, false)
+                                  : ::search<PV, false>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -563,7 +565,7 @@ namespace {
 
   // search<>() is the main search function for both PV and non-PV nodes
 
-  template <NodeType NT>
+  template <NodeType NT, bool UseNNUE>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
 
     constexpr bool PvNode = NT == PV;
@@ -583,7 +585,7 @@ namespace {
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
-        return qsearch<NT>(pos, ss, alpha, beta);
+        return qsearch<NT, UseNNUE>(pos, ss, alpha, beta);
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
@@ -626,7 +628,7 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
+            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate<UseNNUE>(pos)
                                                         : value_draw(pos.this_thread());
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
@@ -725,7 +727,7 @@ namespace {
             && !pos.can_castle(ANY_CASTLING))
         {
             TB::ProbeState err;
-            TB::WDLScore wdl = Tablebases::probe_wdl(pos, &err);
+            TB::WDLScore wdl = Tablebases::probe_wdl<UseNNUE>(pos, &err);
 
             // Force check of time on the next occasion
             if (thisThread == Threads.main())
@@ -781,7 +783,7 @@ namespace {
         // Never assume anything about values stored in TT
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
-            ss->staticEval = eval = evaluate(pos);
+            ss->staticEval = eval = evaluate<UseNNUE>(pos);
 
         if (eval == VALUE_DRAW)
             eval = value_draw(thisThread);
@@ -797,7 +799,7 @@ namespace {
         {
             int bonus = -(ss-1)->statScore / 512;
 
-            ss->staticEval = eval = evaluate(pos) + bonus;
+            ss->staticEval = eval = evaluate<UseNNUE>(pos) + bonus;
         }
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Tempo;
@@ -809,7 +811,7 @@ namespace {
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
         &&  depth == 1
         &&  eval <= alpha - RazorMargin)
-        return qsearch<NT>(pos, ss, alpha, beta);
+        return qsearch<NT, UseNNUE>(pos, ss, alpha, beta);
 
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
@@ -840,9 +842,9 @@ namespace {
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
 
-        pos.do_null_move(st);
+        pos.do_null_move<UseNNUE>(st);
 
-        Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
+        Value nullValue = -search<NonPV, UseNNUE>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
 
         pos.undo_null_move();
 
@@ -862,7 +864,7 @@ namespace {
             thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / 4;
             thisThread->nmpColor = us;
 
-            Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false);
+            Value v = search<NonPV, UseNNUE>(pos, ss, beta-1, beta, depth-R, false);
 
             thisThread->nmpMinPly = 0;
 
@@ -912,16 +914,16 @@ namespace {
                                                                           [pos.moved_piece(move)]
                                                                           [to_sq(move)];
 
-                pos.do_move(move, st);
+                pos.do_move<UseNNUE>(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
-                value = -qsearch<NonPV>(pos, ss+1, -probcutBeta, -probcutBeta+1);
+                value = -qsearch<NonPV, UseNNUE>(pos, ss+1, -probcutBeta, -probcutBeta+1);
 
                 // If the qsearch held, perform the regular search
                 if (value >= probcutBeta)
-                    value = -search<NonPV>(pos, ss+1, -probcutBeta, -probcutBeta+1, depth - 4, !cutNode);
+                    value = -search<NonPV, UseNNUE>(pos, ss+1, -probcutBeta, -probcutBeta+1, depth - 4, !cutNode);
 
-                pos.undo_move(move);
+                pos.undo_move<UseNNUE>(move);
 
                 if (value >= probcutBeta)
                 {
@@ -939,7 +941,7 @@ namespace {
     // Step 11. Internal iterative deepening (~1 Elo)
     if (depth >= 7 && !ttMove)
     {
-        search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
+        search<NT, UseNNUE>(pos, ss, alpha, beta, depth - 7, cutNode);
 
         tte = TT.probe(posKey, ttHit);
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
@@ -1081,7 +1083,7 @@ moves_loop: // When in check, search starts from here
           Value singularBeta = ttValue - ((formerPv + 4) * depth) / 2;
           Depth singularDepth = (depth - 1 + 3 * formerPv) / 2;
           ss->excludedMove = move;
-          value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
+          value = search<NonPV, UseNNUE>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
 
           if (value < singularBeta)
@@ -1103,7 +1105,7 @@ moves_loop: // When in check, search starts from here
           else if (ttValue >= beta)
           {
               ss->excludedMove = move;
-              value = search<NonPV>(pos, ss, beta - 1, beta, (depth + 3) / 2, cutNode);
+              value = search<NonPV, UseNNUE>(pos, ss, beta - 1, beta, (depth + 3) / 2, cutNode);
               ss->excludedMove = MOVE_NONE;
 
               if (value >= beta)
@@ -1158,7 +1160,7 @@ moves_loop: // When in check, search starts from here
                                                                 [to_sq(move)];
 
       // Step 15. Make the move
-      pos.do_move(move, st, givesCheck);
+      pos.do_move<UseNNUE>(move, st, givesCheck);
 
       // Step 16. Reduced depth search (LMR, ~200 Elo). If the move fails high it will be
       // re-searched at full depth.
@@ -1243,7 +1245,7 @@ moves_loop: // When in check, search starts from here
 
           Depth d = Utility::clamp(newDepth - r, 1, newDepth);
 
-          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
+          value = -search<NonPV, UseNNUE>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
           doFullDepthSearch = value > alpha && d != newDepth;
 
@@ -1259,7 +1261,7 @@ moves_loop: // When in check, search starts from here
       // Step 17. Full depth search when LMR is skipped or fails high
       if (doFullDepthSearch)
       {
-          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
+          value = -search<NonPV, UseNNUE>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
 
           if (didLMR && !captureOrPromotion)
           {
@@ -1281,11 +1283,11 @@ moves_loop: // When in check, search starts from here
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
 
-          value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
+          value = -search<PV, UseNNUE>(pos, ss+1, -beta, -alpha, newDepth, false);
       }
 
       // Step 18. Undo move
-      pos.undo_move(move);
+      pos.undo_move<UseNNUE>(move);
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1403,7 +1405,7 @@ moves_loop: // When in check, search starts from here
 
   // qsearch() is the quiescence search function, which is called by the main search
   // function with zero depth, or recursively with further decreasing depth per call.
-  template <NodeType NT>
+  template <NodeType NT, bool UseNNUE>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     constexpr bool PvNode = NT == PV;
@@ -1438,7 +1440,7 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate<UseNNUE>(pos) : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1474,7 +1476,7 @@ moves_loop: // When in check, search starts from here
         {
             // Never assume anything about values stored in TT
             if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
-                ss->staticEval = bestValue = evaluate(pos);
+                ss->staticEval = bestValue = evaluate<UseNNUE>(pos);
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
@@ -1483,7 +1485,7 @@ moves_loop: // When in check, search starts from here
         }
         else
             ss->staticEval = bestValue =
-            (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
+            (ss-1)->currentMove != MOVE_NULL ? evaluate<UseNNUE>(pos)
                                              : -(ss-1)->staticEval + 2 * Tempo;
 
         // Stand pat. Return immediately if static value is at least beta
@@ -1569,9 +1571,9 @@ moves_loop: // When in check, search starts from here
                                                                 [to_sq(move)];
 
       // Make and search the move
-      pos.do_move(move, st, givesCheck);
-      value = -qsearch<NT>(pos, ss+1, -beta, -alpha, depth - 1);
-      pos.undo_move(move);
+      pos.do_move<UseNNUE>(move, st, givesCheck);
+      value = -qsearch<NT, UseNNUE>(pos, ss+1, -beta, -alpha, depth - 1);
+      pos.undo_move<UseNNUE>(move);
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
@@ -1896,7 +1898,8 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
     if (pv[0] == MOVE_NONE)
         return false;
 
-    pos.do_move(pv[0], st);
+    Options["Use NNUE"] ? pos.do_move<true>(pv[0], st)
+                        : pos.do_move<false>(pv[0], st);
     TTEntry* tte = TT.probe(pos.key(), ttHit);
 
     if (ttHit)
@@ -1905,8 +1908,8 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
         if (MoveList<LEGAL>(pos).contains(m))
             pv.push_back(m);
     }
-
-    pos.undo_move(pv[0]);
+    Options["Use NNUE"] ? pos.undo_move<true>(pv[0])
+                       : pos.undo_move<false>(pv[0]);
     return pv.size() > 1;
 }
 
@@ -1929,13 +1932,15 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
     if (Cardinality >= popcount(pos.pieces()) && !pos.can_castle(ANY_CASTLING))
     {
         // Rank moves using DTZ tables
-        RootInTB = root_probe(pos, rootMoves);
+        RootInTB = Options["Use NNUE"] ? root_probe<true>(pos, rootMoves)
+                                       : root_probe<false>(pos, rootMoves);
 
         if (!RootInTB)
         {
             // DTZ tables are missing; try to rank moves using WDL tables
             dtz_available = false;
-            RootInTB = root_probe_wdl(pos, rootMoves);
+            RootInTB = Options["Use NNUE"] ? root_probe_wdl<true>(pos, rootMoves)
+                                           : root_probe_wdl<false>(pos, rootMoves);
         }
     }
 

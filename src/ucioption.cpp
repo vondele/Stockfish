@@ -50,7 +50,6 @@ void on_use_nnue(const Option& o) {
   else
     std::cout << "info string handcrafted eval used" << std::endl;
 
-  Eval::useNNUE = o;
   init_nnue(Options["EvalFile"]);
 }
 

@@ -1191,7 +1191,7 @@ Ret probe_table(const Position& pos, ProbeState* result, WDLScore wdl = WDLDraw)
 // (winning capture or winning pawn move). Also DTZ store wrong values for positions
 // where the best move is an ep-move (even if losing). So in all these cases set
 // the state to ZEROING_BEST_MOVE.
-template<bool CheckZeroingMoves>
+template<bool CheckZeroingMoves, bool UseNNUE>
 WDLScore search(Position& pos, ProbeState* result) {
 
     WDLScore value, bestValue = WDLLoss;
@@ -1208,9 +1208,9 @@ WDLScore search(Position& pos, ProbeState* result) {
 
         moveCount++;
 
-        pos.do_move(move, st);
-        value = -search<false>(pos, result);
-        pos.undo_move(move);
+        pos.do_move<UseNNUE>(move, st);
+        value = -search<false, UseNNUE>(pos, result);
+        pos.undo_move<UseNNUE>(move);
 
         if (*result == FAIL)
             return WDLDraw;
@@ -1411,11 +1411,15 @@ void Tablebases::init(const std::string& paths) {
 //  0 : draw
 //  1 : win, but draw under 50-move rule
 //  2 : win
+template<bool UseNNUE>
 WDLScore Tablebases::probe_wdl(Position& pos, ProbeState* result) {
 
     *result = OK;
-    return search<false>(pos, result);
+    return search<false, UseNNUE>(pos, result);
 }
+
+template WDLScore Tablebases::probe_wdl<true>(Position& pos, ProbeState* result);
+template WDLScore Tablebases::probe_wdl<false>(Position& pos, ProbeState* result);
 
 // Probe the DTZ table for a particular position.
 // If *result != FAIL, the probe was successful.
@@ -1443,10 +1447,11 @@ WDLScore Tablebases::probe_wdl(Position& pos, ProbeState* result) {
 //
 // In short, if a move is available resulting in dtz + 50-move-counter <= 99,
 // then do not accept moves leading to dtz + 50-move-counter == 100.
+template<bool UseNNUE>
 int Tablebases::probe_dtz(Position& pos, ProbeState* result) {
 
     *result = OK;
-    WDLScore wdl = search<true>(pos, result);
+    WDLScore wdl = search<true, UseNNUE>(pos, result);
 
     if (*result == FAIL || wdl == WDLDraw) // DTZ tables don't store draws
         return 0;
@@ -1473,14 +1478,14 @@ int Tablebases::probe_dtz(Position& pos, ProbeState* result) {
     {
         bool zeroing = pos.capture(move) || type_of(pos.moved_piece(move)) == PAWN;
 
-        pos.do_move(move, st);
+        pos.do_move<UseNNUE>(move, st);
 
         // For zeroing moves we want the dtz of the move _before_ doing it,
         // otherwise we will get the dtz of the next move sequence. Search the
         // position after the move to get the score sign (because even in a
         // winning position we could make a losing capture or going for a draw).
-        dtz = zeroing ? -dtz_before_zeroing(search<false>(pos, result))
-                      : -probe_dtz(pos, result);
+        dtz = zeroing ? -dtz_before_zeroing(search<false, UseNNUE>(pos, result))
+                      : -probe_dtz<UseNNUE>(pos, result);
 
         // If the move mates, force minDTZ to 1
         if (dtz == 1 && pos.checkers() && MoveList<LEGAL>(pos).size() == 0)
@@ -1495,7 +1500,7 @@ int Tablebases::probe_dtz(Position& pos, ProbeState* result) {
         if (dtz < minDTZ && sign_of(dtz) == sign_of(wdl))
             minDTZ = dtz;
 
-        pos.undo_move(move);
+        pos.undo_move<UseNNUE>(move);
 
         if (*result == FAIL)
             return 0;
@@ -1509,6 +1514,7 @@ int Tablebases::probe_dtz(Position& pos, ProbeState* result) {
 // Use the DTZ tables to rank root moves.
 //
 // A return value false indicates that not all probes were successful.
+template<bool UseNNUE>
 bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
 
     ProbeState result;
@@ -1525,19 +1531,19 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
     // Probe and rank each move
     for (auto& m : rootMoves)
     {
-        pos.do_move(m.pv[0], st);
+        pos.do_move<UseNNUE>(m.pv[0], st);
 
         // Calculate dtz for the current move counting from the root position
         if (pos.rule50_count() == 0)
         {
             // In case of a zeroing move, dtz is one of -101/-1/0/1/101
-            WDLScore wdl = -probe_wdl(pos, &result);
+            WDLScore wdl = -probe_wdl<UseNNUE>(pos, &result);
             dtz = dtz_before_zeroing(wdl);
         }
         else
         {
             // Otherwise, take dtz for the new position and correct by 1 ply
-            dtz = -probe_dtz(pos, &result);
+            dtz = -probe_dtz<UseNNUE>(pos, &result);
             dtz =  dtz > 0 ? dtz + 1
                  : dtz < 0 ? dtz - 1 : dtz;
         }
@@ -1548,7 +1554,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
             && MoveList<LEGAL>(pos).size() == 0)
             dtz = 1;
 
-        pos.undo_move(m.pv[0]);
+        pos.undo_move<UseNNUE>(m.pv[0]);
 
         if (result == FAIL)
             return false;
@@ -1573,11 +1579,14 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
     return true;
 }
 
+template bool Tablebases::root_probe<true>(Position& pos, Search::RootMoves& rootMoves);
+template bool Tablebases::root_probe<false>(Position& pos, Search::RootMoves& rootMoves);
 
 // Use the WDL tables to rank root moves.
 // This is a fallback for the case that some or all DTZ tables are missing.
 //
 // A return value false indicates that not all probes were successful.
+template<bool UseNNUE>
 bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
 
     static const int WDL_to_rank[] = { -1000, -899, 0, 899, 1000 };
@@ -1590,11 +1599,11 @@ bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
     // Probe and rank each move
     for (auto& m : rootMoves)
     {
-        pos.do_move(m.pv[0], st);
+        pos.do_move<UseNNUE>(m.pv[0], st);
 
-        WDLScore wdl = -probe_wdl(pos, &result);
+        WDLScore wdl = -probe_wdl<UseNNUE>(pos, &result);
 
-        pos.undo_move(m.pv[0]);
+        pos.undo_move<UseNNUE>(m.pv[0]);
 
         if (result == FAIL)
             return false;
@@ -1609,3 +1618,6 @@ bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
 
     return true;
 }
+
+template bool Tablebases::root_probe_wdl<true>(Position& pos, Search::RootMoves& rootMoves);
+template bool Tablebases::root_probe_wdl<false>(Position& pos, Search::RootMoves& rootMoves);
