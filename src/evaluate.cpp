@@ -940,8 +940,9 @@ Value Eval::evaluate(const Position& pos) {
   {
       Value balance = pos.non_pawn_material(WHITE) - pos.non_pawn_material(BLACK);
       balance += 200 * (pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK));
+      bool manyPieces =  pos.count<ALL_PIECES>() > 4;
       // Take NNUE eval only on balanced positions
-      if (abs(balance) < NNUEThreshold)
+      if (abs(balance) < NNUEThreshold && manyPieces)
          return NNUE::evaluate(pos) + Tempo;
   }
   return Evaluation<NO_TRACE>(pos).value();
