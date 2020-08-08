@@ -40,6 +40,7 @@ namespace Eval {
 
     useNNUE = Options["Use NNUE"];
     std::string eval_file = std::string(Options["EvalFile"]);
+
     if (useNNUE && eval_file_loaded != eval_file)
         if (Eval::NNUE::load_eval_file(eval_file))
             eval_file_loaded = eval_file;
@@ -48,16 +49,18 @@ namespace Eval {
   void verify_NNUE() {
 
     std::string eval_file = std::string(Options["EvalFile"]);
+
     if (useNNUE && eval_file_loaded != eval_file)
     {
         std::cerr << "Use of NNUE evaluation, but the file " << eval_file << " was not loaded successfully. "
                   << "These network evaluation parameters must be available, compatible with this version of the code. "
                   << "The UCI option EvalFile might need to specify the full path, including the directory/folder name, to the file." << std::endl;
+
         std::exit(EXIT_FAILURE);
     }
 
     if (useNNUE)
-        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled." << sync_endl;
+        sync_cout << "info string NNUE evaluation enabled using " << eval_file << "." << sync_endl;
     else
         sync_cout << "info string classical evaluation enabled." << sync_endl;
   }
