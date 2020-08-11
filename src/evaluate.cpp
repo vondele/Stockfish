@@ -944,7 +944,7 @@ Value Eval::evaluate(const Position& pos) {
   {
       Value v = Evaluation<NO_TRACE>(pos).value();
       // Take NNUE eval only on balanced positions
-      if (abs(v) < 2 * PawnValueEg)
+      if (abs(v) < 2 * PawnValueEg / 3)
          return NNUE::evaluate(pos) + Tempo;
       else
          return v;
