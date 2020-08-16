@@ -34,21 +34,29 @@
 namespace Eval {
 
   bool useNNUE;
+  std::string eval_file;
   std::string eval_file_loaded="None";
 
+  // Load and initialize the default network file. This is
+  // done at startup or when a new network file is specified.
   void init_NNUE() {
 
-    useNNUE = Options["Use NNUE"];
-    std::string eval_file = std::string(Options["EvalFile"]);
+    eval_file = std::string(Options["EvalFile"]);
 
-    if (useNNUE && eval_file_loaded != eval_file)
+    if (eval_file_loaded != eval_file)
         if (Eval::NNUE::load_eval_file(eval_file))
             eval_file_loaded = eval_file;
   }
 
+  // Verify the network is loaded. Also print some info
+  // whether we use the NNUE or the classic eval.
+  // Note 1: we don't use the NNUE eval for Chess960 positions/games.
+  // Note 2: we only provide this info between 2 games (triggered by
+  // 'ucinewgame' command, or for every position during a bench run.
   void verify_NNUE() {
 
-    std::string eval_file = std::string(Options["EvalFile"]);
+    useNNUE = Options["Use NNUE"] && !Options["UCI_Chess960"];
+    eval_file = std::string(Options["EvalFile"]);
 
     if (useNNUE && eval_file_loaded != eval_file)
     {
@@ -66,7 +74,7 @@ namespace Eval {
     if (useNNUE)
         sync_cout << "info string NNUE evaluation enabled using " << eval_file << "." << sync_endl;
     else
-        sync_cout << "info string classical evaluation enabled." << sync_endl;
+        sync_cout << "info string classic evaluation enabled." << sync_endl;
   }
 }
 

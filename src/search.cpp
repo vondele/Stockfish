@@ -225,8 +225,6 @@ void MainThread::search() {
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
 
-  Eval::verify_NNUE();
-
   if (rootMoves.empty())
   {
       rootMoves.emplace_back(MOVE_NONE);

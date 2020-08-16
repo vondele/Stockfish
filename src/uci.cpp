@@ -173,6 +173,7 @@ namespace {
             cerr << "\nPosition: " << cnt++ << '/' << num << endl;
             if (token == "go")
             {
+               Eval::verify_NNUE();
                go(pos, is, states);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
@@ -265,7 +266,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "setoption")  setoption(is);
       else if (token == "go")         go(pos, is, states);
       else if (token == "position")   position(pos, is, states);
-      else if (token == "ucinewgame") Search::clear();
+      else if (token == "ucinewgame") { Search::clear(); Eval::verify_NNUE(); }
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 
       // Additional custom non-UCI commands, mainly for debugging.
