@@ -1052,7 +1052,6 @@ void Position::do_null_move(StateInfo& newSt) {
 
   if (Eval::useNNUE)
   {
-      Eval::NNUE::update_eval(*this);
       std::memcpy(&newSt, st, sizeof(StateInfo));
       st->accumulator.computed_score = false;
   }
