@@ -33,6 +33,6 @@ namespace Eval::NNUE {
   // Trigger for full calculation instead of difference calculation
   constexpr auto kRefreshTriggers = RawFeatures::kRefreshTriggers;
 
-}  // namespace Eval::NNUE
+} // namespace Eval::NNUE
 
 #endif // #ifndef NNUE_ARCHITECTURE_H_INCLUDED

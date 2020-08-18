@@ -101,7 +101,7 @@ namespace Eval::NNUE {
   // Round n up to be a multiple of base
   template <typename IntType>
   constexpr IntType CeilToMultiple(IntType n, IntType base) {
-      return (n + base - 1) / base * base;
+    return (n + base - 1) / base * base;
   }
 
   // read_little_endian() is our utility to read an integer (signed or unsigned, any size)
@@ -110,18 +110,19 @@ namespace Eval::NNUE {
   template <typename IntType>
   inline IntType read_little_endian(std::istream& stream) {
 
-      IntType result;
-      std::uint8_t u[sizeof(IntType)];
-      typename std::make_unsigned<IntType>::type v = 0;
+    IntType result;
+    std::uint8_t u[sizeof(IntType)];
+    typename std::make_unsigned<IntType>::type v = 0;
+    stream.read(reinterpret_cast<char*>(u), sizeof(IntType));
 
-      stream.read(reinterpret_cast<char*>(u), sizeof(IntType));
-      for (std::size_t i = 0; i < sizeof(IntType); ++i)
-          v = (v << 8) | u[sizeof(IntType) - i - 1];
+    for (std::size_t i = 0; i < sizeof(IntType); ++i)
+        v = (v << 8) | u[sizeof(IntType) - i - 1];
 
-      std::memcpy(&result, &v, sizeof(IntType));
-      return result;
+    std::memcpy(&result, &v, sizeof(IntType));
+
+    return result;
   }
 
-}  // namespace Eval::NNUE
+} // namespace Eval::NNUE
 
 #endif // #ifndef NNUE_COMMON_H_INCLUDED
