@@ -28,7 +28,7 @@ namespace Eval::NNUE::Layers {
 // Input layer
 template <IndexType OutputDimensions, IndexType Offset = 0>
 class InputSlice {
- public:
+public:
   // Need to maintain alignment
   static_assert(Offset % kMaxSimdWidth == 0, "");
 
@@ -43,24 +43,27 @@ class InputSlice {
 
   // Hash value embedded in the evaluation file
   static constexpr std::uint32_t GetHashValue() {
+
     std::uint32_t hash_value = 0xEC42E90Du;
     hash_value ^= kOutputDimensions ^ (Offset << 10);
+
     return hash_value;
   }
 
   // Read network parameters
   bool ReadParameters(std::istream& /*stream*/) {
+
     return true;
   }
 
   // Forward propagation
-  const OutputType* Propagate(
-      const TransformedFeatureType* transformed_features,
-      char* /*buffer*/) const {
+  const OutputType* Propagate(const TransformedFeatureType* transformed_features,
+                              char* /*buffer*/) const {
+
     return transformed_features + Offset;
   }
 
- private:
+private:
 };
 
 }  // namespace Layers
