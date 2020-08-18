@@ -30,18 +30,19 @@ namespace Eval::NNUE::Features {
   // and the position of pieces other than kings
   template <Side AssociatedKing>
   class HalfKP {
-
-   public:
+  public:
     // Feature name
     static constexpr const char* kName = "HalfKP(Friend)";
+
     // Hash value embedded in the evaluation file
-    static constexpr std::uint32_t kHashValue =
-        0x5D69D5B9u ^ (AssociatedKing == Side::kFriend);
+    static constexpr std::uint32_t kHashValue = 0x5D69D5B9u ^ (AssociatedKing == Side::kFriend);
+
     // Number of feature dimensions
-    static constexpr IndexType kDimensions =
-        static_cast<IndexType>(SQUARE_NB) * static_cast<IndexType>(PS_END);
+    static constexpr IndexType kDimensions = static_cast<IndexType>(SQUARE_NB) * static_cast<IndexType>(PS_END);
+
     // Maximum number of simultaneously active features
     static constexpr IndexType kMaxActiveDimensions = PIECE_ID_KING;
+
     // Trigger for full calculation instead of difference calculation
     static constexpr TriggerEvent kRefreshTrigger = TriggerEvent::kFriendKingMoved;
 
@@ -56,12 +57,12 @@ namespace Eval::NNUE::Features {
     // Index of a feature for a given king position and another piece on some square
     static IndexType MakeIndex(Square sq_k, PieceSquare p);
 
-   private:
+  private:
     // Get pieces information
     static void GetPieces(const Position& pos, Color perspective,
                           PieceSquare** pieces, Square* sq_target_k);
   };
 
-}  // namespace Eval::NNUE::Features
+} // namespace Eval::NNUE::Features
 
 #endif // #ifndef NNUE_FEATURES_HALF_KP_H_INCLUDED

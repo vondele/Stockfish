@@ -40,6 +40,6 @@ namespace Eval::NNUE::Features {
     kFriend // side to move
   };
 
-}  // namespace Eval::NNUE::Features
+} // namespace Eval::NNUE::Features
 
 #endif // #ifndef NNUE_FEATURES_COMMON_H_INCLUDED
