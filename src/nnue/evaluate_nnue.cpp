@@ -22,11 +22,11 @@
 #include <iostream>
 #include <set>
 
-#include "evaluate_nnue.h"
 #include "../evaluate.h"
 #include "../misc.h"
 #include "../position.h"
 #include "../uci.h"
+#include "evaluate_nnue.h"
 
 ExtPieceSquare kpp_board_index[PIECE_NB] = {
  // convention: W - us, B - them
