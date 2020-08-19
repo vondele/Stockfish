@@ -22,12 +22,11 @@
 #include <iostream>
 #include <set>
 
-#include "../evaluate.h"
-#include "../position.h"
-#include "../misc.h"
-#include "../uci.h"
-
 #include "evaluate_nnue.h"
+#include "../evaluate.h"
+#include "../misc.h"
+#include "../position.h"
+#include "../uci.h"
 
 ExtPieceSquare kpp_board_index[PIECE_NB] = {
  // convention: W - us, B - them
@@ -64,25 +63,28 @@ namespace Eval::NNUE {
 
   namespace Detail {
 
-  // Initialize the evaluation function parameters
-  template <typename T>
-  void Initialize(AlignedPtr<T>& pointer) {
+    // Initialize the evaluation function parameters
+    template <typename T>
+    void Initialize(AlignedPtr<T>& pointer) {
 
-    pointer.reset(reinterpret_cast<T*>(std_aligned_alloc(alignof(T), sizeof(T))));
-    std::memset(pointer.get(), 0, sizeof(T));
-  }
+      pointer.reset(reinterpret_cast<T*>(std_aligned_alloc(alignof(T), sizeof(T))));
+      std::memset(pointer.get(), 0, sizeof(T));
+    }
 
-  // Read evaluation function parameters
-  template <typename T>
-  bool ReadParameters(std::istream& stream, const AlignedPtr<T>& pointer) {
+    // Read evaluation function parameters
+    template <typename T>
+    bool ReadParameters(std::istream& stream, const AlignedPtr<T>& pointer) {
 
-    std::uint32_t header;
-    header = read_little_endian<std::uint32_t>(stream);
-    if (!stream || header != T::GetHashValue()) return false;
-    return pointer->ReadParameters(stream);
-  }
+      std::uint32_t header = read_little_endian<std::uint32_t>(stream);
+
+      if (!stream || header != T::GetHashValue())
+          return false;
+
+      return pointer->ReadParameters(stream);
+    }
 
   }  // namespace Detail
+
 
   // Initialize the evaluation function parameters
   void Initialize() {
@@ -92,16 +94,20 @@ namespace Eval::NNUE {
   }
 
   // Read network header
-  bool ReadHeader(std::istream& stream, std::uint32_t* hash_value, std::string* architecture)
-  {
+  bool ReadHeader(std::istream& stream, std::uint32_t* hash_value, std::string* architecture) {
+
     std::uint32_t version, size;
 
     version     = read_little_endian<std::uint32_t>(stream);
     *hash_value = read_little_endian<std::uint32_t>(stream);
     size        = read_little_endian<std::uint32_t>(stream);
-    if (!stream || version != kVersion) return false;
+
+    if (!stream || version != kVersion)
+        return false;
+
     architecture->resize(size);
     stream.read(&(*architecture)[0], size);
+
     return !stream.fail();
   }
 
@@ -110,10 +116,19 @@ namespace Eval::NNUE {
 
     std::uint32_t hash_value;
     std::string architecture;
-    if (!ReadHeader(stream, &hash_value, &architecture)) return false;
-    if (hash_value != kHashValue) return false;
-    if (!Detail::ReadParameters(stream, feature_transformer)) return false;
-    if (!Detail::ReadParameters(stream, network)) return false;
+
+    if (!ReadHeader(stream, &hash_value, &architecture))
+        return false;
+
+    if (hash_value != kHashValue)
+        return false;
+
+    if (!Detail::ReadParameters(stream, feature_transformer))
+        return false;
+
+    if (!Detail::ReadParameters(stream, network))
+        return false;
+
     return stream && stream.peek() == std::ios::traits_type::eof();
   }
 
@@ -127,12 +142,11 @@ namespace Eval::NNUE {
   static Value ComputeScore(const Position& pos, bool refresh) {
 
     auto& accumulator = pos.state()->accumulator;
-    if (!refresh && accumulator.computed_score) {
-      return accumulator.score;
-    }
 
-    alignas(kCacheLineSize) TransformedFeatureType
-        transformed_features[FeatureTransformer::kBufferSize];
+    if (!refresh && accumulator.computed_score)
+        return accumulator.score;
+
+    alignas(kCacheLineSize) TransformedFeatureType transformed_features[FeatureTransformer::kBufferSize];
     feature_transformer->Transform(pos, transformed_features, refresh);
     alignas(kCacheLineSize) char buffer[Network::kBufferSize];
     const auto output = network->Propagate(transformed_features, buffer);
@@ -141,6 +155,7 @@ namespace Eval::NNUE {
 
     accumulator.score = score;
     accumulator.computed_score = true;
+
     return accumulator.score;
   }
 
@@ -150,8 +165,7 @@ namespace Eval::NNUE {
     Initialize();
     fileName = evalFile;
 
-    std::ifstream stream(evalFile, std::ios::binary);
-
+    std::ifstream stream(fileName, std::ios::binary);
     const bool result = ReadParameters(stream);
 
     return result;
@@ -159,6 +173,7 @@ namespace Eval::NNUE {
 
   // Evaluation function. Perform differential calculation.
   Value evaluate(const Position& pos) {
+
     Value v = ComputeScore(pos, false);
     v = Utility::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
@@ -167,11 +182,13 @@ namespace Eval::NNUE {
 
   // Evaluation function. Perform full calculation.
   Value compute_eval(const Position& pos) {
+
     return ComputeScore(pos, true);
   }
 
   // Proceed with the difference calculation if possible
   void update_eval(const Position& pos) {
+
     UpdateAccumulatorIfPossible(pos);
   }
 
