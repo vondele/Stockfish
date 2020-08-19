@@ -23,6 +23,7 @@
 
 #include <memory>
 
+#include "../misc.h"
 #include "nnue_feature_transformer.h"
 
 namespace Eval::NNUE {
