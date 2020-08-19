@@ -56,8 +56,7 @@ namespace Eval::NNUE::Features {
   };
 
   //Type of feature index list
-  class IndexList : public ValueList<IndexType, RawFeatures::kMaxActiveDimensions> {
-  };
+  class IndexList : public ValueList<IndexType, RawFeatures::kMaxActiveDimensions> {};
 
 } // namespace Eval::NNUE::Features
 
