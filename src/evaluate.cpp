@@ -952,10 +952,16 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
-  if (Eval::useNNUE)
-      return NNUE::evaluate(pos);
-  else
-      return Evaluation<NO_TRACE>(pos).value();
+  Value v = Eval::useNNUE ? NNUE::evaluate(pos)
+                          : Evaluation<NO_TRACE>(pos).value();
+
+  // Damp down the evaluation linearly when shuffling
+  v = v * (100 - pos.rule50_count()) / 100;
+
+  // Guarantee evaluation does not hit the tablebase range
+  v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+
+  return v;
 }
 
 /// trace() is like evaluate(), but instead of returning a value, it returns
