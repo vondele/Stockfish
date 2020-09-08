@@ -77,6 +77,7 @@ namespace Eval::NNUE {
     }
 
     // Convert input features
+    template<Color Us>
     void Transform(const Position& pos, OutputType* output, bool refresh) const {
       if (refresh || !UpdateAccumulatorIfPossible(pos)) {
         RefreshAccumulator(pos);
@@ -106,7 +107,7 @@ namespace Eval::NNUE {
       const int8x8_t kZero = {0};
   #endif
 
-      const Color perspectives[2] = {pos.side_to_move(), ~pos.side_to_move()};
+      const Color perspectives[2] = {Us, ~Us};
       for (IndexType p = 0; p < 2; ++p) {
         const IndexType offset = kHalfDimensions * p;
 

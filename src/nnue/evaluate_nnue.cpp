@@ -131,7 +131,8 @@ namespace Eval::NNUE {
 
     alignas(kCacheLineSize) TransformedFeatureType
         transformed_features[FeatureTransformer::kBufferSize];
-    feature_transformer->Transform(pos, transformed_features, refresh);
+    pos.side_to_move() == WHITE ? feature_transformer->Transform<WHITE>(pos, transformed_features, refresh) :
+                                  feature_transformer->Transform<BLACK>(pos, transformed_features, refresh);
     alignas(kCacheLineSize) char buffer[Network::kBufferSize];
     const auto output = network->Propagate(transformed_features, buffer);
 
