@@ -65,9 +65,14 @@ namespace {
   constexpr uint64_t TtHitAverageResolution = 1024;
 
   // Razor and futility margins
-  constexpr int RazorMargin = 527;
+  int RazorMargin = 527;
+  int FutMargin = 227;
+
+  TUNE(SetRange(0, 2000), RazorMargin, FutMargin);
+
   Value futility_margin(Depth d, bool improving) {
-    return Value(227 * (d - improving));
+    return Value(FutMargin * (d - improving));
+//    return Value(227 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
