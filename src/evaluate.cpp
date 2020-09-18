@@ -1015,6 +1015,7 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
+  auto adjust = [](Value v){ return v * 150 / 128 + Tempo; };
   // Use classical eval if there is a large imbalance
   // If there is a moderate imbalance, use classical eval with probability (1/8),
   // as derived from the node counter.
@@ -1023,12 +1024,12 @@ Value Eval::evaluate(const Position& pos) {
                 ||  useClassical
                 || (abs(eg_value(pos.psq_score())) > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
   Value v = classical ? Evaluation<NO_TRACE>(pos).value()
-                      : NNUE::evaluate(pos) * 5 / 4 + Tempo;
+                      : adjust(NNUE::evaluate(pos));
 
   if (   useClassical 
       && Eval::useNNUE 
       && abs(v) * 16 < NNUEThreshold2 * (16 + pos.rule50_count()))
-      v = NNUE::evaluate(pos) * 5 / 4 + Tempo;
+      v = adjust(NNUE::evaluate(pos));
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
