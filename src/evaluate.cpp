@@ -1015,7 +1015,7 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
-  auto adjust = [](Value v){ return v * 150 / 128 + Tempo; };
+  auto adjust = [](Value v){ return v * 150 / 128 - 35; };
   // Use classical eval if there is a large imbalance
   // If there is a moderate imbalance, use classical eval with probability (1/8),
   // as derived from the node counter.
