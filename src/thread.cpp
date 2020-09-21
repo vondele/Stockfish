@@ -144,7 +144,7 @@ void ThreadPool::set(size_t requested) {
       TT.resize(size_t(Options["Hash"]));
 
       // Init thread number dependent search params.
-      Search::init();
+      Search::init(1);
   }
 }
 
