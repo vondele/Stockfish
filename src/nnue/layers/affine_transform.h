@@ -63,9 +63,9 @@ namespace Eval::NNUE::Layers {
     bool ReadParameters(std::istream& stream) {
       if (!previous_layer_.ReadParameters(stream)) return false;
       for (std::size_t i = 0; i < kOutputDimensions; ++i)
-        biases_[i] = read_little_endian<BiasType>(stream);
+        orig_biases_[i] = biases_[i] = read_little_endian<BiasType>(stream);
       for (std::size_t i = 0; i < kOutputDimensions * kPaddedInputDimensions; ++i)
-        weights_[i] = read_little_endian<WeightType>(stream);
+        orig_weights_[i] = weights_[i] = read_little_endian<WeightType>(stream);
       return !stream.fail();
     }
 
@@ -250,7 +250,8 @@ namespace Eval::NNUE::Layers {
       return output;
     }
 
-   private:
+   // private:
+    using PrevLayer = PreviousLayer;
     using BiasType = OutputType;
     using WeightType = std::int8_t;
 
@@ -259,6 +260,9 @@ namespace Eval::NNUE::Layers {
     alignas(kCacheLineSize) BiasType biases_[kOutputDimensions];
     alignas(kCacheLineSize)
         WeightType weights_[kOutputDimensions * kPaddedInputDimensions];
+    alignas(kCacheLineSize) BiasType orig_biases_[kOutputDimensions];
+    alignas(kCacheLineSize)
+        WeightType orig_weights_[kOutputDimensions * kPaddedInputDimensions];
   };
 
 }  // namespace Eval::NNUE::Layers

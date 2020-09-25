@@ -34,6 +34,7 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "nnue/evaluate_nnue.h"
 
 namespace Search {
 
@@ -55,6 +56,27 @@ using Eval::evaluate;
 using namespace Search;
 
 namespace {
+
+// output layer (32x1)
+// #define TUNELAYER 0
+// previous affine layer (32x32)
+#define TUNELAYER 1
+
+#if TUNELAYER == 0
+  constexpr size_t outputDimensions = Eval::NNUE::Network::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::kInputDimensions;
+  constexpr size_t paddedInputDimensions = Eval::NNUE::Network::kPaddedInputDimensions;
+#elif TUNELAYER == 1
+  constexpr size_t outputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kInputDimensions;
+  constexpr size_t paddedInputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kPaddedInputDimensions;
+#endif
+
+  int netbiases[outputDimensions] = {};
+  TUNE(SetRange(-5, 5), netbiases);
+  int netweightsInp[inputDimensions] = {};
+  int netweightsOut[outputDimensions] = {};
+  TUNE(SetRange(-5, 5), netweightsInp, netweightsOut);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
@@ -219,6 +241,33 @@ void MainThread::search() {
       nodes = perft<true>(rootPos, Limits.perft);
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
+  }
+
+  // adjust net with params
+  if (Eval::useNNUE)
+  {
+
+#if TUNELAYER == 0
+      auto& biases = Eval::NNUE::network->biases_;
+      auto& weights = Eval::NNUE::network->weights_;
+      auto& orig_biases = Eval::NNUE::network->orig_biases_;
+      auto& orig_weights = Eval::NNUE::network->orig_weights_;
+#elif TUNELAYER == 1
+      auto& biases = Eval::NNUE::network->previous_layer_.previous_layer_.biases_;
+      auto& weights = Eval::NNUE::network->previous_layer_.previous_layer_.weights_;
+      auto& orig_biases = Eval::NNUE::network->previous_layer_.previous_layer_.orig_biases_;
+      auto& orig_weights = Eval::NNUE::network->previous_layer_.previous_layer_.orig_weights_;
+#endif
+
+      for (size_t i=0; i < outputDimensions; ++i)
+          biases[i] = orig_biases[i] + netbiases[i];
+
+      for (size_t i=0; i < outputDimensions; ++i)
+      for (size_t j=0; j < inputDimensions; ++j)
+      {
+          size_t offset=i * paddedInputDimensions;
+          weights[offset+j] = std::clamp(orig_weights[offset+j] + netweightsInp[j] * netweightsOut[i], -127, 127);
+      }
   }
 
   Color us = rootPos.side_to_move();
