@@ -23,6 +23,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <eigen3/Eigen/Dense>
+
 #include "evaluate.h"
 #include "misc.h"
 #include "movegen.h"
@@ -34,6 +36,7 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "nnue/evaluate_nnue.h"
 
 namespace Search {
 
@@ -55,6 +58,117 @@ using Eval::evaluate;
 using namespace Search;
 
 namespace {
+
+  constexpr size_t outputDimensions0      = Eval::NNUE::Network::kOutputDimensions;
+  constexpr size_t inputDimensions0       = Eval::NNUE::Network::kInputDimensions;
+  constexpr size_t paddedInputDimensions0 = Eval::NNUE::Network::kPaddedInputDimensions;
+
+  int netbiases0[outputDimensions0] = {};
+  int netweightsShift0[paddedInputDimensions0*outputDimensions0] = {};
+
+  constexpr size_t outputDimensions1      = Eval::NNUE::Network::PrevLayer::PrevLayer::kOutputDimensions;
+  constexpr size_t inputDimensions1       = Eval::NNUE::Network::PrevLayer::PrevLayer::kInputDimensions;
+  constexpr size_t paddedInputDimensions1 = Eval::NNUE::Network::PrevLayer::PrevLayer::kPaddedInputDimensions;
+
+  int netbiases1[outputDimensions1] = {};
+  int shiftSingular1[std::min(inputDimensions1, outputDimensions1)] = {};
+
+  constexpr size_t outputDimensions2      = Eval::NNUE::Network::PrevLayer::PrevLayer::PrevLayer::PrevLayer::kOutputDimensions;
+  constexpr size_t inputDimensions2       = Eval::NNUE::Network::PrevLayer::PrevLayer::PrevLayer::PrevLayer::kInputDimensions;
+  constexpr size_t paddedInputDimensions2 = Eval::NNUE::Network::PrevLayer::PrevLayer::PrevLayer::PrevLayer::kPaddedInputDimensions;
+
+  int netbiases2[outputDimensions2] = {};
+  int shiftSingular2[std::min(inputDimensions2, outputDimensions2)] = {};
+
+  template<typename Biases, typename Weights, typename Netbiases, typename NetweightsShift>
+  void full_tune(size_t outputDimensions, size_t inputDimensions, size_t paddedInputDimensions,
+                Biases& biases, Biases& orig_biases, Weights& weights, Weights& orig_weights,
+                Netbiases& netbiases, NetweightsShift& netweightsShift)
+  {
+     for (size_t i=0; i < outputDimensions; ++i)
+         biases[i] = orig_biases[i] + netbiases[i];
+
+     (void) inputDimensions;
+     for (size_t i=0; i < outputDimensions * paddedInputDimensions; ++i)
+         weights[i] = std::clamp(orig_weights[i] + netweightsShift[i], -127, 127);
+  }
+
+  template<typename Biases, typename Weights, typename Netbiases, typename ShiftSingular>
+  void svd_tune(size_t outputDimensions, size_t inputDimensions, size_t paddedInputDimensions,
+                Biases& biases, Biases& orig_biases, Weights& weights, Weights& orig_weights,
+                Netbiases& netbiases, ShiftSingular& shiftSingular)
+  {
+
+     for (size_t i=0; i < outputDimensions; ++i)
+         biases[i] = orig_biases[i] + netbiases[i];
+
+     Eigen::MatrixXd mWeights(outputDimensions, inputDimensions);
+     for (size_t i=0; i < outputDimensions; ++i)
+     for (size_t j=0; j < inputDimensions; ++j)
+         mWeights(i,j) = orig_weights[i * paddedInputDimensions + j];
+
+     Eigen::JacobiSVD<Eigen::MatrixXd> svd(mWeights, Eigen::ComputeThinU | Eigen::ComputeThinV);
+     auto v = svd.singularValues();
+
+     size_t minDim = std::min(outputDimensions, inputDimensions);
+     for(size_t i=0; i < minDim; ++i)
+        v(i) = v(i) + shiftSingular[i];
+
+     Eigen::MatrixXd mNewWeights(outputDimensions, inputDimensions);
+     mNewWeights = svd.matrixU() * Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic >(v.asDiagonal()) * svd.matrixV().transpose();
+
+     for (size_t i=0; i < outputDimensions; ++i)
+     for (size_t j=0; j < inputDimensions; ++j)
+         weights[i * paddedInputDimensions + j] = std::clamp(std::lround(mNewWeights(i,j)), -127L, 127L);
+  }
+
+  void init_new_net()
+  {
+
+      // adjust net with params
+      if (Eval::useNNUE)
+      {
+
+          auto& biases0 = Eval::NNUE::network->biases_;
+          auto& weights0 = Eval::NNUE::network->weights_;
+          auto& orig_biases0 = Eval::NNUE::network->orig_biases_;
+          auto& orig_weights0 = Eval::NNUE::network->orig_weights_;
+
+          full_tune(outputDimensions0, inputDimensions0, paddedInputDimensions0,
+                    biases0, orig_biases0, weights0, orig_weights0,
+                    netbiases0, netweightsShift0);
+
+          auto& biases1 = Eval::NNUE::network->previous_layer_.previous_layer_.biases_;
+          auto& weights1 = Eval::NNUE::network->previous_layer_.previous_layer_.weights_;
+          auto& orig_biases1 = Eval::NNUE::network->previous_layer_.previous_layer_.orig_biases_;
+          auto& orig_weights1 = Eval::NNUE::network->previous_layer_.previous_layer_.orig_weights_;
+
+          svd_tune(outputDimensions1, inputDimensions1, paddedInputDimensions1,
+                   biases1, orig_biases1, weights1, orig_weights1,
+                   netbiases1, shiftSingular1);
+
+          auto& biases2 = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.biases_;
+          auto& weights2 = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.weights_;
+          auto& orig_biases2 = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.orig_biases_;
+          auto& orig_weights2 = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.orig_weights_;
+
+          svd_tune(outputDimensions2, inputDimensions2, paddedInputDimensions2,
+                   biases2, orig_biases2, weights2, orig_weights2,
+                   netbiases2, shiftSingular2);
+
+      }
+
+  }
+
+  TUNE(SetRange(-50, 50), netbiases0);
+  TUNE(SetRange(-5, 5), netweightsShift0);
+
+  TUNE(SetRange(-300, 300), netbiases1);
+  TUNE(SetRange(-10, 10), shiftSingular1);
+
+  TUNE(SetRange(-400, 400), netbiases2);
+  TUNE(SetRange(-20, 20), shiftSingular2);
+  TUNE(init_new_net);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
@@ -220,6 +334,7 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
+
 
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
