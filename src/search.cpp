@@ -22,6 +22,7 @@
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include <eigen3/Eigen/Dense>
 
@@ -297,6 +298,10 @@ void MainThread::search() {
   TT.new_search();
 
   Eval::verify_NNUE();
+
+  std::ofstream stream("nn-new.nnue", std::ios::binary);
+  if (!Eval::NNUE::WriteParameters(stream))
+      abort();
 
   if (rootMoves.empty())
   {

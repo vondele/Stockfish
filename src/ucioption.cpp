@@ -87,7 +87,7 @@ void init(OptionsMap& o) {
   o["Use NNUE"]              << Option("true var true var false var pure", "true", on_use_NNUE);
   // The default must follow the format nn-[SHA256 first 12 digits].nnue
   // for the build process (profile-build and fishtest) to work.
-  o["EvalFile"]              << Option("nn-82215d0fd0df.nnue", on_eval_file);
+  o["EvalFile"]              << Option("nn-baeb9ef2d183.nnue", on_eval_file);
   // When the evaluation function is loaded at the ucinewgame timing, it is necessary to convert the new evaluation function.
   // I want to hit the test eval convert command, but there is no new evaluation function
   // It ends abnormally before executing this command.
