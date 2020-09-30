@@ -60,11 +60,14 @@ namespace {
 //  int netbiases[1] = {-156}; // int32_t
 //  int netweights[32] = {-18, -15, -79,  53, -17, 120, -117,  29,  34,  44, -46,  13,  16, -38, -24,  96, -44,  33,  37,  37, -18, -14,  21, -38, -13, -41, -15, -16, -23,  30, -17,  25}; // int8_t
 
-  int netbiases[1] = {-162}; // int32_t
+// int netbiases[1] = {-162}; // int32_t
+  int netbiases[1] = {-154}; // int32_t
   auto myfunc = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(m - 5, m + 5);};
   TUNE(SetRange(myfunc), netbiases);
-  int netweights[32] = {-18, -14, -79, 50, -20, 127, -127, 17, 34, 48, -43, 14, 21, -42, -14, 87, -39, 23, 34, 36, -12, -19, 16, -33, -25, -38, -15, -14, -21, 30, -12, 22}; // int8_t
+// int netweights[32] = {-18, -14, -79, 50, -20, 127, -127, 17, 34, 48, -43, 14, 21, -42, -14, 87, -39, 23, 34, 36, -12, -19, 16, -33, -25, -38, -15, -14, -21, 30, -12, 22}; // int8_t
+  int netweights[32] = {-20, -16, -77, 51, -19, 121, -120, 24, 32, 49, -45, 14, 19, -37, -26, 96, -44, 28, 38, 38, -15, -16, 16, -35, -13, -41, -15, -11, -26, 30, -15, 20}; // int8_t
   auto myfunc127 = [](int m){return m == 0 ? std::pair<int, int>(0, 0) : std::pair<int, int>(std::max(-127, m - 10),std::min(127,m + 10));};
+
   TUNE(SetRange(myfunc127), netweights);
 
   // Different node types, used as a template parameter
@@ -232,7 +235,7 @@ void MainThread::search() {
       return;
   }
 
-  if (false)
+  if (true)
   {
      size_t ndim=Eval::NNUE::Network::kOutputDimensions;
      std::cout << "  int netbiases[" << ndim << "] = {";
