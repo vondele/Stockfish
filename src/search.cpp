@@ -235,37 +235,51 @@ void MainThread::search() {
       return;
   }
 
-  if (true)
+  /*
+  // last 32x32 layer
+  constexpr size_t outputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kPaddedInputDimensions;
+  auto& biases = Eval::NNUE::network->previous_layer_.previous_layer_.biases_;
+  auto& weights = Eval::NNUE::network->previous_layer_.previous_layer_.weights_;
+  */
+
+  // output layer (32x1)
+  constexpr size_t outputDimensions = Eval::NNUE::Network::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::kPaddedInputDimensions;
+  auto& biases = Eval::NNUE::network->biases_;
+  auto& weights = Eval::NNUE::network->weights_;
+
+  if (false)
   {
-     size_t ndim=Eval::NNUE::Network::kOutputDimensions;
+     size_t ndim=outputDimensions;
      std::cout << "  int netbiases[" << ndim << "] = {";
      for (size_t i=0; i < ndim; ++i)
      {
-         std::cout << int(Eval::NNUE::network->biases_[i]);
+         std::cout << int(biases[i]);
          if (i < ndim - 1) std::cout << ", ";
      }
      std::cout << "}; // int32_t" << std::endl;
 
-     ndim=Eval::NNUE::Network::kOutputDimensions * Eval::NNUE::Network::kPaddedInputDimensions;
+     ndim=inputDimensions * outputDimensions;
      std::cout << "  int netweights[" << ndim << "] = {";
      for (size_t i=0; i < ndim; ++i)
      {
-         std::cout << int(Eval::NNUE::network->weights_[i]);
+         std::cout << int(weights[i]);
          if (i < ndim - 1) std::cout << ", ";
      }
      std::cout << "}; // int8_t" << std::endl;
   }
   else
   {
-     size_t ndim=Eval::NNUE::Network::kOutputDimensions;
+     size_t ndim=outputDimensions;
      for (size_t i=0; i < ndim; ++i)
      {
-         Eval::NNUE::network->biases_[i] = netbiases[i];
+         biases[i] = netbiases[i];
      }
-     ndim=Eval::NNUE::Network::kOutputDimensions * Eval::NNUE::Network::kPaddedInputDimensions;
+     ndim=inputDimensions * outputDimensions;
      for (size_t i=0; i < ndim; ++i)
      {
-        Eval::NNUE::network->weights_[i] = netweights[i];
+        weights[i] = netweights[i];
      }
   }
 
