@@ -73,10 +73,10 @@ namespace {
 #endif
 
   int netbiases[outputDimensions] = {};
-  TUNE(SetRange(-5, 5), netbiases);
+  TUNE(SetRange(-2, 2), netbiases);
   int netweightsInp[inputDimensions] = {};
   int netweightsOut[outputDimensions] = {};
-  TUNE(SetRange(-5, 5), netweightsInp, netweightsOut);
+  TUNE(SetRange(-20, 20), netweightsInp, netweightsOut);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
@@ -266,7 +266,7 @@ void MainThread::search() {
       for (size_t j=0; j < inputDimensions; ++j)
       {
           size_t offset=i * paddedInputDimensions;
-          weights[offset+j] = std::clamp(orig_weights[offset+j] + netweightsInp[j] * netweightsOut[i], -127, 127);
+          weights[offset+j] = std::clamp(orig_weights[offset+j] + netweightsInp[j] * netweightsOut[i] / 64, -127, 127);
       }
   }
 
