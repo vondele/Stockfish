@@ -37,7 +37,7 @@ namespace Eval {
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
 
-  #define EvalFileDefaultName   "nn-71fc2ec7ff96.nnue"
+  #define EvalFileDefaultName   "nn-848a00c6501e.nnue"
 
   namespace NNUE {
 
