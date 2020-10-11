@@ -299,6 +299,8 @@ void MainThread::search() {
 
   Eval::verify_NNUE();
 
+  init_new_net();
+
   std::ofstream stream("nn-new.nnue", std::ios::binary);
   if (!Eval::NNUE::WriteParameters(stream))
       abort();
