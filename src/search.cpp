@@ -78,7 +78,7 @@ namespace {
 #endif
 
   int netbiases[outputDimensions] = {};
-  int scaleSingular[std::min(inputDimensions, outputDimensions)] = {};
+  int scaleSingular[std::min(inputDimensions, outputDimensions)] = {10,  29, -33,  12,   5,   4,  -6,  21,   0, -24,  15,   7, -11,  23, -13,   6,  -8,   8,  -2,   4,  -6,   6, -12,  22,   8,   1,   8,   4,  -4, -20,   1,  13};
 
   void init_new_net()
   {
