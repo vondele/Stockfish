@@ -23,6 +23,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <eigen3/Eigen/Dense>
+
 #include "evaluate.h"
 #include "misc.h"
 #include "movegen.h"
@@ -34,6 +36,7 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "nnue/evaluate_nnue.h"
 
 namespace Search {
 
@@ -57,6 +60,71 @@ using namespace Search;
 bool Search::prune_at_shallow_depth_on_pv_node = true;
 
 namespace {
+
+// output layer (32x1)
+// #define TUNELAYER 0
+// previous affine layer (32x32)
+#define TUNELAYER 1
+
+#if TUNELAYER == 0
+  constexpr size_t outputDimensions = Eval::NNUE::Network::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::kInputDimensions;
+  constexpr size_t paddedInputDimensions = Eval::NNUE::Network::kPaddedInputDimensions;
+#elif TUNELAYER == 1
+  constexpr size_t outputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kInputDimensions;
+  constexpr size_t paddedInputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kPaddedInputDimensions;
+#endif
+
+  int netbiases[outputDimensions] = {};
+  int scaleSingular[std::min(inputDimensions, outputDimensions)] = {};
+
+  void init_new_net()
+  {
+
+      // adjust net with params
+      if (Eval::useNNUE != Eval::UseNNUEMode::False)
+      {
+
+#if TUNELAYER == 0
+          auto& biases = Eval::NNUE::network->biases_;
+          auto& weights = Eval::NNUE::network->weights_;
+          auto& orig_biases = Eval::NNUE::network->orig_biases_;
+          auto& orig_weights = Eval::NNUE::network->orig_weights_;
+#elif TUNELAYER == 1
+          auto& biases = Eval::NNUE::network->previous_layer_.previous_layer_.biases_;
+          auto& weights = Eval::NNUE::network->previous_layer_.previous_layer_.weights_;
+          auto& orig_biases = Eval::NNUE::network->previous_layer_.previous_layer_.orig_biases_;
+          auto& orig_weights = Eval::NNUE::network->previous_layer_.previous_layer_.orig_weights_;
+#endif
+
+          for (size_t i=0; i < outputDimensions; ++i)
+              biases[i] = orig_biases[i] + netbiases[i];
+
+          Eigen::Matrix<double, outputDimensions, inputDimensions> mWeights;
+          for (size_t i=0; i < outputDimensions; ++i)
+          for (size_t j=0; j < inputDimensions; ++j)
+              mWeights(i,j) = orig_weights[i * paddedInputDimensions + j];
+
+          Eigen::JacobiSVD<Eigen::MatrixXd> svd(mWeights, Eigen::ComputeThinU | Eigen::ComputeThinV);
+          auto v = svd.singularValues();
+
+          constexpr int minDim = std::min(outputDimensions, inputDimensions);
+          for(size_t i=0; i < minDim; ++i)
+             v(i) = v(i) * (1000 + scaleSingular[i]) / 1000;
+
+          Eigen::Matrix<double, outputDimensions, inputDimensions> mNewWeights =
+                 svd.matrixU() * Eigen::Matrix<double, minDim, minDim >(v.asDiagonal()) * svd.matrixV().transpose();
+
+          for (size_t i=0; i < outputDimensions; ++i)
+          for (size_t j=0; j < inputDimensions; ++j)
+              weights[i * paddedInputDimensions + j] = std::clamp(std::lround(mNewWeights(i,j)), -127L, 127L);
+      }
+
+  }
+
+  // TUNE(SetRange(-2, 2), netbiases, init_new_net);
+  TUNE(SetRange(-100, 100), scaleSingular, init_new_net);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
@@ -222,6 +290,7 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
+
 
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());

@@ -169,10 +169,10 @@ namespace Eval::NNUE::Layers {
       return output;
     }
 
-   private:
+   public:
      // Make the learning class a friend
      friend class Trainer<ClippedReLU>;
-     
+    using PrevLayer = PreviousLayer;
     PreviousLayer previous_layer_;
   };
 

@@ -72,6 +72,8 @@ namespace Eval::NNUE {
   // write evaluation function parameters
   bool WriteParameters(std::ostream& stream);
 
+  extern AlignedPtr<Network> network;
+
 }  // namespace Eval::NNUE
 
 #endif // #ifndef NNUE_EVALUATE_NNUE_H_INCLUDED
