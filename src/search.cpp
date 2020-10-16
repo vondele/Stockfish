@@ -77,12 +77,8 @@ namespace {
   constexpr size_t paddedInputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kPaddedInputDimensions;
 #endif
 
-  int netbiases[outputDimensions] = {};
-//  int scaleSingular[std::min(inputDimensions, outputDimensions)] = {6,  29, -38,  10,  10,   7,  -5,  27,  10, -37,   0,   6,  -9,  45, -16,   7, -14,   6, -10,  13,  -1,  26,  -7,  22,  -3,   4,   0,  -7,   0, -13,  12,  26};
-// =====    Elo      :    6.205 +-    3.761 =====
-//   int scaleSingular[32]={-22, 19,-24, 27, 66, -9, 14, 20,  4, 53, -2,-23, 10, -3,-74, 14,-76, -2,-33, 77, 21, 37, -4, 51, 58, -6, 43, 46,-10,-22, 15,   6};
-// =====    Elo      :    7.153 +-    3.730 =====
-   int scaleSingular[32]={14,  23, -47,   9,   7,   8,  -8,  16,  18, -35,   0,  11,  -1,  49, -12,  20, -28,   6, -19,   8, -15,  24, -23,  12,  12,  -5,  15,  -8,   4,  -7,   1,  28};
+  int netbiases[outputDimensions] = {47,   46,  -49,   19,  -24,    3,  -15,   18,    2,   19,  -30,   77,    1,   54,   41,    8,   18,   46,   -1,  -41,   43,    7,  -28,   12,   31,   35,   52,   14,   23,   39,  -47,  -35};
+  int scaleSingular[32]={};
 
   void init_new_net()
   {
@@ -128,8 +124,8 @@ namespace {
 
   }
 
-  // TUNE(SetRange(-2, 2), netbiases, init_new_net);
-  TUNE(SetRange(-100, 100), scaleSingular, init_new_net);
+  TUNE(SetRange(-300, 300), netbiases, init_new_net);
+  // TUNE(SetRange(-100, 100), scaleSingular, init_new_net);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
