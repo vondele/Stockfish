@@ -65,7 +65,7 @@ namespace {
 // output layer (32x1)
 // #define TUNELAYER 0
 // previous affine layer (32x32)
-#define TUNELAYER 1
+#define TUNELAYER 2
 
 #if TUNELAYER == 0
   constexpr size_t outputDimensions = Eval::NNUE::Network::kOutputDimensions;
@@ -75,12 +75,21 @@ namespace {
   constexpr size_t outputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kOutputDimensions;
   constexpr size_t inputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kInputDimensions;
   constexpr size_t paddedInputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::kPaddedInputDimensions;
+#elif TUNELAYER == 2
+  constexpr size_t outputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::PrevLayer::PrevLayer::kOutputDimensions;
+  constexpr size_t inputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::PrevLayer::PrevLayer::kInputDimensions;
+  constexpr size_t paddedInputDimensions = Eval::NNUE::Network::PrevLayer::PrevLayer::PrevLayer::PrevLayer::kPaddedInputDimensions;
 #endif
 
 // ===== Elo      :   40.772 +-    3.936 =====
 //   int netbiases[32]={66, -74, 14, 101, -182, -65, -237, -145, -205, 79, -74, -130, 17, 195, 154, 34, 49, 10, 56, 155, -199, 49, 16, 54, 198, 103, 61, -141, -133, 63, -1, -87 };
 // ===== Elo      :   40.859 +-    3.888 =====
-  int netbiases[32]={49, 157, -149, 118, -115, -2, -36, 253, -146, 3, -14, 123, 160, 224, -75, -3, -10, 52, -72, -157, 116, -71, 2, -10, 162, -73, -5, -55, 170, 16, 229, -104 };
+  int netbiases[32]={
+  -1639, -1275, 1578, -2065, -1650, 644, -457, 3647,
+  -452, 11217, 1995, 3174, -3631, 6672, 1042, 5050,
+   5303, -526, 9233, -2842, -2824, 6191, 14494, 2435,
+  -7489, 3049, -3602, 5938, 53, -4864, -8500, -8789
+};
   int scaleSingular[32]={};
 
   void init_new_net()
@@ -100,10 +109,16 @@ namespace {
           auto& weights = Eval::NNUE::network->previous_layer_.previous_layer_.weights_;
           auto& orig_biases = Eval::NNUE::network->previous_layer_.previous_layer_.orig_biases_;
           auto& orig_weights = Eval::NNUE::network->previous_layer_.previous_layer_.orig_weights_;
+#elif TUNELAYER == 2
+          auto& biases = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.biases_;
+          auto& weights = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.weights_;
+          auto& orig_biases = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.orig_biases_;
+          auto& orig_weights = Eval::NNUE::network->previous_layer_.previous_layer_.previous_layer_.previous_layer_.orig_weights_;
 #endif
 
+              // biases[i] = orig_biases[i] + netbiases[i];
           for (size_t i=0; i < outputDimensions; ++i)
-              biases[i] = orig_biases[i] + netbiases[i];
+              biases[i] = netbiases[i];
 
           Eigen::Matrix<double, outputDimensions, inputDimensions> mWeights;
           for (size_t i=0; i < outputDimensions; ++i)
