@@ -22,6 +22,7 @@
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
+#include <experimental/random>
 
 #include "evaluate.h"
 #include "misc.h"
@@ -191,6 +192,8 @@ namespace {
 
 void Search::init() {
 
+  std::experimental::reseed();
+
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((22.0 + 2 * std::log(Threads.size())) * std::log(i + 0.25 * std::log(i)));
 }
@@ -275,10 +278,11 @@ void MainThread::search() {
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+  int randMove = std::experimental::randint(0, int(bestThread->rootMoves.size() - 1));
+  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[randMove].pv[0], rootPos.is_chess960());
 
-  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-      std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[randMove].extract_ponder_from_tt(rootPos))
+      std::cout << " ponder " << UCI::move(bestThread->rootMoves[randMove].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
 }
