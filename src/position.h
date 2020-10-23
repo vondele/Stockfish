@@ -153,6 +153,7 @@ public:
   Key pawn_key() const;
 
   // Other properties of the position
+  bool slow_NNUE() const;
   Color side_to_move() const;
   int game_ply() const;
   bool is_chess960() const;
@@ -211,6 +212,12 @@ extern std::ostream& operator<<(std::ostream& os, const Position& pos);
 
 inline Color Position::side_to_move() const {
   return sideToMove;
+}
+
+inline bool Position::slow_NNUE() const {
+      return Eval::useNNUE && (  !st->previous
+                               || st->previous->accumulator.state[WHITE] != Eval::NNUE::COMPUTED
+                               || st->previous->accumulator.state[BLACK] != Eval::NNUE::COMPUTED);
 }
 
 inline Piece Position::piece_on(Square s) const {
