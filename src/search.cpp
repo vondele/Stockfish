@@ -1547,6 +1547,14 @@ moves_loop: // When in check, search starts from here
           && !pos.see_ge(move))
           continue;
 
+      // CounterMove based pruning
+      if (   !captureOrPromotion
+          &&  moveCount
+          && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
+          && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
+          && (!ss->inCheck || futilityBase > -VALUE_KNOWN_WIN))
+          continue;
+
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
 
@@ -1562,13 +1570,6 @@ moves_loop: // When in check, search starts from here
                                                                 [captureOrPromotion]
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
-
-      // CounterMove based pruning
-      if (  !captureOrPromotion
-          && moveCount
-          && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
-          && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)
-          continue;
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
@@ -1600,7 +1601,11 @@ moves_loop: // When in check, search starts from here
     // All legal moves have been searched. A special case: if we're in check
     // and no legal moves were found, it is checkmate.
     if (ss->inCheck && bestValue == -VALUE_INFINITE)
+    {
+        assert(!MoveList<LEGAL>(pos).size());
+
         return mated_in(ss->ply); // Plies to mate from the root
+    }
 
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER :
