@@ -1547,14 +1547,6 @@ moves_loop: // When in check, search starts from here
           && !pos.see_ge(move))
           continue;
 
-      // CounterMove based pruning
-      if (   !captureOrPromotion
-          &&  moveCount
-          && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
-          && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
-          && (!ss->inCheck || futilityBase > -VALUE_KNOWN_WIN))
-          continue;
-
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
 
