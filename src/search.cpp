@@ -1172,7 +1172,7 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r--;
 
-          if (std::abs((ss-2)->staticEval - ss->staticEval) > PawnValueEg / 2)
+          if (std::abs((ss-2)->staticEval - ss->staticEval) > PawnValueEg)
               r++;
 
           if (!captureOrPromotion)
