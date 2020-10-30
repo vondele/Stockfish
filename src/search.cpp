@@ -966,6 +966,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue;
     singularQuietLMR = moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    Depth lmrPrevDepth = MAX_PLY;
 
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -1221,6 +1222,8 @@ moves_loop: // When in check, search starts from here
           }
 
           Depth d = std::clamp(newDepth - r, 1, newDepth);
+
+          lmrPrevDepth = d = std::min(lmrPrevDepth, d);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
