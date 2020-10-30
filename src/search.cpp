@@ -1224,6 +1224,9 @@ moves_loop: // When in check, search starts from here
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
+          if (!captureOrPromotion && value > alpha)
+              update_continuation_histories(ss, movedPiece, to_sq(move), stat_bonus(d));
+
           doFullDepthSearch = value > alpha && d != newDepth;
 
           didLMR = true;
