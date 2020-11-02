@@ -519,8 +519,10 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
+          double pvLength = Depth(mainThread->rootMoves[0].pv.size() * 2) < mainThread->completedDepth ? 1.2 : 1.0;
+
           double totalTime = rootMoves.size() == 1 ? 0 :
-                             Time.optimum() * fallingEval * reduction * bestMoveInstability;
+                             Time.optimum() * fallingEval * reduction * bestMoveInstability * pvLength;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search
           if (Time.elapsed() > totalTime)
