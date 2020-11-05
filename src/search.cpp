@@ -1176,7 +1176,7 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r--;
 
-          if (abs(bestValue) > 1 && pos.has_repeated())
+          if (pos.has_repeated())
               r++;
 
           if (!captureOrPromotion)
