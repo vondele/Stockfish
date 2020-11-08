@@ -1129,7 +1129,7 @@ moves_loop: // When in check, search starts from here
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
           extension = 2;
 
-      if (!PvNode && extension && pos.has_repeated())
+      if (PvNode && extension && pos.has_repeated())
           extension = 0;
 
       // Add extension to new depth
