@@ -222,6 +222,12 @@ namespace {
       S(112,178), S(114,185), S(114,187), S(119,221) }
   };
 
+  // BishopPawns[distance from edge] contains a file-dependent penalty for pawns on
+  // squares of the same color as our bishop.
+  constexpr Score BishopPawns[int(FILE_NB) / 2] = {
+    S(3, 8), S(3, 9), S(1, 8), S(3, 7)
+  };
+
   // KingProtector[knight/bishop] contains penalty for each distance unit to own king
   constexpr Score KingProtector[] = { S(8, 9), S(6, 9) };
 
@@ -252,7 +258,6 @@ namespace {
   // Assorted bonuses and penalties
   constexpr Score BadOutpost          = S( -7, 36);
   constexpr Score BishopOnKingRing    = S( 24,  0);
-  constexpr Score BishopPawns         = S(  3,  7);
   constexpr Score BishopXRayPawns     = S(  4,  5);
   constexpr Score CorneredBishop      = S( 50, 50);
   constexpr Score FlankAttacks        = S(  8,  0);
@@ -453,7 +458,7 @@ namespace {
                 // when the bishop is outside the pawn chain.
                 Bitboard blocked = pos.pieces(Us, PAWN) & shift<Down>(pos.pieces());
 
-                score -= BishopPawns * pos.pawns_on_same_color_squares(Us, s)
+                score -= BishopPawns[edge_distance(file_of(s))] * pos.pawns_on_same_color_squares(Us, s)
                                      * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles));
 
                 // Penalty for all enemy pawns x-rayed
@@ -577,18 +582,18 @@ namespace {
     int kingFlankAttack  = popcount(b1) + popcount(b2);
     int kingFlankDefense = popcount(b3);
 
-    kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
-                 + 185 * popcount(kingRing[Us] & weak)
-                 + 148 * popcount(unsafeChecks)
-                 +  98 * popcount(pos.blockers_for_king(Us))
-                 +  69 * kingAttacksCount[Them]
-                 +   3 * kingFlankAttack * kingFlankAttack / 8
-                 +       mg_value(mobility[Them] - mobility[Us])
-                 - 873 * !pos.count<QUEEN>(Them)
-                 - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
-                 -   6 * mg_value(score) / 8
-                 -   4 * kingFlankDefense
-                 +  37;
+    kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them] // (~10 Elo)
+                 + 185 * popcount(kingRing[Us] & weak)                        // (~15 Elo)
+                 + 148 * popcount(unsafeChecks)                               // (~4 Elo)
+                 +  98 * popcount(pos.blockers_for_king(Us))                  // (~2 Elo)
+                 +  69 * kingAttacksCount[Them]                               // (~0.5 Elo)
+                 +   3 * kingFlankAttack * kingFlankAttack / 8                // (~0.5 Elo)
+                 +       mg_value(mobility[Them] - mobility[Us])              // (~0.5 Elo)
+                 - 873 * !pos.count<QUEEN>(Them)                              // (~24 Elo)
+                 - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])  // (~5 Elo)
+                 -   6 * mg_value(score) / 8                                  // (~8 Elo)
+                 -   4 * kingFlankDefense                                     // (~5 Elo)
+                 +  37;                                                       // (~0.5 Elo)
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
     if (kingDanger > 100)
@@ -906,7 +911,7 @@ namespace {
                                                         : pos.count<BISHOP>(WHITE) + pos.count<KNIGHT>(WHITE));
         else
             sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide)) - 4 * !pawnsOnBothFlanks;
-      
+
         sf -= 4 * !pawnsOnBothFlanks;
     }
 
