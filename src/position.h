@@ -160,6 +160,7 @@ public:
   bool is_draw(int ply) const;
   bool has_game_cycle(int ply) const;
   bool has_repeated() const;
+  bool is_repetition() const;
   int rule50_count() const;
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
@@ -313,6 +314,10 @@ inline Bitboard Position::check_squares(PieceType pt) const {
 
 inline bool Position::is_discovery_check_on_king(Color c, Move m) const {
   return st->blockersForKing[c] & from_sq(m);
+}
+
+inline bool Position::is_repetition() const {
+  return st->repetition;
 }
 
 inline bool Position::pawn_passed(Color c, Square s) const {
