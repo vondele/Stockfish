@@ -99,7 +99,6 @@ namespace {
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 
     e->passedPawns[Us] = 0;
-    e->kingSquares[Us] = SQ_NONE;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
     e->blockedCount += popcount(shift<Up>(ourPawns) & (theirPawns | doubleAttackThem));
 
@@ -198,11 +197,18 @@ Entry* probe(const Position& pos) {
   Key key = pos.pawn_key();
   Entry* e = pos.this_thread()->pawnsTable[key];
 
+  // Entry already exists
   if (e->key == key)
       return e;
 
+  // Compute a new entry
   e->key = key;
   e->blockedCount = 0;
+  e->kingSquares[WHITE] = e->kingSquares[BLACK] = SQ_NONE;
+  e->kingSafety[WHITE] = e->kingSafety[BLACK] = SCORE_ZERO;
+  e->castlingRights[WHITE] = e->castlingRights[BLACK] = NO_CASTLING;
+
+  // Evaluate the pawn structure for both sides
   e->scores[WHITE] = evaluate<WHITE>(pos, e);
   e->scores[BLACK] = evaluate<BLACK>(pos, e);
 
@@ -258,17 +264,26 @@ Score Entry::do_king_safety(const Position& pos) {
   Square ksq = pos.square<KING>(Us);
   kingSquares[Us] = ksq;
   castlingRights[Us] = pos.castling_rights(Us);
-  auto compare = [](Score a, Score b) { return mg_value(a) < mg_value(b); };
 
   Score shelter = evaluate_shelter<Us>(pos, ksq);
 
   // If we can castle use the bonus after castling if it is bigger
 
   if (pos.can_castle(Us & KING_SIDE))
-      shelter = std::max(shelter, evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1)), compare);
+  {
+      Score kingsideShelter = evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1));
+
+      if (mg_value(kingsideShelter) > mg_value(shelter))
+          shelter = kingsideShelter;
+  }
 
   if (pos.can_castle(Us & QUEEN_SIDE))
-      shelter = std::max(shelter, evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1)), compare);
+  {
+      Score queensideShelter = evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1));
+
+      if (mg_value(queensideShelter) > mg_value(shelter))
+          shelter = queensideShelter;
+  }
 
   // In endgame we like to bring our king near our closest pawn
   Bitboard pawns = pos.pieces(Us, PAWN);

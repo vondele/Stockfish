@@ -33,7 +33,8 @@ namespace PSQT {
 
 int main(int argc, char* argv[]) {
 
-  std::cout << engine_info() << std::endl;
+  std::cout <<   engine_info() << "\n"
+            << compiler_info() << std::endl;
 
   CommandLine::init(argc, argv);
   UCI::init(Options);

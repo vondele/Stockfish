@@ -70,10 +70,7 @@ namespace Eval {
 
   void NNUE::init() {
 
-    useNNUE = Options["Use NNUE"];
-    if (!useNNUE)
-        return;
-
+    useNNUE = false;
     string eval_file = string(Options["EvalFile"]);
 
     #if defined(DEFAULT_NNUE_DIRECTORY)
@@ -90,11 +87,15 @@ namespace Eval {
             if (directory != "<internal>")
             {
                 ifstream stream(directory + eval_file, ios::binary);
+
                 if (load_eval(eval_file, stream))
+                {
                     eval_file_loaded = eval_file;
+                    useNNUE = true;
+                }
             }
 
-            if (directory == "<internal>" && eval_file == EvalFileDefaultName)
+            else if (directory == "<internal>" && eval_file == EvalFileDefaultName)
             {
                 // C++ way to prepare a buffer for a memory stream
                 class MemoryBuffer : public basic_streambuf<char> {
@@ -105,8 +106,12 @@ namespace Eval {
                                     size_t(gEmbeddedNNUESize));
 
                 istream stream(&buffer);
+
                 if (load_eval(eval_file, stream))
+                {
                     eval_file_loaded = eval_file;
+                    useNNUE = true;
+                }
             }
         }
   }
@@ -121,25 +126,23 @@ namespace Eval {
         UCI::OptionsMap defaults;
         UCI::init(defaults);
 
-        string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
-        string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
-        string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";
-        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + string(defaults["EvalFile"]);
-        string msg5 = "The engine will be terminated now.";
+        string msg1 = "The network file " + eval_file + " was not loaded successfully.";
+        string msg2 = "The UCI option EvalFile might need to specify the full path, including the directory name to the network file.";
+        string msg3 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + string(defaults["EvalFile"]);
+        string msg4 = "Using the handcrafted classic eval now.";
 
         sync_cout << "info string ERROR: " << msg1 << sync_endl;
         sync_cout << "info string ERROR: " << msg2 << sync_endl;
         sync_cout << "info string ERROR: " << msg3 << sync_endl;
         sync_cout << "info string ERROR: " << msg4 << sync_endl;
-        sync_cout << "info string ERROR: " << msg5 << sync_endl;
 
-        exit(EXIT_FAILURE);
+        useNNUE = false;
     }
 
-    if (useNNUE)
-        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
+    if (useNNUE && (Options["Use NNUE"] == "Hybrid" || Options["Use NNUE"] == "Pure"))
+        sync_cout << "info string NNUE evaluation enabled using " << eval_file << sync_endl;
     else
-        sync_cout << "info string classical evaluation enabled" << sync_endl;
+        sync_cout << "info string classic evaluation enabled" << sync_endl;
   }
 }
 
@@ -1019,9 +1022,15 @@ Value Eval::evaluate(const Position& pos) {
 
   Value v;
 
-  if (!Eval::useNNUE)
+  // Classic eval only
+  if (!Eval::useNNUE || Options["Use NNUE"] == "Classic")
       v = Evaluation<NO_TRACE>(pos).value();
-  else
+
+  // NNUE eval only
+  else if (Eval::useNNUE && Options["Use NNUE"] == "Pure")
+      v = NNUE::evaluate(pos) + Tempo; // no scaling!
+
+  else // Hybrid eval (default)
   {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&](){
@@ -1051,7 +1060,7 @@ Value Eval::evaluate(const Position& pos) {
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
 
-  // Guarantee evaluation does not hit the tablebase range
+  // Make sure evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
   return v;

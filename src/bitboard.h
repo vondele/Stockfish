@@ -37,26 +37,27 @@ const std::string pretty(Bitboard b);
 
 }
 
-constexpr Bitboard AllSquares = ~Bitboard(0);
-constexpr Bitboard DarkSquares = 0xAA55AA55AA55AA55ULL;
+constexpr Bitboard AllSquares   = 0xFFFFFFFFFFFFFFFFULL;
+constexpr Bitboard LightSquares = 0x55AA55AA55AA55AAULL;
+constexpr Bitboard DarkSquares  = 0xAA55AA55AA55AA55ULL;
 
 constexpr Bitboard FileABB = 0x0101010101010101ULL;
-constexpr Bitboard FileBBB = FileABB << 1;
-constexpr Bitboard FileCBB = FileABB << 2;
-constexpr Bitboard FileDBB = FileABB << 3;
-constexpr Bitboard FileEBB = FileABB << 4;
-constexpr Bitboard FileFBB = FileABB << 5;
-constexpr Bitboard FileGBB = FileABB << 6;
-constexpr Bitboard FileHBB = FileABB << 7;
+constexpr Bitboard FileBBB = 0x0202020202020202ULL;
+constexpr Bitboard FileCBB = 0x0404040404040404ULL;
+constexpr Bitboard FileDBB = 0x0808080808080808ULL;
+constexpr Bitboard FileEBB = 0x1010101010101010ULL;
+constexpr Bitboard FileFBB = 0x2020202020202020ULL;
+constexpr Bitboard FileGBB = 0x4040404040404040ULL;
+constexpr Bitboard FileHBB = 0x8080808080808080ULL;
 
-constexpr Bitboard Rank1BB = 0xFF;
-constexpr Bitboard Rank2BB = Rank1BB << (8 * 1);
-constexpr Bitboard Rank3BB = Rank1BB << (8 * 2);
-constexpr Bitboard Rank4BB = Rank1BB << (8 * 3);
-constexpr Bitboard Rank5BB = Rank1BB << (8 * 4);
-constexpr Bitboard Rank6BB = Rank1BB << (8 * 5);
-constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
-constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
+constexpr Bitboard Rank1BB = 0x00000000000000FFULL;
+constexpr Bitboard Rank2BB = 0x000000000000FF00ULL;
+constexpr Bitboard Rank3BB = 0x0000000000FF0000ULL;
+constexpr Bitboard Rank4BB = 0x00000000FF000000ULL;
+constexpr Bitboard Rank5BB = 0x000000FF00000000ULL;
+constexpr Bitboard Rank6BB = 0x0000FF0000000000ULL;
+constexpr Bitboard Rank7BB = 0x00FF000000000000ULL;
+constexpr Bitboard Rank8BB = 0xFF00000000000000ULL;
 
 constexpr Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
 constexpr Bitboard CenterFiles = FileCBB | FileDBB | FileEBB | FileFBB;
@@ -129,8 +130,11 @@ constexpr bool more_than_one(Bitboard b) {
 }
 
 
-constexpr bool opposite_colors(Square s1, Square s2) {
-  return (s1 + rank_of(s1) + s2 + rank_of(s2)) & 1;
+inline bool opposite_colors(Square s1, Square s2) {
+
+  assert(is_ok(s1) && is_ok(s2));
+
+  return bool(DarkSquares & s1) == bool(LightSquares & s2);
 }
 
 
@@ -179,6 +183,7 @@ constexpr Bitboard pawn_attacks_bb(Bitboard b) {
 inline Bitboard pawn_attacks_bb(Color c, Square s) {
 
   assert(is_ok(s));
+
   return PawnAttacks[c][s];
 }
 
@@ -209,6 +214,7 @@ constexpr Bitboard adjacent_files_bb(Square s) {
 inline Bitboard line_bb(Square s1, Square s2) {
 
   assert(is_ok(s1) && is_ok(s2));
+
   return LineBB[s1][s2];
 }
 

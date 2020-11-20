@@ -23,9 +23,9 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = stockfish.exe
+EXE = stockfish-mojo.exe
 else
-EXE = stockfish
+EXE = stockfish-mojo
 endif
 
 ### Installation dir definitions
