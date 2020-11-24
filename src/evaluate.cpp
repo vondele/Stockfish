@@ -1064,11 +1064,7 @@ Value Eval::evaluate(const Position& pos) {
 
 std::string Eval::trace(const Position& pos) {
 
-  if (pos.checkers())
-      return "Final evaluation: none (in check)";
-
   std::stringstream ss;
-  ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2);
 
   Value v;
 
@@ -1076,42 +1072,14 @@ std::string Eval::trace(const Position& pos) {
 
   pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
 
-  v = Evaluation<TRACE>(pos).value();
+  v = NNUE::evaluate(pos);
 
-  ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
-     << "     Term    |    White    |    Black    |    Total   \n"
-     << "             |   MG    EG  |   MG    EG  |   MG    EG \n"
-     << " ------------+-------------+-------------+------------\n"
-     << "    Material | " << Term(MATERIAL)
-     << "   Imbalance | " << Term(IMBALANCE)
-     << "       Pawns | " << Term(PAWN)
-     << "     Knights | " << Term(KNIGHT)
-     << "     Bishops | " << Term(BISHOP)
-     << "       Rooks | " << Term(ROOK)
-     << "      Queens | " << Term(QUEEN)
-     << "    Mobility | " << Term(MOBILITY)
-     << " King safety | " << Term(KING)
-     << "     Threats | " << Term(THREAT)
-     << "      Passed | " << Term(PASSED)
-     << "       Space | " << Term(SPACE)
-     << "    Winnable | " << Term(WINNABLE)
-     << " ------------+-------------+-------------+------------\n"
-     << "       Total | " << Term(TOTAL);
-
-  v = pos.side_to_move() == WHITE ? v : -v;
-
-  ss << "\nClassical evaluation: " << to_cp(v) << " (white side)\n";
-
-  if (Eval::useNNUE)
-  {
-      v = NNUE::evaluate(pos);
-      v = pos.side_to_move() == WHITE ? v : -v;
-      ss << "\nNNUE evaluation:      " << to_cp(v) << " (white side)\n";
-  }
-
-  v = evaluate(pos);
-  v = pos.side_to_move() == WHITE ? v : -v;
-  ss << "\nFinal evaluation:     " << to_cp(v) << " (white side)\n";
+  ss << "fen " << pos.fen() << "\n"
+     << "move " << UCI::move(*MoveList<LEGAL>(pos).begin(), false) << "\n"
+     << "score " << v << "\n"
+     << "ply " << pos.game_ply() << "\n"
+     << "result " << 0 << "\n"
+     << "e";
 
   return ss.str();
 }
