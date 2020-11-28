@@ -154,11 +154,11 @@ namespace {
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
 
   Value value_to_tt(Value v, int ply);
-  Value value_from_tt(Value v, int ply, int r50c);
-  void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
-  void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus, int depth);
+  Value value_from_tt(Value v, int ply);
   void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth);
+  void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
+  void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus, int depth);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -677,7 +677,7 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
     tte = TT.probe(posKey, ss->ttHit);
-    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
     if (!excludedMove)
@@ -1459,7 +1459,7 @@ moves_loop: // When in check, search starts from here
     // Transposition table lookup
     posKey = pos.key();
     tte = TT.probe(posKey, ss->ttHit);
-    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
     pvHit = ss->ttHit && tte->is_pv();
 
@@ -1660,32 +1660,13 @@ moves_loop: // When in check, search starts from here
 
   // value_from_tt() is the inverse of value_to_tt(): it adjusts a mate or TB score
   // from the transposition table (which refers to the plies to mate/be mated from
-  // current position) to "plies to mate/be mated (TB win/loss) from the root". However,
-  // for mate scores, to avoid potentially false mate scores related to the 50 moves rule
-  // and the graph history interaction, we return an optimal TB score instead.
+  // current position) to "plies to mate/be mated (TB win/loss) from the root".
 
-  Value value_from_tt(Value v, int ply, int r50c) {
+  Value value_from_tt(Value v, int ply) {
 
-    if (v == VALUE_NONE)
-        return VALUE_NONE;
-
-    if (v >= VALUE_TB_WIN_IN_MAX_PLY)  // TB win or better
-    {
-        if (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 99 - r50c)
-            return VALUE_MATE_IN_MAX_PLY - 1; // do not return a potentially false mate score
-
-        return v - ply;
-    }
-
-    if (v <= VALUE_TB_LOSS_IN_MAX_PLY) // TB loss or worse
-    {
-        if (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 99 - r50c)
-            return VALUE_MATED_IN_MAX_PLY + 1; // do not return a potentially false mate score
-
-        return v + ply;
-    }
-
-    return v;
+    return  v == VALUE_NONE               ? VALUE_NONE
+          : v >= VALUE_TB_WIN_IN_MAX_PLY  ? v - ply
+          : v <= VALUE_TB_LOSS_IN_MAX_PLY ? v + ply : v;
   }
 
 

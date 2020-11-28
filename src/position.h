@@ -133,6 +133,7 @@ public:
 
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
+  bool bishop_pair(Color c) const;
   bool opposite_bishops() const;
   int  pawns_on_same_color_squares(Color c, Square s) const;
 
@@ -358,6 +359,12 @@ inline int Position::game_ply() const {
 
 inline int Position::rule50_count() const {
   return st->rule50;
+}
+
+inline bool Position::bishop_pair(Color c) const {
+  return   pieceCount[make_piece(c, BISHOP)] > 1
+        && byColorBB[c] & byTypeBB[BISHOP] & LightSquares
+        && byColorBB[c] & byTypeBB[BISHOP] & DarkSquares;
 }
 
 inline bool Position::opposite_bishops() const {

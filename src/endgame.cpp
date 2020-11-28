@@ -70,7 +70,6 @@ namespace Endgames {
   void init() {
 
     add<KPK>("KPK");
-    add<KNNK>("KNNK");
     add<KBNK>("KBNK");
     add<KRKP>("KRKP");
     add<KRKB>("KRKB");
@@ -103,20 +102,24 @@ Value Endgame<KXK>::operator()(const Position& pos) const {
   if (pos.side_to_move() == weakSide && !MoveList<LEGAL>(pos).size())
       return VALUE_DRAW;
 
+  // Draw detection with 2 knights or 2 and more bishops of the same color
+  if (   ((pos.count<KNIGHT>(strongSide) == 2 && !pos.count<BISHOP>(strongSide))
+      || (!pos.bishop_pair(strongSide) && !pos.count<KNIGHT>(strongSide)))
+      &&  !pos.count<PAWN  >(strongSide)
+      &&  !pos.count<ROOK  >(strongSide)
+      &&  !pos.count<QUEEN >(strongSide))
+      return VALUE_DRAW;
+
   Square strongKing = pos.square<KING>(strongSide);
   Square weakKing   = pos.square<KING>(weakSide);
 
-  Value result =  pos.non_pawn_material(strongSide)
+  Value result =  VALUE_KNOWN_WIN
+                + pos.non_pawn_material(strongSide)
                 + pos.count<PAWN>(strongSide) * PawnValueEg
                 + push_to_edge(weakKing)
                 + push_close(strongKing, weakKing);
 
-  if (   pos.count<QUEEN>(strongSide)
-      || pos.count<ROOK>(strongSide)
-      ||(pos.count<BISHOP>(strongSide) && pos.count<KNIGHT>(strongSide))
-      || (   (pos.pieces(strongSide, BISHOP) & ~DarkSquares)
-          && (pos.pieces(strongSide, BISHOP) &  DarkSquares)))
-      result = std::min(result + VALUE_KNOWN_WIN, VALUE_TB_WIN_IN_MAX_PLY - 1);
+  result = std::min(result, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
   return strongSide == pos.side_to_move() ? result : -result;
 }
@@ -305,10 +308,6 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
   return strongSide == pos.side_to_move() ? result : -result;
 }
-
-
-/// Some cases of trivial draws
-template<> Value Endgame<KNNK>::operator()(const Position&) const { return VALUE_DRAW; }
 
 
 /// KB and one or more pawns vs K. It checks for draws with rook pawns and
