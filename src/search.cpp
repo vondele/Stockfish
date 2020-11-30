@@ -1474,6 +1474,7 @@ moves_loop: // When in check, search starts from here
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
+                && !PvNode
                 && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttValue;
         }
