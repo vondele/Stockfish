@@ -120,24 +120,28 @@ void Thread::idle_loop() {
   }
 }
 
+
 /// ThreadPool::set() creates/destroys threads to match the requested number.
 /// Created and launched threads will immediately go to sleep in idle_loop.
 /// Upon resizing, threads are recreated to allow for binding if necessary.
 
 void ThreadPool::set(size_t requested) {
 
-  if (size() > 0) { // destroy any existing thread(s)
+  if (size() > 0) // destroy any existing thread(s)
+  {
       main()->wait_for_search_finished();
 
       while (size() > 0)
           delete back(), pop_back();
   }
 
-  if (requested > 0) { // create new thread(s)
+  if (requested > 0) // create new thread(s)
+  {
       push_back(new MainThread(0));
 
       while (size() < requested)
           push_back(new Thread(size()));
+
       clear();
 
       // Reallocate the hash with the new threadpool size
@@ -176,11 +180,14 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   Search::Limits = limits;
   Search::RootMoves rootMoves;
 
+  // Insert all legal moves, or only those specified by the 'searchmoves' keyword,
+  // into the RootMoves object.
   for (const auto& m : MoveList<LEGAL>(pos))
       if (   limits.searchmoves.empty()
           || std::count(limits.searchmoves.begin(), limits.searchmoves.end(), m))
           rootMoves.emplace_back(m);
 
+  // Rank root moves with the help of the TBs
   if (!rootMoves.empty())
       Tablebases::rank_root_moves(pos, rootMoves);
 
@@ -207,6 +214,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   main()->start_searching();
 }
+
 
 Thread* ThreadPool::get_best_thread() const {
 
@@ -239,22 +247,3 @@ Thread* ThreadPool::get_best_thread() const {
     return bestThread;
 }
 
-
-/// Start non-main threads
-
-void ThreadPool::start_searching() {
-
-    for (Thread* th : *this)
-        if (th != front())
-            th->start_searching();
-}
-
-
-/// Wait for non-main threads
-
-void ThreadPool::wait_for_search_finished() const {
-
-    for (Thread* th : *this)
-        if (th != front())
-            th->wait_for_search_finished();
-}

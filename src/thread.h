@@ -109,8 +109,6 @@ struct ThreadPool : public std::vector<Thread*> {
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
   Thread* get_best_thread() const;
-  void start_searching();
-  void wait_for_search_finished() const;
 
   std::atomic_bool stop, increaseDepth;
 
@@ -120,8 +118,10 @@ private:
   uint64_t accumulate(std::atomic<uint64_t> Thread::* member) const {
 
     uint64_t sum = 0;
+
     for (Thread* th : *this)
         sum += (th->*member).load(std::memory_order_relaxed);
+
     return sum;
   }
 };
