@@ -95,7 +95,7 @@ ifeq ($(ARCH), $(filter $(ARCH), \
                  x86-64-vnni512 x86-64-vnni256 x86-64-avx512 x86-64-bmi2 x86-64-avx2 \
                  x86-64-sse41-popcnt x86-64-modern x86-64-ssse3 x86-64-sse3-popcnt \
                  x86-64 x86-32-sse41-popcnt x86-32-sse2 x86-32 ppc-64 ppc-32 \
-                 armv7 armv7-neon armv8 apple-silicon general-64 general-32))
+                 armv7 armv7-neon armv8 apple-silicon a64fx general-64 general-32))
    SUPPORTED_ARCH=true
 else
    SUPPORTED_ARCH=false
@@ -250,6 +250,15 @@ ifeq ($(ARCH),general-64)
 	arch = any
 endif
 
+ifeq ($(ARCH),a64fx)
+	arch = a64fx
+	prefetch = yes
+	popcnt = yes
+	bits = 64
+	neon = yes
+	#TODO use SVE
+endif
+
 ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
@@ -309,7 +318,7 @@ ifeq ($(COMP),gcc)
 	CXX=g++
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
-	ifeq ($(arch),$(filter $(arch),armv7 armv8))
+	ifeq ($(arch),$(filter $(arch),armv7 armv8 a64fx))
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -497,7 +506,7 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(arch),$(filter $(arch),ppc64 armv7 armv8 arm64))
+	ifeq ($(arch),$(filter $(arch),ppc64 armv7 armv8 arm64 a64fx))
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse3 -DUSE_POPCNT
@@ -567,7 +576,7 @@ ifeq ($(neon),yes)
 	CXXFLAGS += -DUSE_NEON
 	ifeq ($(KERNEL),Linux)
 	ifneq ($(COMP),ndk)
-	ifneq ($(arch),armv8)
+	ifneq ($(arch),$(filter $(arch),armv8 a64fx))
 		CXXFLAGS += -mfpu=neon
 	endif
 	endif
@@ -821,7 +830,7 @@ config-sanity: net
 	@test "$(SUPPORTED_ARCH)" = "true"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
-	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64"
+	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64" || test "$(arch)" = "a64fx"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
