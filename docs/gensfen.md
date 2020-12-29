@@ -40,6 +40,8 @@ Currently the following options are available:
 
 `random_multi_pv_depth` - the depth to use for multiPV search for random move. Default: `depth2`.
 
+`tactical_threshold` - maximum change in score after doing a null move (must be non-zero to enable). Default: 0.
+
 `write_minply` - minimum ply for which the training data entry will be emitted. Default: 16.
 
 `write_maxply` - maximum ply for which the training data entry will be emitted. Default: 400.

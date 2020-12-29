@@ -77,6 +77,9 @@ namespace Learner
             int random_multi_pv_diff = 32000;
             int random_multi_pv_depth = -1;
 
+            // When larger than zero, only retains moves for which eval remains within this threshold after a null-move.
+            int tactical_threshold = 0;
+
             // The minimum and maximum ply (number of steps from
             // the initial phase) of the sfens to write out.
             int write_minply = 16;
@@ -104,6 +107,7 @@ namespace Learner
             {
                 search_depth_max = std::max(search_depth_min, search_depth_max);
                 random_multi_pv_depth = std::max(search_depth_min, random_multi_pv_depth);
+                tactical_threshold = std::max(0, tactical_threshold);
 
                 // Limit the maximum to a one-stop score. (Otherwise you might not end the loop)
                 eval_limit = std::min(eval_limit, (int)mate_in(2));
@@ -311,6 +315,19 @@ namespace Learner
                 // Starting search calls init_for_search
                 auto [search_value, search_pv] = Search::search(pos, depth, 1, params.nodes);
 
+                // only if position after a null-move is similar in eval is the position quiet/non-tactical.
+                // Eval after a null move is lower on average (unless in zugzwang).
+                bool non_tactical = params.tactical_threshold ? false : true;
+                if (!pos.checkers())
+                {
+                   pos.do_null_move(states[ply]);
+                   auto [search_value_swap, search_pv_swap] = Search::search(pos, depth, 1, params.nodes);
+                   pos.undo_null_move();
+                   if (abs(search_value + search_value_swap) < params.tactical_threshold)
+                       non_tactical = true;
+                }
+
+
                 // This has to be performed after search because it needs to know
                 // rootMoves which are filled in init_for_search.
                 const auto result = get_current_game_result(pos, move_hist_scores);
@@ -414,7 +431,7 @@ namespace Learner
                     }
                     else
                     {
-                        if (was_seen_before(pos))
+                        if (was_seen_before(pos) || !non_tactical)
                         {
                             packed_sfens.pop_back();
                         }
@@ -853,6 +870,8 @@ namespace Learner
                 is >> params.random_multi_pv_diff;
             else if (token == "random_multi_pv_depth")
                 is >> params.random_multi_pv_depth;
+            else if (token == "tactical_threshold")
+                is >> params.tactical_threshold;
             else if (token == "write_minply")
                 is >> params.write_minply;
             else if (token == "write_maxply")
@@ -948,6 +967,7 @@ namespace Learner
             << "  - random_multi_pv        = " << params.random_multi_pv << endl
             << "  - random_multi_pv_diff   = " << params.random_multi_pv_diff << endl
             << "  - random_multi_pv_depth  = " << params.random_multi_pv_depth << endl
+            << "  - tactical_threshold     = " << params.tactical_threshold << endl
             << "  - write_minply           = " << params.write_minply << endl
             << "  - write_maxply           = " << params.write_maxply << endl
             << "  - book                   = " << params.book << endl
