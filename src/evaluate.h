@@ -36,7 +36,7 @@ namespace Eval {
   // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
-  #define EvalFileDefaultName   "nn-535ee551b2cf.nnue"
+  #define EvalFileDefaultName   "nn-4d5f542fd617.nnue"
 
   namespace NNUE {
 
