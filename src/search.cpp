@@ -62,9 +62,9 @@ namespace {
   constexpr uint64_t TtHitAverageWindow     = 4096;
   constexpr uint64_t TtHitAverageResolution = 1024;
 
-constexpr int paramFM = 248, paramRed = 181;
-constexpr int paramNM01 = 20850, paramNM02 = 29, paramNM03 = 83, paramNM04 = 205;
-constexpr int paramSEE01 = 31, paramSEE02 = -214;
+constexpr int paramFM = 252, paramRed = 187;
+constexpr int paramNM01 = 20472, paramNM02 = 27, paramNM03 = 89, paramNM04 = 196;
+constexpr int paramSEE01 = 31, paramSEE02 = -216;
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
