@@ -62,9 +62,13 @@ namespace {
   constexpr uint64_t TtHitAverageWindow     = 4096;
   constexpr uint64_t TtHitAverageResolution = 1024;
 
+constexpr int paramFM = 248, paramRed = 181;
+constexpr int paramNM01 = 20850, paramNM02 = 29, paramNM03 = 83, paramNM04 = 205;
+constexpr int paramSEE01 = 31, paramSEE02 = -214;
+
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(234 * (d - improving));
+    return Value(paramFM * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -193,7 +197,7 @@ namespace {
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      Reductions[i] = int((21.3 + 2 * std::log(Threads.size())) * std::log(i + 0.25 * std::log(i)));
+      Reductions[i] = int((paramRed/10.0 + 2 * std::log(Threads.size())) * std::log(i + 0.25 * std::log(i)));
 }
 
 
@@ -836,13 +840,14 @@ namespace {
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
+
     // Step 8. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 22977
+        && (ss-1)->statScore < paramNM01
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 30 * depth - 28 * improving + 84 * ss->ttPv + 168
+        &&  ss->staticEval >= beta - paramNM02 * depth - 28 * improving + 84 * ss->ttPv + 168
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
@@ -850,7 +855,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (1015 + 85 * depth) / 256 + std::min(int(eval - beta) / 191, 3);
+        Depth R = (1015 + paramNM03 * depth) / 256 + std::min(int(eval - beta) / paramNM04, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1059,7 +1064,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Prune moves with negative SEE (~20 Elo)
-              if (!pos.see_ge(move, Value(-(30 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+              if (!pos.see_ge(move, Value(-(paramSEE01 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                   continue;
           }
           else
@@ -1071,7 +1076,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // SEE based pruning
-              if (!pos.see_ge(move, Value(-218) * depth)) // (~25 Elo)
+              if (!pos.see_ge(move, Value(paramSEE02) * depth)) // (~25 Elo)
                   continue;
           }
       }
