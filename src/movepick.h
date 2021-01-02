@@ -84,13 +84,13 @@ enum StatsType { NoCaptures, Captures };
 /// unsuccessful during the current search, and is used for reduction and move
 /// ordering decisions. It uses 2 tables (one for each color) indexed by
 /// the move's from and to squares, see www.chessprogramming.org/Butterfly_Boards
-typedef Stats<int16_t, int(0.95 * 13365), COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> ButterflyHistory;
+typedef Stats<int16_t, 13365, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> ButterflyHistory;
 
 /// At higher depths LowPlyHistory records successful quiet moves near the root
 /// and quiet moves which are/were in the PV (ttPv). It is cleared with each new
 /// search and filled during iterative deepening.
 constexpr int MAX_LPH = 4;
-typedef Stats<int16_t, 10692, MAX_LPH, int(SQUARE_NB) * int(SQUARE_NB)> LowPlyHistory;
+typedef Stats<int16_t, int(1.05 * 10692), MAX_LPH, int(SQUARE_NB) * int(SQUARE_NB)> LowPlyHistory;
 
 /// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 /// move, see www.chessprogramming.org/Countermove_Heuristic
