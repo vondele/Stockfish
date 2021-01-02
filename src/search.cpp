@@ -419,6 +419,7 @@ void Thread::search() {
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           failedHighCnt = 0;
+          failedCnt = 0;
           while (true)
           {
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
@@ -456,11 +457,13 @@ void Thread::search() {
                   failedHighCnt = 0;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
+                  ++failedCnt;
               }
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
+                  ++failedCnt;
               }
               else
                   break;
@@ -1226,7 +1229,7 @@ moves_loop: // When in check, search starts from here
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-              r -= ss->statScore / 14884;
+              r -= (ss->statScore + thisThread->failedCnt * 4000) / 14884;
           }
           else
           {
