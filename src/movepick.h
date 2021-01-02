@@ -90,7 +90,7 @@ typedef Stats<int16_t, 13365, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> Butterf
 /// and quiet moves which are/were in the PV (ttPv). It is cleared with each new
 /// search and filled during iterative deepening.
 constexpr int MAX_LPH = 4;
-typedef Stats<int16_t, int(1.05 * 10692), MAX_LPH, int(SQUARE_NB) * int(SQUARE_NB)> LowPlyHistory;
+typedef Stats<int16_t, int(0.95 * 10692), MAX_LPH, int(SQUARE_NB) * int(SQUARE_NB)> LowPlyHistory;
 
 /// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 /// move, see www.chessprogramming.org/Countermove_Heuristic
