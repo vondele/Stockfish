@@ -1229,7 +1229,7 @@ moves_loop: // When in check, search starts from here
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-              r -= (ss->statScore + thisThread->failedCnt * 6000) / 14884;
+              r -= (ss->statScore - thisThread->failedCnt * 6000) / 14884;
           }
           else
           {
