@@ -749,8 +749,6 @@ namespace {
             return ttValue;
     }
 
-    CapturePieceToHistory& captureHistory = thisThread->captureHistory;
-
     // Step 6. Static evaluation of the position
     if (ss->inCheck)
     {
@@ -887,7 +885,7 @@ namespace {
             return probCutBeta;
 
         assert(probCutBeta < VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &captureHistory);
+        MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
         bool ttPv = ss->ttPv;
         ss->ttPv = false;
@@ -903,10 +901,8 @@ namespace {
                 probCutCount++;
 
                 ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
-                                                                          [captureOrPromotion]
-                                                                          [pos.moved_piece(move)]
-                                                                          [to_sq(move)];
+                ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck][captureOrPromotion]
+                                                                          [pos.moved_piece(move)][to_sq(move)];
 
                 pos.do_move(move, st);
 
@@ -946,15 +942,11 @@ moves_loop: // When in check, search starts from here
                                           nullptr                   , (ss-4)->continuationHistory,
                                           nullptr                   , (ss-6)->continuationHistory };
 
+    CapturePieceToHistory& captureHistory = thisThread->captureHistory;
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->lowPlyHistory,
-                                      &captureHistory,
-                                      contHist,
-                                      countermove,
-                                      ss->killers,
-                                      ss->ply);
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->lowPlyHistory,
+                                      &captureHistory, contHist, countermove, ss->killers, ss->ply);
 
     value = bestValue;
     singularQuietLMR = moveCountPruning = false;
@@ -1066,6 +1058,8 @@ moves_loop: // When in check, search starts from here
       {
           Value singularBeta = ttValue - ((formerPv + 4) * depth) / 2;
           Depth singularDepth = (depth - 1 + 3 * formerPv) / 2;
+
+          // Exclude current move and research with reduced depth
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
@@ -1116,15 +1110,13 @@ moves_loop: // When in check, search starts from here
       // Add extension to new depth
       newDepth += extension;
 
-      // Speculative prefetch as early as possible
-      prefetch(TT.first_entry(pos.key_after(move)));
-
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
-                                                                [captureOrPromotion]
-                                                                [movedPiece]
-                                                                [to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck][captureOrPromotion]
+                                                                [movedPiece][to_sq(move)];
+
+      // Speculative prefetch as early as possible
+      prefetch(TT.first_entry(pos.key_after(move)));
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1137,7 +1129,7 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode
-              || (!PvNode && !formerPv && thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] < 4506)
+              || (!PvNode && !formerPv && captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] < 4506)
               || thisThread->ttHitAverage < 432 * TtHitAverageResolution * TtHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);
@@ -1490,10 +1482,8 @@ moves_loop: // When in check, search starts from here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen and checking knight promotions, and other checks(only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
-    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->captureHistory,
-                                      contHist,
-                                      to_sq((ss-1)->currentMove));
+    MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory, &thisThread->captureHistory,
+                                      contHist, to_sq((ss-1)->currentMove));
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
     while ((move = mp.next_move()) != MOVE_NONE)
@@ -1548,10 +1538,8 @@ moves_loop: // When in check, search starts from here
       }
 
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
-                                                                [captureOrPromotion]
-                                                                [pos.moved_piece(move)]
-                                                                [to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck][captureOrPromotion]
+                                                                [pos.moved_piece(move)][to_sq(move)];
 
       // CounterMove based pruning
       if (  !captureOrPromotion
