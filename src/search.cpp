@@ -619,12 +619,11 @@ namespace {
                                                         : value_draw(pos.this_thread());
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
-        // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
-        // a shorter mate was found upward in the tree then there is no need to search
-        // because we will never beat the current alpha. Same logic but with reversed
-        // signs applies also in the opposite condition of being mated instead of giving
-        // mate. In this case return a fail-high score.
-        alpha = std::max(mated_in(ss->ply), alpha);
+        // would be at best mate_in(ss->ply+1), but if alpha is already greater because
+        // a shorter mate was found upward in the tree, then there is no need to search
+        // because we will never beat the current alpha.
+        // Note, that this already catches the reversed logic in the child node so there
+        // is no need to handle the alpha bound case here.
         beta = std::min(mate_in(ss->ply+1), beta);
 
         if (alpha >= beta)
@@ -647,7 +646,53 @@ namespace {
     if (!rootNode)
         (ss+2)->statScore = 0;
 
-    // Step 4. Transposition table lookup. We don't want the score of a partial
+    // Step 4. Tablebases probe
+    if (!rootNode && TB::Cardinality)
+    {
+        int piecesCount = pos.count<ALL_PIECES>();
+
+        if (    piecesCount <= TB::Cardinality
+            && (piecesCount <  TB::Cardinality || depth >= TB::ProbeDepth)
+            &&  pos.rule50_count() == 0
+            && !pos.can_castle(ANY_CASTLING))
+        {
+            TB::ProbeState err;
+            TB::WDLScore wdl = Tablebases::probe_wdl(pos, &err);
+
+            // Force check of time on the next occasion
+            if (thisThread == Threads.main())
+                static_cast<MainThread*>(thisThread)->callsCnt = 0;
+
+            if (err != TB::ProbeState::FAIL)
+            {
+                thisThread->tbHits.fetch_add(1, std::memory_order_relaxed);
+
+                int drawScore = TB::UseRule50 ? 1 : 0;
+
+                // use the range VALUE_MATE_IN_MAX_PLY to VALUE_TB_WIN_IN_MAX_PLY to score
+                value =  wdl < -drawScore ? VALUE_MATED_IN_MAX_PLY + ss->ply
+                       : wdl >  drawScore ? VALUE_MATE_IN_MAX_PLY  - ss->ply
+                                          : VALUE_DRAW + 2 * wdl * drawScore;
+
+                Bound b =  wdl < -drawScore ? BOUND_UPPER
+                         : wdl >  drawScore ? BOUND_LOWER : BOUND_EXACT;
+
+                if (    b == BOUND_EXACT
+                    || (b == BOUND_LOWER ? value >= beta : value <= alpha))
+                    return value;
+
+                if (PvNode)
+                {
+                    if (b == BOUND_LOWER)
+                        bestValue = value, alpha = std::max(alpha, bestValue);
+                    else
+                        maxValue = value;
+                }
+            }
+        }
+    }
+
+    // Step 5. Transposition table lookup. We don't want the score of a partial
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
@@ -702,58 +747,6 @@ namespace {
 
         if (pos.rule50_count() < 90)
             return ttValue;
-    }
-
-    // Step 5. Tablebases probe
-    if (!rootNode && TB::Cardinality)
-    {
-        int piecesCount = pos.count<ALL_PIECES>();
-
-        if (    piecesCount <= TB::Cardinality
-            && (piecesCount <  TB::Cardinality || depth >= TB::ProbeDepth)
-            &&  pos.rule50_count() == 0
-            && !pos.can_castle(ANY_CASTLING))
-        {
-            TB::ProbeState err;
-            TB::WDLScore wdl = Tablebases::probe_wdl(pos, &err);
-
-            // Force check of time on the next occasion
-            if (thisThread == Threads.main())
-                static_cast<MainThread*>(thisThread)->callsCnt = 0;
-
-            if (err != TB::ProbeState::FAIL)
-            {
-                thisThread->tbHits.fetch_add(1, std::memory_order_relaxed);
-
-                int drawScore = TB::UseRule50 ? 1 : 0;
-
-                // use the range VALUE_MATE_IN_MAX_PLY to VALUE_TB_WIN_IN_MAX_PLY to score
-                value =  wdl < -drawScore ? VALUE_MATED_IN_MAX_PLY + ss->ply + 1
-                       : wdl >  drawScore ? VALUE_MATE_IN_MAX_PLY - ss->ply - 1
-                                          : VALUE_DRAW + 2 * wdl * drawScore;
-
-                Bound b =  wdl < -drawScore ? BOUND_UPPER
-                         : wdl >  drawScore ? BOUND_LOWER : BOUND_EXACT;
-
-                if (    b == BOUND_EXACT
-                    || (b == BOUND_LOWER ? value >= beta : value <= alpha))
-                {
-                    tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
-                              std::min(MAX_PLY - 1, depth + 6),
-                              MOVE_NONE, VALUE_NONE);
-
-                    return value;
-                }
-
-                if (PvNode)
-                {
-                    if (b == BOUND_LOWER)
-                        bestValue = value, alpha = std::max(alpha, bestValue);
-                    else
-                        maxValue = value;
-                }
-            }
-        }
     }
 
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
