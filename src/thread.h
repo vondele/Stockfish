@@ -57,7 +57,7 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
-  size_t pvIdx, pvLast;
+  size_t multiPV, pvIdx;
   uint64_t ttHitAverage;
   int selDepth, nmpMinPly;
   Color nmpColor;

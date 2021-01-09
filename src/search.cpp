@@ -332,7 +332,7 @@ void Thread::search() {
   std::copy(&lowPlyHistory[2][0], &lowPlyHistory.back().back() + 1, &lowPlyHistory[0][0]);
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
-  size_t multiPV = std::min(size_t(Options["MultiPV"]), rootMoves.size());
+  multiPV = std::min(size_t(Options["MultiPV"]), rootMoves.size());
 
 //  multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
@@ -367,23 +367,12 @@ void Thread::search() {
       for (RootMove& rm : rootMoves)
           rm.previousScore = rm.score;
 
-      size_t pvFirst = 0;
-      pvLast = 0;
-
       if (!Threads.increaseDepth)
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
-          if (pvIdx == pvLast)
-          {
-              pvFirst = pvLast;
-              for (pvLast++; pvLast < rootMoves.size(); pvLast++)
-                  if (rootMoves[pvLast].tbRank != rootMoves[pvFirst].tbRank)
-                      break;
-          }
-
           // Reset UCI info selDepth for each depth and each PV line
           selDepth = 1;
 
@@ -418,7 +407,8 @@ void Thread::search() {
               // and we want to keep the same order for all the moves except the
               // new PV that goes to the front. Note that in case of MultiPV
               // search the already searched PV lines are preserved.
-              std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
+              if (pvIdx + 1 == multiPV)
+                  std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.end());
 
               // If search has been stopped, we break immediately. Sorting is
               // safe because RootMoves is still valid, although it refers to
@@ -460,7 +450,7 @@ void Thread::search() {
           }
 
           // Sort the PV lines searched so far and update the GUI
-          std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
+          std::stable_sort(rootMoves.begin(), rootMoves.begin() + pvIdx + 1);
 
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
@@ -966,10 +956,10 @@ moves_loop: // When in check, search starts from here
 
       // At root obey the "searchmoves" option and skip moves not listed in Root
       // Move List. As a consequence any illegal move is also skipped. In MultiPV
-      // mode we also skip PV moves which have been already searched and those
+      // mode we also skip PV moves which have already been searched and those
       // of lower "TB rank" if we are in a TB root position.
       if (rootNode && !std::count(thisThread->rootMoves.begin() + thisThread->pvIdx,
-                                  thisThread->rootMoves.begin() + thisThread->pvLast, move))
+                                  thisThread->rootMoves.end(), move))
           continue;
 
       // Check for legality
@@ -982,6 +972,11 @@ moves_loop: // When in check, search starts from here
           sync_cout << "info depth " << depth
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
+
+      // In MultiPV mode also skip moves which will be searched as PV moves anyway!
+      if (rootNode && std::count(thisThread->rootMoves.begin() + thisThread->pvIdx + 1,
+                                 thisThread->rootMoves.begin() + thisThread->multiPV, move))
+          continue;
 
       extension = 0;
       captureOrPromotion = pos.capture_or_promotion(move);
@@ -1881,8 +1876,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
     if (RootInTB)
     {
         // Sort moves according to TB rank
-        std::stable_sort(rootMoves.begin(), rootMoves.end(),
-                  [](const RootMove &a, const RootMove &b) { return a.tbRank > b.tbRank; } );
+        std::stable_sort(rootMoves.begin(), rootMoves.end());
 
         // Probe during search only if DTZ is not available and we are winning
         if (dtz_available || rootMoves[0].tbScore <= VALUE_DRAW)
