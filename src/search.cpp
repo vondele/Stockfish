@@ -273,7 +273,7 @@ void MainThread::search() {
 
   Thread* bestThread = this;
 
-  if (    int(Options["MultiPV"]) == 1
+  if (    Options["MultiPV"] == 1
       && !Limits.depth)
       bestThread = Threads.get_best_thread();
 
@@ -337,7 +337,7 @@ void Thread::search() {
 //  multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
 
-  int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
+  int ct = Options["Contempt"] * PawnValueEg / 100; // From centipawns
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
@@ -1847,9 +1847,9 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
 
     RootInTB = false;
-    UseRule50 = bool(Options["Syzygy50MoveRule"]);
-    ProbeDepth = int(Options["SyzygyProbeDepth"]);
-    Cardinality = int(Options["SyzygyProbeLimit"]);
+    UseRule50 = Options["Syzygy50MoveRule"];
+    ProbeDepth = Options["SyzygyProbeDepth"];
+    Cardinality = Options["SyzygyProbeLimit"];
     bool dtz_available = true;
 
     // Tables with fewer pieces than SyzygyProbeLimit are searched with
