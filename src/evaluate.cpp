@@ -116,7 +116,9 @@ namespace Eval {
         }
   }
 
+
   /// NNUE::verify() verifies that the last net used was loaded successfully
+
   void NNUE::verify() {
 
     string eval_file = string(Options["EvalFile"]);
@@ -131,10 +133,10 @@ namespace Eval {
         string msg3 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + string(defaults["EvalFile"]);
         string msg4 = "Using the handcrafted classic eval now.";
 
-        sync_cout << "info string ERROR: " << msg1 << sync_endl;
-        sync_cout << "info string ERROR: " << msg2 << sync_endl;
-        sync_cout << "info string ERROR: " << msg3 << sync_endl;
-        sync_cout << "info string ERROR: " << msg4 << sync_endl;
+        sync_cout << "info string ERROR: " << msg1 << endl;
+             cout << "info string ERROR: " << msg2 << endl;
+             cout << "info string ERROR: " << msg3 << endl;
+             cout << "info string ERROR: " << msg4 << sync_endl;
 
         useNNUE = false;
     }

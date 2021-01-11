@@ -37,26 +37,10 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   TimePoint minThinkingTime = TimePoint(Options["Minimum Thinking Time"]);
   TimePoint moveOverhead    = TimePoint(Options["Move Overhead"]);
   TimePoint slowMover       = TimePoint(Options["Slow Mover"]);
-  TimePoint npmsec          = TimePoint(Options["Nodes as Time"]);
 
   // optScale is a percentage of available time to use for the current move.
   // maxScale is a multiplier applied to optimumTime.
   double optScale, maxScale;
-
-  // If we have to play in 'nodes as time' mode, then convert from time
-  // to nodes, and use resulting values in time management formulas.
-  // WARNING: to avoid time losses, the given npmsec (nodes per millisecond)
-  // must be much lower than the real engine speed.
-  if (npmsec)
-  {
-      if (!availableNodes) // Only once at game start
-          availableNodes = npmsec * limits.time[us]; // Time is in msec
-
-      // Convert from milliseconds to nodes
-      limits.time[us] = TimePoint(availableNodes);
-      limits.inc[us] *= npmsec;
-      limits.npmsec = npmsec;
-  }
 
   startTime = limits.startTime;
 
@@ -65,7 +49,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
 
   // Make sure timeLeft is > 0 since we may use it as a divisor
   TimePoint timeLeft =  std::max(TimePoint(1),
-      limits.time[us] + limits.inc[us] * (mtg - 1) - moveOverhead * (2 + mtg));
+      limits.time[us] - elapsed() + limits.inc[us] * (mtg - 1) - moveOverhead * (2 + mtg));
 
   // A user may scale time usage by setting UCI option "Slow Mover"
   // Default is 100 and changing this value will probably lose elo.

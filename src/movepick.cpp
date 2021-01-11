@@ -138,6 +138,7 @@ Move MovePicker::select(Pred filter) {
 
       cur++;
   }
+
   return MOVE_NONE;
 }
 
@@ -261,5 +262,6 @@ top:
   }
 
   assert(false);
+
   return MOVE_NONE; // Silence warning
 }

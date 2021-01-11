@@ -203,7 +203,6 @@ void Search::clear() {
 
   Threads.main()->wait_for_search_finished();
 
-  Time.availableNodes = 0;
   TT.clear();
   Threads.clear();
   Tablebases::init(Options["SyzygyPath"]); // Free mapped files
@@ -227,20 +226,25 @@ void MainThread::search() {
   // Special case 2: no move(s) to search
   if (rootMoves.empty())
   {
+      // Must be mate or stalemate
       sync_cout << "info depth 0 score "
                 << UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW)
-                << sync_endl;
-      sync_cout << "bestmove " << UCI::move(MOVE_NONE, rootPos.is_chess960()) << sync_endl;
+                << std::endl;
+
+      std::cout << "bestmove " << UCI::move(MOVE_NONE, rootPos.is_chess960()) << sync_endl;
 
       return;
   }
 
-  Color us = rootPos.side_to_move();
-  Time.init(Limits, us, rootPos.game_ply());
+  // Calculate optimum amd maximum time
+  Time.init(Limits, rootPos.side_to_move(), rootPos.game_ply());
+
+  // Age Hash Table entries
   TT.new_search();
+
   Eval::NNUE::verify();
 
-  // Only the main thread needs to set this
+  // Switch Null-Move Pruning on/off
   doNull = Options["NullMove"];
 
   // Start helper threads
@@ -248,7 +252,7 @@ void MainThread::search() {
       if (th != this)
           th->start_searching();
 
-  Thread::search(); // Main thread start searching
+  Thread::search(); // Main thread starts searching
 
   // When we reach the maximum depth, we can arrive here without a raise of
   // Threads.stop. However, if we are pondering or in an infinite search,
@@ -265,11 +269,6 @@ void MainThread::search() {
   for (Thread* th : Threads)
       if (th != this)
           th->wait_for_search_finished();
-
-  // When playing in 'nodes as time' mode, subtract the searched nodes from
-  // the available ones before exiting.
-  if (Limits.npmsec)
-      Time.availableNodes += Limits.inc[us] - Threads.nodes_searched();
 
   Thread* bestThread = this;
 
