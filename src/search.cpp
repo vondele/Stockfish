@@ -239,13 +239,14 @@ void MainThread::search() {
   // Age Hash Table entries
   TT.new_search();
 
+  // Check the NNUE file
   Eval::NNUE::verify();
-
-  // Calculate optimum amd maximum time
-  Time.init(Limits, rootPos.side_to_move(), rootPos.game_ply());
 
   // Switch Null-Move Pruning on/off
   doNull = Options["NullMove"];
+
+  // Calculate time budgets just before we start searching
+  Time.init(Limits, rootPos.side_to_move(), rootPos.game_ply());
 
   // Start helper threads
   for (Thread* th : Threads)

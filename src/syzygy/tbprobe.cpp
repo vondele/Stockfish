@@ -1264,6 +1264,7 @@ void Tablebases::init(const std::string& paths) {
 
     TBTables.clear();
     MaxCardinality = 0;
+    bool showInfo = TBFile::Paths != paths;
     TBFile::Paths = paths;
 
     if (paths.empty() || paths == "<empty>")
@@ -1401,7 +1402,8 @@ void Tablebases::init(const std::string& paths) {
         }
     }
 
-    sync_cout << "info string Found " << TBTables.size() << " tablebases" << sync_endl;
+    if (showInfo)
+        sync_cout << "info string Found " << TBTables.size() << " tablebases" << sync_endl;
 }
 
 // Probe the WDL table for a particular position.
