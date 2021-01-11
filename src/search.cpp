@@ -236,13 +236,13 @@ void MainThread::search() {
       return;
   }
 
-  // Calculate optimum amd maximum time
-  Time.init(Limits, rootPos.side_to_move(), rootPos.game_ply());
-
   // Age Hash Table entries
   TT.new_search();
 
   Eval::NNUE::verify();
+
+  // Calculate optimum amd maximum time
+  Time.init(Limits, rootPos.side_to_move(), rootPos.game_ply());
 
   // Switch Null-Move Pruning on/off
   doNull = Options["NullMove"];
