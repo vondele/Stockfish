@@ -180,7 +180,7 @@ namespace {
 
     static_assert(Pt != KING && Pt != PAWN, "Unsupported piece type in generate_moves()");
 
-    Bitboard bb = piecesToMove & pos.pieces(Pt);
+    Bitboard b, bb = piecesToMove & pos.pieces(Pt);
 
     if (!bb)
         return moveList;
@@ -190,7 +190,7 @@ namespace {
     while (bb)
     {
         Square from = pop_lsb(&bb);
-        Bitboard b = attacks_bb<Pt>(from, pos.pieces()) & target;
+        b = attacks_bb<Pt>(from, pos.pieces()) & target;
 
         if constexpr (Checks)
             b &= checkSquares;
