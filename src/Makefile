@@ -463,6 +463,11 @@ ifneq ($(sanitize),no)
         LDFLAGS += -fsanitize=$(sanitize)
 endif
 
+### 3.2.3 NNUE embedding
+ifeq ($(embed),no)
+        CXXFLAGS += -DNNUE_EMBEDDING_OFF
+endif
+
 ### 3.3 Optimization
 ifeq ($(optimize),yes)
 
