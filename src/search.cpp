@@ -799,14 +799,15 @@ namespace {
     // Step 9. Null move search with verification search (~40 Elo)
     if (    doNull
         && !PvNode
+        && !excludedMove
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22977
         &&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 30 * depth - 28 * improving + 84 * ss->ttPv + 168
-        && !excludedMove
         &&  pos.non_pawn_material(us)
-        && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
+        &&  thisThread->selDepth + 5 > thisThread->rootDepth
+        && !(depth > 12 && MoveList<LEGAL>(pos).size() < 4))
     {
         assert(eval - beta >= 0);
 
@@ -828,19 +829,13 @@ namespace {
             if (nullValue >= VALUE_TB_WIN_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 14))
+            if (abs(beta) < VALUE_KNOWN_WIN && depth < 12)
                 return nullValue;
 
-            assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
-
-            // Do verification search at high depths, with null move pruning disabled
-            // for us, until ply exceeds nmpMinPly.
-            thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / 4;
-            thisThread->nmpColor = us;
+            // Verification search at higher depths, with reduced reduction
+            R -= 2;
 
             Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false);
-
-            thisThread->nmpMinPly = 0;
 
             if (v >= beta)
                 return nullValue;
