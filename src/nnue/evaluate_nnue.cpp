@@ -64,7 +64,8 @@ namespace Eval::NNUE {
 
     std::uint32_t header;
     header = read_little_endian<std::uint32_t>(stream);
-    if (!stream || header != T::GetHashValue()) return false;
+//    if (!stream || header != T::GetHashValue()) return false;
+    if (!stream) return false;
     return reference.ReadParameters(stream);
   }
 
@@ -97,7 +98,7 @@ namespace Eval::NNUE {
     std::uint32_t hash_value;
     std::string architecture;
     if (!ReadHeader(stream, &hash_value, &architecture)) return false;
-    if (hash_value != kHashValue) return false;
+    // if (hash_value != kHashValue) return false;
     if (!Detail::ReadParameters(stream, *feature_transformer)) return false;
     if (!Detail::ReadParameters(stream, *network)) return false;
     return stream && stream.peek() == std::ios::traits_type::eof();
