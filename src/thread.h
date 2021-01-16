@@ -61,6 +61,7 @@ public:
   uint64_t ttHitAverage;
   int selDepth;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
+  std::atomic<uint64_t> wins, draws, losses;
 
   Position rootPos;
   StateInfo rootState;
@@ -105,9 +106,13 @@ struct ThreadPool : public std::vector<Thread*> {
   void set(size_t);
 
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
+  Thread* get_best_thread() const;
+
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
-  Thread* get_best_thread() const;
+  uint64_t wins_found()     const { return accumulate(&Thread::wins); }
+  uint64_t draws_found()    const { return accumulate(&Thread::draws); }
+  uint64_t losses_found()   const { return accumulate(&Thread::losses); }
 
   std::atomic_bool stop, increaseDepth;
 

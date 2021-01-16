@@ -72,7 +72,11 @@ namespace {
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
-        pos.do_move(m, states->back());
+
+        if (m == MOVE_NULL)
+            pos.do_null_move(states->back());
+        else
+            pos.do_move(m, states->back());
     }
   }
 
@@ -195,28 +199,6 @@ namespace {
          << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
   }
 
-  // The win rate model returns the probability (per mille) of winning given an eval
-  // and a game-ply. The model fits rather accurately the LTC fishtest statistics.
-  int win_rate_model(Value v, int ply) {
-
-     // The model captures only up to 240 plies, so limit input (and rescale)
-     double m = std::min(240, ply) / 64.0;
-
-     // Coefficients of a 3rd order polynomial fit based on fishtest data
-     // for two parameters needed to transform eval to the argument of a
-     // logistic function.
-     double as[] = {-8.24404295, 64.23892342, -95.73056462, 153.86478679};
-     double bs[] = {-3.37154371, 28.44489198, -56.67657741,  72.05858751};
-     double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
-     double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
-
-     // Transform eval to centipawns with limited range
-     double x = std::clamp(double(100 * v) / PawnValueEg, -1000.0, 1000.0);
-
-     // Return win rate in per mille (rounded to nearest)
-     return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
-  }
-
 } // namespace
 
 
@@ -304,16 +286,22 @@ string UCI::value(Value v) {
 }
 
 
-/// UCI::wdl() report WDL statistics given an evaluation and a game ply, based on
-/// data gathered for fishtest LTC games.
+/// UCI::wdl() reports WDL statistics based on data
+/// gathered during search.
 
-string UCI::wdl(Value v, int ply) {
+string UCI::wdl() {
 
   stringstream ss;
 
-  int wdl_w = win_rate_model( v, ply);
-  int wdl_l = win_rate_model(-v, ply);
+  uint64_t wins = Threads.wins_found();
+  uint64_t draws = Threads.draws_found();
+  uint64_t losses = Threads.losses_found();
+  uint64_t sum = wins + draws + losses + 1;
+
+  int wdl_w = int(double(wins) / sum * 1000 + 0.5);
+  int wdl_l = int(double(losses) / sum * 1000 + 0.5);
   int wdl_d = 1000 - wdl_w - wdl_l;
+
   ss << " wdl " << wdl_w << " " << wdl_d << " " << wdl_l;
 
   return ss.str();
@@ -323,6 +311,7 @@ string UCI::wdl(Value v, int ply) {
 /// UCI::square() converts a Square to a string in algebraic notation (g1, a7, etc.)
 
 std::string UCI::square(Square s) {
+
   return std::string{ char('a' + file_of(s)), char('1' + rank_of(s)) };
 }
 
@@ -362,6 +351,9 @@ Move UCI::to_move(const Position& pos, string& str) {
 
   if (str.length() == 5) // Junior could send promotion piece in uppercase
       str[4] = char(tolower(str[4]));
+
+  if (str == "0000")
+      return MOVE_NULL;
 
   for (const auto& m : MoveList<LEGAL>(pos))
       if (str == UCI::move(m, pos.is_chess960()))
