@@ -106,7 +106,6 @@ struct ThreadPool : public std::vector<Thread*> {
   void set(size_t);
 
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
-  Thread* get_best_thread() const;
 
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }

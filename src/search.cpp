@@ -273,23 +273,13 @@ void MainThread::search() {
       if (th != this)
           th->wait_for_search_finished();
 
-  Thread* bestThread = this;
-
-  if (    Options["MultiPV"] == 1
-      && !Limits.depth)
-      bestThread = Threads.get_best_thread();
-
-  bestPreviousScore = bestThread->rootMoves[0].score;
-
-  // Send again PV info if we have a new best thread
-  if (bestThread != this)
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+  bestPreviousScore = rootMoves[0].score;
 
   // Send best move and ponder move (if available)
-  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+  sync_cout << "bestmove " << UCI::move(rootMoves[0].pv[0], rootPos.is_chess960());
 
-  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-      std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+  if (rootMoves[0].pv.size() > 1 || rootMoves[0].extract_ponder_from_tt(rootPos))
+      std::cout << " ponder " << UCI::move(rootMoves[0].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
 }
