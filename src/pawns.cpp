@@ -85,9 +85,9 @@ namespace {
   template<Color Us>
   Score evaluate(const Position& pos, Pawns::Entry* e) {
 
-    constexpr Color     Them = ~Us;
-    constexpr Direction Up   = pawn_push(Us);
-    constexpr Direction Down = -Up;
+    constexpr Color Them = ~Us;
+    constexpr Direction Up   = pawn_push(  Us);
+    constexpr Direction Down = pawn_push(Them);
 
     Bitboard neighbours, stoppers, support, phalanx, opposed;
     Bitboard lever, leverPush, blocked;
