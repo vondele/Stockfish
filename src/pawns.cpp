@@ -87,19 +87,19 @@ namespace {
 
     constexpr Color Them = ~Us;
     constexpr Direction Up   = pawn_push(  Us);
-    constexpr Direction Down = pawn_push(Them);
 
-    Bitboard neighbours, stoppers, support, phalanx, opposed;
-    Bitboard lever, leverPush, blocked;
-    Square s;
-    bool backward, passed, doubled;
-    Score score = SCORE_ZERO;
+    bool backward, doubled, early, passed;
+    Bitboard neighbours, opposed, phalanx, stoppers, support;
+    Bitboard blocked, lever, leverPush;
     Bitboard b = pos.pieces(Us, PAWN);
+    Score score = SCORE_ZERO;
+    Square s;
 
     Bitboard ourPawns   = pos.pieces(  Us, PAWN);
     Bitboard theirPawns = pos.pieces(Them, PAWN);
 
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
+    early = !(shift<Up>(ourPawns) & (theirPawns | pawn_attacks_bb<Them>(theirPawns)));
 
     e->passedPawns[Us] = 0;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
@@ -124,12 +124,10 @@ namespace {
         phalanx    = neighbours & rank_bb(s);
         support    = neighbours & rank_bb(s - Up);
 
-        if (doubled)
-        {
-            // Additional doubled penalty if none of their pawns is fixed
-            if (!(ourPawns & shift<Down>(theirPawns | pawn_attacks_bb<Them>(theirPawns))))
-                score -= DoubledEarly;
-        }
+        // Additional doubled penalty if none of our pawns is fixed.
+        // Probably true in an early stage of a game and eventually in the endgame.
+        if (doubled && early)
+            score -= DoubledEarly;
 
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
