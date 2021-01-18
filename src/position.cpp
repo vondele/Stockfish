@@ -635,14 +635,15 @@ bool Position::gives_check(Move m) const {
 
   Square from = from_sq(m);
   Square to = to_sq(m);
+  Square ksq = square<KING>(~sideToMove);
 
   // Is there a direct check?
   if (check_squares(type_of(piece_on(from))) & to)
       return true;
 
   // Is there a discovered check?
-  if (   (blockers_for_king(~sideToMove) & from)
-      && !aligned(from, to, square<KING>(~sideToMove)))
+  if (    blockers_for_king(~sideToMove) & from
+      && !aligned(from, to, ksq))
       return true;
 
   switch (type_of(m))
@@ -651,7 +652,7 @@ bool Position::gives_check(Move m) const {
       return false;
 
   case PROMOTION:
-      return attacks_bb(promotion_type(m), to, pieces() ^ from) & square<KING>(~sideToMove);
+      return attacks_bb(promotion_type(m), to, pieces() ^ from) & ksq;
 
   // En passant capture with check? We have already handled the case
   // of direct checks and ordinary discovered check, so the only case we
@@ -667,13 +668,13 @@ bool Position::gives_check(Move m) const {
   }
   case CASTLING:
   {
-      Square kfrom = from;
-      Square rfrom = to; // Castling is encoded as 'king captures the rook'
-      Square kto = relative_square(sideToMove, rfrom > kfrom ? SQ_G1 : SQ_C1);
-      Square rto = relative_square(sideToMove, rfrom > kfrom ? SQ_F1 : SQ_D1);
+      // Since castling is encoded as 'king captures the rook', we
+      // need to know the square the rook will land after castling.
+      Square rto = relative_square(sideToMove, to > from ? SQ_F1 : SQ_D1);
 
-      return   (attacks_bb<ROOK>(rto) & square<KING>(~sideToMove))
-            && (attacks_bb<ROOK>(rto, (pieces() ^ kfrom ^ rfrom) | rto | kto) & square<KING>(~sideToMove));
+      return  rank_of(from) != rank_of(ksq)
+            ? check_squares(ROOK) & rto   // look for a direct check
+            : check_squares(ROOK) & from; // discovered check (was blocked by our king)
   }
   default:
       assert(false);
