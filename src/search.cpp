@@ -1030,7 +1030,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 12. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
-          && !(ss->ply < 2 && (type_of(movedPiece) == PAWN))
+          && !(ss->ply < 3 && (type_of(movedPiece) == PAWN))
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
