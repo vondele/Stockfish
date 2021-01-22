@@ -113,9 +113,9 @@ namespace Eval::NNUE {
     bool ReadParameters(std::istream& stream) {
 
       for (std::size_t i = 0; i < kHalfDimensions; ++i)
-        biases_[i] = read_little_endian<BiasType>(stream);
+        biases_[i] = (read_little_endian<BiasType>(stream) / 2) * 2;
       for (std::size_t i = 0; i < kHalfDimensions * kInputDimensions; ++i)
-        weights_[i] = read_little_endian<WeightType>(stream);
+        weights_[i] = (read_little_endian<WeightType>(stream) / 2) * 2;
       return !stream.fail();
     }
 
