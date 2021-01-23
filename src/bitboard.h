@@ -97,6 +97,7 @@ struct Magic {
 
     unsigned lo = unsigned(occupied) & unsigned(mask);
     unsigned hi = unsigned(occupied >> 32) & unsigned(mask >> 32);
+
     return (lo * unsigned(magic) ^ hi * unsigned(magic >> 32)) >> shift;
   }
 };
@@ -105,7 +106,9 @@ extern Magic RookMagics[SQUARE_NB];
 extern Magic BishopMagics[SQUARE_NB];
 
 inline Bitboard square_bb(Square s) {
+
   assert(is_ok(s));
+
   return SquareBB[s];
 }
 
@@ -308,23 +311,23 @@ inline Bitboard attacks_bb(Square s, Bitboard occupied) {
 
   switch (Pt)
   {
-  case BISHOP: return BishopMagics[s].attacks[BishopMagics[s].index(occupied)];
-  case ROOK  : return   RookMagics[s].attacks[  RookMagics[s].index(occupied)];
-  case QUEEN : return attacks_bb<BISHOP>(s, occupied) | attacks_bb<ROOK>(s, occupied);
-  default    : return PseudoAttacks[Pt][s];
+      case BISHOP: return BishopMagics[s].attacks[BishopMagics[s].index(occupied)];
+      case ROOK  : return RookMagics[s].attacks[RookMagics[s].index(occupied)];
+      case QUEEN : return attacks_bb<BISHOP>(s, occupied) | attacks_bb<ROOK>(s, occupied);
+      default    : return PseudoAttacks[Pt][s];
   }
 }
 
-inline Bitboard attacks_bb(PieceType pt, Square s, Bitboard occupied) {
+inline Bitboard attacks_bb(PieceType Pt, Square s, Bitboard occupied) {
 
-  assert((pt != PAWN) && (is_ok(s)));
+  assert((Pt != PAWN) && (is_ok(s)));
 
-  switch (pt)
+  switch (Pt)
   {
-  case BISHOP: return attacks_bb<BISHOP>(s, occupied);
-  case ROOK  : return attacks_bb<  ROOK>(s, occupied);
-  case QUEEN : return attacks_bb<BISHOP>(s, occupied) | attacks_bb<ROOK>(s, occupied);
-  default    : return PseudoAttacks[pt][s];
+      case BISHOP: return attacks_bb<BISHOP>(s, occupied);
+      case ROOK  : return attacks_bb<  ROOK>(s, occupied);
+      case QUEEN : return attacks_bb<BISHOP>(s, occupied) | attacks_bb<ROOK>(s, occupied);
+      default    : return PseudoAttacks[pt][s];
   }
 }
 
@@ -355,12 +358,16 @@ inline int popcount(Bitboard b) {
 #if defined(__GNUC__)  // GCC, Clang, ICC
 
 inline Square lsb(Bitboard b) {
+
   assert(b);
+
   return Square(__builtin_ctzll(b));
 }
 
 inline Square msb(Bitboard b) {
+
   assert(b);
+
   return Square(63 ^ __builtin_clzll(b));
 }
 
@@ -369,14 +376,18 @@ inline Square msb(Bitboard b) {
 #ifdef _WIN64  // MSVC, WIN64
 
 inline Square lsb(Bitboard b) {
+
   assert(b);
+
   unsigned long idx;
   _BitScanForward64(&idx, b);
   return (Square) idx;
 }
 
 inline Square msb(Bitboard b) {
+
   assert(b);
+
   unsigned long idx;
   _BitScanReverse64(&idx, b);
   return (Square) idx;
@@ -385,26 +396,36 @@ inline Square msb(Bitboard b) {
 #else  // MSVC, WIN32
 
 inline Square lsb(Bitboard b) {
+
   assert(b);
+
   unsigned long idx;
 
-  if (b & 0xffffffff) {
+  if (b & 0xffffffff)
+  {
       _BitScanForward(&idx, int32_t(b));
       return Square(idx);
-  } else {
+  }
+  else
+  {
       _BitScanForward(&idx, int32_t(b >> 32));
       return Square(idx + 32);
   }
 }
 
 inline Square msb(Bitboard b) {
+
   assert(b);
+
   unsigned long idx;
 
-  if (b >> 32) {
+  if (b >> 32)
+  {
       _BitScanReverse(&idx, int32_t(b >> 32));
       return Square(idx + 32);
-  } else {
+  }
+  else
+  {
       _BitScanReverse(&idx, int32_t(b));
       return Square(idx);
   }

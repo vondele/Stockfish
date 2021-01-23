@@ -123,6 +123,7 @@ namespace {
     for (Direction d : (pt == ROOK ? RookDirections : BishopDirections))
     {
         Square s = sq;
+
         while(safe_destination(s, d) && !(occupied & s))
             attacks |= (s += d);
     }
@@ -166,6 +167,7 @@ namespace {
         // Use Carry-Rippler trick to enumerate all subsets of masks[s] and
         // store the corresponding sliding attack bitboard in reference[].
         b = size = 0;
+
         do {
             occupancy[size] = b;
             reference[size] = sliding_attack(pt, s, b);
