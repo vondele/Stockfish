@@ -42,7 +42,7 @@
 //     const unsigned char        gEmbeddedNNUEData[];  // a pointer to the embedded data
 //     const unsigned char *const gEmbeddedNNUEEnd;     // a marker to the end
 //     const unsigned int         gEmbeddedNNUESize;    // the size of the embedded file
-// Note that this does not work in Microsof Visual Studio.
+// Note that this does not work in Microsoft Visual Studio.
 #if !defined(_MSC_VER) && !defined(NNUE_EMBEDDING_OFF)
   INCBIN(EmbeddedNNUE, EvalFileDefaultName);
 #else
@@ -172,6 +172,7 @@ namespace Trace {
   std::ostream& operator<<(std::ostream& os, Score s) {
     os << std::setw(5) << to_cp(mg_value(s)) << " "
        << std::setw(5) << to_cp(eg_value(s));
+
     return os;
   }
 
@@ -183,6 +184,7 @@ namespace Trace {
         os << scores[t][WHITE] << " | " << scores[t][BLACK];
 
     os << " | " << scores[t][WHITE] - scores[t][BLACK] << "\n";
+
     return os;
   }
 }
@@ -350,7 +352,7 @@ namespace {
 
     constexpr Color     Them = ~Us;
     constexpr Direction Up   = pawn_push(Us);
-    constexpr Direction Down = -Up;
+    constexpr Direction Down = pawn_push(Them);
     constexpr Bitboard LowRanks = (Us == WHITE ? Rank2BB | Rank3BB : Rank7BB | Rank6BB);
 
     const Square ksq = pos.square<KING>(Us);
@@ -389,7 +391,7 @@ namespace {
   Score Evaluation<T>::pieces() {
 
     constexpr Color     Them = ~Us;
-    constexpr Direction Down = -pawn_push(Us);
+    constexpr Direction Down = pawn_push(Them);
     constexpr Bitboard OutpostRanks = (Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
                                                    : Rank5BB | Rank4BB | Rank3BB);
     Bitboard b1 = pos.pieces(Us, Pt);
@@ -398,7 +400,8 @@ namespace {
 
     attackedBy[Us][Pt] = 0;
 
-    while (b1) {
+    while (b1)
+    {
         Square s = pop_lsb(&b1);
 
         // Find attacked squares, including x-ray attacks for bishops and rooks
@@ -522,6 +525,7 @@ namespace {
                 score -= WeakQueen;
         }
     }
+
     if (T)
         Trace::add(Pt, Us, score);
 
@@ -569,6 +573,7 @@ namespace {
     // which opponent cannot give a rook check, because rook checks are more valuable.
     queenChecks =  (b1 | b2) & attackedBy[Them][QUEEN] & safe
                  & ~(attackedBy[Us][QUEEN] | rookChecks);
+
     if (queenChecks)
         kingDanger += SafeCheck[QUEEN][more_than_one(queenChecks)];
 
@@ -576,6 +581,7 @@ namespace {
     // opponent cannot give a queen check, because queen checks are more valuable.
     bishopChecks =  b2 & attackedBy[Them][BISHOP] & safe
                   & ~queenChecks;
+
     if (bishopChecks)
         kingDanger += SafeCheck[BISHOP][more_than_one(bishopChecks)];
 
@@ -584,6 +590,7 @@ namespace {
 
     // Enemy knights checks
     knightChecks = attacks_bb<KNIGHT>(ksq) & attackedBy[Them][KNIGHT];
+
     if (knightChecks & safe)
         kingDanger += SafeCheck[KNIGHT][more_than_one(knightChecks & safe)];
     else
@@ -660,10 +667,12 @@ namespace {
     if (defended | weak)
     {
         b = (defended | weak) & (attackedBy[Us][KNIGHT] | attackedBy[Us][BISHOP]);
+
         while (b)
             score += ThreatByMinor[type_of(pos.piece_on(pop_lsb(&b)))];
 
         b = weak & attackedBy[Us][ROOK];
+
         while (b)
             score += ThreatByRook[type_of(pos.piece_on(pop_lsb(&b)))];
 
@@ -672,6 +681,7 @@ namespace {
 
         b =  ~attackedBy[Them][ALL_PIECES]
            | (nonPawnEnemies & attackedBy2[Us]);
+
         score += Hanging * popcount(weak & b);
 
         // Additional bonus if weak piece is only protected by a queen
@@ -682,6 +692,7 @@ namespace {
     b =   attackedBy[Them][ALL_PIECES]
        & ~stronglyProtected
        &  attackedBy[Us][ALL_PIECES];
+
     score += RestrictedPiece * popcount(b);
 
     // Protected or unattacked squares
@@ -690,6 +701,7 @@ namespace {
     // Bonus for attacking enemy pieces with our relatively safe pawns
     b = pos.pieces(Us, PAWN) & safe;
     b = pawn_attacks_bb<Us>(b) & nonPawnEnemies;
+
     score += ThreatBySafePawn * popcount(b);
 
     // Find squares where our pawns can push on the next move
@@ -701,6 +713,7 @@ namespace {
 
     // Bonus for safe pawn threats on the next move
     b = pawn_attacks_bb<Us>(b) & nonPawnEnemies;
+
     score += ThreatByPawnPush * popcount(b);
 
     // Bonus for threats on the next moves against enemy queen
@@ -737,7 +750,7 @@ namespace {
 
     constexpr Color     Them = ~Us;
     constexpr Direction Up   = pawn_push(Us);
-    constexpr Direction Down = -Up;
+    constexpr Direction Down = pawn_push(Them);
 
     auto king_proximity = [&](Color c, Square s) {
       return std::min(distance(pos.square<KING>(c), s), 5);
@@ -747,8 +760,8 @@ namespace {
     Score score = SCORE_ZERO;
 
     b = pe->passed_pawns(Us);
-
     blockedPassers = b & shift<Down>(pos.pieces(Them, PAWN));
+
     if (blockedPassers)
     {
         helpers =  shift<Up>(pos.pieces(Us, PAWN))
@@ -768,7 +781,6 @@ namespace {
         assert(!(pos.pieces(Them, PAWN) & forward_file_bb(Us, s + Up)));
 
         int r = relative_rank(Us, s);
-
         Score bonus = PassedRank[r];
 
         if (r > RANK_3)
@@ -836,10 +848,9 @@ namespace {
         return SCORE_ZERO;
 
     constexpr Color Them     = ~Us;
-    constexpr Direction Down = -pawn_push(Us);
-    constexpr Bitboard SpaceMask =
-      Us == WHITE ? CenterFiles & (Rank2BB | Rank3BB | Rank4BB)
-                  : CenterFiles & (Rank7BB | Rank6BB | Rank5BB);
+    constexpr Direction Down = pawn_push(Them);
+    constexpr Bitboard SpaceMask = (Us == WHITE ? CenterFiles & (Rank2BB | Rank3BB | Rank4BB)
+                                                : CenterFiles & (Rank7BB | Rank6BB | Rank5BB));
 
     // Find the available squares for our pieces inside the area defined by SpaceMask
     Bitboard safe =   SpaceMask
@@ -853,6 +864,7 @@ namespace {
 
     int bonus = popcount(safe) + popcount(behind & safe & ~attackedBy[Them][ALL_PIECES]);
     int weight = pos.count<ALL_PIECES>(Us) - 3 + std::min(pe->blocked_count(), 9);
+
     Score score = make_score(bonus * weight * weight / 16, 0);
 
     if (T)
@@ -988,22 +1000,22 @@ namespace {
 
     // Pieces evaluated first (also populates attackedBy, attackedBy2).
     // Note that the order of evaluation of the terms is left unspecified.
-    score +=  pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
-            + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
-            + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
-            + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
+    score += pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>();
+    score += pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>();
+    score += pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >();
+    score += pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
 
     score += mobility[WHITE] - mobility[BLACK];
 
     // More complex interactions that require fully populated attack bitboards
-    score +=  king<   WHITE>() - king<   BLACK>()
-            + passed< WHITE>() - passed< BLACK>();
+    score += king<   WHITE>() - king<   BLACK>();
+    score += passed< WHITE>() - passed< BLACK>();
 
     if (lazy_skip(LazyThreshold2))
         goto make_v;
 
-    score +=  threats<WHITE>() - threats<BLACK>()
-            + space<  WHITE>() - space<  BLACK>();
+    score += threats<WHITE>() - threats<BLACK>();
+    score += space<  WHITE>() - space<  BLACK>();
 
 make_v:
     // Derive single value from mg and eg parts of score
@@ -1097,9 +1109,7 @@ std::string Eval::trace(const Position& pos) {
   ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2);
 
   Value v;
-
   std::memset(scores, 0, sizeof(scores));
-
   pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
 
   v = Evaluation<TRACE>(pos).value();
@@ -1125,12 +1135,11 @@ std::string Eval::trace(const Position& pos) {
      << "       Total | " << Term(TOTAL);
 
   v = pos.side_to_move() == WHITE ? v : -v;
-
   ss << "\nClassical evaluation: " << to_cp(v) << " (white side)\n";
 
   if (Eval::useNNUE)
   {
-      v = NNUE::evaluate(pos);
+      v = NNUE::evaluate(pos) + Tempo;
       v = pos.side_to_move() == WHITE ? v : -v;
       ss << "\nNNUE evaluation:      " << to_cp(v) << " (white side)\n";
   }

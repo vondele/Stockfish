@@ -114,6 +114,7 @@ namespace Endgames {
 
   template<typename T>
   const EndgameBase<T>* probe(Key key) {
+
     auto it = map<T>().find(key);
     return it != map<T>().end() ? it->second.get() : nullptr;
   }
