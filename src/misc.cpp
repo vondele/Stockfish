@@ -39,12 +39,12 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 }
 #endif
 
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <cstdlib>
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <stdlib.h>
@@ -449,6 +449,7 @@ void aligned_large_pages_free(void* mem) {
   if (mem && !VirtualFree(mem, 0, MEM_RELEASE))
   {
       DWORD err = GetLastError();
+
       std::cerr << "Failed to free transposition table. Error code: 0x" <<
           std::hex << err << std::dec << std::endl;
       exit(EXIT_FAILURE);
@@ -487,6 +488,7 @@ int best_group(size_t idx) {
   // Early exit if the needed API is not available at runtime
   HMODULE k32 = GetModuleHandle("Kernel32.dll");
   auto fun1 = (fun1_t)(void(*)())GetProcAddress(k32, "GetLogicalProcessorInformationEx");
+
   if (!fun1)
       return -1;
 
@@ -562,6 +564,7 @@ void bindThisThread(size_t idx) {
       return;
 
   GROUP_AFFINITY affinity;
+
   if (fun2(group, &affinity))
       fun3(GetCurrentThread(), &affinity, nullptr);
 }
@@ -585,44 +588,47 @@ string binaryDirectory;  // path of the executable directory
 string workingDirectory; // path of the working directory
 
 void init(int argc, char* argv[]) {
-    (void)argc;
-    string pathSeparator;
 
-    // extract the path+name of the executable binary
-    argv0 = argv[0];
+  (void)argc;
+  string pathSeparator;
+
+  // extract the path+name of the executable binary
+  argv0 = argv[0];
 
 #ifdef _WIN32
-    pathSeparator = "\\";
-  #ifdef _MSC_VER
-    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
-    // issues in some windows 10 versions, so check returned values carefully.
-    char* pgmptr = nullptr;
-    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
-        argv0 = pgmptr;
-  #endif
+  pathSeparator = "\\";
+#ifdef _MSC_VER
+  // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
+  // issues in some windows 10 versions, so check returned values carefully.
+  char* pgmptr = nullptr;
+
+  if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
+      argv0 = pgmptr;
+#endif
 #else
-    pathSeparator = "/";
+  pathSeparator = "/";
 #endif
 
-    // extract the working directory
-    workingDirectory = "";
-    char buff[40000];
-    char* cwd = GETCWD(buff, 40000);
-    if (cwd)
-        workingDirectory = cwd;
+  // extract the working directory
+  workingDirectory = "";
+  char buff[40000];
+  char* cwd = GETCWD(buff, 40000);
 
-    // extract the binary directory path from argv0
-    binaryDirectory = argv0;
-    size_t pos = binaryDirectory.find_last_of("\\/");
-    if (pos == std::string::npos)
-        binaryDirectory = "." + pathSeparator;
-    else
-        binaryDirectory.resize(pos + 1);
+  if (cwd)
+      workingDirectory = cwd;
 
-    // pattern replacement: "./" at the start of path is replaced by the working directory
-    if (binaryDirectory.find("." + pathSeparator) == 0)
-        binaryDirectory.replace(0, 1, workingDirectory);
+  // extract the binary directory path from argv0
+  binaryDirectory = argv0;
+  size_t pos = binaryDirectory.find_last_of("\\/");
+
+  if (pos == std::string::npos)
+      binaryDirectory = "." + pathSeparator;
+  else
+      binaryDirectory.resize(pos + 1);
+
+  // pattern replacement: "./" at the start of path is replaced by the working directory
+  if (binaryDirectory.find("." + pathSeparator) == 0)
+      binaryDirectory.replace(0, 1, workingDirectory);
 }
-
 
 } // namespace CommandLine
