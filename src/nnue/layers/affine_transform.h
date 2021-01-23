@@ -71,13 +71,16 @@ namespace Eval::NNUE::Layers {
         biases_[i] = (read_little_endian<BiasType>(stream) / 2) * 2;
       for (std::size_t i = 0; i < kOutputDimensions * kPaddedInputDimensions; ++i)
 #if !defined (USE_SSSE3)
-        weights_[i] = (read_little_endian<WeightType>(stream) / 2) * 2;
+        if (kOutputDimensions == 1)
+           weights_[i] =  read_little_endian<WeightType>(stream);
+        else
+           weights_[i] = (read_little_endian<WeightType>(stream) / 2) * 2;
 #else
         weights_[
           (i / 4) % (kPaddedInputDimensions / 4) * kOutputDimensions * 4 +
           i / kPaddedInputDimensions * 4 +
           i % 4
-        ] = (read_little_endian<WeightType>(stream) / 2) * 2;
+        ] = kOutputDimensions == 1 ? read_little_endian<WeightType>(stream) : (read_little_endian<WeightType>(stream) / 2) * 2;
 
       // Determine if eights of weight and input products can be summed using 16bits
       // without saturation. We assume worst case combinations of 0 and 127 for all inputs.
