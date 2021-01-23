@@ -351,7 +351,6 @@ namespace {
   void Evaluation<T>::initialize() {
 
     constexpr Color     Them = ~Us;
-    constexpr Direction Up   = pawn_push(Us);
     constexpr Direction Down = pawn_push(Them);
     constexpr Bitboard LowRanks = (Us == WHITE ? Rank2BB | Rank3BB : Rank7BB | Rank6BB);
 
@@ -375,6 +374,7 @@ namespace {
     // Init our king safety tables
     Square s = make_square(std::clamp(file_of(ksq), FILE_B, FILE_G),
                            std::clamp(rank_of(ksq), RANK_2, RANK_7));
+
     kingRing[Us] = attacks_bb<KING>(s) | s;
 
     kingAttackersCount[Them] = popcount(kingRing[Us] & pe->pawn_attacks(Them));

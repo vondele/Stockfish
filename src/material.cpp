@@ -111,8 +111,8 @@ namespace {
 
 } // namespace
 
-namespace Material {
 
+namespace Material {
 
 /// Material::probe() looks up the current position's material configuration in
 /// the material hash table. It returns a pointer to the Entry if the position
@@ -217,6 +217,7 @@ Entry* probe(const Position& pos) {
     pos.count<BISHOP>(BLACK), pos.count<ROOK>(BLACK), pos.count<QUEEN >(BLACK) } };
 
   e->score = (imbalance<WHITE>(pieceCount) - imbalance<BLACK>(pieceCount)) / 16;
+
   return e;
 }
 
