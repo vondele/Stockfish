@@ -18,12 +18,13 @@
 
 #include <algorithm>
 
-#include "types.h"
 #include "bitboard.h"
+#include "psqt.h"
+#include "types.h"
 
-namespace PSQT {
+namespace {
 
-#define S(mg, eg) make_score(mg, eg)
+auto constexpr S = make_score;
 
 // Bonus[PieceType][Square / 2] contains Piece-Square scores. For each piece
 // type on a given square a (middlegame, endgame) score pair is assigned. Table
@@ -95,28 +96,31 @@ constexpr Score PBonus[RANK_NB][FILE_NB] =
    { S( -7,  0), S(  7,-11), S( -3, 12), S(-13, 21), S(  5, 25), S(-16, 19), S( 10,  4), S( -8,  7) }
   };
 
-#undef S
-
-Score psq[PIECE_NB][SQUARE_NB];
+} // namespace
 
 
-// PSQT::init() initializes piece-square tables: the white halves of the tables are
-// copied from Bonus[] and PBonus[], adding the piece value, then the black halves of
-// the tables are initialized by flipping and changing the sign of the white scores.
-void init() {
+namespace PSQT {
 
-  for (Piece pc : {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING})
-  {
-      Score score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
+  Score psq[PIECE_NB][SQUARE_NB];
 
-      for (Square s = SQ_A1; s <= SQ_H8; ++s)
-      {
-          File f = File(edge_distance(file_of(s)));
-          psq[ pc][s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
-                                                     : Bonus[pc][rank_of(s)][f]);
-          psq[~pc][flip_rank(s)] = -psq[pc][s];
-      }
+
+  // PSQT::init() initializes piece-square tables: the white halves of the tables are
+  // copied from Bonus[] and PBonus[], adding the piece value, then the black halves of
+  // the tables are initialized by flipping and changing the sign of the white scores.
+  void init() {
+
+    for (Piece pc : {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING})
+    {
+        Score score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
+
+        for (Square s = SQ_A1; s <= SQ_H8; ++s)
+        {
+            File f = File(edge_distance(file_of(s)));
+            psq[ pc][s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
+                                                       : Bonus[pc][rank_of(s)][f]);
+            psq[~pc][flip_rank(s)] = -psq[pc][s];
+        }
+    }
   }
-}
 
 } // namespace PSQT
