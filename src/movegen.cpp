@@ -363,7 +363,7 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 
   while (cur != moveList)
   {
-      if (   (pinned || from_sq(*cur) == ksq || type_of(*cur) == EN_PASSANT)
+      if (   (pinned & from_sq(*cur) || from_sq(*cur) == ksq || type_of(*cur) == EN_PASSANT)
           && !pos.legal(*cur))
           *cur = (--moveList)->move;
       else

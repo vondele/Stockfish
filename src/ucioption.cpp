@@ -70,10 +70,8 @@ void init(OptionsMap& o) {
   o["Minimum Thinking Time"] << Option(5, 0, 5000);
   o["Move Overhead"]         << Option(10, 0, 5000);
   o["Slow Mover"]            << Option(100, 10, 1000);
-  o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
-  o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
+  o["UCI_Chess960"]          << Option(false);
   o["UCI_ShowWDL"]           << Option(false);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
