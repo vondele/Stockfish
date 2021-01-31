@@ -65,7 +65,9 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
       os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
   }
 
-  os << "   a   b   c   d   e   f   g   h\n"
+  os << "   a   b   c   d   e   f   g   h\n";
+
+  os << "\nFen: " << pos.fen()
      << "\nPositionKey: " << std::hex << std::uppercase << std::setfill('0') << std::setw(16) << pos.key()
      << "\nMaterialKey: " << pos.material_key()
      << "\nPawnKey:     " << pos.pawn_key()
@@ -234,25 +236,65 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
   // replaced by the file letter of the involved rook, as for the Shredder-FEN.
   while ((ss >> token) && !isspace(token))
   {
-      Square rsq;
+      Square rsq = SQ_NONE;
       Color c = islower(token) ? BLACK : WHITE;
-      Piece rook = make_piece(c, ROOK);
 
-      token = char(toupper(token));
+      if (token == 'K') // White O-O
+      {
+          for (Square s = SQ_H1; s >= SQ_A1; --s)
+             if (piece_on(s) == W_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token == 'k') // Black O-O
+      {
+          for (Square s = SQ_H8; s >= SQ_A8; --s)
+             if (piece_on(s) == B_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token == 'Q') // White O-O-O
+      {
+          for (Square s = SQ_A1; s <= SQ_H1; ++s)
+             if (piece_on(s) == W_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token == 'q') // Black O-O-O
+      {
+          for (Square s = SQ_A8; s <= SQ_H8; ++s)
+             if (piece_on(s) == B_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token >= 'A' && token <= 'H') // White Shredder-FEN
+      {
+          Square s = make_square(File(token - 'A'), RANK_1);
 
-      if (token == 'K')
-          for (rsq = relative_square(c, SQ_H1); piece_on(rsq) != rook; --rsq) {}
+          if (piece_on(s) == W_ROOK)
+              rsq = s;
+      }
+      else if (token >= 'a' && token <= 'h') // Black Shredder-FEN
+      {
+          Square s = make_square(File(token - 'a'), RANK_8);
 
-      else if (token == 'Q')
-          for (rsq = relative_square(c, SQ_A1); piece_on(rsq) != rook; ++rsq) {}
-
-      else if (token >= 'A' && token <= 'H')
-          rsq = make_square(File(token - 'A'), relative_rank(c, RANK_1));
-
+          if (piece_on(s) == B_ROOK)
+              rsq = s;
+      }
       else
           continue;
 
-      set_castling_right(c, rsq);
+      // Only set castling right with a valid rook square
+      if (rsq != SQ_NONE)
+          set_castling_right(c, rsq);
   }
 
   // 4. En passant square.
@@ -281,7 +323,7 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 
   // Convert from fullmove starting from 1 to gamePly starting from 0,
   // handle also common incorrect FEN with fullmove = 0.
-  gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
+  gamePly = std::max(2 * (std::max(gamePly, st->rule50 / 2 + 1) - 1), 0) + (sideToMove == BLACK);
 
   chess960 = isChess960;
   thisThread = th;
@@ -299,6 +341,8 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 /// rights given the corresponding color and the rook starting square.
 
 void Position::set_castling_right(Color c, Square rfrom) {
+
+  assert(type_of(piece_on(rfrom)) == ROOK);
 
   Square kfrom = square<KING>(c);
   CastlingRights cr = c & (kfrom < rfrom ? KING_SIDE: QUEEN_SIDE);
