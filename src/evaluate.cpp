@@ -142,10 +142,16 @@ namespace Eval {
         useNNUE = false;
     }
 
-    if (useNNUE && (Options["Use NNUE"] == "Hybrid" || Options["Use NNUE"] == "Pure"))
-        sync_cout << "info string NNUE evaluation enabled using " << eval_file << sync_endl;
+    if (useNNUE && (Options["EvalType"] == "Hybrid" || Options["EvalType"] == "NNUE"))
+    {
+        if (Options["EvalType"] == "Hybrid")
+            sync_cout << "info string Hybrid evaluation enabled using " << eval_file << sync_endl;
+
+        else
+            sync_cout << "info string Pure NNUE evaluation enabled using " << eval_file << sync_endl;
+    }
     else
-        sync_cout << "info string classic evaluation enabled" << sync_endl;
+        sync_cout << "info string Classic evaluation enabled" << sync_endl;
   }
 }
 
@@ -1051,11 +1057,11 @@ Value Eval::evaluate(const Position& pos) {
   Value v;
 
   // Classic eval only
-  if (!Eval::useNNUE || Options["Use NNUE"] == "Classic")
+  if (!Eval::useNNUE || Options["EvalType"] == "Classic")
       v = Evaluation<NO_TRACE>(pos).value();
 
   // NNUE eval only
-  else if (Eval::useNNUE && Options["Use NNUE"] == "Pure")
+  else if (Eval::useNNUE && Options["EvalType"] == "NNUE")
       v = NNUE::evaluate(pos) + Tempo; // no scaling!
 
   else // Hybrid eval (default)
