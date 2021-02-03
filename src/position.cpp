@@ -1159,13 +1159,10 @@ bool Position::see_ge(Move m, Value threshold) const {
 }
 
 
-/// Position::is_draw() tests whether the position is drawn by 50-move rule
-/// or by repetition. It does not detect stalemates.
+/// Position::is_draw() tests whether the position is drawn
+/// by repetition. It does not detect stalemates.
 
 bool Position::is_draw(int ply) const {
-
-  if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size()))
-      return true;
 
   // Return a draw score if a position repeats once earlier but strictly
   // after the root, or repeats twice before or at the root.
@@ -1180,6 +1177,7 @@ bool Position::has_repeated() const {
 
     StateInfo* stc = st;
     int end = std::min(st->rule50, st->pliesFromNull);
+
     while (end-- >= 4)
     {
         if (stc->repetition)
@@ -1187,6 +1185,7 @@ bool Position::has_repeated() const {
 
         stc = stc->previous;
     }
+
     return false;
 }
 
@@ -1197,7 +1196,6 @@ bool Position::has_repeated() const {
 bool Position::has_game_cycle(int ply) const {
 
   int j;
-
   int end = std::min(st->rule50, st->pliesFromNull);
 
   if (end < 3)
@@ -1211,6 +1209,7 @@ bool Position::has_game_cycle(int ply) const {
       stp = stp->previous->previous;
 
       Key moveKey = originalKey ^ stp->key;
+
       if (   (j = H1(moveKey), cuckoo[j] == moveKey)
           || (j = H2(moveKey), cuckoo[j] == moveKey))
       {
@@ -1236,6 +1235,7 @@ bool Position::has_game_cycle(int ply) const {
           }
       }
   }
+
   return false;
 }
 

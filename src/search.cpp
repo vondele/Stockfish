@@ -580,6 +580,7 @@ namespace {
         && pos.has_game_cycle(ss->ply))
     {
         alpha = value_draw(pos.this_thread());
+
         if (alpha >= beta)
             return alpha;
     }
@@ -627,12 +628,28 @@ namespace {
 
     if (!rootNode)
     {
-        // Step 2. Check for aborted search and immediate draw
-        if (   Threads.stop.load(std::memory_order_relaxed)
-            || pos.is_draw(ss->ply)
-            || ss->ply >= MAX_PLY)
-            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
-                                                        : value_draw(pos.this_thread());
+        // Step 2a. Check for aborted search
+        if (Threads.stop.load(std::memory_order_relaxed)
+            return VALUE_ZERO;
+
+        // Step 2b. Check for draw by 50-move rule
+        if (    TB::UseRule50
+            &&  pos.rule50_count() > 99
+            && (!inCheck || MoveList<LEGAL>(pos).size()))
+            return VALUE_DRAW;
+
+        // Step 2c. Check for insufficient mating material
+        if (  !pos.count<PAWN>()
+            && pos.non_pawn_material() <= BishopValueMg)
+            return VALUE_DRAW;
+
+        // Step 2d. Check for draw by repetition
+        if (pos.is_draw(ss->ply))
+            return value_draw(thisThread);
+
+        // Step 2e. Check for maximum ply reached
+        if (ss->ply >= MAX_PLY)
+            return !inCheck ? evaluate(pos) : beta;
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -640,8 +657,8 @@ namespace {
         // because we will never beat the current alpha. Same logic but with reversed
         // signs applies also in the opposite condition of being mated instead of giving
         // mate. In this case return a fail-high score.
-        alpha = std::max(mated_in(ss->ply), alpha);
         beta = std::min(mate_in(ss->ply+1), beta);
+
         if (alpha >= beta)
             return alpha;
     }
@@ -1448,10 +1465,24 @@ moves_loop: // When in check, search starts from here
     ss->inCheck = pos.checkers();
     moveCount = 0;
 
-    // Check for an immediate draw or maximum ply reached
-    if (   pos.is_draw(ss->ply)
-        || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+    // Check for draw by 50-move rule
+    if (    TB::UseRule50
+        &&  pos.rule50_count() > 99
+        && (!inCheck || MoveList<LEGAL>(pos).size()))
+        return VALUE_DRAW;
+
+    // Check for insufficient mating material
+    if (  !pos.count<PAWN>()
+        && pos.non_pawn_material() <= BishopValueMg)
+        return VALUE_DRAW;
+
+    // Check for draw by repetition
+    if (pos.is_draw(ss->ply))
+        return value_draw(thisThread);
+
+    // Check for maximum ply reached
+    if (ss->ply >= MAX_PLY)
+        return !inCheck ? evaluate(pos) : beta;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
