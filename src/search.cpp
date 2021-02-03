@@ -629,13 +629,13 @@ namespace {
     if (!rootNode)
     {
         // Step 2a. Check for aborted search
-        if (Threads.stop.load(std::memory_order_relaxed)
+        if (Threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
 
         // Step 2b. Check for draw by 50-move rule
         if (    TB::UseRule50
             &&  pos.rule50_count() > 99
-            && (!inCheck || MoveList<LEGAL>(pos).size()))
+            && (!ss->inCheck || MoveList<LEGAL>(pos).size()))
             return VALUE_DRAW;
 
         // Step 2c. Check for insufficient mating material
@@ -649,7 +649,7 @@ namespace {
 
         // Step 2e. Check for maximum ply reached
         if (ss->ply >= MAX_PLY)
-            return !inCheck ? evaluate(pos) : beta;
+            return !ss->inCheck ? evaluate(pos) : beta;
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1468,7 +1468,7 @@ moves_loop: // When in check, search starts from here
     // Check for draw by 50-move rule
     if (    TB::UseRule50
         &&  pos.rule50_count() > 99
-        && (!inCheck || MoveList<LEGAL>(pos).size()))
+        && (!ss->inCheck || MoveList<LEGAL>(pos).size()))
         return VALUE_DRAW;
 
     // Check for insufficient mating material
@@ -1482,7 +1482,7 @@ moves_loop: // When in check, search starts from here
 
     // Check for maximum ply reached
     if (ss->ply >= MAX_PLY)
-        return !inCheck ? evaluate(pos) : beta;
+        return !ss->inCheck ? evaluate(pos) : beta;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
