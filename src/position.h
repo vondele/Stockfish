@@ -26,6 +26,7 @@
 
 #include "bitboard.h"
 #include "evaluate.h"
+#include "psqt.h"
 #include "types.h"
 
 #include "nnue/nnue_accumulator.h"
@@ -200,10 +201,6 @@ private:
   bool chess960;
 };
 
-namespace PSQT {
-  extern Score psq[PIECE_NB][SQUARE_NB];
-}
-
 extern std::ostream& operator<<(std::ostream& os, const Position& pos);
 
 inline Color Position::side_to_move() const {
@@ -322,7 +319,8 @@ inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
 }
 
 inline Key Position::key() const {
-  return st->key;
+  return st->rule50 < 14 ? st->key
+                         : st->key ^ make_key((st->rule50 - 14) / 8);
 }
 
 inline Key Position::pawn_key() const {
