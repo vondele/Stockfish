@@ -172,6 +172,7 @@ enum Bound {
 };
 
 enum Value : int {
+  VALUE_LASKER_DRAW = -2500,
   VALUE_ZERO      = 0,
   VALUE_DRAW      = 0,
   VALUE_KNOWN_WIN = 10000,

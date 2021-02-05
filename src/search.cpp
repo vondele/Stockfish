@@ -641,11 +641,12 @@ namespace {
         // Step 2c. Check for insufficient mating material
         if (  !pos.count<PAWN>()
             && pos.non_pawn_material() <= BishopValueMg)
-            return VALUE_DRAW;
+            return pos.non_pawn_material(~us) ?  VALUE_LASKER_DRAW :
+                   pos.non_pawn_material( us) ? -VALUE_LASKER_DRAW : VALUE_DRAW;
 
         // Step 2d. Check for draw by repetition
         if (pos.is_draw(ss->ply))
-            return value_draw(thisThread);
+            return VALUE_LASKER_DRAW;
 
         // Step 2e. Check for maximum ply reached
         if (ss->ply >= MAX_PLY)
@@ -1392,7 +1393,7 @@ moves_loop: // When in check, search starts from here
 
     if (!moveCount)
         bestValue = excludedMove ? alpha
-                   :     ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
+                   :     ss->inCheck ? mated_in(ss->ply) : VALUE_LASKER_DRAW;
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
@@ -1460,6 +1461,7 @@ moves_loop: // When in check, search starts from here
     }
 
     Thread* thisThread = pos.this_thread();
+    Color us = pos.side_to_move();
     (ss+1)->ply = ss->ply + 1;
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
@@ -1474,11 +1476,12 @@ moves_loop: // When in check, search starts from here
     // Check for insufficient mating material
     if (  !pos.count<PAWN>()
         && pos.non_pawn_material() <= BishopValueMg)
-        return VALUE_DRAW;
+        return pos.non_pawn_material(~us) ?  VALUE_LASKER_DRAW :
+               pos.non_pawn_material( us) ? -VALUE_LASKER_DRAW : VALUE_DRAW;
 
     // Check for draw by repetition
     if (pos.is_draw(ss->ply))
-        return value_draw(thisThread);
+        return VALUE_LASKER_DRAW;
 
     // Check for maximum ply reached
     if (ss->ply >= MAX_PLY)
@@ -1490,7 +1493,7 @@ moves_loop: // When in check, search starts from here
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
     ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
-                                                  : DEPTH_QS_NO_CHECKS;
+                                                      : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
     tte = TT.probe(posKey, ss->ttHit);
