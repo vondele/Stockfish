@@ -595,7 +595,7 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),clang)
-		CXXFLAGS += -flto=thin
+		CXXFLAGS += -flto
 		ifneq ($(findstring MINGW,$(KERNEL)),)
 			CXXFLAGS += -fuse-ld=lld
 		else ifneq ($(findstring MSYS,$(KERNEL)),)
@@ -615,7 +615,7 @@ ifeq ($(debug), no)
 			LDFLAGS += -save-temps
 		endif
 	else
-		CXXFLAGS += -flto=thin
+		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
 
