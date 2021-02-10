@@ -641,12 +641,12 @@ namespace {
         // Step 2c. Check for insufficient mating material
         if (  !pos.count<PAWN>()
             && pos.non_pawn_material() <= BishopValueMg)
-            return pos.non_pawn_material(~us) ?  VALUE_LASKER_DRAW :
-                   pos.non_pawn_material( us) ? -VALUE_LASKER_DRAW : VALUE_DRAW;
+            return pos.non_pawn_material(~us) ?  LASKER_DRAW :
+                   pos.non_pawn_material( us) ? -LASKER_DRAW : VALUE_DRAW;
 
         // Step 2d. Check for draw by repetition
         if (pos.is_draw(ss->ply))
-            return VALUE_LASKER_DRAW;
+            return LASKER_DRAW;
 
         // Step 2e. Check for maximum ply reached
         if (ss->ply >= MAX_PLY)
@@ -1393,7 +1393,7 @@ moves_loop: // When in check, search starts from here
 
     if (!moveCount)
         bestValue = excludedMove ? alpha
-                   :     ss->inCheck ? mated_in(ss->ply) : VALUE_LASKER_DRAW;
+                   :     ss->inCheck ? mated_in(ss->ply) : LASKER_DRAW;
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
@@ -1476,12 +1476,12 @@ moves_loop: // When in check, search starts from here
     // Check for insufficient mating material
     if (  !pos.count<PAWN>()
         && pos.non_pawn_material() <= BishopValueMg)
-        return pos.non_pawn_material(~us) ?  VALUE_LASKER_DRAW :
-               pos.non_pawn_material( us) ? -VALUE_LASKER_DRAW : VALUE_DRAW;
+        return pos.non_pawn_material(~us) ?  LASKER_DRAW :
+               pos.non_pawn_material( us) ? -LASKER_DRAW : VALUE_DRAW;
 
     // Check for draw by repetition
     if (pos.is_draw(ss->ply))
-        return VALUE_LASKER_DRAW;
+        return LASKER_DRAW;
 
     // Check for maximum ply reached
     if (ss->ply >= MAX_PLY)

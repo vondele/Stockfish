@@ -172,7 +172,6 @@ enum Bound {
 };
 
 enum Value : int {
-  VALUE_LASKER_DRAW = -2500,
   VALUE_ZERO      = 0,
   VALUE_DRAW      = 0,
   VALUE_KNOWN_WIN = 10000,
@@ -191,6 +190,7 @@ enum Value : int {
   RookValueMg   = 1276,  RookValueEg   = 1380,
   QueenValueMg  = 2538,  QueenValueEg  = 2682,
   Tempo = 28,
+  LASKER_DRAW = -KnightValueEg,
 
   MidgameLimit  = 15258, EndgameLimit  = 3915
 };
