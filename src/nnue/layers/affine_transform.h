@@ -277,13 +277,17 @@ namespace Eval::NNUE::Layers {
       // because then it is also an input dimension.
       if constexpr (kOutputDimensions % kOutputSimdWidth == 0)
       {
-          constexpr IndexType kNumChunks = kPaddedInputDimensions / 4;
+          // The weights are padded to 32 bytes, but the output
+          // from the previous layer is not. So care must be taken
+          // not to read uninitialized memory.
+          static_assert(kInputDimensions % (4 * 4) == 0, "Assumed by the loop structure. Otherwise uninitialized memory would be read.");
+          constexpr IndexType kNumChunks = kInputDimensions / 4;
 
           const auto input32 = reinterpret_cast<const std::int32_t*>(input);
           vec_t* outptr = reinterpret_cast<vec_t*>(output);
           std::memcpy(output, biases_, kOutputDimensions * sizeof(OutputType));
 
-          for (int i = 0; i < (int)kNumChunks - 3; i += 4)
+          for (int i = 0; i < (int)kNumChunks; i += 4)
           {
               const vec_t in0 = vec_set_32(input32[i + 0]);
               const vec_t in1 = vec_set_32(input32[i + 1]);
@@ -319,11 +323,17 @@ namespace Eval::NNUE::Layers {
           }
           else
 #endif
+
+#if defined (USE_AVX512)
+          if constexpr (kInputDimensions % kSimdWidth * 2 == 0)
+#else
+          if constexpr (kInputDimensions % kSimdWidth == 0)
+#endif
           {
 #if defined (USE_AVX512)
-              constexpr IndexType kNumChunks = kPaddedInputDimensions / (kSimdWidth * 2);
+              constexpr IndexType kNumChunks = kInputDimensions / (kSimdWidth * 2);
 #else
-              constexpr IndexType kNumChunks = kPaddedInputDimensions / kSimdWidth;
+              constexpr IndexType kNumChunks = kInputDimensions / kSimdWidth;
 #endif
               vec_t sum0 = vec_setzero();
               const auto row0 = reinterpret_cast<const vec_t*>(&weights_[0]);
@@ -335,6 +345,19 @@ namespace Eval::NNUE::Layers {
               }
               output[0] = vec_hadd(sum0, biases_[0]);
           }
+          else
+          {
+              // This is not slow https://godbolt.org/z/zj1qfM.
+              // Besides this is the smallest layer and hadd is slow anyway.
+              const auto in = reinterpret_cast<const std::int8_t*>(input);
+              const auto row0 = reinterpret_cast<const std::int8_t*>(&weights_[0]);
+              std::int32_t out = biases_[0];
+              for (int j = 0; j < (int)kInputDimensions; ++j)
+              {
+                  out += in[j] * row0[j];
+              }
+              output[0] = out;
+          }
       }
 
 #else
@@ -344,17 +367,23 @@ namespace Eval::NNUE::Layers {
       auto output = reinterpret_cast<OutputType*>(buffer);
 
 #if defined(USE_SSE2)
-      constexpr IndexType kNumChunks = kPaddedInputDimensions / kSimdWidth;
+      // Since kSimdWidth might be <32 here we can work on granularity lower
+      // than kPaddedInputDimensions which is 32. For example if there
+      // is only 16 inputs we do not need to process the 16 elements of the padding.
+      // Basically we pad to a multiple of 16 instead to a multiple of 32.
+      // This is also performed in other places where kNumChunks is calculated
+      // for smaller simd widths.
+      constexpr IndexType kNumChunks = (kInputDimensions + kSimdWidth - 1) / kSimdWidth;
       const __m128i kZeros = _mm_setzero_si128();
       const auto input_vector = reinterpret_cast<const __m128i*>(input);
 
 #elif defined(USE_MMX)
-      constexpr IndexType kNumChunks = kPaddedInputDimensions / kSimdWidth;
+      constexpr IndexType kNumChunks = (kInputDimensions + kSimdWidth - 1) / kSimdWidth;
       const __m64 kZeros = _mm_setzero_si64();
       const auto input_vector = reinterpret_cast<const __m64*>(input);
 
 #elif defined(USE_NEON)
-      constexpr IndexType kNumChunks = kPaddedInputDimensions / kSimdWidth;
+      constexpr IndexType kNumChunks = (kInputDimensions + kSimdWidth - 1) / kSimdWidth;
       const auto input_vector = reinterpret_cast<const int8x8_t*>(input);
 #endif
 

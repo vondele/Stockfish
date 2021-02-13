@@ -67,22 +67,47 @@ namespace Eval::NNUE::Layers {
       const auto output = reinterpret_cast<OutputType*>(buffer);
 
   #if defined(USE_AVX2)
-      constexpr IndexType kNumChunks = kInputDimensions / kSimdWidth;
-      const __m256i kZero = _mm256_setzero_si256();
-      const __m256i kOffsets = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0);
-      const auto in = reinterpret_cast<const __m256i*>(input);
-      const auto out = reinterpret_cast<__m256i*>(output);
-      for (IndexType i = 0; i < kNumChunks; ++i) {
-        const __m256i words0 = _mm256_srai_epi16(_mm256_packs_epi32(
-            _mm256_load_si256(&in[i * 4 + 0]),
-            _mm256_load_si256(&in[i * 4 + 1])), kWeightScaleBits);
-        const __m256i words1 = _mm256_srai_epi16(_mm256_packs_epi32(
-            _mm256_load_si256(&in[i * 4 + 2]),
-            _mm256_load_si256(&in[i * 4 + 3])), kWeightScaleBits);
-        _mm256_store_si256(&out[i], _mm256_permutevar8x32_epi32(_mm256_max_epi8(
-            _mm256_packs_epi16(words0, words1), kZero), kOffsets));
+      if constexpr (kInputDimensions >= 32)
+      {
+        constexpr IndexType kNumChunks = kInputDimensions / 32;
+        const __m256i kZero = _mm256_setzero_si256();
+        const __m256i kOffsets = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0);
+        const auto in = reinterpret_cast<const __m256i*>(input);
+        const auto out = reinterpret_cast<__m256i*>(output);
+        for (IndexType i = 0; i < kNumChunks; ++i) {
+          const __m256i words0 = _mm256_srai_epi16(_mm256_packs_epi32(
+              _mm256_load_si256(&in[i * 4 + 0]),
+              _mm256_load_si256(&in[i * 4 + 1])), kWeightScaleBits);
+          const __m256i words1 = _mm256_srai_epi16(_mm256_packs_epi32(
+              _mm256_load_si256(&in[i * 4 + 2]),
+              _mm256_load_si256(&in[i * 4 + 3])), kWeightScaleBits);
+          _mm256_store_si256(&out[i], _mm256_permutevar8x32_epi32(_mm256_max_epi8(
+              _mm256_packs_epi16(words0, words1), kZero), kOffsets));
+        }
       }
-      constexpr IndexType kStart = kNumChunks * kSimdWidth;
+      else if constexpr (kInputDimensions >= 16)
+      {
+        constexpr IndexType kNumChunks = kInputDimensions / 16;
+        const __m128i kZero = _mm_setzero_si128();
+        const auto in = reinterpret_cast<const __m128i*>(input);
+        const auto out = reinterpret_cast<__m128i*>(output);
+        for (IndexType i = 0; i < kNumChunks; ++i) {
+          const __m128i words0 = _mm_srai_epi16(_mm_packs_epi32(
+              _mm_load_si128(&in[i * 4 + 0]),
+              _mm_load_si128(&in[i * 4 + 1])), kWeightScaleBits);
+          const __m128i words1 = _mm_srai_epi16(_mm_packs_epi32(
+              _mm_load_si128(&in[i * 4 + 2]),
+              _mm_load_si128(&in[i * 4 + 3])), kWeightScaleBits);
+          const __m128i packedbytes = _mm_packs_epi16(words0, words1);
+          _mm_store_si128(&out[i],
+            _mm_max_epi8(packedbytes, kZero)
+          );
+        }
+      }
+      constexpr IndexType kStart =
+        kInputDimensions >= 32 ? kInputDimensions / 32 * 32
+        : kInputDimensions >= 16 ? kInputDimensions / 16 * 16
+        : 0;
 
   #elif defined(USE_SSE2)
       constexpr IndexType kNumChunks = kInputDimensions / kSimdWidth;
