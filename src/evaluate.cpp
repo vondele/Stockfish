@@ -1043,6 +1043,9 @@ make_v:
     // Side to move point of view
     v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
 
+    // Scale down the evaluation linearly when shuffling
+    v = v * (100 - pos.rule50_count()) / 100;
+
     return v;
   }
 
@@ -1069,7 +1072,12 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&](){
          int mat = pos.non_pawn_material() + PawnValueMg * pos.count<PAWN>();
-         return NNUE::evaluate(pos) * (679 + mat / 32) / 1024 + Tempo;
+         Value vnnue = NNUE::evaluate(pos) * (679 + mat / 32) / 1024 + Tempo;
+
+         // Scale down the evaluation linearly when shuffling
+         vnnue = vnnue * (100 - pos.rule50_count()) / 100;
+
+         return vnnue;
       };
 
       // If there is PSQ imbalance use classical eval, with small probability if it is small
@@ -1092,9 +1100,6 @@ Value Eval::evaluate(const Position& pos) {
                   && !(pos.this_thread()->nodes & 0xB))))
           v = adjusted_NNUE();
   }
-
-  // Damp down the evaluation linearly when shuffling
-  v = v * (100 - pos.rule50_count()) / 100;
 
   // Make sure evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
