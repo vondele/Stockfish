@@ -1,7 +1,5 @@
 # Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-# Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-# Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-# Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+# Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 #
 # Stockfish is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -58,26 +56,27 @@ endif
 # flag                --- Comp switch      --- Description
 # ----------------------------------------------------------------------------
 #
-# debug = yes/no      --- -DNDEBUG         --- Enable/Disable debug mode
+# debug = yes/no      --- -DNDEBUG              --- Enable/Disable debug mode
+# embed = yes/no      --- -DNNUE_EMBEDDING_OFF  --- Enable/Disable embedding of the NNUE file
 # sanitize = undefined/thread/no (-fsanitize )
-#                     --- ( undefined )    --- enable undefined behavior checks
-#                     --- ( thread    )    --- enable threading error  checks
-# optimize = yes/no   --- (-O3/-fast etc.) --- Enable/Disable optimizations
-# arch = (name)       --- (-arch)          --- Target architecture
-# bits = 64/32        --- -DIS_64BIT       --- 64-/32-bit operating system
-# prefetch = yes/no   --- -DUSE_PREFETCH   --- Use prefetch asm-instruction
-# popcnt = yes/no     --- -DUSE_POPCNT     --- Use popcnt asm-instruction
-# pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
-# sse = yes/no        --- -msse            --- Use Intel Streaming SIMD Extensions
-# mmx = yes/no        --- -mmmx            --- Use Intel MMX instructions
-# sse2 = yes/no       --- -msse2           --- Use Intel Streaming SIMD Extensions 2
-# ssse3 = yes/no      --- -mssse3          --- Use Intel Supplemental Streaming SIMD Extensions 3
-# sse41 = yes/no      --- -msse4.1         --- Use Intel Streaming SIMD Extensions 4.1
-# avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
-# avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
-# vnni256 = yes/no    --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 256
-# vnni512 = yes/no    --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 512
-# neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
+#                     --- ( undefined )         --- enable undefined behavior checks
+#                     --- ( thread    )         --- enable threading error  checks
+# optimize = yes/no   --- (-O3/-fast etc.)      --- Enable/Disable optimizations
+# arch = (name)       --- (-arch)               --- Target architecture
+# bits = 64/32        --- -DIS_64BIT            --- 64-/32-bit operating system
+# prefetch = yes/no   --- -DUSE_PREFETCH        --- Use prefetch asm-instruction
+# popcnt = yes/no     --- -DUSE_POPCNT          --- Use popcnt asm-instruction
+# pext = yes/no       --- -DUSE_PEXT            --- Use pext x86_64 asm-instruction
+# sse = yes/no        --- -msse                 --- Use Intel Streaming SIMD Extensions
+# mmx = yes/no        --- -mmmx                 --- Use Intel MMX instructions
+# sse2 = yes/no       --- -msse2                --- Use Intel Streaming SIMD Extensions 2
+# ssse3 = yes/no      --- -mssse3               --- Use Intel Supplemental Streaming SIMD Extensions 3
+# sse41 = yes/no      --- -msse4.1              --- Use Intel Streaming SIMD Extensions 4.1
+# avx2 = yes/no       --- -mavx2                --- Use Intel Advanced Vector Extensions 2
+# avx512 = yes/no     --- -mavx512bw            --- Use Intel Advanced Vector Extensions 512
+# vnni256 = yes/no    --- -mavx512vnni          --- Use Intel Vector Neural Network Instructions 256
+# vnni512 = yes/no    --- -mavx512vnni          --- Use Intel Vector Neural Network Instructions 512
+# neon = yes/no       --- -DUSE_NEON            --- Use ARM SIMD architecture
 #
 # Note that Makefile is space sensitive, so when adding new architectures
 # or modifying existing flags, you have to make sure there are no extra spaces
@@ -103,6 +102,7 @@ endif
 
 optimize = yes
 debug = no
+embed = yes
 sanitize = no
 bits = 64
 prefetch = no

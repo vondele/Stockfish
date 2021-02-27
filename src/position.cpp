@@ -595,7 +595,7 @@ bool Position::legal(Move m) const {
 
   // A non-king move is legal if and only if it is not pinned or it
   // is moving along the ray towards or away from the king.
-  return   !(blockers_for_king(us) & from)
+  return  !(blockers_for_king(us) & from)
         ||  aligned(from, to, square<KING>(us));
 }
 
