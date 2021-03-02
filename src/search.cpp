@@ -589,7 +589,10 @@ namespace {
 
     // Used to send selDepth info to the GUI
     if (PvNode)
-       thisThread->selDepth = std::max(ss->ply, thisThread->selDepth);
+    {
+        thisThread->selDepth = std::max(ss->ply, thisThread->selDepth);
+        ss->distanceFromPv = 0;
+    }
 
     if (!rootNode)
     {
@@ -1111,6 +1114,8 @@ moves_loop: // When in check, search starts from here
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
 
+      (ss+1)->distanceFromPv = ss->distanceFromPv + moveCount - 1;
+
       // Step 16. Reduced depth search (LMR, ~200 Elo). If the move fails high it will be
       // re-searched at full depth.
       if (    depth >= 3
@@ -1202,18 +1207,19 @@ moves_loop: // When in check, search starts from here
                   r -= ss->statScore / 14790;
           }
 
-          Depth d = std::clamp(newDepth - r, 1, newDepth);
+          // In general we want to cap the LMR depth search at newDepth. But for nodes
+          // close to the principal variation the cap is at (newDepth + 1), which will
+          // allow these nodes to be searched deeper than the PV.
+          Depth d = std::clamp(newDepth - r, 1, newDepth + ((ss+1)->distanceFromPv <= 4));
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
-          doFullDepthSearch = value > alpha && d != newDepth;
-
+          doFullDepthSearch = value > alpha && d < newDepth;
           didLMR = true;
       }
       else
       {
           doFullDepthSearch = !PvNode || moveCount > 1;
-
           didLMR = false;
       }
 

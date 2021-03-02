@@ -44,7 +44,7 @@ struct Stack {
     currentMove = excludedMove = MOVE_NONE;
     killers[0] = killers[1] = MOVE_NONE;
     staticEval = VALUE_ZERO;
-    ply = statScore = moveCount = 0;
+    ply = statScore = moveCount = distanceFromPv = 0;
     inCheck = ttPv = ttHit = false;
   }
 
@@ -57,6 +57,7 @@ struct Stack {
   Value staticEval;
   int statScore;
   int moveCount;
+  int distanceFromPv;
   bool inCheck;
   bool ttPv;
   bool ttHit;
