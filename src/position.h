@@ -31,6 +31,7 @@
 
 #include "nnue/nnue_accumulator.h"
 
+namespace Stockfish {
 
 /// StateInfo struct stores information needed to restore a Position object to
 /// its previous state when we retract a move. Whenever a move is made on the
@@ -87,7 +88,7 @@ public:
   // FEN string input/output
   Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
   Position& set(const std::string& code, Color c, StateInfo* si);
-  const std::string fen() const;
+  std::string fen() const;
 
   // Position representation
   Bitboard pieces(PieceType pt) const;
@@ -422,5 +423,7 @@ inline StateInfo* Position::state() const {
 
   return st;
 }
+
+} // namespace Stockfish
 
 #endif // #ifndef POSITION_H_INCLUDED
