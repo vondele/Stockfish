@@ -83,6 +83,8 @@ void init(OptionsMap& o) {
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
   o["Use NNUE"]              << Option(true, on_use_NNUE);
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
+  // Lasker Draw Value
+  o["LaskerDraw"]            << Option(800, 0, 10000);
 }
 
 

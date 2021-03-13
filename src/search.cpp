@@ -145,6 +145,8 @@ namespace {
     bool otherThread, owning;
   };
 
+  Value LaskerDrawValue[COLOR_NB];
+
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
@@ -229,6 +231,10 @@ void MainThread::search() {
   TT.new_search();
 
   Eval::NNUE::verify();
+
+  // Set Lasker Draw Values
+  LaskerDrawValue[ us] = VALUE_DRAW - int(Options["LaskerDraw"]);
+  LaskerDrawValue[~us] = VALUE_DRAW + int(Options["LaskerDraw"]);
 
   if (rootMoves.empty())
   {
@@ -639,17 +645,17 @@ namespace {
         if (    TB::UseRule50
             &&  pos.rule50_count() > 99
             && (!ss->inCheck || MoveList<LEGAL>(pos).size()))
-            return VALUE_DRAW;
+            return LaskerDrawValue[us];
 
         // Step 2c. Check for insufficient mating material
         if (  !pos.count<PAWN>()
             && pos.non_pawn_material() <= BishopValueMg)
-            return pos.non_pawn_material(~us) ?  LASKER_DRAW :
-                   pos.non_pawn_material( us) ? -LASKER_DRAW : VALUE_DRAW;
+            return pos.non_pawn_material(~us) ? LaskerDrawValue[ us] :
+                   pos.non_pawn_material( us) ? LaskerDrawValue[~us] : VALUE_DRAW;
 
         // Step 2d. Check for draw by repetition
         if (pos.is_draw(ss->ply))
-            return LASKER_DRAW;
+            return LaskerDrawValue[us];
 
         // Step 2e. Check for maximum ply reached
         if (ss->ply >= MAX_PLY)
@@ -1427,7 +1433,7 @@ moves_loop: // When in check, search starts from here
 
     if (!moveCount)
         bestValue = excludedMove ? alpha
-                   :     ss->inCheck ? mated_in(ss->ply) : LASKER_DRAW;
+                   :     ss->inCheck ? mated_in(ss->ply) : LaskerDrawValue[us];
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
@@ -1505,17 +1511,17 @@ moves_loop: // When in check, search starts from here
     if (    TB::UseRule50
         &&  pos.rule50_count() > 99
         && (!ss->inCheck || MoveList<LEGAL>(pos).size()))
-        return VALUE_DRAW;
+        return LaskerDrawValue[us];
 
     // Check for insufficient mating material
     if (  !pos.count<PAWN>()
         && pos.non_pawn_material() <= BishopValueMg)
-        return pos.non_pawn_material(~us) ?  LASKER_DRAW :
-               pos.non_pawn_material( us) ? -LASKER_DRAW : VALUE_DRAW;
+        return pos.non_pawn_material(~us) ? LaskerDrawValue[ us] :
+               pos.non_pawn_material( us) ? LaskerDrawValue[~us] : VALUE_DRAW;
 
     // Check for draw by repetition
     if (pos.is_draw(ss->ply))
-        return LASKER_DRAW;
+        return LaskerDrawValue[us];
 
     // Check for maximum ply reached
     if (ss->ply >= MAX_PLY)
