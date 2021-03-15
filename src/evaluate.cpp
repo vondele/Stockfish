@@ -1038,6 +1038,44 @@ make_v:
     return v;
   }
 
+  // specifically correct for cornered bishops to fix FRC with NNUE.
+  Value fix_FRC(const Position& pos) {
+
+    Value bAdjust = Value(0);
+
+    Color Us = pos.side_to_move();
+    if (   (pos.pieces(Us, BISHOP) & relative_square(Us, SQ_A1))
+        && (pos.pieces(Us, PAWN) & relative_square(Us, SQ_B2)))
+    {
+        bAdjust      -= !pos.empty(relative_square(Us,SQ_B3))                            ? Value(200)
+                       : pos.piece_on(relative_square(Us,SQ_C4)) == make_piece(Us, PAWN) ? Value(100)
+                                                                                         : Value(50);
+    }
+    if (   (pos.pieces(Us, BISHOP) & relative_square(Us, SQ_H1))
+        && (pos.pieces(Us, PAWN) & relative_square(Us, SQ_G2)))
+    {
+        bAdjust      -= !pos.empty(relative_square(Us,SQ_G3))                            ? Value(200)
+                       : pos.piece_on(relative_square(Us,SQ_F4)) == make_piece(Us, PAWN) ? Value(100)
+                                                                                         : Value(50);
+    }
+    if (   (pos.pieces(~Us, BISHOP) & relative_square(~Us, SQ_A8))
+        && (pos.pieces(~Us, PAWN) & relative_square(~Us, SQ_B7)))
+    {
+        bAdjust      += !pos.empty(relative_square(~Us,SQ_B6))                             ? Value(200)
+                       : pos.piece_on(relative_square(~Us,SQ_C5)) == make_piece(~Us, PAWN) ? Value(100)
+                                                                                           : Value(50);
+    }
+    if (   (pos.pieces(~Us, BISHOP) & relative_square(~Us, SQ_H8))
+        && (pos.pieces(~Us, PAWN) & relative_square(~Us, SQ_G7)))
+    {
+        bAdjust      += !pos.empty(relative_square(~Us,SQ_G6))                             ? Value(200)
+                       : pos.piece_on(relative_square(~Us,SQ_F5)) == make_piece(~Us, PAWN) ? Value(100)
+                                                                                           : Value(50);
+    }
+
+    return bAdjust;
+  }
+
 } // namespace
 
 
@@ -1055,7 +1093,11 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&](){
          int mat = pos.non_pawn_material() + 2 * PawnValueMg * pos.count<PAWN>();
-         return NNUE::evaluate(pos) * (641 + mat / 32 - 4 * pos.rule50_count()) / 1024 + Tempo;
+         Value nnueValue = NNUE::evaluate(pos) * (641 + mat / 32 - 4 * pos.rule50_count()) / 1024 + Tempo;
+         if (pos.is_chess960())
+            return nnueValue + fix_FRC(pos);
+         else
+            return nnueValue;
       };
 
       // If there is PSQ imbalance use classical eval, with small probability if it is small
