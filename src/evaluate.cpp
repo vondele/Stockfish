@@ -1043,34 +1043,36 @@ make_v:
 
     Value bAdjust = Value(0);
 
+    constexpr Value p1=Value(196), p2=Value(98), p3=Value(91);
+
     Color Us = pos.side_to_move();
     if (   (pos.pieces(Us, BISHOP) & relative_square(Us, SQ_A1))
         && (pos.pieces(Us, PAWN) & relative_square(Us, SQ_B2)))
     {
-        bAdjust      -= !pos.empty(relative_square(Us,SQ_B3))                            ? Value(200)
-                       : pos.piece_on(relative_square(Us,SQ_C4)) == make_piece(Us, PAWN) ? Value(100)
-                                                                                         : Value(50);
+        bAdjust      -= !pos.empty(relative_square(Us,SQ_B3))                            ? p1
+                       : pos.piece_on(relative_square(Us,SQ_C3)) == make_piece(Us, PAWN) ? p2
+                                                                                         : p3;
     }
     if (   (pos.pieces(Us, BISHOP) & relative_square(Us, SQ_H1))
         && (pos.pieces(Us, PAWN) & relative_square(Us, SQ_G2)))
     {
-        bAdjust      -= !pos.empty(relative_square(Us,SQ_G3))                            ? Value(200)
-                       : pos.piece_on(relative_square(Us,SQ_F4)) == make_piece(Us, PAWN) ? Value(100)
-                                                                                         : Value(50);
+        bAdjust      -= !pos.empty(relative_square(Us,SQ_G3))                            ? p1
+                       : pos.piece_on(relative_square(Us,SQ_F3)) == make_piece(Us, PAWN) ? p2
+                                                                                         : p3;
     }
     if (   (pos.pieces(~Us, BISHOP) & relative_square(~Us, SQ_A8))
         && (pos.pieces(~Us, PAWN) & relative_square(~Us, SQ_B7)))
     {
-        bAdjust      += !pos.empty(relative_square(~Us,SQ_B6))                             ? Value(200)
-                       : pos.piece_on(relative_square(~Us,SQ_C5)) == make_piece(~Us, PAWN) ? Value(100)
-                                                                                           : Value(50);
+        bAdjust      += !pos.empty(relative_square(~Us,SQ_B6))                             ? p1
+                       : pos.piece_on(relative_square(~Us,SQ_C6)) == make_piece(~Us, PAWN) ? p2
+                                                                                           : p3;
     }
     if (   (pos.pieces(~Us, BISHOP) & relative_square(~Us, SQ_H8))
         && (pos.pieces(~Us, PAWN) & relative_square(~Us, SQ_G7)))
     {
-        bAdjust      += !pos.empty(relative_square(~Us,SQ_G6))                             ? Value(200)
-                       : pos.piece_on(relative_square(~Us,SQ_F5)) == make_piece(~Us, PAWN) ? Value(100)
-                                                                                           : Value(50);
+        bAdjust      += !pos.empty(relative_square(~Us,SQ_G6))                             ? p1
+                       : pos.piece_on(relative_square(~Us,SQ_F6)) == make_piece(~Us, PAWN) ? p2
+                                                                                           : p3;
     }
 
     return bAdjust;
