@@ -63,7 +63,7 @@ namespace {
     Bitboard pawnsOn7    = pos.pieces(Us, PAWN) &  TRank7BB;
     Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
 
-    Bitboard enemies = (Type == EVASIONS ? pos.pieces(Them) & target:
+    Bitboard enemies = (Type == EVASIONS ? pos.checkers():
                         Type == CAPTURES ? target : pos.pieces(Them));
 
     // Single and double pawn pushes, no promotions
@@ -158,7 +158,7 @@ namespace {
         {
             assert(rank_of(pos.ep_square()) == relative_rank(Us, RANK_6));
 
-            // An en passant capture cannot resolve a discovered check.
+            // An en passant capture cannot resolve a discovered check
             if (Type == EVASIONS && (target & (pos.ep_square() + Up)))
                 return moveList;
 
@@ -182,17 +182,12 @@ namespace {
 
     Bitboard bb = piecesToMove & pos.pieces(Pt);
 
-    if (!bb)
-        return moveList;
-
-    [[maybe_unused]] const Bitboard checkSquares = pos.check_squares(Pt);
-
     while (bb) {
         Square from = pop_lsb(&bb);
 
         Bitboard b = attacks_bb<Pt>(from, pos.pieces()) & target;
         if constexpr (Checks)
-            b &= checkSquares;
+            b &= pos.check_squares(Pt);
 
         while (b)
             *moveList++ = make_move(from, pop_lsb(&b));
@@ -223,7 +218,7 @@ namespace {
             target = ~pos.pieces();
             break;
         case EVASIONS:
-            target = between_bb(pos.square<KING>(Us), lsb(pos.checkers())) | pos.checkers();
+            target = between_bb(pos.square<KING>(Us), lsb(pos.checkers()));
             break;
         case NON_EVASIONS:
             target = ~pos.pieces(Us);
@@ -334,7 +329,7 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
   if (more_than_one(pos.checkers()))
       return moveList; // Double check, only a king move can save the day
 
-  // Generate blocking evasions or captures of the checking piece
+  // Generate blocking interpositions or captures of the checking piece
   return us == WHITE ? generate_all<WHITE, EVASIONS>(pos, moveList)
                      : generate_all<BLACK, EVASIONS>(pos, moveList);
 }
