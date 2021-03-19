@@ -1156,7 +1156,7 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
       else if (    givesCheck
-               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || checkCount < 1))
+               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move)))
           extension = 1;
 
       // Last captures extension
@@ -1196,6 +1196,9 @@ moves_loop: // When in check, search starts from here
               || thisThread->ttHitAverage < 432 * TtHitAverageResolution * TtHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);
+
+          if (checkCount > 2)
+              r--;
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 537 * TtHitAverageResolution * TtHitAverageWindow / 1024)
