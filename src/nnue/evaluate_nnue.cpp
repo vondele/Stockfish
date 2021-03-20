@@ -127,10 +127,11 @@ namespace Stockfish::Eval::NNUE {
     ASSERT_ALIGNED(transformed_features, alignment);
     ASSERT_ALIGNED(buffer, alignment);
 
-    feature_transformer->Transform(pos, transformed_features);
+    std::int32_t psqt = 0;
+    feature_transformer->Transform(pos, transformed_features, psqt);
     const auto output = network->Propagate(transformed_features, buffer);
 
-    return static_cast<Value>(output[0] / FV_SCALE);
+    return static_cast<Value>((output[0] + psqt) / FV_SCALE);
   }
 
   // Load eval, from a file stream or a memory stream

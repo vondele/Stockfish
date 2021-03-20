@@ -32,6 +32,7 @@ namespace Stockfish::Eval::NNUE {
   struct alignas(kCacheLineSize) Accumulator {
     std::int16_t
         accumulation[2][kRefreshTriggers.size()][kTransformedFeatureDimensions];
+    std::int32_t psqt_accumulation[2][kRefreshTriggers.size()];
     AccumulatorState state[2];
   };
 
