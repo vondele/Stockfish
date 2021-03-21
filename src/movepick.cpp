@@ -210,7 +210,7 @@ top:
           cur = endBadCaptures;
           endMoves = generate<QUIETS>(pos, cur);
 
-          int offset = std::max(0, score<QUIETS>());
+          int offset = score<QUIETS>();
           partial_insertion_sort(cur, endMoves, offset - 3000 * depth);
       }
 
