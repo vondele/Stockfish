@@ -96,9 +96,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 /// for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 /// captures with a good history. Quiets moves are ordered using the histories.
 template<GenType Type>
-void MovePicker::score() {
+int MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+
+  int offset = 0;
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
@@ -106,12 +108,17 @@ void MovePicker::score() {
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
+      {
           m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
                    + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0);
+
+          if (m == ttMove)
+              offset = m.value;
+      }
 
       else // Type == EVASIONS
       {
@@ -123,6 +130,8 @@ void MovePicker::score() {
                        + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                        - (1 << 28);
       }
+
+  return offset;
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
@@ -201,8 +210,8 @@ top:
           cur = endBadCaptures;
           endMoves = generate<QUIETS>(pos, cur);
 
-          score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          int offset = std::max(0, score<QUIETS>());
+          partial_insertion_sort(cur, endMoves, offset - 3000 * depth);
       }
 
       ++stage;
