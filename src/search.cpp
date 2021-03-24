@@ -522,7 +522,11 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
-          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability;
+          double materialPeak = double(rootPos.non_pawn_material() - 4 * RookValueMg - 4 * BishopValueMg) / (2 * BishopValueMg);
+
+          double MatScale = 1.0 + 0.1 * exp(-0.5 * materialPeak * materialPeak);
+
+          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * MatScale;
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
