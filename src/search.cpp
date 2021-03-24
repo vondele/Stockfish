@@ -524,7 +524,7 @@ void Thread::search() {
 
           double materialPeak = double(rootPos.non_pawn_material() - 4 * RookValueMg - 4 * BishopValueMg) / (2 * BishopValueMg);
 
-          double MatScale = 1.0 + 0.1 * exp(-0.5 * materialPeak * materialPeak);
+          double MatScale = 1.0 + 0.2 * exp(-0.5 * materialPeak * materialPeak);
 
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * MatScale;
 
