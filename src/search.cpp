@@ -219,8 +219,16 @@ void MainThread::search() {
   // Special case 1: 'go perft x' 
   if (Limits.perft)
   {
+      TimePoint elapsed = now();
+
       nodes = perft<true>(rootPos, Limits.perft);
-      sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
+
+      elapsed = now() - elapsed + 1; // Ensure positivity
+
+      sync_cout << "\nNodes searched: " << nodes
+                << "\nTime (ms)     : " << elapsed
+                << "\nNodes/second  : " << nodes * 1000 / elapsed
+                << sync_endl;
 
       return;
   }
