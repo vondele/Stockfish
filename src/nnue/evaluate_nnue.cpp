@@ -16,18 +16,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Code for calculating NNUE evaluation function
-
 #include <iostream>
 #include <set>
 
-#include "../evaluate.h"
-#include "../position.h"
-#include "../misc.h"
-#include "../uci.h"
-#include "../types.h"
-
 #include "evaluate_nnue.h"
+#include "../evaluate.h"
+#include "../misc.h"
+#include "../position.h"
+#include "../types.h"
+#include "../uci.h"
 
 namespace Eval::NNUE {
 
@@ -42,31 +39,35 @@ namespace Eval::NNUE {
 
   namespace Detail {
 
-  // Initialize the evaluation function parameters
-  template <typename T>
-  void Initialize(AlignedPtr<T>& pointer) {
+    // Initialize the evaluation function parameters
+    template <typename T>
+    void Initialize(AlignedPtr<T>& pointer) {
 
-    pointer.reset(reinterpret_cast<T*>(std_aligned_alloc(alignof(T), sizeof(T))));
-    std::memset(pointer.get(), 0, sizeof(T));
-  }
+      pointer.reset(reinterpret_cast<T*>(std_aligned_alloc(alignof(T), sizeof(T))));
+      std::memset(pointer.get(), 0, sizeof(T));
+    }
 
-  template <typename T>
-  void Initialize(LargePagePtr<T>& pointer) {
+    template <typename T>
+    void Initialize(LargePagePtr<T>& pointer) {
 
-    static_assert(alignof(T) <= 4096, "aligned_large_pages_alloc() may fail for such a big alignment requirement of T");
-    pointer.reset(reinterpret_cast<T*>(aligned_large_pages_alloc(sizeof(T))));
-    std::memset(pointer.get(), 0, sizeof(T));
-  }
+      static_assert(alignof(T) <= 4096, "aligned_large_pages_alloc() may fail for such a big alignment requirement of T");
 
-  // Read evaluation function parameters
-  template <typename T>
-  bool ReadParameters(std::istream& stream, T& reference) {
+      pointer.reset(reinterpret_cast<T*>(aligned_large_pages_alloc(sizeof(T))));
+      std::memset(pointer.get(), 0, sizeof(T));
+    }
 
-    std::uint32_t header;
-    header = read_little_endian<std::uint32_t>(stream);
-    if (!stream || header != T::GetHashValue()) return false;
-    return reference.ReadParameters(stream);
-  }
+    // Read evaluation function parameters
+    template <typename T>
+    bool ReadParameters(std::istream& stream, T& reference) {
+
+      std::uint32_t header;
+      header = read_little_endian<std::uint32_t>(stream);
+
+      if (!stream || header != T::GetHashValue())
+          return false;
+
+      return reference.ReadParameters(stream);
+    }
 
   }  // namespace Detail
 
@@ -78,16 +79,20 @@ namespace Eval::NNUE {
   }
 
   // Read network header
-  bool ReadHeader(std::istream& stream, std::uint32_t* hash_value, std::string* architecture)
-  {
+  bool ReadHeader(std::istream& stream, std::uint32_t* hash_value, std::string* architecture) {
+
     std::uint32_t version, size;
 
     version     = read_little_endian<std::uint32_t>(stream);
     *hash_value = read_little_endian<std::uint32_t>(stream);
     size        = read_little_endian<std::uint32_t>(stream);
-    if (!stream || version != kVersion) return false;
+
+    if (!stream || version != kVersion)
+        return false;
+
     architecture->resize(size);
     stream.read(&(*architecture)[0], size);
+
     return !stream.fail();
   }
 
@@ -96,10 +101,19 @@ namespace Eval::NNUE {
 
     std::uint32_t hash_value;
     std::string architecture;
-    if (!ReadHeader(stream, &hash_value, &architecture)) return false;
-    if (hash_value != kHashValue) return false;
-    if (!Detail::ReadParameters(stream, *feature_transformer)) return false;
-    if (!Detail::ReadParameters(stream, *network)) return false;
+
+    if (!ReadHeader(stream, &hash_value, &architecture))
+        return false;
+
+    if (hash_value != kHashValue)
+        return false;
+
+    if (!Detail::ReadParameters(stream, *feature_transformer))
+        return false;
+
+    if (!Detail::ReadParameters(stream, *network))
+        return false;
+
     return stream && stream.peek() == std::ios::traits_type::eof();
   }
 
@@ -108,19 +122,17 @@ namespace Eval::NNUE {
 
     // We manually align the arrays on the stack because with gcc < 9.3
     // overaligning stack variables with alignas() doesn't work correctly.
-
     constexpr uint64_t alignment = kCacheLineSize;
 
 #if defined(ALIGNAS_ON_STACK_VARIABLES_BROKEN)
-    TransformedFeatureType transformed_features_unaligned[
-      FeatureTransformer::kBufferSize + alignment / sizeof(TransformedFeatureType)];
+    TransformedFeatureType transformed_features_unaligned[  FeatureTransformer::kBufferSize
+                                                          + alignment / sizeof(TransformedFeatureType)];
     char buffer_unaligned[Network::kBufferSize + alignment];
 
     auto* transformed_features = align_ptr_up<alignment>(&transformed_features_unaligned[0]);
     auto* buffer = align_ptr_up<alignment>(&buffer_unaligned[0]);
 #else
-    alignas(alignment)
-      TransformedFeatureType transformed_features[FeatureTransformer::kBufferSize];
+    alignas(alignment) TransformedFeatureType transformed_features[FeatureTransformer::kBufferSize];
     alignas(alignment) char buffer[Network::kBufferSize];
 #endif
 
@@ -133,11 +145,12 @@ namespace Eval::NNUE {
     return static_cast<Value>(output[0] / FV_SCALE);
   }
 
-  // Load eval, from a file stream or a memory stream
+  // Load eval from a file stream or a memory stream
   bool load_eval(std::string name, std::istream& stream) {
 
     Initialize();
     fileName = name;
+
     return ReadParameters(stream);
   }
 

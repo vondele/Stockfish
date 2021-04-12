@@ -16,8 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Class for difference calculation of NNUE evaluation function
-
 #ifndef NNUE_ACCUMULATOR_H_INCLUDED
 #define NNUE_ACCUMULATOR_H_INCLUDED
 
@@ -30,11 +28,10 @@ namespace Eval::NNUE {
 
   // Class that holds the result of affine transformation of input features
   struct alignas(kCacheLineSize) Accumulator {
-    std::int16_t
-        accumulation[2][kRefreshTriggers.size()][kTransformedFeatureDimensions];
+    std::int16_t accumulation[2][kRefreshTriggers.size()][kTransformedFeatureDimensions];
     AccumulatorState state[2];
   };
 
-}  // namespace Eval::NNUE
+} // namespace Eval::NNUE
 
 #endif // NNUE_ACCUMULATOR_H_INCLUDED
