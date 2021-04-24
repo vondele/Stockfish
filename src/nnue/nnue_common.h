@@ -41,6 +41,8 @@
 #include <arm_neon.h>
 #endif
 
+#include "../types.h"
+
 namespace Eval::NNUE {
 
 // Version of the evaluation file

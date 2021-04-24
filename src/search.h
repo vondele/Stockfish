@@ -40,6 +40,7 @@ constexpr int CounterMovePruneThreshold = 0;
 struct Stack {
 
   Stack() {
+    pv.reserve(8);
     continuationHistory = nullptr;
     currentMove = excludedMove = MOVE_NONE;
     killers[0] = killers[1] = MOVE_NONE;

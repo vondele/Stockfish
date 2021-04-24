@@ -398,7 +398,8 @@ void Thread::search() {
 
           while (true)
           {
-              Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
+              Depth adjustedDepth = std::max(rootDepth - failedHighCnt - searchAgainCounter, rootDepth - 4);
+
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
