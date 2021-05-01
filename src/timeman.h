@@ -23,6 +23,8 @@
 #include "search.h"
 #include "thread.h"
 
+namespace Stockfish {
+
 /// The TimeManagement class computes the optimal time to think depending on
 /// the maximum available time, the game move number and other parameters.
 
@@ -35,6 +37,7 @@ public:
                                      TimePoint(Threads.nodes_searched()) : now() - startTime; }
 
   int64_t availableNodes; // When in 'nodes as time' mode
+  int tempoNNUE;
 
 private:
   TimePoint startTime;
@@ -43,5 +46,7 @@ private:
 };
 
 extern TimeManagement Time;
+
+} // namespace Stockfish
 
 #endif // #ifndef TIMEMAN_H_INCLUDED

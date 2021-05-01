@@ -19,50 +19,68 @@
 //Definition of input features HalfKP of NNUE evaluation function
 
 #include "half_kp.h"
-#include "index_list.h"
 
-namespace Eval::NNUE::Features {
+#include "../../position.h"
+
+namespace Stockfish::Eval::NNUE::Features {
 
   // Orient a square according to perspective (rotates by 180 for black)
-  inline Square orient(Color perspective, Square s) {
+  inline Square HalfKP::orient(Color perspective, Square s) {
     return Square(int(s) ^ (bool(perspective) * 63));
   }
 
   // Index of a feature for a given king position and another piece on some square
-  inline IndexType make_index(Color perspective, Square s, Piece pc, Square ksq) {
-    return IndexType(orient(perspective, s) + kpp_board_index[perspective][pc] + PS_END * ksq);
+  inline IndexType HalfKP::make_index(Color perspective, Square s, Piece pc, Square ksq) {
+    return IndexType(orient(perspective, s) + PieceSquareIndex[perspective][pc] + PS_NB * ksq);
   }
 
   // Get a list of indices for active features
-  template <Side AssociatedKing>
-  void HalfKP<AssociatedKing>::AppendActiveIndices(
-      const Position& pos, Color perspective, IndexList* active) {
-
+  void HalfKP::append_active_indices(
+    const Position& pos,
+    Color perspective,
+    ValueListInserter<IndexType> active
+  ) {
     Square ksq = orient(perspective, pos.square<KING>(perspective));
     Bitboard bb = pos.pieces() & ~pos.pieces(KING);
-    while (bb) {
-      Square s = pop_lsb(&bb);
-      active->push_back(make_index(perspective, s, pos.piece_on(s), ksq));
+    while (bb)
+    {
+      Square s = pop_lsb(bb);
+      active.push_back(make_index(perspective, s, pos.piece_on(s), ksq));
     }
   }
 
-  // Get a list of indices for recently changed features
-  template <Side AssociatedKing>
-  void HalfKP<AssociatedKing>::AppendChangedIndices(
-      const Position& pos, const DirtyPiece& dp, Color perspective,
-      IndexList* removed, IndexList* added) {
 
-    Square ksq = orient(perspective, pos.square<KING>(perspective));
+  // append_changed_indices() : get a list of indices for recently changed features
+
+  void HalfKP::append_changed_indices(
+    Square ksq,
+    StateInfo* st,
+    Color perspective,
+    ValueListInserter<IndexType> removed,
+    ValueListInserter<IndexType> added
+  ) {
+    const auto& dp = st->dirtyPiece;
+    Square oriented_ksq = orient(perspective, ksq);
     for (int i = 0; i < dp.dirty_num; ++i) {
       Piece pc = dp.piece[i];
       if (type_of(pc) == KING) continue;
       if (dp.from[i] != SQ_NONE)
-        removed->push_back(make_index(perspective, dp.from[i], pc, ksq));
+        removed.push_back(make_index(perspective, dp.from[i], pc, oriented_ksq));
       if (dp.to[i] != SQ_NONE)
-        added->push_back(make_index(perspective, dp.to[i], pc, ksq));
+        added.push_back(make_index(perspective, dp.to[i], pc, oriented_ksq));
     }
   }
 
-  template class HalfKP<Side::kFriend>;
+  int HalfKP::update_cost(StateInfo* st) {
+    return st->dirtyPiece.dirty_num;
+  }
 
-}  // namespace Eval::NNUE::Features
+  int HalfKP::refresh_cost(const Position& pos) {
+    return pos.count<ALL_PIECES>() - 2;
+  }
+
+  bool HalfKP::requires_refresh(StateInfo* st, Color perspective) {
+    return st->dirtyPiece.piece[0] == make_piece(perspective, KING);
+  }
+
+}  // namespace Stockfish::Eval::NNUE::Features

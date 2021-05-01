@@ -28,8 +28,10 @@
 
 #include "types.h"
 
-const std::string engine_info(bool to_uci = false);
-const std::string compiler_info();
+namespace Stockfish {
+
+std::string engine_info(bool to_uci = false);
+std::string compiler_info();
 void prefetch(void* addr);
 void start_logger(const std::string& fname);
 void* std_aligned_alloc(size_t alignment, size_t size);
@@ -75,6 +77,49 @@ T* align_ptr_up(T* ptr)
   const uintptr_t ptrint = reinterpret_cast<uintptr_t>(reinterpret_cast<char*>(ptr));
   return reinterpret_cast<T*>(reinterpret_cast<char*>((ptrint + (Alignment - 1)) / Alignment * Alignment));
 }
+
+template <typename T>
+class ValueListInserter {
+public:
+  ValueListInserter(T* v, std::size_t& s) :
+    values(v),
+    size(&s)
+  {
+  }
+
+  void push_back(const T& value) { values[(*size)++] = value; }
+private:
+  T* values;
+  std::size_t* size;
+};
+
+template <typename T, std::size_t MaxSize>
+class ValueList {
+
+public:
+  std::size_t size() const { return size_; }
+  void resize(std::size_t newSize) { size_ = newSize; }
+  void push_back(const T& value) { values_[size_++] = value; }
+  T& operator[](std::size_t index) { return values_[index]; }
+  T* begin() { return values_; }
+  T* end() { return values_ + size_; }
+  const T& operator[](std::size_t index) const { return values_[index]; }
+  const T* begin() const { return values_; }
+  const T* end() const { return values_ + size_; }
+  operator ValueListInserter<T>() { return ValueListInserter(values_, size_); }
+
+  void swap(ValueList& other) {
+    const std::size_t maxSize = std::max(size_, other.size_);
+    for (std::size_t i = 0; i < maxSize; ++i) {
+      std::swap(values_[i], other.values_[i]);
+    }
+    std::swap(size_, other.size_);
+  }
+
+private:
+  T values_[MaxSize];
+  std::size_t size_ = 0;
+};
 
 /// xorshift64star Pseudo-Random Number Generator
 /// This class is based on original code written and dedicated
@@ -142,5 +187,7 @@ namespace CommandLine {
   extern std::string binaryDirectory;  // path of the executable directory
   extern std::string workingDirectory; // path of the working directory
 }
+
+} // namespace Stockfish
 
 #endif // #ifndef MISC_H_INCLUDED
