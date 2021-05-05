@@ -101,9 +101,6 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   }
   else
       tempoNNUE = 28; // default for no time given
-
-  if (Options["Ponder"])
-      optimumTime += optimumTime / 4;
 }
 
 } // namespace Stockfish
