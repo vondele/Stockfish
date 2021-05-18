@@ -124,7 +124,7 @@ namespace Stockfish::Eval::NNUE {
     // Number of output dimensions for one side
     static constexpr IndexType HalfDimensions = TransformedFeatureDimensions;
 
-    static constexpr int LazyThreshold = 1400;
+    static constexpr int LazyThreshold = 1800;
 
     #ifdef VECTOR
     static constexpr IndexType TileHeight = NumRegs * sizeof(vec_t) / 2;
