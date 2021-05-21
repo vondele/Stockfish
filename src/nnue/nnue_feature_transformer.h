@@ -64,7 +64,7 @@ namespace Stockfish::Eval::NNUE {
   #define vec_add_psqt_32(a,b) _mm256_add_epi32(a,b)
   #define vec_sub_psqt_32(a,b) _mm256_sub_epi32(a,b)
   #define vec_zero_psqt() _mm256_setzero_si256()
-  static constexpr IndexType NumRegs = 16;
+  static constexpr IndexType NumRegs = 12;
   static constexpr IndexType NumPsqtRegs = 1;
 
   #elif USE_SSE2
@@ -79,7 +79,7 @@ namespace Stockfish::Eval::NNUE {
   #define vec_add_psqt_32(a,b) _mm_add_epi32(a,b)
   #define vec_sub_psqt_32(a,b) _mm_sub_epi32(a,b)
   #define vec_zero_psqt() _mm_setzero_si128()
-  static constexpr IndexType NumRegs = Is64Bit ? 16 : 8;
+  static constexpr IndexType NumRegs = Is64Bit ? 12 : 8;
   static constexpr IndexType NumPsqtRegs = 2;
 
   #elif USE_MMX
@@ -109,7 +109,7 @@ namespace Stockfish::Eval::NNUE {
   #define vec_add_psqt_32(a,b) vaddq_s32(a,b)
   #define vec_sub_psqt_32(a,b) vsubq_s32(a,b)
   #define vec_zero_psqt() psqt_vec_t{0}
-  static constexpr IndexType NumRegs = 16;
+  static constexpr IndexType NumRegs = 12;
   static constexpr IndexType NumPsqtRegs = 2;
 
   #else
