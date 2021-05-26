@@ -161,7 +161,7 @@ namespace Stockfish::Eval::NNUE {
     const auto [psqt, lazy] = featureTransformer->transform(pos, transformedFeatures, bucket, lazyThreshold);
 
     if (lazy)
-      return static_cast<Value>(psqt / OutputScale);
+      return static_cast<Value>(psqt * 108 / (128 * OutputScale));
     else
     {
       const auto output = network[bucket]->propagate(transformedFeatures, buffer);
