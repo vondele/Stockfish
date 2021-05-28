@@ -133,6 +133,32 @@ namespace Stockfish::Eval::NNUE {
     return (bool)stream;
   }
 
+  size_t select_bucket(const Position& pos) {
+
+    size_t bucket;
+
+    if (pos.count<QUEEN>() > 0)
+    {
+       bucket = 3 * (pos.count<ALL_PIECES>() - 1) / 32;  // 0, 1, 2 for 3 game phases with queens
+    }
+    else
+    {
+       if (pos.count<KNIGHT>() + pos.count<BISHOP>() > 0)
+       {
+          bucket = 3 + 3 * (pos.count<ALL_PIECES>() - 1) / 32;  // 3, 4, 5 for queen-less games with minors
+       }
+       else
+       {
+         if (pos.count<ROOK>() > 0)
+            bucket = 6; // rooks + pawns
+         else
+            bucket = 7; // pawns only
+       }
+    }
+
+    return bucket;
+  }
+
   // Evaluation function. Perform differential calculation.
   Value evaluate(const Position& pos, bool adjusted) {
 
@@ -157,7 +183,8 @@ namespace Stockfish::Eval::NNUE {
     ASSERT_ALIGNED(transformedFeatures, alignment);
     ASSERT_ALIGNED(buffer, alignment);
 
-    const std::size_t bucket = (pos.count<ALL_PIECES>() - 1) / 4;
+    const std::size_t bucket = select_bucket(pos);
+
     const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
     const auto output = network[bucket]->propagate(transformedFeatures, buffer);
 
