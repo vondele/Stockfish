@@ -823,7 +823,7 @@ namespace {
         {
             Value staticNullDiff = ss->staticEval + evaluate(pos);
             if (staticNullDiff > 100)
-                skipverify = true;
+                skipverify = false;
             // std::cout << "xxx " << staticNullDiff << std::endl;
         }
 
