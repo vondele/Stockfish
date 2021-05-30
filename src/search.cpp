@@ -818,6 +818,15 @@ namespace {
 
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
 
+        bool skipverify = true;
+        if (depth > 5 && nullValue >= beta)
+        {
+            Value staticNullDiff = ss->staticEval + evaluate(pos);
+            if (staticNullDiff < -10)
+                skipverify = true;
+            // std::cout << "xxx " << staticNullDiff << std::endl;
+        }
+
         pos.undo_null_move();
 
         if (nullValue >= beta)
@@ -826,7 +835,7 @@ namespace {
             if (nullValue >= VALUE_TB_WIN_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 14))
+            if (skipverify && (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 14)))
                 return nullValue;
 
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
