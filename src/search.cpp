@@ -822,7 +822,7 @@ namespace {
         if (depth > 5 && nullValue >= beta)
         {
             Value staticNullDiff = ss->staticEval + evaluate(pos);
-            if (staticNullDiff > 100)
+            if (staticNullDiff < -10)
                 skipverify = false;
             // std::cout << "xxx " << staticNullDiff << std::endl;
         }
