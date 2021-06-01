@@ -1345,6 +1345,24 @@ moves_loop: // When in check, search starts from here
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
+    if (    depth == 9
+        &&  PvNode
+        &&  bestValue >= alpha
+        &&  bestValue < beta
+        && (std::abs(ss->staticEval) < 100 || std::abs(bestValue)<100)
+        &&  std::abs(ss->staticEval-bestValue) > 100
+        && !excludedMove
+        && !ss->inCheck
+        && bestMove
+        && !pos.capture_or_promotion(bestMove))
+    {
+          sync_cout << pos.fen()
+                    << " ; depth: " << depth
+                    << " static: " << ss->staticEval
+                    << " search: " << bestValue
+                    << " bestmove: " << UCI::move(bestMove, pos.is_chess960()) << sync_endl;
+    }
+
     return bestValue;
   }
 
