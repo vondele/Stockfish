@@ -1167,7 +1167,7 @@ moves_loop: // When in check, search starts from here
                   r++;
 
               if (ss->inCheck && type_of(movedPiece) == KING)
-                  r++;
+                  r--;
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
