@@ -69,11 +69,11 @@ public:
   StateInfo rootState;
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth;
-  CounterMoveHistory counterMoves;
-  ButterflyHistory mainHistory;
-  LowPlyHistory lowPlyHistory;
-  CapturePieceToHistory captureHistory;
-  ContinuationHistory continuationHistory[2][2];
+  alignas(Stockfish::Eval::NNUE::CacheLineSize) CounterMoveHistory counterMoves;
+  alignas(Stockfish::Eval::NNUE::CacheLineSize) ButterflyHistory mainHistory;
+  alignas(Stockfish::Eval::NNUE::CacheLineSize) LowPlyHistory lowPlyHistory;
+  alignas(Stockfish::Eval::NNUE::CacheLineSize) CapturePieceToHistory captureHistory;
+  alignas(Stockfish::Eval::NNUE::CacheLineSize) ContinuationHistory continuationHistory[2][2];
   Score contempt;
 };
 
