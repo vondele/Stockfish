@@ -59,7 +59,7 @@ class InputSlice {
   }
 
   // Forward propagation
-  const OutputType* propagate(
+  const OutputType* __attribute__((noinline)) propagate(
       const TransformedFeatureType* transformedFeatures,
       char* /*buffer*/) const {
     return transformedFeatures + Offset;

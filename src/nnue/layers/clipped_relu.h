@@ -65,7 +65,7 @@ namespace Stockfish::Eval::NNUE::Layers {
     }
 
     // Forward propagation
-    const OutputType* propagate(
+    const OutputType* __attribute__ ((noinline)) propagate(
         const TransformedFeatureType* transformedFeatures, char* buffer) const {
       const auto input = previousLayer.propagate(
           transformedFeatures, buffer + SelfBufferSize);

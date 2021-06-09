@@ -171,7 +171,7 @@ namespace Stockfish::Eval::NNUE {
     }
 
     // Convert input features
-    std::int32_t transform(const Position& pos, OutputType* output, int bucket) const {
+    std::int32_t __attribute__ ((noinline)) transform(const Position& pos, OutputType* output, int bucket) const {
       update_accumulator(pos, WHITE);
       update_accumulator(pos, BLACK);
 
@@ -320,7 +320,7 @@ namespace Stockfish::Eval::NNUE {
 
 
    private:
-    void update_accumulator(const Position& pos, const Color perspective) const {
+    void __attribute__ ((noinline)) update_accumulator(const Position& pos, const Color perspective) const {
 
       // The size must be enough to contain the largest possible update.
       // That might depend on the feature set and generally relies on the

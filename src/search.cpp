@@ -528,7 +528,7 @@ namespace {
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType nodeType>
-  Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
+  Value __attribute__((noinline)) search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
 
     constexpr bool PvNode = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
@@ -1355,7 +1355,7 @@ moves_loop: // When in check, search starts from here
   // qsearch() is the quiescence search function, which is called by the main search
   // function with zero depth, or recursively with further decreasing depth per call.
   template <NodeType nodeType>
-  Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
+  Value __attribute__((noinline)) qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     static_assert(nodeType != Root);
     constexpr bool PvNode = nodeType == PV;

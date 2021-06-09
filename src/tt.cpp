@@ -33,7 +33,7 @@ TranspositionTable TT; // Our global transposition table
 /// TTEntry::save() populates the TTEntry with a new node's data, possibly
 /// overwriting an old position. Update is not atomic and can be racy.
 
-void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
+void __attribute__ ((noinline)) TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
 
   // Preserve any existing move for the same position
   if (m || (uint16_t)k != key16)
@@ -117,7 +117,7 @@ void TranspositionTable::clear() {
 /// minus 8 times its relative age. TTEntry t1 is considered more valuable than
 /// TTEntry t2 if its replace value is greater than that of t2.
 
-TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
+TTEntry* __attribute__ ((noinline)) TranspositionTable::probe(const Key key, bool& found) const {
 
   TTEntry* const tte = first_entry(key);
   const uint16_t key16 = (uint16_t)key;  // Use the low 16 bits as key inside the cluster

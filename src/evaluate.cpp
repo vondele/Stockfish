@@ -988,7 +988,7 @@ namespace {
   // of view of the side to move.
 
   template<Tracing T>
-  Value Evaluation<T>::value() {
+  Value __attribute__((noinline)) Evaluation<T>::value() {
 
     assert(!pos.checkers());
 
@@ -1104,7 +1104,7 @@ make_v:
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
 
-Value Eval::evaluate(const Position& pos) {
+Value __attribute__((noinline)) Eval::evaluate(const Position& pos) {
 
   Value v;
 
