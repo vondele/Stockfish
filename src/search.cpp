@@ -961,6 +961,8 @@ moves_loop: // When in check, search starts from here
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
 
+    bool LMRSE = false;
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1074,8 +1076,8 @@ moves_loop: // When in check, search starts from here
           {
               extension = 1;
               singularQuietLMR = !ttCapture;
-              if (!PvNode && value < singularBeta - 93 && pos.rule50_count() < 10)
-                  extension = 2;
+              if (!PvNode && value < singularBeta - 93)
+                  LMRSE = true;
           }
 
           // Multi-cut pruning
@@ -1131,6 +1133,9 @@ moves_loop: // When in check, search starts from here
           && (!PvNode || ss->ply > 1 || thisThread->id() % 4 != 3))
       {
           Depth r = reduction(improving, depth, moveCount);
+
+          if (LMRSE)
+              r++;
 
           if (PvNode)
               r--;
