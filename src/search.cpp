@@ -1622,7 +1622,7 @@ moves_loop: // When in check, search starts from here
         return v + ply;
     }
 
-    return v;
+    return v * 255 / 256;
   }
 
 
