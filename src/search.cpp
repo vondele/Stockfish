@@ -1022,7 +1022,8 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // SEE based pruning
-              if (!pos.see_ge(move, Value(-218) * depth)) // (~25 Elo)
+              bool danger = (captureOrPromotion || givesCheck) && distance(to_sq(move), pos.square<KING>(~us)) < 3;
+              if (!pos.see_ge(move, Value(-218) * (depth + danger))) // (~25 Elo)
                   continue;
           }
           else
@@ -1163,9 +1164,6 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if opponent's move count is high (~1 Elo)
           if ((ss-1)->moveCount > 13)
-              r--;
-
-          if ((captureOrPromotion || givesCheck) && distance(to_sq(move), pos.square<KING>(~us)) < 3)
               r--;
 
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
