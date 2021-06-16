@@ -1165,6 +1165,9 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 13)
               r--;
 
+          if ((captureOrPromotion || givesCheck) && distance(to_sq(move), pos.square<KING>(~us)) < 3)
+              r--;
+
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
           if (singularQuietLMR)
               r--;
