@@ -1094,7 +1094,7 @@ Value Eval::evaluate(const Position& pos) {
          Value nnue = NNUE::evaluate(pos, true);
 
          int nnuesq = int(nnue) * int(nnue);
-         int matscale = 28 * (40000 + nnuesq) / (35000 + nnuesq);
+         int matscale = 28 * (40000 + nnuesq) / (30000 + nnuesq);
 
          int scale = 903 + matscale * pos.count<PAWN>() + matscale * pos.non_pawn_material() / 1024;
 
