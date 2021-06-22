@@ -1131,8 +1131,7 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 
-          if (ss->ply > thisThread->rootDepth + 5)
-              r++;
+          r += std::max(0, (ss->ply - thisThread->rootDepth) / 4);
 
           if (PvNode)
               r--;
