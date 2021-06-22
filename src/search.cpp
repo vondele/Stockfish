@@ -1100,8 +1100,6 @@ moves_loop: // When in check, search starts from here
                && abs(ss->staticEval) > Value(100))
           extension = 1;
 
-      if (ss->ply > thisThread->rootDepth + 10)
-          extension = 0;
 
       // Add extension to new depth
       newDepth += extension;
@@ -1132,6 +1130,9 @@ moves_loop: // When in check, search starts from here
           && (!PvNode || ss->ply > 1 || thisThread->id() % 4 != 3))
       {
           Depth r = reduction(improving, depth, moveCount);
+
+          if (ss->ply > thisThread->rootDepth + 10)
+              r++;
 
           if (PvNode)
               r--;
