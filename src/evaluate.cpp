@@ -1073,6 +1073,18 @@ make_v:
                                        : -Value(correction);
   }
 
+  int simple_material(const Position& pos, Color c) {
+    return   9 * pos.count<QUEEN>(c)
+           + 5 * pos.count<ROOK>(c)
+           + 3 * pos.count<BISHOP>(c)
+           + 3 * pos.count<KNIGHT>(c)
+           +     pos.count<PAWN>(c);
+  }
+
+  int simple_material(const Position& pos) {
+    return simple_material(pos, WHITE) + simple_material(pos, BLACK);
+  }
+
 } // namespace Eval
 
 
@@ -1094,7 +1106,7 @@ Value Eval::evaluate(const Position& pos) {
                      + 32 * pos.count<PAWN>()
                      + 32 * pos.non_pawn_material() / 1024;
 
-         Value nnue = NNUE::evaluate(pos, true) * scale / 1024;
+         Value nnue = NNUE::evaluate(pos, true) * scale / 1024 + simple_material(pos) / 8;
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
