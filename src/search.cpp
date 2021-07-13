@@ -534,6 +534,8 @@ namespace {
         alpha = value_draw(pos);
         if (alpha >= beta)
             return alpha;
+        if (!PvNode)
+            alpha = beta - 1;
     }
 
     // Dive into quiescence search when the depth reaches zero
