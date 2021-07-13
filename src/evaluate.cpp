@@ -1106,7 +1106,9 @@ Value Eval::evaluate(const Position& pos) {
                      + 32 * pos.count<PAWN>()
                      + 32 * pos.non_pawn_material() / 1024;
 
-         Value nnue = NNUE::evaluate(pos, true) * scale / 1024 + simple_material(pos) / 8;
+         Value simple = Value(simple_material(pos) / 8);
+
+         Value nnue = NNUE::evaluate(pos, true) * scale / 1024 + (pos.side_to_move() == pos.this_thread()->rootColor ? simple : -simple);
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
