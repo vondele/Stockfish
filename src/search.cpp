@@ -88,7 +88,7 @@ namespace {
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
   Value value_draw(const Position& pos) {
-    Value drawBase = pos.this_thread()->rootColor == pos.side_to_move() ? Value(-30) : Value(+30);
+    Value drawBase = pos.this_thread()->rootColor == pos.side_to_move() ? Value(-5) : Value(+5);
     return drawBase + Value(2 * (pos.this_thread()->nodes & 1) - 1);
   }
 
