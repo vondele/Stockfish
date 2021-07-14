@@ -651,7 +651,7 @@ namespace {
             {
                 // Bonus for a quiet ttMove that fails high
                 if (!pos.capture_or_promotion(ttMove))
-                    update_quiet_stats(pos, ss, ttMove, stat_bonus(depth - ss->inCheck), depth);
+                    update_quiet_stats(pos, ss, ttMove, stat_bonus(depth + ss->inCheck), depth);
 
                 // Extra penalty for early quiet moves of the previous ply
                 if ((ss-1)->moveCount <= 2 && !priorCapture)
