@@ -316,11 +316,15 @@ void Thread::search() {
 
   int searchAgainCounter = 0;
 
+  int fooDepth = 0;
+
   // Iterative deepening loop until requested to stop or the target depth is reached
-  while (   (rootDepth = rootDepth + 2) < MAX_PLY
+  while (   fooDepth++ < MAX_PLY
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
+      rootDepth = fooDepth * 3 / 4;
+
       // Age out PV variability metric
       if (mainThread)
           totBestMoveChanges /= 2;
