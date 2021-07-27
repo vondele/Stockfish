@@ -323,7 +323,7 @@ void Thread::search() {
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
-      rootDepth = fooDepth * 3 / 4;
+      rootDepth = fooDepth * 7 / 8;
 
       // Age out PV variability metric
       if (mainThread)
