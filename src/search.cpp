@@ -472,7 +472,7 @@ void Thread::search() {
                                               * totBestMoveChanges / Threads.size();
 
           int r50c = rootPos.rule50_count();
-          double shuffleReduction = std::min(1.0, 1.0 + (r50c - 20) * (r50c - 80) / 1800.0);
+          double shuffleReduction = std::min(1.0, 1.0 + (r50c - 20) * (r50c - 80) / 2700.0);
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * shuffleReduction;
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
