@@ -63,6 +63,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
   assert(d > 0);
 
+  if (pos.rule50_count() > 20)
+  {
+    refutations[0] = {MOVE_NONE, 0};
+  }
+
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
