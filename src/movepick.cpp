@@ -170,7 +170,7 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return (pos.rule50_count() > 20 && cur == moves) || pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
+                       return (pos.rule50_count() > 50 && cur == moves) || pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
