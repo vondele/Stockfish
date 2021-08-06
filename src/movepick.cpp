@@ -63,11 +63,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
   assert(d > 0);
 
-  if (pos.rule50_count() > 20)
-  {
-    refutations[2] = {MOVE_NONE, 0};
-  }
-
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
@@ -207,6 +202,21 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
+
+          if (pos.rule50_count() > 20)
+          {
+             ExtMove *bestPawn = nullptr;
+             int value = std::numeric_limits<int>::min();
+             for (ExtMove *p = cur;  p < endMoves; ++p)
+                 if (p->value > value && type_of(pos.piece_on(from_sq(p->move))) == PAWN)
+                 {
+                     bestPawn = p;
+                     value = p->value;
+                 }
+             if (bestPawn)
+                 bestPawn->value += 3000 * depth;
+          }
+
           partial_insertion_sort(cur, endMoves, -3000 * depth);
       }
 
