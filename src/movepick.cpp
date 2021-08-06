@@ -214,7 +214,7 @@ top:
                      value = p->value;
                  }
              if (bestPawn)
-                 bestPawn->value += 3000 * depth;
+                 bestPawn->value += 500 * pos.rule50_count();
           }
 
           partial_insertion_sort(cur, endMoves, -3000 * depth);
