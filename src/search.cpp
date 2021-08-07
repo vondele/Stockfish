@@ -1639,7 +1639,7 @@ moves_loop: // When in check, search starts here
     bool stopShuffle = pos.rule50_count() > 20 &&
                        ((type_of(pos.piece_on(from_sq(bestMove))) == PAWN) || pos.capture_or_promotion(bestMove));
 
-    bonus1 = stat_bonus(depth + 1 + stopShuffle);
+    bonus1 = stat_bonus(depth + 1);
     bonus2 = (bestValue > beta + PawnValueMg || stopShuffle) ? bonus1                                 // larger bonus
                                                              : std::min(bonus1, stat_bonus(depth));   // smaller bonus
 
