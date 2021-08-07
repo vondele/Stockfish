@@ -214,7 +214,7 @@ top:
                      value = p->value;
                  }
              if (bestPawn)
-                 bestPawn->value += 3000 * std::min(10, depth);
+                 bestPawn->value += 2000 * depth;
           }
 
           partial_insertion_sort(cur, endMoves, -3000 * depth);
