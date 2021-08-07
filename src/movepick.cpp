@@ -203,7 +203,7 @@ top:
 
           score<QUIETS>();
 
-          if (pos.rule50_count() > 20)
+          if (pos.rule50_count() > 10)
           {
              ExtMove *bestPawn = nullptr;
              int value = std::numeric_limits<int>::min();
