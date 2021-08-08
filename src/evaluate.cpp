@@ -1099,7 +1099,7 @@ Value Eval::evaluate(const Position& pos) {
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
 
-         nnue -= std::min(std::abs(nnue / 2), pos.game_ply());
+         nnue += std::min(std::abs(nnue / 2), pos.game_ply());
 
          return nnue;
       };
