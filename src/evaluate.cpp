@@ -1092,13 +1092,14 @@ Value Eval::evaluate(const Position& pos) {
       {
          int scale =   883
                      + 32 * pos.count<PAWN>()
-                     + 32 * pos.non_pawn_material() / 1024
-                     - std::min(200, pos.game_ply());
+                     + 32 * pos.non_pawn_material() / 1024;
 
          Value nnue = NNUE::evaluate(pos, true) * scale / 1024;
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
+
+         nnue -= std::min(std::abs(nnue / 2), pos.game_ply());
 
          return nnue;
       };
