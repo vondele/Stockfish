@@ -1108,7 +1108,7 @@ Value Eval::evaluate(const Position& pos) {
       Value psq = Value(abs(eg_value(pos.psq_score())));
       bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
 
-      v = classical ? Evaluation<NO_TRACE>(pos).value() * 134 / 128   // classical
+      v = classical ? Evaluation<NO_TRACE>(pos).value() * 146 / 128   // classical
                     : adjusted_NNUE();                   // NNUE
   }
 
