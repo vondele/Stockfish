@@ -1112,7 +1112,7 @@ Value Eval::evaluate(const Position& pos) {
                     : adjusted_NNUE();                   // NNUE
   }
 
-  v += (pos.this_thread()->rootColor == pos.side_to_move() ? 1 : -1) * 20 * bool(pos.count<QUEEN>());
+  v += (pos.this_thread()->rootColor == pos.side_to_move() ? 1 : -1) * 40 * bool(pos.count<QUEEN>());
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
