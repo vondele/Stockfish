@@ -1113,7 +1113,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   if (pos.rule50_count() > 10)
-     v = pos.this_thread()->rootColor == pos.side_to_move() ? Value(10) : Value(-10);
+     v = pos.this_thread()->rootColor == pos.side_to_move() ? Value(20) : Value(-20);
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
