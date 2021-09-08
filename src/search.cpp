@@ -1096,8 +1096,8 @@ moves_loop: // When in check, search starts here
       }
 
       // Capture extensions for PvNodes and cutNodes
-      else if (   (PvNode || cutNode) 
-               && captureOrPromotion 
+      else if (   (PvNode || cutNode)
+               && captureOrPromotion
                && moveCount != 1)
           extension = 1;
 
@@ -1105,6 +1105,8 @@ moves_loop: // When in check, search starts here
       else if (   givesCheck
                && depth > 6
                && abs(ss->staticEval) > Value(100))
+          extension = 1;
+      else if (PvNode && depth == 7)
           extension = 1;
 
       // Add extension to new depth
