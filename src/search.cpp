@@ -843,14 +843,14 @@ namespace {
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
-        &&  depth > 5
+        &&  depth > 3
         &&  abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         // if value from transposition table is lower than probCutBeta, don't attempt probCut
-        // there and in further interactions with transposition table cutoff depth is set to depth - 3
-        // because probCut search has depth set to depth - 4 but we also do a move before it
-        // so effective depth is equal to depth - 3
+        // there and in further interactions with transposition table cutoff depth is set to depth - 2
+        // because probCut search has depth set to depth - 3 but we also do a move before it
+        // so effective depth is equal to depth - 2
         && !(   ss->ttHit
-             && tte->depth() >= depth - 3
+             && tte->depth() >= depth - 2
              && ttValue != VALUE_NONE
              && ttValue < probCutBeta))
     {
