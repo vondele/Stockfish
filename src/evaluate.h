@@ -34,6 +34,8 @@ namespace Eval {
   Value evaluate(const Position& pos);
 
   extern bool useNNUE;
+  extern bool limitStrength;
+  extern int randomEvalPerturb;
   extern std::string eval_file_loaded;
 
   // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue

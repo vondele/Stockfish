@@ -23,6 +23,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <random>
 #include <iostream>
 #include <streambuf>
 #include <vector>
@@ -61,6 +62,8 @@ namespace Stockfish {
 namespace Eval {
 
   bool useNNUE;
+  bool limitStrength;
+  int randomEvalPerturb;
   string eval_file_loaded = "None";
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
@@ -1075,6 +1078,20 @@ make_v:
                                        : -Value(correction);
   }
 
+  // Randomly perturb the evaluation in a calibrated way to yield a weaker engine
+  Value randomly_perturbed_eval(Value v)
+  {
+      static thread_local std::mt19937_64 tls_rng = [](){
+        return std::mt19937_64(std::time(nullptr));
+      }();
+
+      std::normal_distribution<float> d(0.0, QueenValueEg);
+      float r = d(tls_rng);
+
+      // linearly combine the random term with the real evaluation
+      return (Eval::randomEvalPerturb * Value(r) + (1000 - Eval::randomEvalPerturb) * v) / 1000;
+  }
+
 } // namespace Eval
 
 
@@ -1116,6 +1133,10 @@ Value Eval::evaluate(const Position& pos) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
+
+  // Optionally, limit the playing strength by perturbing the evaluation
+  if (Eval::limitStrength)
+      v = randomly_perturbed_eval(v);
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
