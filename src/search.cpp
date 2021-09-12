@@ -1140,10 +1140,7 @@ moves_loop: // When in check, search starts here
               || !ss->ttPv)
           && (!PvNode || ss->ply > 1 || thisThread->id() % 4 != 3))
       {
-          Depth r = reduction(improving, depth, moveCount);
-
-          if ((ss-1)->inCheck)
-              r++;
+          Depth r = reduction(improving && !ss->inCheck, depth, moveCount);
 
           if (PvNode)
               r--;
