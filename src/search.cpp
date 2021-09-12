@@ -1142,6 +1142,9 @@ moves_loop: // When in check, search starts here
       {
           Depth r = reduction(improving, depth, moveCount);
 
+          if ((ss-1)->inCheck)
+              r--;
+
           if (PvNode)
               r--;
 
