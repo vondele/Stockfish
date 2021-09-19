@@ -1569,7 +1569,8 @@ moves_loop: // When in check, search starts here
     {
         assert(!MoveList<LEGAL>(pos).size());
 
-        return mated_in(ss->ply); // Plies to mate from the root
+        bestValue = mated_in(ss->ply); // Plies to mate from the root
+        bestMove = move;
     }
 
     // Save gathered info in transposition table
