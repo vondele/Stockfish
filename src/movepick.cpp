@@ -99,6 +99,7 @@ template<GenType Type>
 void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+  Square ttMoveTo = ttMove ? to_sq(ttMove) : SQ_NONE;
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
@@ -111,7 +112,8 @@ void MovePicker::score() {
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
-                   + (ply < MAX_LPH ? 6 * (*lowPlyHistory)[ply][from_to(m)] : 0);
+                   + (ply < MAX_LPH ? 6 * (*lowPlyHistory)[ply][from_to(m)] : 0)
+                   + (ttMoveTo == to_sq(m) ? 4000 : 0);
 
       else // Type == EVASIONS
       {
