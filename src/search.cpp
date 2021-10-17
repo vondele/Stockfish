@@ -174,7 +174,7 @@ namespace {
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      ReductionsMoves[i] = int((21.4 + std::log(Threads.size()) / 2) * std::log(i));
+      ReductionsMoves[i] = int((22.4 + std::log(Threads.size()) / 2) * std::log(i));
   for (int i = 1; i < MAX_PLY; ++i)
       ReductionsDepth[i] = int((21.9 + std::log(Threads.size()) / 2) * std::log(i));
 }
