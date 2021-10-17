@@ -67,11 +67,11 @@ namespace {
   }
 
   // Reductions lookup table, initialized at startup
-  int Reductions[MAX_MOVES]; // [depth or moveNumber]
+  int Reductions[2][MAX_MOVES]; // [depth or moveNumber]
 
-  Depth reduction(bool i, Depth d, int mn, bool rangeReduction) {
-    int r = Reductions[d] * Reductions[mn];
-    return (r + 534) / 1024 + (!i && r > 904) + rangeReduction;
+  Depth reduction(Depth d, int mn, bool improving, bool rangeReduction, bool lowPieces) {
+    int r = Reductions[lowPieces][d] * Reductions[lowPieces][mn];
+    return (r + 534) / 1024 + (!improving && r > 904) + rangeReduction;
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -173,7 +173,9 @@ namespace {
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      Reductions[i] = int((21.9 + std::log(Threads.size()) / 2) * std::log(i));
+      Reductions[0][i] = int((21.4 + std::log(Threads.size()) / 2) * std::log(i));
+  for (int i = 1; i < MAX_MOVES; ++i)
+      Reductions[1][i] = int((21.9 + std::log(Threads.size()) / 2) * std::log(i));
 }
 
 
@@ -1040,7 +1042,7 @@ moves_loop: // When in check, search starts here
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           // Reduced depth of the next LMR search
-          int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2), 0);
+          int lmrDepth = std::max(newDepth - reduction(depth, moveCount, improving, rangeReduction > 2, pos.count<ALL_PIECES>() < 16 ), 0);
 
           if (   captureOrPromotion
               || givesCheck)
@@ -1174,7 +1176,7 @@ moves_loop: // When in check, search starts here
               || !ss->ttPv)
           && (!PvNode || ss->ply > 1 || thisThread->id() % 4 != 3))
       {
-          Depth r = reduction(improving, depth, moveCount, rangeReduction > 2);
+          Depth r = reduction(depth, moveCount, improving, rangeReduction > 2, pos.count<ALL_PIECES>() < 16);
 
           // Decrease reduction if on the PV (~2 Elo)
           if (   PvNode
