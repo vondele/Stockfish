@@ -813,7 +813,7 @@ namespace {
 
     // Step 7. Futility pruning: child node (~50 Elo).
     // The depth condition is important for mate finding.
-    if (    depth < 9 - 5 * PvNode
+    if (    depth < 9 - 6 * PvNode
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
