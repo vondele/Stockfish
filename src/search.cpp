@@ -1609,6 +1609,7 @@ moves_loop: // When in check, search starts here
     }
 
     // Save gathered info in transposition table
+    if ((ss-1)->currentMove != MOVE_NULL)
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER :
               PvNode && bestValue > oldAlpha  ? BOUND_EXACT : BOUND_UPPER,
