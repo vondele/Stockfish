@@ -985,12 +985,16 @@ moves_loop: // When in check, search starts here
                          && ttMove
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
+    uint64_t nodesNow = thisThread->nodes;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
     {
       assert(is_ok(move));
+
+      if (rootNode)
+         nodesNow = thisThread->nodes;
 
       if (move == excludedMove)
           continue;
@@ -1247,6 +1251,9 @@ moves_loop: // When in check, search starts here
           }
       }
 
+      if (rootNode)
+         value += msb(thisThread->nodes - nodesNow);
+
       // For PV nodes only, do a full PV search on the first move or after a fail
       // high (in the latter case search only if value < beta), otherwise let the
       // parent node fail low with value <= alpha and try another move.
@@ -1257,6 +1264,8 @@ moves_loop: // When in check, search starts here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha,
                               std::min(maxNextDepth, newDepth), false);
+          if (rootNode)
+             value += msb(thisThread->nodes - nodesNow);
       }
 
       // Step 18. Undo move
