@@ -339,6 +339,7 @@ void Thread::search() {
   nodesLastNormal    = nodes;
   state = EXPLOSION_NONE;
   trend = SCORE_ZERO;
+  complexMove = MOVE_NONE;
 
   int searchAgainCounter = 0;
 
@@ -986,6 +987,10 @@ moves_loop: // When in check, search starts here
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
 
+    uint64_t nodesMoveStart = thisThread->nodes;
+    uint64_t nodesDiffMax = 0;
+    Move     nodesMaxMove = MOVE_NONE;
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1165,6 +1170,9 @@ moves_loop: // When in check, search starts here
       {
           Depth r = reduction(improving, depth, moveCount, rangeReduction > 2);
 
+          if (rootNode && move == thisThread->complexMove)
+              r--;
+
           // Decrease reduction if on the PV (~2 Elo)
           if (   PvNode
               && bestMoveCount <= 3)
@@ -1276,6 +1284,14 @@ moves_loop: // When in check, search starts here
           RootMove& rm = *std::find(thisThread->rootMoves.begin(),
                                     thisThread->rootMoves.end(), move);
 
+          uint64_t nodesDiff = thisThread->nodes - nodesMoveStart;
+          if (nodesDiff > nodesDiffMax)
+          {
+              nodesDiffMax = nodesDiff;
+              nodesMaxMove = move;
+          }
+          nodesMoveStart = nodesDiff - nodesMoveStart;
+
           // PV move or new best move?
           if (moveCount == 1 || value > alpha)
           {
@@ -1385,6 +1401,9 @@ moves_loop: // When in check, search starts here
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
                   depth, bestMove, ss->staticEval);
+
+    if (rootNode)
+        thisThread->complexMove = nodesMaxMove;
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
