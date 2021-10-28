@@ -67,6 +67,7 @@ public:
   int selDepth, nmpMinPly;
   Color nmpColor;
   ExplosionState state;
+  Value optimism[COLOR_NB];
 
   Position rootPos;
   StateInfo rootState;
