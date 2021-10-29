@@ -1170,6 +1170,10 @@ moves_loop: // When in check, search starts here
               && bestMoveCount <= 3)
               r--;
 
+          if (   PvNode
+              && moveCount == 2)
+              r--;
+
           // Decrease reduction if position is or has been on the PV
           // and node is not likely to fail low. (~3 Elo)
           if (   ss->ttPv
