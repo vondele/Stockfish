@@ -1102,7 +1102,7 @@ Value Eval::evaluate(const Position& pos) {
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
 
-  Value keepIt = pos.non_pawn_material() / 128;
+  Value keepIt = pos.non_pawn_material() / 64;
   if (pos.side_to_move() == pos.this_thread()->rootColor && v < 0)
       v += keepIt;
   else if (pos.side_to_move() != pos.this_thread()->rootColor && v > 0)
