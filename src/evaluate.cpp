@@ -988,7 +988,9 @@ namespace {
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) > lazyThreshold + pos.non_pawn_material() / 32;
+        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
+                                                        + std::abs(pos.this_thread()->bestValue)
+                                                        + pos.non_pawn_material() / 32;
     };
 
     if (lazy_skip(LazyThreshold1))
