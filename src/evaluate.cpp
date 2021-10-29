@@ -1102,10 +1102,10 @@ Value Eval::evaluate(const Position& pos) {
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
 
-  Value keepIt = pos.non_pawn_material() / 256;
-  if (pos.side_to_move() == pos.this_thread()->rootColor && v < 0)
+  Value keepIt = pos.non_pawn_material() / 128;
+  if (pos.side_to_move() == pos.this_thread()->rootColor && std::abs(v) < 64)
       v += keepIt;
-  else if (pos.side_to_move() != pos.this_thread()->rootColor && v > 0)
+  else if (pos.side_to_move() != pos.this_thread()->rootColor && std::abs(v) < 64)
       v -= keepIt;
 
   // Guarantee evaluation does not hit the tablebase range
