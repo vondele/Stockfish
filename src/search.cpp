@@ -659,17 +659,6 @@ namespace {
     if (!excludedMove)
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
 
-    // If the position is not in TT, decrease depth by 2 or 1 depending on node type
-    if (   PvNode
-        && depth >= 6
-        && !ttMove)
-        depth -= 2;
-
-    if (   cutNode
-        && depth >= 9
-        && !ttMove)
-        depth--;
-
     // Update low ply history for previous move if we are near root and position is or has been in PV
     if (   ss->ttPv
         && depth > 12
@@ -818,6 +807,17 @@ namespace {
                   :                                    200;
 
     improving = improvement > 0;
+
+    // If the position is not in TT, decrease depth by 2 or 1 depending on node type
+    if (   PvNode
+        && depth >= 6
+        && !ttMove)
+        depth -= 2;
+
+    if (   cutNode
+        && depth >= 9
+        && !ttMove)
+        depth--;
 
     // Step 7. Futility pruning: child node (~50 Elo).
     // The depth condition is important for mate finding.
