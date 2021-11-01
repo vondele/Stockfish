@@ -808,6 +808,14 @@ namespace {
 
     improving = improvement > 0;
 
+    // Step 7. Futility pruning: child node (~50 Elo).
+    // The depth condition is important for mate finding.
+    if (   !PvNode
+        &&  depth < 9
+        &&  eval - futility_margin(depth, improving) >= beta
+        &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
+        return eval;
+
     // If the position is not in TT, decrease depth by 2 or 1 depending on node type
     if (   PvNode
         && depth >= 6
@@ -818,14 +826,6 @@ namespace {
         && depth >= 9
         && !ttMove)
         depth--;
-
-    // Step 7. Futility pruning: child node (~50 Elo).
-    // The depth condition is important for mate finding.
-    if (   !PvNode
-        &&  depth < 9
-        &&  eval - futility_margin(depth, improving) >= beta
-        &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
-        return eval;
 
     // Step 8. Null move search with verification search (~40 Elo)
     if (   !PvNode
