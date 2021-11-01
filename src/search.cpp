@@ -816,17 +816,6 @@ namespace {
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
-    // If the position is not in TT, decrease depth by 2 or 1 depending on node type
-    if (   PvNode
-        && depth >= 6
-        && !ttMove)
-        depth -= 2;
-
-    if (   cutNode
-        && depth >= 9
-        && !ttMove)
-        depth--;
-
     // Step 8. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
@@ -876,6 +865,17 @@ namespace {
                 return nullValue;
         }
     }
+
+    // If the position is not in TT, decrease depth by 2 or 1 depending on node type
+    if (   PvNode
+        && depth >= 6
+        && !ttMove)
+        depth -= 2;
+
+    if (   cutNode
+        && depth >= 9
+        && !ttMove)
+        depth--;
 
     probCutBeta = beta + 209 - 44 * improving;
 
