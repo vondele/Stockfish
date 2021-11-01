@@ -988,9 +988,7 @@ namespace {
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
-                                                        + std::abs(pos.this_thread()->bestValue) * 3 / 2
-                                                        + pos.non_pawn_material() / 32;
+        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold + pos.non_pawn_material() / 32;
     };
 
     if (lazy_skip(LazyThreshold1))
@@ -1087,7 +1085,7 @@ Value Eval::evaluate(const Position& pos) {
   // but we switch to NNUE during long shuffling or with high material on the board.
 
   if (  !useNNUE
-      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
+      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64 + std::abs(pos.this_thread()->bestValue)) * (5 + pos.rule50_count()))
       v = Evaluation<NO_TRACE>(pos).value();          // classical
   else
   {
