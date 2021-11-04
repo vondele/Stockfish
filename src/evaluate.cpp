@@ -192,8 +192,8 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold1    =  Value(3130);
-  constexpr Value LazyThreshold2    =  Value(2204);
+  constexpr Value LazyThreshold1    =  Value(3392);
+  constexpr Value LazyThreshold2    =  Value(2014);
   constexpr Value SpaceThreshold    =  Value(11551);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
@@ -989,7 +989,7 @@ namespace {
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
         return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
-                                                        + std::abs(pos.this_thread()->bestValue) * 5 / 4
+                                                        + std::abs(pos.this_thread()->bestValue)
                                                         + pos.non_pawn_material() / 32;
     };
 
