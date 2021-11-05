@@ -1172,7 +1172,8 @@ moves_loop: // When in check, search starts here
           if (   PvNode
               && ss->ttHit
               && ttValue > alpha
-              && ttValue < beta)
+              && ttValue < beta
+              && bestValue > alpha)
               r--;
 
           // Increases reduction for PvNodes that have small window
