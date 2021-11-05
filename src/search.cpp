@@ -286,13 +286,14 @@ void Thread::search() {
   // The latter is needed for statScore and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
-  Value alpha, beta, delta;
+  Value alpha, beta, delta, bestValue;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = 0;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   int iterIdx = 0;
+  bestTreeValue = VALUE_ZERO;
 
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -659,6 +660,8 @@ namespace {
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     if (!excludedMove)
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
+    if (ss->ttHit && depth > 8)
+        thisThread->bestTreeValue = ttValue;
 
     // Update low ply history for previous move if we are near root and position is or has been in PV
     if (   ss->ttPv

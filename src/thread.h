@@ -64,7 +64,7 @@ public:
   uint64_t nodesLastExplosive;
   uint64_t nodesLastNormal;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
-  Value bestValue;
+  Value bestTreeValue;
   int selDepth, nmpMinPly;
   Color nmpColor;
   ExplosionState state;
