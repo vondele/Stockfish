@@ -1169,6 +1169,12 @@ moves_loop: // When in check, search starts here
               && bestMoveCount <= 3)
               r--;
 
+          if (   PvNode
+              && ss->ttHit
+              && ttValue > alpha
+              && ttValue < beta)
+              r--;
+
           // Increases reduction for PvNodes that have small window
           if (PvNode && beta - alpha < thisThread->rootDelta / 4)
               r++;
