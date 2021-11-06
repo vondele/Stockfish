@@ -349,10 +349,6 @@ void Thread::search() {
       if (mainThread)
           totBestMoveChanges /= 2;
 
-      // Age out PV move array
-      for (int& m : PVMove)
-           m /= 2;
-
       // Save the last iteration's scores before first PV line is searched and
       // all the move scores except the (new) PV are set to -VALUE_INFINITE.
       for (RootMove& rm : rootMoves)
@@ -452,9 +448,9 @@ void Thread::search() {
           std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
 
           int PVply = 0;
+          PVMove = {};
           for (Move m : rootMoves[0].pv)
-               if (++PVply > rootDepth / 2)
-                   PVMove[from_to(m)] += 8;
+               PVMove[from_to(m)] = ++PVply;
 
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
@@ -1189,7 +1185,7 @@ moves_loop: // When in check, search starts here
               && !likelyFailLow)
               r -= 2;
 
-          if (thisThread->PVMove[from_to(move)])
+          if (thisThread->PVMove[from_to(move)] >= ss->ply)
               r--;
 
           // Increase reduction at root and non-PV nodes when the best move does not change frequently
