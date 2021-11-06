@@ -78,6 +78,7 @@ public:
   LowPlyHistory lowPlyHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
+  std::array<int, int(SQUARE_NB) * int(SQUARE_NB)> PVMove;
   Score trend;
 };
 
