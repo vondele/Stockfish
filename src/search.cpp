@@ -1030,7 +1030,8 @@ moves_loop: // When in check, search starts here
       newDepth = depth - 1;
 
       // Step 13. Pruning at shallow depth (~200 Elo). Depth conditions are important for mate finding.
-      if (  !rootNode
+      if (   !rootNode
+          && !thisThread->PVMove[from_to(move)]
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
@@ -1184,9 +1185,6 @@ moves_loop: // When in check, search starts here
           if (   ss->ttPv
               && !likelyFailLow)
               r -= 2;
-
-          if (thisThread->PVMove[from_to(move)] >= ss->ply)
-              r--;
 
           // Increase reduction at root and non-PV nodes when the best move does not change frequently
           if (   (rootNode || !PvNode)
