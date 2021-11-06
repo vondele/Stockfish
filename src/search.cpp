@@ -438,6 +438,12 @@ void Thread::search() {
               else
                   break;
 
+              if (bestValue > 2)
+                  alpha = std::max(alpha, Value(2));
+
+              if (bestValue < -2)
+                  beta = std::min(beta, Value(-2));
+
               delta += delta / 4 + 5;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
