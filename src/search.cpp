@@ -451,8 +451,10 @@ void Thread::search() {
           // Sort the PV lines searched so far and update the GUI
           std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
 
+          int PVply = 0;
           for (Move m : rootMoves[0].pv)
-               PVMove[from_to(m)] += 8;
+               if (++PVply > rootDepth / 2)
+                   PVMove[from_to(m)] += 8;
 
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
