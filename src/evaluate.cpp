@@ -1085,7 +1085,7 @@ Value Eval::evaluate(const Position& pos, int lazyOffset) {
   // but we switch to NNUE during long shuffling or with high material on the board.
 
   if (  !useNNUE
-      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
+      || abs(eg_value(pos.psq_score())) * 5 > (850 + std::abs(lazyOffset) + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
       v = Evaluation<NO_TRACE>(pos).value(lazyOffset);          // classical
   else
   {
