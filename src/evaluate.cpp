@@ -292,7 +292,7 @@ namespace {
     Evaluation() = delete;
     explicit Evaluation(const Position& p) : pos(p) {}
     Evaluation& operator=(const Evaluation&) = delete;
-    Value value();
+    Value value(int lazyOffset);
 
   private:
     template<Color Us> void initialize();
@@ -965,7 +965,7 @@ namespace {
   // of view of the side to move.
 
   template<Tracing T>
-  Value Evaluation<T>::value() {
+  Value Evaluation<T>::value(int lazyOffset) {
 
     assert(!pos.checkers());
 
@@ -988,7 +988,7 @@ namespace {
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) > lazyThreshold + pos.non_pawn_material() / 32;
+        return abs(mg_value(score) + eg_value(score)) > lazyThreshold + std::abs(lazyOffset) + pos.non_pawn_material() / 32;
     };
 
     if (lazy_skip(LazyThreshold1))
@@ -1077,7 +1077,7 @@ make_v:
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
 
-Value Eval::evaluate(const Position& pos) {
+Value Eval::evaluate(const Position& pos, int lazyOffset) {
 
   Value v;
 
@@ -1086,7 +1086,7 @@ Value Eval::evaluate(const Position& pos) {
 
   if (  !useNNUE
       || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
-      v = Evaluation<NO_TRACE>(pos).value();          // classical
+      v = Evaluation<NO_TRACE>(pos).value(lazyOffset);          // classical
   else
   {
       int scale =   883
@@ -1127,7 +1127,7 @@ std::string Eval::trace(Position& pos) {
 
   pos.this_thread()->trend = SCORE_ZERO; // Reset any dynamic contempt
 
-  v = Evaluation<TRACE>(pos).value();
+  v = Evaluation<TRACE>(pos).value(0);
 
   ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
      << " Contributing terms for the classical eval:\n"
@@ -1166,7 +1166,7 @@ std::string Eval::trace(Position& pos) {
       ss << "NNUE evaluation        " << to_cp(v) << " (white side)\n";
   }
 
-  v = evaluate(pos);
+  v = evaluate(pos, 0);
   v = pos.side_to_move() == WHITE ? v : -v;
   ss << "Final evaluation       " << to_cp(v) << " (white side)";
   if (Eval::useNNUE)
