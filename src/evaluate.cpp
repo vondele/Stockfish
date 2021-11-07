@@ -1089,9 +1089,9 @@ Value Eval::evaluate(const Position& pos) {
       v = Evaluation<NO_TRACE>(pos).value();          // classical
   else
   {
-      int scale =   898
-                  + 24 * pos.count<PAWN>()
-                  + 33 * pos.non_pawn_material() / 1024;
+      int scale =   865
+                  + 26 * pos.count<PAWN>()
+                  + 28 * pos.non_pawn_material() / 1024;
 
        v = NNUE::evaluate(pos, true) * scale / 1024;  // NNUE
 
@@ -1100,7 +1100,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (207 - pos.rule50_count()) / 207;
+  v = v * (215 - pos.rule50_count()) / 215;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
