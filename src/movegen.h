@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,9 +23,8 @@
 
 #include <algorithm>
 
+#include "position.h"
 #include "types.h"
-
-namespace Stockfish {
 
 class Position;
 
@@ -57,10 +58,23 @@ ExtMove* generate(const Position& pos, ExtMove* moveList);
 
 /// The MoveList struct is a simple wrapper around generate(). It sometimes comes
 /// in handy to use this class instead of the low level generate() function.
-template<GenType T>
+template<GenType T, PieceType Pt = ALL_PIECES>
 struct MoveList {
 
-  explicit MoveList(const Position& pos) : last(generate<T>(pos, moveList)) {}
+  explicit MoveList(const Position& pos) : last(generate<T>(pos, moveList)) {
+
+    if (Pt != ALL_PIECES)
+    {
+        for (ExtMove* cur = moveList; cur != last; )
+        {
+            if (type_of(pos.moved_piece(cur->move)) != Pt)
+                *cur = (--last)->move;
+            else
+                ++cur;
+        }
+    }
+  }
+
   const ExtMove* begin() const { return moveList; }
   const ExtMove* end() const { return last; }
   size_t size() const { return last - moveList; }
@@ -71,7 +85,5 @@ struct MoveList {
 private:
   ExtMove moveList[MAX_MOVES], *last;
 };
-
-} // namespace Stockfish
 
 #endif // #ifndef MOVEGEN_H_INCLUDED

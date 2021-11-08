@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,27 +21,21 @@
 #ifndef SEARCH_H_INCLUDED
 #define SEARCH_H_INCLUDED
 
+#include <atomic>
 #include <vector>
 
 #include "misc.h"
-#include "movepick.h"
 #include "types.h"
-
-namespace Stockfish {
 
 class Position;
 
 namespace Search {
 
-/// Threshold used for countermoves based pruning
-constexpr int CounterMovePruneThreshold = 0;
-
-
 /// Stack struct keeps track of the information we need to remember from nodes
 /// shallower and deeper in the tree during the search. Each search thread has
 /// its own array of Stack objects, indexed by the current ply.
 
-struct Stack {
+/*struct Stack {
   Move* pv;
   PieceToHistory* continuationHistory;
   int ply;
@@ -47,13 +43,36 @@ struct Stack {
   Move excludedMove;
   Move killers[2];
   Value staticEval;
-  Depth depth;
   int statScore;
   int moveCount;
-  bool inCheck;
-  bool ttPv;
-  bool ttHit;
-  int doubleExtensions;
+};
+*/
+
+/// BasicStack struct is a minimalist version of the
+/// bigger Stack struct, used by the mate search.
+
+struct BasicStack {
+
+  BasicStack() {
+    pv.reserve(16);
+    ply = 0;
+  }
+
+  std::vector<Move> pv;
+  int ply;
+};
+
+
+struct RankedMove {
+
+  RankedMove(Move m, int r) : move(m), rank(r) {}
+
+  bool operator<(const RankedMove& rm) const {
+    return rm.rank < rank;
+  }
+
+  Move move;
+  int rank;
 };
 
 
@@ -73,9 +92,9 @@ struct RootMove {
 
   Value score = -VALUE_INFINITE;
   Value previousScore = -VALUE_INFINITE;
-  Value averageScore = -VALUE_INFINITE;
   int selDepth = 0;
   int tbRank = 0;
+  int bestMoveCount = 0;
   Value tbScore;
   std::vector<Move> pv;
 };
@@ -95,7 +114,7 @@ struct LimitsType {
   }
 
   bool use_time_management() const {
-    return time[WHITE] || time[BLACK];
+    return !(mate | movetime | depth | nodes | perft | infinite);
   }
 
   std::vector<Move> searchmoves;
@@ -106,11 +125,8 @@ struct LimitsType {
 
 extern LimitsType Limits;
 
-void init();
 void clear();
 
 } // namespace Search
-
-} // namespace Stockfish
 
 #endif // #ifndef SEARCH_H_INCLUDED

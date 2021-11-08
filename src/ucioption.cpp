@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,7 +23,6 @@
 #include <ostream>
 #include <sstream>
 
-#include "evaluate.h"
 #include "misc.h"
 #include "search.h"
 #include "thread.h"
@@ -31,20 +32,17 @@
 
 using std::string;
 
-namespace Stockfish {
-
 UCI::OptionsMap Options; // Global object
 
 namespace UCI {
 
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
-void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
+void on_hash_size(const Option& o) { TT.resize(o); }
 void on_logger(const Option& o) { start_logger(o); }
-void on_threads(const Option& o) { Threads.set(size_t(o)); }
+void on_threads(const Option& o) { Threads.set(o); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
-void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
-void on_eval_file(const Option& ) { Eval::NNUE::init(); }
+
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -54,11 +52,12 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 }
 
 
-/// UCI::init() initializes the UCI options to their hard-coded default values
+/// init() initializes the UCI options to their hard-coded default values
 
 void init(OptionsMap& o) {
 
-  constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
+  // at most 2^32 clusters.
+  constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
 
   o["Debug Log File"]        << Option("", on_logger);
   o["Threads"]               << Option(1, 1, 512, on_threads);
@@ -67,20 +66,19 @@ void init(OptionsMap& o) {
   o["Ponder"]                << Option(false);
   o["MultiPV"]               << Option(1, 1, 500);
   o["Skill Level"]           << Option(20, 0, 20);
-  o["Move Overhead"]         << Option(10, 0, 5000);
-  o["Slow Mover"]            << Option(100, 10, 1000);
-  o["nodestime"]             << Option(0, 0, 10000);
+  o["Move Overhead"]         << Option(30, 0, 5000);
+  o["Minimum Thinking Time"] << Option(20, 0, 5000);
+  o["Slow Mover"]            << Option(84, 10, 1000);
+  o["Checks Only"]           << Option(false);
+  o["King Moves"]            << Option(8, 0, 8);
   o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_LimitStrength"]     << Option(false);
   o["UCI_Elo"]               << Option(1350, 1350, 2850);
-  o["UCI_ShowWDL"]           << Option(false);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  o["Use NNUE"]              << Option(true, on_use_NNUE);
-  o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }
 
 
@@ -164,7 +162,7 @@ Option& Option::operator=(const string& v) {
 
   assert(!type.empty());
 
-  if (   (type != "button" && type != "string" && v.empty())
+  if (   (type != "button" && v.empty())
       || (type == "check" && v != "true" && v != "false")
       || (type == "spin" && (stof(v) < min || stof(v) > max)))
       return *this;
@@ -190,5 +188,3 @@ Option& Option::operator=(const string& v) {
 }
 
 } // namespace UCI
-
-} // namespace Stockfish

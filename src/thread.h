@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,14 +27,10 @@
 #include <thread>
 #include <vector>
 
-#include "material.h"
-#include "movepick.h"
-#include "pawns.h"
 #include "position.h"
 #include "search.h"
 #include "thread_win32_osx.h"
 
-namespace Stockfish {
 
 /// Thread class keeps together all the thread-related stuff. We use
 /// per-thread pawn and material hash tables so that once we get a
@@ -51,34 +49,18 @@ public:
   explicit Thread(size_t);
   virtual ~Thread();
   virtual void search();
-  void clear();
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();
-  size_t id() const { return idx; }
 
-  Pawns::Table pawnsTable;
-  Material::Table materialTable;
   size_t pvIdx, pvLast;
-  RunningAverage doubleExtensionAverage[COLOR_NB];
-  uint64_t nodesLastExplosive;
-  uint64_t nodesLastNormal;
-  std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
-  int selDepth, nmpMinPly;
-  Color nmpColor;
-  ExplosionState state;
+  uint64_t ttHitAverage;
+  int selDepth;
+  std::atomic<uint64_t> nodes, tbHits;
 
   Position rootPos;
-  StateInfo rootState;
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth;
-  Value rootDelta;
-  CounterMoveHistory counterMoves;
-  ButterflyHistory mainHistory;
-  LowPlyHistory lowPlyHistory;
-  CapturePieceToHistory captureHistory;
-  ContinuationHistory continuationHistory[2][2];
-  Score trend;
 };
 
 
@@ -92,7 +74,6 @@ struct MainThread : public Thread {
   void check_time();
 
   double previousTimeReduction;
-  Value bestPreviousScore;
   Value iterValue[4];
   int callsCnt;
   bool stopOnPonderhit;
@@ -113,9 +94,6 @@ struct ThreadPool : public std::vector<Thread*> {
   MainThread* main()        const { return static_cast<MainThread*>(front()); }
   uint64_t nodes_searched() const { return accumulate(&Thread::nodes); }
   uint64_t tb_hits()        const { return accumulate(&Thread::tbHits); }
-  Thread* get_best_thread() const;
-  void start_searching();
-  void wait_for_search_finished() const;
 
   std::atomic_bool stop, increaseDepth;
 
@@ -132,7 +110,5 @@ private:
 };
 
 extern ThreadPool Threads;
-
-} // namespace Stockfish
 
 #endif // #ifndef THREAD_H_INCLUDED
