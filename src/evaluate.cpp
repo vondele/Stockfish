@@ -1087,7 +1087,7 @@ Value Eval::evaluate(const Position& pos) {
   // but we switch to NNUE during long shuffling or with high material on the board.
 
   if (  !useNNUE
-      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * 6)
+      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * 7)
       v = Evaluation<NO_TRACE>(pos).value();          // classical
   else
   {
