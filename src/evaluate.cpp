@@ -1083,7 +1083,7 @@ Value Eval::evaluate(const Position& pos) {
 
   Value v;
 
-  if (pos.count<ALL_PIECES>() < 7)
+  if (pos.count<ALL_PIECES>() < 6)
   {
     // If we have a specialized evaluation function for the current material
     // configuration, call it and return.
