@@ -890,12 +890,16 @@ namespace {
         MovePicker mp(pos, ttMove, probCutBeta - ss->staticEval, &captureHistory);
         bool ttPv = ss->ttPv;
         ss->ttPv = false;
+        int movecount = 0;
 
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
             {
                 assert(pos.capture_or_promotion(move));
                 assert(depth >= 5);
+
+                if (movecount > depth)
+                    break;
 
                 captureOrPromotion = true;
 
