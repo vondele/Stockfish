@@ -898,7 +898,7 @@ namespace {
                 assert(pos.capture_or_promotion(move));
                 assert(depth >= 5);
 
-                if (++movecount > 3)
+                if (++movecount > depth)
                     break;
 
                 captureOrPromotion = true;
