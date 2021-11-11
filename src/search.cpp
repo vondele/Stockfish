@@ -496,7 +496,7 @@ void Thread::search() {
 
           double scaling = fallingEval * reduction * bestMoveInstability;
           if (std::abs(bestValue) > 140 * PawnValueEg / 100)
-              scaling = std::max(1.5, scaling);
+              scaling *= 1.2;
 
           double totalTime = Time.optimum() * scaling;
 
