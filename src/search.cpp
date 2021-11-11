@@ -908,10 +908,11 @@ namespace {
                 pos.do_move(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
-                value = -qsearch<NonPV>(pos, ss+1, -beta, -beta+1);
+                Value qBeta = (beta + probCutBeta)/2;
+                value = -qsearch<NonPV>(pos, ss+1, -qBeta, -qBeta+1);
 
                 // If the qsearch held, perform the regular search
-                if (value >= beta)
+                if (value >= qBeta)
                     value = -search<NonPV>(pos, ss+1, -probCutBeta, -probCutBeta+1, depth - 4, !cutNode);
 
                 pos.undo_move(move);
