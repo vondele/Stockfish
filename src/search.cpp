@@ -1262,7 +1262,7 @@ moves_loop: // When in check, search starts here
           value = -search<PV>(pos, ss+1, -beta, -alpha,
                               std::min(maxNextDepth, newDepth), false);
 
-          if (value >= beta && depth < 6)
+          if (value >= beta && depth < 10)
               value = -search<PV>(pos, ss+1, -beta, -alpha,
                                   std::min(maxNextDepth, newDepth), false);
       }
