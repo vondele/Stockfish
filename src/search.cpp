@@ -815,6 +815,7 @@ namespace {
     if (   !PvNode
         &&  depth < 9
         &&  eval - futility_margin(depth, improving) >= beta
+        && (!ttMove || pos.legal(ttMove))
         &&  eval < 15000) // 50% larger than VALUE_KNOWN_WIN, but smaller than TB wins.
         return eval;
 
