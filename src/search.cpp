@@ -921,8 +921,8 @@ namespace {
     // at a depth equal or greater than the current depth, and the result of this search was a fail low.
     bool likelyFailLow =    PvNode
                          && ttMove
-                         && (tte->bound() & BOUND_UPPER)
-                         && tte->depth() >= depth;
+                         && (ttBound & BOUND_UPPER)
+                         && ttDepth >= depth;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1141,7 +1141,7 @@ namespace {
           Depth r = reduction(improving, depth, moveCount, rangeReduction > 2);
 
           // Decrease reduction if on the PV (~2 Elo)
-          if ((ss-1)->moveCount == 1 || (PvNode && bestMoveCount <= 3))
+          if ((PvNode && bestMoveCount <= 3))
               r--;
 
           // Increases reduction for PvNodes that have small window
