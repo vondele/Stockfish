@@ -1091,11 +1091,15 @@ Value Eval::evaluate(const Position& pos) {
       v = Evaluation<NO_TRACE>(pos).value();          // classical
   else
   {
-      int scale =   898
-                  + 24 * pos.count<PAWN>()
-                  + 33 * pos.non_pawn_material() / 1024;
+       int scale =   898
+                   + 24 * pos.count<PAWN>()
+                   + 33 * pos.non_pawn_material() / 1024;
 
-       v = NNUE::evaluate(pos, true) * scale / 1024;  // NNUE
+       Value nnue     = NNUE::evaluate(pos, true);     // NNUE
+       Color stm      = pos.side_to_move();
+       Value optimism = pos.this_thread()->optimism[stm];
+
+       v = (nnue + optimism) * scale / 1024 - optimism;
 
        if (pos.is_chess960())
            v += fix_FRC(pos);
