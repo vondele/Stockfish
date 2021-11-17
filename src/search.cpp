@@ -137,7 +137,7 @@ namespace {
   template <NodeType nodeType>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
 
-  Value value_to_tt(Value v, int ply);
+  Value value_to_tt(Value v, int ply, Value vTT);
   Value value_from_tt(Value v, int ply, int r50c);
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
@@ -739,7 +739,7 @@ namespace {
                 if (    b == BOUND_EXACT
                     || (b == BOUND_LOWER ? value >= beta : value <= alpha))
                 {
-                    tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
+                    tte->save(posKey, value_to_tt(value, ss->ply, ss->ttHit && ttValue ? ttValue : value), ss->ttPv, b,
                               std::min(MAX_PLY - 1, depth + 6),
                               MOVE_NONE, VALUE_NONE);
 
@@ -922,7 +922,7 @@ namespace {
                     if ( !(ss->ttHit
                        && tte->depth() >= depth - 3
                        && ttValue != VALUE_NONE))
-                        tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+                        tte->save(posKey, value_to_tt(value, ss->ply,  ss->ttHit && ttValue ? ttValue : value), ttPv,
                             BOUND_LOWER,
                             depth - 3, move, ss->staticEval);
                     return value;
@@ -1384,7 +1384,7 @@ moves_loop: // When in check, search starts here
 
     // Write gathered information in transposition table
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
-        tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
+        tte->save(posKey, value_to_tt(bestValue, ss->ply,  ss->ttHit && ttValue ? ttValue : bestValue), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
                   depth, bestMove, ss->staticEval);
@@ -1487,7 +1487,7 @@ moves_loop: // When in check, search starts here
         {
             // Save gathered info in transposition table
             if (!ss->ttHit)
-                tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
+                tte->save(posKey, value_to_tt(bestValue, ss->ply,  ss->ttHit && ttValue ? ttValue : bestValue), false, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 
             return bestValue;
@@ -1609,7 +1609,7 @@ moves_loop: // When in check, search starts here
     }
 
     // Save gathered info in transposition table
-    tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
+    tte->save(posKey, value_to_tt(bestValue, ss->ply,  ss->ttHit && ttValue ? ttValue : bestValue), pvHit,
               bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
               ttDepth, bestMove, ss->staticEval);
 
@@ -1623,12 +1623,12 @@ moves_loop: // When in check, search starts here
   // "plies to mate from the current position". Standard scores are unchanged.
   // The function is called before storing a value in the transposition table.
 
-  Value value_to_tt(Value v, int ply) {
+  Value value_to_tt(Value v, int ply, Value vTT) {
 
     assert(v != VALUE_NONE);
 
     return  v >= VALUE_TB_WIN_IN_MAX_PLY  ? v + ply
-          : v <= VALUE_TB_LOSS_IN_MAX_PLY ? v - ply : v;
+          : v <= VALUE_TB_LOSS_IN_MAX_PLY ? v - ply : (v + vTT) / 2;
   }
 
 
