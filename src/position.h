@@ -350,8 +350,8 @@ inline bool Position::opposite_bishops() const {
 }
 
 inline int Position::bucket() const {
-  Square ksq = square<KING>(side_to_move());
-  return (rank_of(ksq) % 3) * 3 + file_of(ksq) % 3;
+  return bool(square<KING>(WHITE) & DarkSquares) * 2 +
+         bool(square<KING>(BLACK) & DarkSquares);
 }
 
 inline bool Position::is_chess960() const {
