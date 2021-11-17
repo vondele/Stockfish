@@ -51,7 +51,7 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
       depth8    = (uint8_t)(d - DEPTH_OFFSET);
       genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
       if (std::abs(v) < VALUE_KNOWN_WIN)
-          value16   = (int16_t)(v * (128 - std::min(64, std::max(0, d))) / 128);
+          value16   = (int16_t)(v * (256 - std::max(0, d)) / 256);
       else
           value16   = (int16_t)v;
       eval16    = (int16_t)ev;
