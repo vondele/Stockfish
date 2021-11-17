@@ -160,6 +160,7 @@ public:
   bool has_game_cycle(int ply) const;
   bool has_repeated() const;
   int rule50_count() const;
+  int bucket() const;
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
   Value non_pawn_material() const;
@@ -346,6 +347,11 @@ inline bool Position::opposite_bishops() const {
   return   count<BISHOP>(WHITE) == 1
         && count<BISHOP>(BLACK) == 1
         && opposite_colors(square<BISHOP>(WHITE), square<BISHOP>(BLACK));
+}
+
+inline int Position::bucket() const {
+  Square ksq = square<KING>(side_to_move());
+  return (rank_of(ksq) % 2) * 2 + file_of(ksq) % 2;
 }
 
 inline bool Position::is_chess960() const {
