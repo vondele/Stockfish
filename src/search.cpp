@@ -1529,6 +1529,7 @@ moves_loop: // When in check, search starts here
       // Futility pruning and moveCount pruning
       if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
           && !givesCheck
+          && !((ss-1)->inCheck && (ss-3)->inCheck)
           &&  futilityBase > -VALUE_KNOWN_WIN
           &&  type_of(move) != PROMOTION)
       {
