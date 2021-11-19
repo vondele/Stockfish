@@ -334,8 +334,10 @@ void Thread::search() {
 
   nodesLastExplosive = nodes;
   nodesLastNormal    = nodes;
-  state = EXPLOSION_NONE;
-  trend = SCORE_ZERO;
+  state              = EXPLOSION_NONE;
+  trend              = SCORE_ZERO;
+  optimism[ us]      = Value(25);
+  optimism[~us]      = -optimism[us];
 
   int searchAgainCounter = 0;
 
@@ -386,6 +388,9 @@ void Thread::search() {
 
               trend = (us == WHITE ?  make_score(tr, tr / 2)
                                    : -make_score(tr, tr / 2));
+
+              optimism[ us] = Value(25 + tr / 2);
+              optimism[~us] = -optimism[us];
           }
 
           // Start with a small aspiration window and, in the case of a fail
