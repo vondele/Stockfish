@@ -1095,7 +1095,7 @@ Value Eval::evaluate(const Position& pos) {
                    + 24 * pos.count<PAWN>()
                    + 33 * pos.non_pawn_material() / 1024;
 
-       Value nnue     = NNUE::evaluate(pos, true);     // NNUE
+       Value nnue     = NNUE::evaluate(pos);     // NNUE
        Color stm      = pos.side_to_move();
        Value optimism = pos.this_thread()->optimism[stm];
 
@@ -1171,7 +1171,7 @@ std::string Eval::trace(Position& pos) {
   ss << "\nClassical evaluation   " << to_cp(v) << " (white side)\n";
   if (Eval::useNNUE)
   {
-      v = NNUE::evaluate(pos, false);
+      v = NNUE::evaluate(pos);
       v = pos.side_to_move() == WHITE ? v : -v;
       ss << "NNUE evaluation        " << to_cp(v) << " (white side)\n";
   }

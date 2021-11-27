@@ -137,13 +137,12 @@ namespace Stockfish::Eval::NNUE {
   }
 
   // Evaluation function. Perform differential calculation.
-  Value evaluate(const Position& pos, bool adjusted) {
+  Value evaluate(const Position& pos) {
 
     // We manually align the arrays on the stack because with gcc < 9.3
     // overaligning stack variables with alignas() doesn't work correctly.
 
     constexpr uint64_t alignment = CacheLineSize;
-    int delta = 7;
 
 #if defined(ALIGNAS_ON_STACK_VARIABLES_BROKEN)
     TransformedFeatureType transformedFeaturesUnaligned[
@@ -165,12 +164,7 @@ namespace Stockfish::Eval::NNUE {
     const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
     const auto positional = network[bucket]->propagate(transformedFeatures, buffer)[0];
 
-    // Give more value to positional evaluation when material is balanced
-    if (   adjusted
-        && abs(pos.non_pawn_material(WHITE) - pos.non_pawn_material(BLACK)) <= RookValueMg - BishopValueMg)
-      return  static_cast<Value>(((128 - delta) * psqt + (128 + delta) * positional) / 128 / OutputScale);
-    else
-      return static_cast<Value>((psqt + positional) / OutputScale);
+    return static_cast<Value>((psqt + positional) / OutputScale);
   }
 
   struct NnueEvalTrace {
