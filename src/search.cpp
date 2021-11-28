@@ -63,7 +63,7 @@ namespace {
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(214 * (d - improving));
+    return Value(208 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -829,7 +829,7 @@ namespace {
         && (ss-1)->statScore < 23767
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 204
+        &&  ss->staticEval >= beta - 19 * depth - improvement / 15 + 200
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
@@ -837,7 +837,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = std::min(int(eval - beta) / 205, 3) + depth / 3 + 4;
+        Depth R = std::min(int(eval - beta) / 192, 3) + depth / 3 + 4;
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1063,7 +1063,7 @@ moves_loop: // When in check, search starts here
                   && history < -3000 * depth + 3000)
                   continue;
 
-              history += thisThread->mainHistory[us][from_to(move)];                  
+              history += thisThread->mainHistory[us][from_to(move)];
 
               // Futility pruning: parent node (~5 Elo)
               if (   !ss->inCheck
