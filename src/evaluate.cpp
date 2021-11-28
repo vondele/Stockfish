@@ -981,7 +981,7 @@ namespace {
     // Initialize score by reading the incrementally updated scores included in
     // the position object (material + piece square tables) and the material
     // imbalance. Score is computed internally from the white point of view.
-    Score score = pos.psq_score() + me->imbalance() + pos.this_thread()->trend;
+    Score score = pos.psq_score() + me->imbalance();
 
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
@@ -1103,8 +1103,8 @@ std::string Eval::trace(Position& pos) {
 
   std::memset(scores, 0, sizeof(scores));
 
-  pos.this_thread()->trend = SCORE_ZERO; // Reset any dynamic contempt
-  pos.this_thread()->bestValue = VALUE_ZERO; // Reset bestValue for lazyEval
+  // Reset any global variable used in eval
+  pos.this_thread()->bestValue       = VALUE_ZERO;
 
   v = Evaluation<TRACE>(pos).value();
 

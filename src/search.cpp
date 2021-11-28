@@ -83,30 +83,6 @@ namespace {
     return std::min((6 * d + 229) * d - 215 , 2000);
   }
 
-  // Check if the current thread is in a search explosion
-  ExplosionState search_explosion(Thread* thisThread) {
-
-    uint64_t nodesNow = thisThread->nodes;
-    bool explosive =    thisThread->doubleExtensionAverage[WHITE].is_greater(2, 100)
-                     || thisThread->doubleExtensionAverage[BLACK].is_greater(2, 100);
-
-    if (explosive)
-       thisThread->nodesLastExplosive = nodesNow;
-    else
-       thisThread->nodesLastNormal = nodesNow;
-
-    if (   explosive
-        && thisThread->state == EXPLOSION_NONE
-        && nodesNow - thisThread->nodesLastNormal > 6000000)
-        thisThread->state = MUST_CALM_DOWN;
-
-    if (   thisThread->state == MUST_CALM_DOWN
-        && nodesNow - thisThread->nodesLastExplosive > 6000000)
-        thisThread->state = EXPLOSION_NONE;
-
-    return thisThread->state;
-  }
-
   template <NodeType nodeType>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
@@ -265,7 +241,6 @@ void Thread::search() {
   Depth lastBestMoveDepth = 0;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1, totBestMoveChanges = 0;
-  Color us = rootPos.side_to_move();
   int iterIdx = 0;
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -296,14 +271,6 @@ void Thread::search() {
   size_t multiPV = size_t(Options["MultiPV"]);
 
   multiPV = std::min(multiPV, rootMoves.size());
-
-  doubleExtensionAverage[WHITE].set(0, 100);  // initialize the running average at 0%
-  doubleExtensionAverage[BLACK].set(0, 100);  // initialize the running average at 0%
-
-  nodesLastExplosive = nodes;
-  nodesLastNormal    = nodes;
-  state = EXPLOSION_NONE;
-  trend = SCORE_ZERO;
 
   int searchAgainCounter = 0;
 
@@ -348,13 +315,6 @@ void Thread::search() {
               delta = Value(17) + int(prev) * prev / 16384;
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
-
-              // Adjust trend based on root move's previousScore (dynamic contempt)
-              int dt = int8_t(Options["Dynamic Contempt"]);
-              int tr = dt * (113 * prev / (abs(prev) + 147));
-
-              trend = (us == WHITE ?  make_score(tr, tr / 2)
-                                   : -make_score(tr, tr / 2));
           }
 
           // Start with a small aspiration window and, in the case of a fail
@@ -496,14 +456,6 @@ namespace {
   template <NodeType nodeType>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
 
-    Thread* thisThread = pos.this_thread();
-
-    // Step 0. Limit search explosion
-    if (   ss->ply > 10
-        && search_explosion(thisThread) == MUST_CALM_DOWN
-        && depth > (ss-1)->depth)
-       depth = (ss-1)->depth;
-
     constexpr bool PvNode = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
@@ -535,6 +487,7 @@ namespace {
     int moveCount, captureCount, quietCount, bestMoveCount, improvement, rootDepth;
 
     // Step 1. Initialize node
+    Thread* thisThread  = pos.this_thread();
     ss->inCheck         = pos.checkers();
     priorCapture        = pos.captured_piece();
     Color us            = pos.side_to_move();
@@ -620,11 +573,7 @@ namespace {
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
     (ss+2)->killers[0]   = (ss+2)->killers[1] = MOVE_NONE;
     ss->doubleExtensions = (ss-1)->doubleExtensions;
-    ss->depth            = depth;
     Square prevSq        = to_sq((ss-1)->currentMove);
-
-    // Update the running average statistics for double extensions
-    thisThread->doubleExtensionAverage[us].update(ss->depth > (ss-1)->depth);
 
     // Initialize statScore to zero for the grandchildren of the current position.
     // So statScore is shared between all grandchildren and only the first grandchild
@@ -776,7 +725,8 @@ namespace {
            kingDanger = pos.king_danger();
 
        // Step 7. Futility pruning: child node (~30 Elo)
-       if (    depth < 6
+       if (    depth < 8
+           && !ss->ttPv
            && !kingDanger
            &&  abs(alpha) < VALUE_KNOWN_WIN
            &&  eval - futility_margin(depth, improving) >= beta)
@@ -785,6 +735,7 @@ namespace {
        // Step 8. Null move search with verification search (~40 Elo)
        if (   (ss-1)->currentMove != MOVE_NULL
            && (ss-1)->statScore < 23767
+           &&  beta < VALUE_TB_WIN_IN_MAX_PLY
            &&  eval >= beta
            &&  eval >= ss->staticEval
            &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 204
@@ -876,8 +827,6 @@ namespace {
 
                    if (value >= probCutBeta)
                    {
-                       value = std::min(value, VALUE_TB_WIN_IN_MAX_PLY);
-
                        // if transposition table doesn't have equal or more deep info write probCut data into it
                        tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
                                  BOUND_LOWER, depth - 3, move, ss->staticEval);
@@ -1010,17 +959,21 @@ namespace {
           }
           else
           {
+              int history =   (*contHist[0])[movedPiece][to_sq(move)]
+                            + (*contHist[1])[movedPiece][to_sq(move)]
+                            + (*contHist[3])[movedPiece][to_sq(move)];
+
               // Continuation history based pruning (~20 Elo)
-              if (lmrDepth < 5
-                  && (*contHist[0])[movedPiece][to_sq(move)]
-                  + (*contHist[1])[movedPiece][to_sq(move)]
-                  + (*contHist[3])[movedPiece][to_sq(move)] < -3000 * depth + 3000)
+              if (   lmrDepth < 5
+                  && history < -3000 * depth + 3000)
                   continue;
+
+              history += thisThread->mainHistory[us][from_to(move)];
 
               // Futility pruning: parent node (~5 Elo)
               if (   !ss->inCheck
                   && lmrDepth < 3
-                  && ss->staticEval + 172 + 145 * lmrDepth <= alpha
+                  && ss->staticEval + 172 + 145 * lmrDepth + history / 128 <= alpha
                   &&  (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
                     + (*contHist[3])[movedPiece][to_sq(move)]
@@ -1035,7 +988,7 @@ namespace {
 
       // Step 14. Extensions (~75 Elo)
       if (   gameCycle
-          && (depth < 5 || PvNode))
+          && (PvNode || (depth < 5 && ss->doubleExtensions < 5)))
           extension = 2;
 
       // Singular extension search (~70 Elo). If all moves but one fail low on a
@@ -1079,7 +1032,7 @@ namespace {
           else if (!PvNode && !((ss->ply & 1) && (ss-1)->moveCount > 1))
           {
             if (singularBeta >= beta)
-                return std::min(singularBeta, VALUE_TB_WIN_IN_MAX_PLY);
+                return singularBeta;
 
             // If the eval of ttMove is greater than beta, we reduce it (negative extension)
             else if (ttValue >= beta)

@@ -60,14 +60,10 @@ public:
   Pawns::Table pawnsTable;
   Material::Table materialTable;
   size_t pvIdx, pvLast;
-  RunningAverage doubleExtensionAverage[COLOR_NB];
-  uint64_t nodesLastExplosive;
-  uint64_t nodesLastNormal;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
   Value bestValue;
   int selDepth;
   bool nmpGuard;
-  ExplosionState state;
 
   Position rootPos;
   StateInfo rootState;
@@ -79,7 +75,6 @@ public:
   LowPlyHistory lowPlyHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
-  Score trend;
 };
 
 
