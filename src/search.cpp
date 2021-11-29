@@ -479,7 +479,7 @@ void Thread::search() {
 
       // Do we have time for the next iteration? Can we stop searching now?
       if (    Limits.use_time_management()
-          &&  rootDepth > 5
+          &&  mainThread->nodes > 1024
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
@@ -1834,7 +1834,7 @@ void MainThread::check_time() {
   }
 
   // We should not stop pondering until told so by the GUI
-  if (ponder || rootDepth < 6)
+  if (ponder || nodes < 1024)
       return;
 
   if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
