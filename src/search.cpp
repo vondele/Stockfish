@@ -58,6 +58,12 @@ using namespace Search;
 
 namespace {
 
+  int param1 = 4923, param2 = 14721, param3 = 0;
+  TUNE(param1);
+  TUNE(SetRange(10000,20000), param2);
+  TUNE(SetRange(-256, 256), param3);
+
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -1212,10 +1218,11 @@ moves_loop: // When in check, search starts here
                          + (*contHist[0])[movedPiece][to_sq(move)]
                          + (*contHist[1])[movedPiece][to_sq(move)]
                          + (*contHist[3])[movedPiece][to_sq(move)]
-                         - 4923;
+                         - param1;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= ss->statScore / 14721;
+          int t = ss->statScore / param2;
+          r -= t * (32 + param3 * t * t) / 32;
 
           // In general we want to cap the LMR depth search at newDepth. But if reductions
           // are really negative and movecount is low, we allow this move to be searched
