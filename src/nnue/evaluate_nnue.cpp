@@ -34,6 +34,8 @@
 
 namespace Stockfish::Eval::NNUE {
 
+  std::string active_fen;
+
   // Input feature converter
   LargePagePtr<FeatureTransformer> featureTransformer;
 
@@ -141,6 +143,8 @@ namespace Stockfish::Eval::NNUE {
 
     // We manually align the arrays on the stack because with gcc < 9.3
     // overaligning stack variables with alignas() doesn't work correctly.
+
+    active_fen = pos.fen();
 
     constexpr uint64_t alignment = CacheLineSize;
     int delta = 7;

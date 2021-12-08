@@ -1162,8 +1162,8 @@ std::string Eval::trace(Position& pos) {
      << "|      Total | " << Term(TOTAL)
      << "+------------+-------------+-------------+-------------+\n";
 
-  if (Eval::useNNUE)
-      ss << '\n' << NNUE::trace(pos) << '\n';
+//  if (Eval::useNNUE)
+//      ss << '\n' << NNUE::trace(pos) << '\n';
 
   ss << std::showpoint << std::showpos << std::fixed << std::setprecision(2) << std::setw(15);
 

@@ -22,6 +22,7 @@
 #define NNUE_LAYERS_CLIPPED_RELU_H_INCLUDED
 
 #include "../nnue_common.h"
+#include <iomanip>
 
 namespace Stockfish::Eval::NNUE::Layers {
 
@@ -179,6 +180,19 @@ namespace Stockfish::Eval::NNUE::Layers {
       for (IndexType i = Start; i < InputDimensions; ++i) {
         output[i] = static_cast<OutputType>(
             std::max(0, std::min(127, input[i] >> WeightScaleBits)));
+      }
+
+      if (OutputDimensions == 8)
+      {
+        std::cout << "xxx " << std::setw(6) << int(output[0])
+                            << std::setw(6) << int(output[1])
+                            << std::setw(6) << int(output[2])
+                            << std::setw(6) << int(output[3])
+                            << std::setw(6) << int(output[4])
+                            << std::setw(6) << int(output[5])
+                            << std::setw(6) << int(output[6])
+                            << std::setw(6) << int(output[7])
+                            << " " << active_fen << std::endl;
       }
 
       // Affine transform layers expect that there is at least

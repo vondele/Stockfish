@@ -73,6 +73,8 @@ namespace Stockfish::Eval::NNUE {
 
   constexpr std::size_t MaxSimdWidth = 32;
 
+  extern std::string active_fen;
+
   // Type of input feature after conversion
   using TransformedFeatureType = std::uint8_t;
   using IndexType = std::uint32_t;
