@@ -273,8 +273,6 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
 
-  int searchAgainCounter = 0;
-
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
@@ -291,9 +289,6 @@ void Thread::search() {
 
       size_t pvFirst = 0;
       pvLast = 0;
-
-      if (!Threads.increaseDepth)
-         searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
@@ -323,8 +318,7 @@ void Thread::search() {
           // high/low anymore.
           while (true)
           {
-              Depth adjustedDepth = std::max(1, rootDepth - searchAgainCounter);
-              bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, adjustedDepth, false);
+              bestValue = Stockfish::search<Root>(rootPos, ss, alpha, beta, rootDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
               // is done with a stable algorithm because all the values but the
@@ -431,12 +425,6 @@ void Thread::search() {
               else
                   Threads.stop = true;
           }
-          else if (   Threads.increaseDepth
-                   && !mainThread->ponder
-                   && elapsedT > optimumT * fallingEval * reduction * bestMoveInstability * 0.58)
-                   Threads.increaseDepth = false;
-          else
-                   Threads.increaseDepth = true;
       }
 
       mainThread->iterValue[iterIdx] = bestValue;
