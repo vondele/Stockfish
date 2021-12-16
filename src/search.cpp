@@ -47,7 +47,6 @@ namespace Tablebases {
   int Cardinality;
   bool RootInTB;
   bool UseRule50;
-  Depth ProbeDepth;
 }
 
 namespace TB = Tablebases;
@@ -470,7 +469,7 @@ namespace {
     Value bestValue, value, ttValue, eval, probCutBeta;
     bool givesCheck, improving, didLMR, priorCapture, isMate, gameCycle;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
-         ttCapture, singularQuietLMR, kingDanger;
+         ttCapture, singularQuietLMR, kingDanger, ourMove;
 
     Piece movedPiece;
     int moveCount, captureCount, quietCount, bestMoveCount, improvement, rootDepth;
@@ -484,6 +483,7 @@ namespace {
     bestValue           = -VALUE_INFINITE;
     gameCycle           = kingDanger = false;
     rootDepth           = thisThread->rootDepth;
+    ourMove             = !(ss->ply & 1);
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -614,7 +614,6 @@ namespace {
         int piecesCount = popcount(pos.pieces());
 
         if (    piecesCount <= TB::Cardinality
-            && (piecesCount <  TB::Cardinality || depth >= TB::ProbeDepth)
             &&  pos.rule50_count() == 0
             && !pos.can_castle(ANY_CASTLING))
         {
@@ -705,12 +704,12 @@ namespace {
 
     // Begin early pruning.
     if (   !PvNode
-        && !excludedMove
+        && (ourMove || !excludedMove)
         && !gameCycle
         && !thisThread->nmpGuard
         &&  abs(eval) < 14000)
     {
-       if (rootDepth > 10)
+       if (rootDepth > 10 && !ourMove)
            kingDanger = pos.king_danger();
 
        // Step 7. Futility pruning: child node (~30 Elo)
@@ -730,7 +729,7 @@ namespace {
            &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 204
            &&  pos.non_pawn_material(us)
            && !kingDanger
-           && !(rootDepth > 10 && MoveList<LEGAL>(pos).size() < 6))
+           && (rootDepth < 11 || ourMove || MoveList<LEGAL>(pos).size() > 5))
        {
            assert(eval - beta >= 0);
 
@@ -922,14 +921,24 @@ namespace {
       // Calculate new depth for this move
       newDepth = depth - 1;
 
+      bool lmPrunable = (   rootDepth < 11
+                         || !ourMove
+                         || ss->ply > 6
+                         || (ss-1)->moveCount > 1
+                         || (ss-3)->moveCount > 1
+                         || (ss-5)->moveCount > 1);
+
       // Step 13. Pruning at shallow depth (~200 Elo). Depth conditions are important for mate finding.
       if (  !PvNode
+          && (ss->ply > 2 || lmPrunable)
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
+          if (lmPrunable)
+          {
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2), 0);
 
@@ -974,6 +983,7 @@ namespace {
               // Prune moves with negative SEE (~20 Elo)
               if (!pos.see_ge(move, Value(-21 * lmrDepth * (lmrDepth + 1))))
                   continue;
+          }
           }
       }
 
@@ -1020,39 +1030,35 @@ namespace {
           // search without the ttMove. So we assume this expected Cut-node is not singular,
           // that multiple moves fail high, and we can prune the whole subtree by returning
           // a soft bound.
-          else if (!PvNode && !((ss->ply & 1) && (ss-1)->moveCount > 1))
+          else if (!PvNode)
           {
             if (singularBeta >= beta)
                 return singularBeta;
 
             // If the eval of ttMove is greater than beta, we reduce it (negative extension)
-            else if (ttValue >= beta)
+            else if (ttValue >= beta && (ss-1)->moveCount > 1)
                      extension = -2;
           }
       }
 
-      // Secondary extensions
-      if (extension < 1)
-      {
-        // Capture extensions for PvNodes and cutNodes
-        if (   (PvNode || cutNode)
-            && captureOrPromotion
-            && moveCount != 1)
-            extension = 1;
+      // Capture extensions for PvNodes and cutNodes
+      else if (   (PvNode || cutNode)
+               && captureOrPromotion
+               && moveCount != 1)
+               extension = 1;
 
-        // Check extension
-        else if (   givesCheck
-                 && depth > 6
-                 && abs(ss->staticEval) > Value(100))
-                 extension = 1;
+      // Check extension
+      else if (   givesCheck
+               && depth > 6
+               && abs(ss->staticEval) > Value(100))
+               extension = 1;
 
-        // Quiet ttMove extensions
-        else if (   PvNode
-                 && move == ttMove
-                 && move == ss->killers[0]
-                 && (*contHist[0])[movedPiece][to_sq(move)] >= 10000)
-                 extension = 1;
-       }
+      // Quiet ttMove extensions
+      else if (   PvNode
+               && move == ttMove
+               && move == ss->killers[0]
+               && (*contHist[0])[movedPiece][to_sq(move)] >= 10000)
+               extension = 1;
 
       // Add extension to new depth
       newDepth += extension;
@@ -1073,14 +1079,16 @@ namespace {
 
       bool doDeeperSearch = false;
 
+      bool lateKingDanger = (rootDepth > 10 && ourMove && ss->ply < 7 && pos.king_danger());
+
       // Step 16. Late moves reduction / extension (LMR, ~200 Elo)
       // We use various heuristics for the sons of a node after the first son has
       // been searched. In general we would like to reduce them, but there are many
       // cases where we extend a son if it has good chances to be "interesting".
       if (    depth >= 3
+          && !lateKingDanger
           && !gameCycle
           &&  moveCount > 1
-          &&  thisThread->selDepth > depth
           && (!PvNode || ss->ply > 1)
           && (!captureOrPromotion || (cutNode && (ss-1)->moveCount >1)))
       {
@@ -1098,13 +1106,6 @@ namespace {
               && !likelyFailLow)
               r -= 2;
 
-          if (rootDepth > 10 && pos.king_danger())
-              r--;
-
-          // Increase reduction at non-PV nodes
-          if (!PvNode)
-              r++;
-
           // Decrease reduction if opponent's move count is high (~1 Elo)
           if ((ss-1)->moveCount > 13)
               r--;
@@ -1112,6 +1113,10 @@ namespace {
           // Decrease reduction if ttMove has been singularly extended (~1 Elo)
           if (singularQuietLMR)
               r--;
+
+          // Increase reduction at non-PV nodes
+          if (!PvNode)
+              r++;
 
           // Increase reduction for cut nodes (~3 Elo)
           if (cutNode && move != ss->killers[0])
@@ -1129,13 +1134,6 @@ namespace {
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
           r -= ss->statScore / 14721;
-
-          if (!PvNode && (ss-1)->moveCount > 1)
-          {
-            Depth rr = newDepth / (2 + ss->ply / 2.8);
-
-            r -= rr;
-          }
 
           // In general we want to cap the LMR depth search at newDepth. But if reductions
           // are really negative and movecount is low, we allow this move to be searched
@@ -1872,16 +1870,10 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
 
     RootInTB = false;
     UseRule50 = bool(Options["Syzygy50MoveRule"]);
-    ProbeDepth = int(Options["SyzygyProbeDepth"]);
     Cardinality = int(Options["SyzygyProbeLimit"]);
 
-    // Tables with fewer pieces than SyzygyProbeLimit are searched with
-    // ProbeDepth == DEPTH_ZERO
     if (Cardinality > MaxCardinality)
-    {
         Cardinality = MaxCardinality;
-        ProbeDepth = 0;
-    }
 
     if (Cardinality >= popcount(pos.pieces()) && !pos.can_castle(ANY_CASTLING))
     {
