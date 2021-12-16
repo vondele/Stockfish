@@ -399,9 +399,8 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-          double fallingEval = (142 + 6 * (mainThread->bestPreviousScore - bestValue)
-                                    + 6 * (mainThread->bestPreviousAverageScore - bestValue)
-                                    + 6 * (mainThread->iterValue[iterIdx] - bestValue)) / 825.0;
+          double fallingEval = (142 + 12 * (mainThread->bestPreviousAverageScore - bestValue)
+                                    +  6 * (mainThread->iterValue[iterIdx] - bestValue)) / 825.0;
           fallingEval = std::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
@@ -998,7 +997,7 @@ namespace {
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin, then we will extend the ttMove.
       else if (  !rootNode
-          &&  depth >= 7
+          &&  depth >= 6 + 2 * (PvNode && tte->is_pv())
           &&  move == ttMove
           && !excludedMove // Avoid recursive singular search
           &&  ttValue != VALUE_NONE
