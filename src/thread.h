@@ -72,7 +72,6 @@ public:
   Value rootDelta;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
-  LowPlyHistory lowPlyHistory;
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory[2][2];
 };
