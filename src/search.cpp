@@ -68,9 +68,9 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
-  Depth reduction(bool i, Depth d, int mn, bool rangeReduction) {
+  Depth reduction(bool i, Depth d, int mn, bool rangeReduction, Value delta, Value rootDelta) {
     int r = Reductions[d] * Reductions[mn];
-    return (r + 534) / 1024 + (!i && r > 904) + rangeReduction;
+    return (r + 1358 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 904) + rangeReduction;
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -906,6 +906,8 @@ namespace {
       // Calculate new depth for this move
       newDepth = depth - 1;
 
+      Value delta = beta - alpha;
+
       bool lmPrunable = (   rootDepth < 11
                          || !ourMove
                          || ss->ply > 6
@@ -925,7 +927,7 @@ namespace {
           if (lmPrunable)
           {
           // Reduced depth of the next LMR search
-          int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2), 0);
+          int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2, delta, thisThread->rootDelta), 0);
 
           if (   captureOrPromotion
               || givesCheck)
@@ -953,8 +955,6 @@ namespace {
 
               history += thisThread->mainHistory[us][from_to(move)];
 
-              lmrDepth = std::max(0, lmrDepth - (beta - alpha < thisThread->rootDelta / 4));
-
               // Futility pruning: parent node (~5 Elo)
               if (   !ss->inCheck
                   && lmrDepth < 3
@@ -974,7 +974,7 @@ namespace {
 
       // Step 14. Extensions (~75 Elo)
       if (   gameCycle
-          && (PvNode || (depth < 5 && ss->doubleExtensions < 5)))
+          && ((PvNode && (ss-1)->moveCount < 2) || (depth < 5 && ss->doubleExtensions < 5)))
           extension = 2;
 
       // Singular extension search (~70 Elo). If all moves but one fail low on a
@@ -1076,12 +1076,11 @@ namespace {
           && (!PvNode || ss->ply > 1)
           && (!captureOrPromotion || (cutNode && (ss-1)->moveCount >1)))
       {
-          Depth r = reduction(improving, depth, moveCount, rangeReduction > 2);
+          Depth r = reduction(improving, depth, moveCount, rangeReduction > 2, delta, thisThread->rootDelta);
 
           // Decrease reduction at some PvNodes (~2 Elo)
           if (   PvNode
-              && bestMoveCount <= 3
-              && beta - alpha >= thisThread->rootDelta / 4)
+              && bestMoveCount <= 3)
               r--;
 
           // Decrease reduction if position is or has been on the PV
@@ -1093,10 +1092,6 @@ namespace {
           // Decrease reduction if opponent's move count is high (~1 Elo)
           if ((ss-1)->moveCount > 13)
               r--;
-
-          // Increase reduction at non-PV nodes
-          if (!PvNode)
-              r++;
 
           // Increase reduction for cut nodes (~3 Elo)
           if (cutNode && move != ss->killers[0])
