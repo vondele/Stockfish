@@ -570,20 +570,20 @@ namespace {
         && (ttValue >= beta ? (ttBound & BOUND_LOWER)
                             : (ttBound & BOUND_UPPER)))
     {
-        // If ttMove is quiet, update move sorting heuristics on TT hit
+        // If ttMove is quiet, update move sorting heuristics on TT hit (~1 Elo)
         if (ttMove)
         {
             if (ttValue >= beta)
             {
-                // Bonus for a quiet ttMove that fails high
+                // Bonus for a quiet ttMove that fails high (~3 Elo)
                 if (!ttCapture)
                     update_quiet_stats(pos, ss, ttMove, stat_bonus(depth));
 
-                // Extra penalty for early quiet moves of the previous ply
+                // Extra penalty for early quiet moves of the previous ply (~0 Elo)
                 if ((ss-1)->moveCount <= 2 && !priorCapture)
                     update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + 1));
             }
-            // Penalty for a quiet ttMove that fails low
+            // Penalty for a quiet ttMove that fails low (~1 Elo)
             else if (!ttCapture)
             {
                 int penalty = -stat_bonus(depth);
@@ -655,7 +655,7 @@ namespace {
         if ((ss->staticEval = eval = tte->eval()) == VALUE_NONE)
             ss->staticEval = eval = evaluate(pos);
 
-        // Can ttValue be used as a better position evaluation?
+        // Can ttValue be used as a better position evaluation? (~4 Elo)
         if (    ttValue != VALUE_NONE
             && (ttMove != MOVE_NONE || ttValue <= eval)
             && (ttBound & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
@@ -672,7 +672,7 @@ namespace {
     if (!ss->ttHit && !excludedMove)
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
 
-    // Use static evaluation difference to improve quiet move ordering
+    // Use static evaluation difference to improve quiet move ordering (~3 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-16 * int((ss-1)->staticEval + ss->staticEval), -2000, 2000);
@@ -699,7 +699,7 @@ namespace {
        if (rootDepth > 10 && !ourMove)
            kingDanger = pos.king_danger();
 
-       // Step 7. Futility pruning: child node (~30 Elo)
+       // Step 7. Futility pruning: child node (~25 Elo)
        if (    depth < 8
            && !ss->ttPv
            && !kingDanger
@@ -707,7 +707,7 @@ namespace {
            &&  eval - futility_margin(depth, improving) >= beta)
            return eval;
 
-       // Step 8. Null move search with verification search (~40 Elo)
+       // Step 8. Null move search with verification search (~22 Elo)
        if (   (ss-1)->currentMove != MOVE_NULL
            && (ss-1)->statScore < 23767
            &&  beta < VALUE_TB_WIN_IN_MAX_PLY
@@ -814,7 +814,7 @@ namespace {
        }
     } // End early Pruning
 
-    // Step 10. If the position is not in TT, decrease depth by 2 or 1 depending on node type
+    // Step 10. If the position is not in TT, decrease depth by 2 or 1 depending on node type (~3 Elo)
     if (   PvNode
         && depth >= 6
         && !ttMove)
@@ -915,13 +915,13 @@ namespace {
                          || (ss-3)->moveCount > 1
                          || (ss-5)->moveCount > 1);
 
-      // Step 13. Pruning at shallow depth (~200 Elo). Depth conditions are important for mate finding.
+      // Step 13. Pruning at shallow depth (~98 Elo). Depth conditions are important for mate finding.
       if (  !PvNode
           && (ss->ply > 2 || lmPrunable)
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
-          // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
+          // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~7 Elo)
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           if (lmPrunable)
@@ -932,24 +932,17 @@ namespace {
           if (   captureOrPromotion
               || givesCheck)
           {
-              // Capture history based pruning when the move doesn't give check
-              if (   !givesCheck
-                  && lmrDepth < 1
-                  && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
-                  continue;
-
-              // Futility pruning for captures
+              // Futility pruning for captures (~0 Elo)
               if (   !pos.empty(to_sq(move))
                   && !givesCheck
-                  && !PvNode
                   && lmrDepth < 6
                   && !ss->inCheck
-                  && ss->staticEval + 342 + 238 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))] 
+                  && ss->staticEval + 342 + 238 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 8 < alpha)
                   continue;
 
-              // SEE based pruning
-              if (!pos.see_ge(move, Value(-218) * depth)) // (~25 Elo)
+              // SEE based pruning (~9 Elo)
+              if (!pos.see_ge(move, Value(-218) * depth))
                   continue;
           }
           else
@@ -958,14 +951,14 @@ namespace {
                             + (*contHist[1])[movedPiece][to_sq(move)]
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
-              // Continuation history based pruning (~20 Elo)
+              // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
                   && history < -3000 * depth + 3000)
                   continue;
 
               history += thisThread->mainHistory[us][from_to(move)];
 
-              // Futility pruning: parent node (~5 Elo)
+              // Futility pruning: parent node (~9 Elo)
               if (   !ss->inCheck
                   && lmrDepth < 3
                   && ss->staticEval + 142 + 139 * lmrDepth + history / 64 <= alpha
@@ -975,19 +968,19 @@ namespace {
                     + (*contHist[5])[movedPiece][to_sq(move)] / 3 < 28255)
                   continue;
 
-              // Prune moves with negative SEE (~20 Elo)
+              // Prune moves with negative SEE (~3 Elo)
               if (!pos.see_ge(move, Value(-21 * lmrDepth * (lmrDepth + 1))))
                   continue;
           }
           }
       }
 
-      // Step 14. Extensions (~75 Elo)
+      // Step 14. Extensions (~66 Elo)
       if (   gameCycle
           && ((PvNode && (ss-1)->moveCount < 2) || (depth < 5 && ss->doubleExtensions < 5)))
           extension = 2;
 
-      // Singular extension search (~70 Elo). If all moves but one fail low on a
+      // Singular extension search (~58 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
@@ -1035,19 +1028,13 @@ namespace {
           }
       }
 
-      // Capture extensions for PvNodes and cutNodes
-      else if (   (PvNode || cutNode)
-               && captureOrPromotion
-               && moveCount != 1)
-               extension = 1;
-
-      // Check extension
+      // Check extensions (~1 Elo)
       else if (   givesCheck
                && depth > 6
                && abs(ss->staticEval) > Value(100))
                extension = 1;
 
-      // Quiet ttMove extensions
+      // Quiet ttMove extensions (~0 Elo)
       else if (   PvNode
                && move == ttMove
                && move == ss->killers[0]
@@ -1075,7 +1062,7 @@ namespace {
 
       bool lateKingDanger = (rootDepth > 10 && ourMove && ss->ply < 7 && pos.king_danger());
 
-      // Step 16. Late moves reduction / extension (LMR, ~200 Elo)
+      // Step 16. Late moves reduction / extension (LMR, ~98 Elo)
       // We use various heuristics for the sons of a node after the first son has
       // been searched. In general we would like to reduce them, but there are many
       // cases where we extend a son if it has good chances to be "interesting".
@@ -1418,7 +1405,7 @@ namespace {
             if ((ss->staticEval = bestValue = tte->eval()) == VALUE_NONE)
                 ss->staticEval = bestValue = evaluate(pos);
 
-            // Can ttValue be used as a better position evaluation?
+            // ttValue can be used as a better position evaluation (~7 Elo)
             if (    ttValue != VALUE_NONE
                 && (ttMove != MOVE_NONE || ttValue <= bestValue)
                 && (ttBound & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
@@ -1477,7 +1464,7 @@ namespace {
 
       if (!PvNode && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
-         // Futility pruning and moveCount pruning
+         // Futility pruning and moveCount pruning (~5 Elo)
          if (   !givesCheck
              &&  futilityBase > -VALUE_KNOWN_WIN
              &&  type_of(move) != PROMOTION)
@@ -1500,7 +1487,7 @@ namespace {
              }
          }
 
-         // Do not search moves with negative SEE values
+         // Do not search moves with negative SEE values (~5 Elo)
          if (!pos.see_ge(move))
              continue;
       }
@@ -1514,7 +1501,7 @@ namespace {
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
 
-      // Continuation history based pruning
+      // Continuation history based pruning (~2 Elo)
       if (  !captureOrPromotion
           && !PvNode
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
