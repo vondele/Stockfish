@@ -1128,7 +1128,7 @@ moves_loop: // When in check, search starts here
      else if (   !ss->inCheck
               &&  PvNode
               &&  depth > 8
-              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 400)
+              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 500)
               extension = 1;
 
       // Quiet ttMove extensions (~0 Elo)
