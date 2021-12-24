@@ -1186,7 +1186,7 @@ moves_loop: // When in check, search starts here
               r++;
 
           if (   !ss->inCheck
-              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 200)
+              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 600)
               r--;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
