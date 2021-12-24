@@ -878,7 +878,7 @@ namespace {
              && tte->depth() >= depth - 3
              && ttValue != VALUE_NONE
              && ttValue < probCutBeta))
-        depth -= 2;
+        depth -= 3;
 
     // Step 10. If the position is not in TT, decrease depth by 2 or 1 depending on node type (~3 Elo)
     if (   PvNode
