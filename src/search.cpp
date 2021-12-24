@@ -1064,6 +1064,7 @@ moves_loop: // When in check, search starts here
                   && ss->staticEval + 142 + 139 * lmrDepth + history / 64 <= alpha)
                   continue;
 
+
               // Prune moves with negative SEE (~3 Elo)
               if (!pos.see_ge(move, Value(-21 * lmrDepth * lmrDepth - 21 * lmrDepth)))
                   continue;
@@ -1183,6 +1184,10 @@ moves_loop: // When in check, search starts here
           // Increase reduction if ttMove is a capture (~3 Elo)
           if (ttCapture)
               r++;
+
+          if (   !ss->inCheck
+              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 400)
+              r--;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
