@@ -1124,6 +1124,13 @@ moves_loop: // When in check, search starts here
                && abs(ss->staticEval) > 100)
           extension = 1;
 
+     // Complexity extension
+     else if (   !ss->inCheck
+              &&  PvNode
+              &&  depth > 8
+              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 400)
+              extension = 1;
+
       // Quiet ttMove extensions (~0 Elo)
       else if (   PvNode
                && move == ttMove
@@ -1184,10 +1191,6 @@ moves_loop: // When in check, search starts here
           // Increase reduction if ttMove is a capture (~3 Elo)
           if (ttCapture)
               r++;
-
-          if (   !ss->inCheck
-              &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 600)
-              r--;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
