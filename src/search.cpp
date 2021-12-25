@@ -817,6 +817,8 @@ namespace {
     // Step 10. If the position is not in TT, decrease depth by 2 or 1 depending on node type (~3 Elo)
     if (   PvNode
         && depth >= 6
+        && ((ss-1)->moveCount > 1 || !ourMove)
+        && !gameCycle
         && !ttMove)
         depth -= 2;
 
@@ -935,7 +937,7 @@ namespace {
               // Futility pruning for captures (~0 Elo)
               if (   !pos.empty(to_sq(move))
                   && !givesCheck
-                  && lmrDepth < 6
+                  && lmrDepth < 3
                   && !ss->inCheck
                   && ss->staticEval + 342 + 238 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 8 < alpha)
@@ -1023,23 +1025,17 @@ namespace {
                 return singularBeta;
 
             // If the eval of ttMove is greater than beta, we reduce it (negative extension)
-            else if (ttValue >= beta && (ss-1)->moveCount > 1)
+            else if (ttValue >= beta && (ss-1)->moveCount > 1 && !gameCycle)
                      extension = -2;
           }
       }
 
       // Check extensions (~1 Elo)
-      else if (   givesCheck
-               && depth > 6
-               && abs(ss->staticEval) > Value(100))
-               extension = 1;
-
-      // Quiet ttMove extensions (~0 Elo)
-      else if (   PvNode
-               && move == ttMove
-               && move == ss->killers[0]
-               && (*contHist[0])[movedPiece][to_sq(move)] >= 10000)
-               extension = 1;
+      if (   extension < 1
+          && givesCheck
+          && depth > 6
+          && abs(ss->staticEval) > Value(100))
+          extension = 1;
 
       // Add extension to new depth
       newDepth += extension;
@@ -1069,6 +1065,7 @@ namespace {
       if (    depth >= 3
           && !lateKingDanger
           && !gameCycle
+          &&  thisThread->selDepth > rootDepth / 3
           &&  moveCount > 1
           && (!PvNode || ss->ply > 1)
           && (!captureOrPromotion || (cutNode && (ss-1)->moveCount >1)))
