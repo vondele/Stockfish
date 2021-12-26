@@ -1184,7 +1184,7 @@ moves_loop: // When in check, search starts here
           if (ttCapture)
               r++;
 
-          if ( prevSq == to_sq(move))
+          if ( captureOrPromotion && prevSq != to_sq(move))
               r--;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
