@@ -1022,8 +1022,11 @@ moves_loop: // When in check, search starts here
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
+          bool complexPos =    !ss->inCheck    
+                            &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 400;
+              
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~7 Elo)
-          moveCountPruning = moveCount >= futility_move_count(improving, depth);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth) + complexPos;
 
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2, delta, thisThread->rootDelta), 0);
@@ -1129,6 +1132,7 @@ moves_loop: // When in check, search starts here
                && move == ss->killers[0]
                && (*contHist[0])[movedPiece][to_sq(move)] >= 10000)
           extension = 1;
+
 
       // Add extension to new depth
       newDepth += extension;
