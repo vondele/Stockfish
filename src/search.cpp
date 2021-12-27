@@ -1030,7 +1030,7 @@ moves_loop: // When in check, search starts here
 
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2, delta,
-                                  thisThread->rootDelta) + complexPos, 0);
+                                  thisThread->rootDelta), 0);
 
           if (   captureOrPromotion
               || givesCheck)
@@ -1046,7 +1046,7 @@ moves_loop: // When in check, search starts here
                   continue;
 
               // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-218) * depth))
+              if (!pos.see_ge(move, Value(-218) * (depth + complexPos)))
                   continue;
           }
           else
