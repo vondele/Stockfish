@@ -1026,10 +1026,11 @@ moves_loop: // When in check, search starts here
                             &&  std::abs((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - ss->staticEval) > 400;
               
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~7 Elo)
-          moveCountPruning = moveCount >= futility_move_count(improving, depth) + complexPos;
+          moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           // Reduced depth of the next LMR search
-          int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2, delta, thisThread->rootDelta), 0);
+          int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, rangeReduction > 2, delta,
+                                  thisThread->rootDelta) + complexPos, 0);
 
           if (   captureOrPromotion
               || givesCheck)
