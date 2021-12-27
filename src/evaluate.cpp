@@ -1110,7 +1110,7 @@ Value Eval::evaluate(const Position& pos) {
        if (pos.is_chess960())
            v += fix_FRC(pos);
 
-       int complexPos = ((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - nnue) / 256;
+       int complexPos = ((pos.side_to_move() == WHITE ? 1 : -1) * eg_value(pos.psq_score()) - nnue) / 128;
        v += complexPos * complexPos;
 
   }
