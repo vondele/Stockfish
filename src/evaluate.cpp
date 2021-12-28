@@ -1098,7 +1098,7 @@ Value Eval::evaluate(const Position& pos) {
   // If result of a classical evaluation is much lower than threshold fall back to NNUE
   if (!classical && useNNUE)
   {
-       int scale = 1136 -  0
+       int scale = 1136 + 100
                    + 20 * pos.non_pawn_material() / 1024;
 
        Value nnue     = NNUE::evaluate(pos, true);     // NNUE
