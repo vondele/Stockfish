@@ -313,7 +313,7 @@ string UCI::value(Value v, Value v2) {
 
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
   {
-      if (   abs(v) < 95 * PawnValueEg
+      if (   abs(v) < 80 * PawnValueEg
           && abs(v - v2) < PawnValueEg)
           v = (v + v2) / 2;
 
