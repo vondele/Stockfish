@@ -1534,7 +1534,7 @@ moves_loop: // When in check, search starts here
           if (moveCount > 2)
               continue;
 
-          futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))] * 6 / 8;
+          futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))] * 9 / 8;
 
           if (futilityValue <= alpha)
           {
