@@ -619,8 +619,8 @@ namespace {
 
                 int centiPly = PawnValueEg * ss->ply / 100;
 
-                Value tbValue =    v < -drawScore ? -VALUE_TB_WIN + (10 * (v == -1)) + centiPly + PawnValueEg * popcount(pos.pieces( pos.side_to_move()))
-                                 : v >  drawScore ?  VALUE_TB_WIN - (10 * (v ==  1)) - centiPly - PawnValueEg * popcount(pos.pieces(~pos.side_to_move()))
+                Value tbValue =    v < -drawScore ? -VALUE_TB_WIN + (10 * PawnValueEg * (v == -1)) + centiPly + PawnValueEg * popcount(pos.pieces( pos.side_to_move()))
+                                 : v >  drawScore ?  VALUE_TB_WIN - (10 * PawnValueEg * (v ==  1)) - centiPly - PawnValueEg * popcount(pos.pieces(~pos.side_to_move()))
                                  : v < 0 ? Value(-56) : VALUE_DRAW;
 
                 if (    abs(v) <= drawScore
