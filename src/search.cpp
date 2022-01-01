@@ -1123,7 +1123,7 @@ namespace {
 
           // If the son is reduced and fails high it will be re-searched at full depth
           doFullDepthSearch = value > alpha && d < newDepth;
-          doDeeperSearch = value > alpha + 88;
+          doDeeperSearch = value > (alpha + 62 + 20 * (newDepth - d));
           didLMR = true;
       }
       else
@@ -1195,7 +1195,7 @@ namespace {
                   rm.pv.push_back(*m);
 
               // We record how often the best move has been changed in each iteration.
-              // This information is used for time management and LMR. In MultiPV mode,
+              // This information is used for time management. In MultiPV mode,
               // we must take care to only do this for the first PV line.
               if (   moveCount > 1
                   && !thisThread->pvIdx)
@@ -1444,10 +1444,11 @@ namespace {
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
+    Square prevSq = to_sq((ss-1)->currentMove);
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
-                                      to_sq((ss-1)->currentMove));
+                                      prevSq);
 
     // Loop through the moves until no moves remain or a beta cutoff occurs
     while ((move = mp.next_move()) != MOVE_NONE)
@@ -1463,6 +1464,7 @@ namespace {
       {
          // Futility pruning and moveCount pruning (~5 Elo)
          if (   !givesCheck
+             &&  to_sq(move) != prevSq
              &&  futilityBase > -VALUE_KNOWN_WIN
              &&  type_of(move) != PROMOTION)
          {
