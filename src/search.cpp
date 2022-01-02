@@ -378,6 +378,7 @@ void Thread::search() {
           {
               Value prev = rootMoves[pvIdx].averageScore;
               delta = Value(17) + int(prev) * prev / 16384;
+              dbg_mean_of(int(prev) * prev / 16384);
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
 
@@ -441,7 +442,7 @@ void Thread::search() {
               else
                   break;
 
-              delta += delta / 4 + 5;
+              delta += delta / 4 + std::max(5, int(bestValue) * int(bestValue) / 16384);
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
