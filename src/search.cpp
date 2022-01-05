@@ -58,6 +58,13 @@ using namespace Search;
 
 namespace {
 
+  int param1 = 218, param2 = 3000, param3 = 142, param4 = 139;
+  TUNE(SetRange(200,240), param1);
+  TUNE(SetRange(0,6000), param2);
+  TUNE(SetRange(70,210), param3);
+  TUNE(SetRange(110,170), param4);
+
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -1040,7 +1047,7 @@ moves_loop: // When in check, search starts here
                   continue;
 
               // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-218) * depth))
+              if (!pos.see_ge(move, Value(-param1) * depth))
                   continue;
           }
           else
@@ -1051,7 +1058,7 @@ moves_loop: // When in check, search starts here
 
               // Continuation history based pruning (~2 Elo)
               if (   lmrDepth < 5
-                  && history < -3000 * depth + 3000)
+                  && history < -param2 * (depth - 1))
                   continue;
 
               history += thisThread->mainHistory[us][from_to(move)];
@@ -1059,7 +1066,7 @@ moves_loop: // When in check, search starts here
               // Futility pruning: parent node (~9 Elo)
               if (   !ss->inCheck
                   && lmrDepth < 8
-                  && ss->staticEval + 142 + 139 * lmrDepth + history / 64 <= alpha)
+                  && ss->staticEval + param3 + param4 * lmrDepth + history / 64 <= alpha)
                   continue;
 
               // Prune moves with negative SEE (~3 Elo)
