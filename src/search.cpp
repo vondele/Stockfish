@@ -812,13 +812,13 @@ namespace {
         &&  eval < 15000) // 50% larger than VALUE_KNOWN_WIN, but smaller than TB wins.
         return eval;
 
-    // Step 8. Null move search with verification search (~22 Elo)
+    // Step 8. Null move pruning (NMP) with verification search (~22 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 23767
+        && (ss-1)->statScore < 10000
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 204
+        &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 223
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
