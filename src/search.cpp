@@ -815,10 +815,10 @@ namespace {
     // Step 8. Null move pruning (NMP) with verification search (~22 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 10000
+        && (ss-1)->statScore < 15000
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 223
+        &&  ss->staticEval >= beta - 21 * depth - improvement / 15 + 219
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
