@@ -192,9 +192,20 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold1    =  Value(3130);
-  constexpr Value LazyThreshold2    =  Value(2204);
+  Value LazyThreshold1    =  Value(3130);
+  Value LazyThreshold2    =  Value(2204);
   constexpr Value SpaceThreshold    =  Value(11551);
+
+  TUNE(SetRange(2000,4000), LazyThreshold1);
+  TUNE(SetRange(1500,2500), LazyThreshold2);
+  int pClassical01 = 850;
+  TUNE(SetRange(750,950), pClassical01);
+  int pClassical02 = 300;
+  TUNE(SetRange(250,450), pClassical02);
+  int pComplexity = 32;
+  TUNE(pComplexity);
+  int pDamp = 207;
+  TUNE(SetRange(100,300),pDamp);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
@@ -1084,13 +1095,14 @@ Value Eval::evaluate(const Position& pos) {
   Value v;
   bool useClassical = false;
 
+
   // Deciding between classical and NNUE eval (~10 Elo): for high PSQ imbalance we use classical,
   // but we switch to NNUE during long shuffling or with high material on the board.
   if (  !useNNUE
-      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
+      || abs(eg_value(pos.psq_score())) * 5 > (pClassical01 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
   {
       v = Evaluation<NO_TRACE>(pos).value();          // classical
-      useClassical = abs(v) >= 300;
+      useClassical = abs(v) >= pClassical02;
   }
 
   // If result of a classical evaluation is much lower than threshold fall back to NNUE
@@ -1101,9 +1113,9 @@ Value Eval::evaluate(const Position& pos) {
        Color stm      = pos.side_to_move();
        Value optimism = pos.this_thread()->optimism[stm];
        Value psq      = (stm == WHITE ? 1 : -1) * eg_value(pos.psq_score());
-       int complexity = abs(nnue - psq) / 256;
+       int complexity = pComplexity * abs(nnue - psq) / 256;
 
-       optimism *= (1 + complexity);
+       optimism = optimism * (32 + complexity) / 32;
        v = (nnue + optimism) * scale / 1024 - optimism;
 
        if (pos.is_chess960())
@@ -1111,7 +1123,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (207 - pos.rule50_count()) / 207;
+  v = v * (pDamp - pos.rule50_count()) / pDamp;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
