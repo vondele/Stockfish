@@ -1069,8 +1069,8 @@ make_v:
         && pos.piece_on(SQ_G7) == B_PAWN)
         correction += CorneredBishop;
 
-    return pos.side_to_move() == WHITE ?  Value(6 * correction)
-                                       : -Value(6 * correction);
+    return pos.side_to_move() == WHITE ?  Value(7 * correction)
+                                       : -Value(7 * correction);
   }
 
 } // namespace Eval
