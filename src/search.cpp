@@ -1041,7 +1041,7 @@ moves_loop: // When in check, search starts here
                   continue;
 
               // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-218 - 22 * ttCheck) * depth))
+              if (!pos.see_ge(move, Value(-218) * depth))
                   continue;
           }
           else
@@ -1051,7 +1051,7 @@ moves_loop: // When in check, search starts here
                             + (*contHist[3])[movedPiece][to_sq(move)];
 
               // Continuation history based pruning (~2 Elo)
-              if (   lmrDepth < 5
+              if (   lmrDepth < 5 + ttCheck
                   && history < -3000 * depth + 3000)
                   continue;
 
