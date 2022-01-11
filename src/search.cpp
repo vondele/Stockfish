@@ -85,7 +85,8 @@ namespace {
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
   Value value_draw(Thread* thisThread) {
-    return VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
+    (void) thisThread;
+    return VALUE_DRAW;
   }
 
   // Check if the current thread is in a search explosion
