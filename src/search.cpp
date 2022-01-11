@@ -657,7 +657,7 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
     tte = TT.probe(posKey, ss->ttHit);
-    if (us != thisThread->rootColor && ((thisThread->nodes & 63) == 0))
+    if (us != thisThread->rootColor && ((thisThread->nodes & 255) == 0))
         ss->ttHit = false;
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
