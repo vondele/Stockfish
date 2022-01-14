@@ -80,7 +80,7 @@ namespace {
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth d, int complexity) {
-    d = d + complexity / 512;
+    d = d + complexity / 128;
     return std::min((6 * d + 229) * d - 215, 2000);
   }
 
