@@ -590,7 +590,7 @@ namespace {
     bool givesCheck, improving, didLMR, priorCapture;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
     Piece movedPiece;
-    int moveCount, captureCount, quietCount, bestMoveCount, improvement;
+    int moveCount, captureCount, quietCount, bestMoveCount, improvement, complexity;
 
     // Step 1. Initialize node
     ss->inCheck        = pos.checkers();
@@ -761,6 +761,7 @@ namespace {
         ss->staticEval = eval = VALUE_NONE;
         improving = false;
         improvement = 0;
+        complexity = 0;
         goto moves_loop;
     }
     else if (ss->ttHit)
@@ -804,6 +805,7 @@ namespace {
                   :                                    200;
 
     improving = improvement > 0;
+    complexity = abs(ss->staticEval - (us == WHITE ? eg_value(pos.psq_score()) : -eg_value(pos.psq_score())));
 
     // Step 7. Futility pruning: child node (~25 Elo).
     // The depth condition is important for mate finding.
@@ -819,7 +821,7 @@ namespace {
         && (ss-1)->statScore < 23767
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 204
+        &&  ss->staticEval >= beta - 20 * depth - improvement / 15 + 204 + complexity / 25
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
