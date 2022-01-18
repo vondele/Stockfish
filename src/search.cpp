@@ -810,7 +810,7 @@ namespace {
     improving = improvement > 0;
     ss->complexity = abs(ss->staticEval - (us == WHITE ? eg_value(pos.psq_score()) : -eg_value(pos.psq_score())));
 
-    thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << -std::max(0, (ss-1)->complexity - ss->complexity);
+    thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << -std::max(0, (ss-1)->complexity - ss->complexity) / 2;
 
     thisThread->complexityAverage.update(ss->complexity);
 
