@@ -58,6 +58,9 @@ using namespace Search;
 
 namespace {
 
+  int param01 = 32, param02 = 32;
+  TUNE(param01, param02);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -1159,7 +1162,7 @@ moves_loop: // When in check, search starts here
       // We use various heuristics for the sons of a node after the first son has
       // been searched. In general we would like to reduce them, but there are many
       // cases where we extend a son if it has good chances to be "interesting".
-      if (    depth >= 3 + std::max(0, thisThread->rootDepth / 4 - ss->ply) / 4
+      if (    depth >= 3 + std::max(0, param01 * thisThread->rootDepth - param02 * ss->ply) / 256
           &&  moveCount > 1 + 2 * rootNode
           && (   !ss->ttPv
               || !captureOrPromotion
