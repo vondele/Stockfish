@@ -139,6 +139,7 @@ namespace {
             && !pos.checkers()
             && !pos.can_castle(ANY_CASTLING))
         {
+            pos.do_null_move(st);
             TB::ProbeState err;
             TB::WDLScore wdl = Tablebases::probe_wdl(pos, &err);
             if (err != TB::ProbeState::FAIL)
@@ -146,6 +147,7 @@ namespace {
                     std::cout << "xxx " << wdl << " " << evaluate(pos) << std::endl; 
                     nodes++;
             }
+            pos.undo_null_move();
         }
     }
     else
