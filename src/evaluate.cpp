@@ -1081,6 +1081,8 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
+  return NNUE::evaluate(pos);
+
   Value v;
   bool useClassical = false;
 

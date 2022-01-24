@@ -128,23 +128,34 @@ namespace {
 
     StateInfo st;
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
+    uint64_t nodes = 0;
 
-    uint64_t cnt, nodes = 0;
-    const bool leaf = (depth == 2);
-
-    for (const auto& m : MoveList<LEGAL>(pos))
+    if (depth < 1)
     {
-        if (Root && depth <= 1)
-            cnt = 1, nodes++;
-        else
+        int piecesCount = pos.count<ALL_PIECES>();
+        if (    piecesCount <= TB::Cardinality
+            && (piecesCount <  TB::Cardinality || depth >= TB::ProbeDepth)
+            &&  pos.rule50_count() == 0
+            && !pos.checkers()
+            && !pos.can_castle(ANY_CASTLING))
+        {
+            TB::ProbeState err;
+            TB::WDLScore wdl = Tablebases::probe_wdl(pos, &err);
+            if (err != TB::ProbeState::FAIL)
+            {
+                    std::cout << "xxx " << wdl << " " << evaluate(pos) << std::endl; 
+                    nodes++;
+            }
+        }
+    }
+    else
+    {
+        for (const auto& m : MoveList<LEGAL>(pos))
         {
             pos.do_move(m, st);
-            cnt = leaf ? MoveList<LEGAL>(pos).size() : perft<false>(pos, depth - 1);
-            nodes += cnt;
+            nodes += perft<false>(pos, depth - 1);
             pos.undo_move(m);
         }
-        if (Root)
-            sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
     }
     return nodes;
   }
@@ -691,6 +702,8 @@ namespace {
                 value =  wdl < -drawScore ? VALUE_MATED_IN_MAX_PLY + ss->ply + 1
                        : wdl >  drawScore ? VALUE_MATE_IN_MAX_PLY - ss->ply - 1
                                           : VALUE_DRAW + 2 * wdl * drawScore;
+                if (!pos.checkers())
+                    std::cout << "xxx " << wdl << " " << evaluate(pos) << std::endl;
 
                 Bound b =  wdl < -drawScore ? BOUND_UPPER
                          : wdl >  drawScore ? BOUND_LOWER : BOUND_EXACT;
