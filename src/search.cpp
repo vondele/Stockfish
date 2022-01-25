@@ -1157,7 +1157,7 @@ moves_loop: // When in check, search starts here
 
           if (   !ss->inCheck
               && !(captureOrPromotion || givesCheck)
-              && ss->staticEval < -400 * (1 + PvNode))
+              && ss->staticEval < -500 * (1 + PvNode))
               r++;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
