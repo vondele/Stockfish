@@ -1155,7 +1155,7 @@ moves_loop: // When in check, search starts here
           if (ttCapture)
               r++;
 
-          if (!ss->inCheck && ss->staticEval < -600 && !(captureOrPromotion || givesCheck))
+          if (!ss->inCheck && ss->staticEval < -800 && !(captureOrPromotion || givesCheck))
               r++;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
