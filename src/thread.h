@@ -69,11 +69,9 @@ public:
   StateInfo rootState;
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth;
-  Value rootDelta;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
-  ContinuationHistory continuationHistory[2][2];
 };
 
 

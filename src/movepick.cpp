@@ -27,7 +27,6 @@ namespace {
   enum Stages {
     MAIN_TT, CAPTURE_INIT, GOOD_CAPTURE, REFUTATION, QUIET_INIT, QUIET, BAD_CAPTURE,
     EVASION_TT, EVASION_INIT, EVASION,
-    PROBCUT_TT, PROBCUT_INIT, PROBCUT,
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
 
@@ -58,10 +57,9 @@ namespace {
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
-                                                             const PieceToHistory** ch,
                                                              Move cm,
                                                              const Move* killers)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch),
+           : pos(p), mainHistory(mh), captureHistory(cph), 
              ttMove(ttm), refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d)
 {
   assert(d > 0);
@@ -73,9 +71,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 /// MovePicker constructor for quiescence search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                                                              const CapturePieceToHistory* cph,
-                                                             const PieceToHistory** ch,
                                                              Square rs)
-           : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d)
+           : pos(p), mainHistory(mh), captureHistory(cph), ttMove(ttm), recaptureSquare(rs), depth(d)
 {
   assert(d <= 0);
 
@@ -83,18 +80,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
           !(   ttm
             && (pos.checkers() || depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare)
             && pos.pseudo_legal(ttm));
-}
-
-/// MovePicker constructor for ProbCut: we generate captures with SEE greater
-/// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
-           : pos(p), captureHistory(cph), ttMove(ttm), threshold(th)
-{
-  assert(!pos.checkers());
-
-  stage = PROBCUT_TT + !(ttm && pos.capture(ttm)
-                             && pos.pseudo_legal(ttm)
-                             && pos.see_ge(ttm, threshold));
 }
 
 /// MovePicker::score() assigns a numerical value to each move in a list, used
@@ -111,11 +96,7 @@ void MovePicker::score() {
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)];
+          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)];
 
       else // Type == EVASIONS
       {
@@ -123,9 +104,7 @@ void MovePicker::score() {
               m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                        - Value(type_of(pos.moved_piece(m)));
           else
-              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                       - (1 << 28);
+              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)] - (1 << 28);
       }
 }
 
@@ -158,12 +137,10 @@ top:
   case MAIN_TT:
   case EVASION_TT:
   case QSEARCH_TT:
-  case PROBCUT_TT:
       ++stage;
       return ttMove;
 
   case CAPTURE_INIT:
-  case PROBCUT_INIT:
   case QCAPTURE_INIT:
       cur = endBadCaptures = moves;
       endMoves = generate<CAPTURES>(pos, cur);
@@ -239,9 +216,6 @@ top:
 
   case EVASION:
       return select<Best>([](){ return true; });
-
-  case PROBCUT:
-      return select<Best>([&](){ return pos.see_ge(*cur, std::max(PawnValueMg, threshold)); });
 
   case QCAPTURE:
       if (select<Best>([&](){ return   depth > DEPTH_QS_RECAPTURES

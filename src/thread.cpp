@@ -24,7 +24,6 @@
 #include "thread.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-#include "tt.h"
 
 namespace Stockfish {
 
@@ -61,14 +60,6 @@ void Thread::clear() {
   mainHistory.fill(0);
   captureHistory.fill(0);
 
-  for (bool inCheck : { false, true })
-      for (StatsType c : { NoCaptures, Captures })
-      {
-          for (auto& to : continuationHistory[inCheck][c])
-                for (auto& h : to)
-                      h->fill(-71);
-          continuationHistory[inCheck][c][NO_PIECE][0]->fill(Search::CounterMovePruneThreshold - 1);
-      }
 }
 
 
@@ -142,9 +133,6 @@ void ThreadPool::set(size_t requested) {
       while (size() < requested)
           push_back(new Thread(size()));
       clear();
-
-      // Reallocate the hash with the new threadpool size
-      TT.resize(size_t(Options["Hash"]));
 
       // Init thread number dependent search params.
       Search::init();

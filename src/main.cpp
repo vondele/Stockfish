@@ -25,7 +25,6 @@
 #include "search.h"
 #include "syzygy/tbprobe.h"
 #include "thread.h"
-#include "tt.h"
 #include "uci.h"
 
 using namespace Stockfish;
