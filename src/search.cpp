@@ -1047,7 +1047,16 @@ moves_loop: // When in check, search starts here
           // then that move is singular and should be extended. To verify this we do
           // a reduced search on all the other moves but the ttMove and if the
           // result is lower than ttValue minus a margin, then we will extend the ttMove.
-          if (   !rootNode
+          if (   PvNode
+              && !ss->inCheck
+              && ss->staticEval < -600
+              && ss->ttHit
+              && ttMove == move
+              && ttCapture
+              && ttValue > alpha
+              && ttValue > 0)
+              extension = 1;
+          else if (   !rootNode
               &&  depth >= 6 + 2 * (PvNode && tte->is_pv())
               &&  move == ttMove
               && !excludedMove // Avoid recursive singular search
@@ -1099,6 +1108,7 @@ moves_loop: // When in check, search starts here
                    && move == ss->killers[0]
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 10000)
               extension = 1;
+
       }
 
       // Add extension to new depth
