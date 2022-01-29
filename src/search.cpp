@@ -1449,14 +1449,14 @@ moves_loop: // When in check, search starts here
                                              : -(ss-1)->staticEval;
 
         // Stand pat. Return immediately if static value is at least beta
-        if (bestValue + 5 >= beta)
+        if (bestValue - 5 >= beta)
         {
             // Save gathered info in transposition table
             if (!ss->ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 
-            return bestValue + 5;
+            return beta;
         }
 
         if (PvNode && bestValue > alpha)
