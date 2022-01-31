@@ -1173,7 +1173,7 @@ moves_loop: // When in check, search starts here
                        : cutNode && moveCount <= 7 ? 1
                        :                             0;
 
-          r = std::min(thisThread->rootDepth / 6 + ss->ply, r);
+          r = std::min(thisThread->rootDepth / 5 + ss->ply, r);
 
           Depth d = std::clamp(newDepth - r, 1, newDepth + deeper);
 
