@@ -1175,7 +1175,7 @@ moves_loop: // When in check, search starts here
 
           if (rootNode)
           {
-              r = std::min(thisThread->rootDepth / 8, r);
+              r = std::min(thisThread->rootDepth / 6, r);
           }
 
           Depth d = std::clamp(newDepth - r, 1, newDepth + deeper);
