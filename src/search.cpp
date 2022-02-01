@@ -152,6 +152,8 @@ namespace {
 
   int paramD = 0, paramMN = 0;
   TUNE(SetRange(-64, 64), paramD, paramMN);
+  int paramD2 = 0, paramMN2 = 0;
+  TUNE(SetRange(-64, 64), paramD2, paramMN2);
 
 } // namespace
 
@@ -162,8 +164,8 @@ void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
   {
-      ReductionsD[i] = int((21.9 * (1024 + paramD) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
-      ReductionsMN[i] = int((21.9 * (1024 + paramMN) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
+      ReductionsD[i] = int((1.0 + paramD2 * std::log(i)/(256 * std::log(MAX_MOVES))) * (21.9 * (1024 + paramD) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
+      ReductionsMN[i] = int((1.0 + paramMN2 * std::log(i)/(256 * std::log(MAX_MOVES))) * (21.9 * (1024 + paramMN) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
   }
 }
 
