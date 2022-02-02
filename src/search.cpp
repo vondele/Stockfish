@@ -149,6 +149,13 @@ namespace {
     return nodes;
   }
 
+  int paramy0 = 25;
+  TUNE(SetRange(10,40), paramy0);
+  int paramc = 147;
+  TUNE(SetRange(70,250), paramc);
+  int params = 31;
+  TUNE(SetRange(10,50), params);
+
 } // namespace
 
 
@@ -358,7 +365,7 @@ void Thread::search() {
               trend = (us == WHITE ?  make_score(tr, tr / 2)
                                    : -make_score(tr, tr / 2));
 
-              int opt = sigmoid(prev, 0, 25, 147, 14464, 256);
+              int opt = sigmoid(prev, 0, paramy0, paramc, (paramy0 + params) * 256, 256);
               optimism[ us] = Value(opt);
               optimism[~us] = -optimism[us];
           }
