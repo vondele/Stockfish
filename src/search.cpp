@@ -150,10 +150,11 @@ namespace {
     return nodes;
   }
 
-  int paramD = 0, paramMN = 0;
-  TUNE(SetRange(-64, 64), paramD, paramMN);
-  int paramD2 = 0, paramMN2 = 0;
-  TUNE(SetRange(-64, 64), paramD2, paramMN2);
+  int paramD = 29, paramMN = 16;
+  TUNE(SetRange(0, 64), paramD, paramMN);
+  int paramD2 = -17, paramMN2 = -54;
+  TUNE(SetRange(-64, 32), paramD2);
+  TUNE(SetRange(-128, 0), paramMN2);
 
 } // namespace
 
