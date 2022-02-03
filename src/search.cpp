@@ -159,8 +159,8 @@ void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
   {
-      ReductionsD[i] = int((1.0 - 21 * std::log(i)/(256 * std::log(MAX_MOVES))) * (21.9 * (1024 + 32) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
-      ReductionsMN[i] = int((1.0 - 53 * std::log(i)/(256 * std::log(MAX_MOVES))) * (21.9 * (1024 + 24) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
+      ReductionsD[i] = int((1.0 - 10 * std::log(i)/(256 * std::log(MAX_MOVES))) * (21.9 * (1024 + 28) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
+      ReductionsMN[i] = int((1.0 - 58 * std::log(i)/(256 * std::log(MAX_MOVES))) * (21.9 * (1024 + 25) / 1024 + std::log(Threads.size()) / 2) * std::log(i));
   }
 }
 
