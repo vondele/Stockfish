@@ -58,6 +58,9 @@ using namespace Search;
 
 namespace {
 
+  int razQuad[6] = {700, 1600, 3100, 5200, 7900, 11200};
+  TUNE(razQuad);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -772,6 +775,13 @@ namespace {
     complexity = abs(ss->staticEval - (us == WHITE ? eg_value(pos.psq_score()) : -eg_value(pos.psq_score())));
 
     thisThread->complexityAverage.update(complexity);
+
+    if (!PvNode && depth <= 6 && eval < alpha - razQuad[depth-1])
+    {
+        value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
+        if (value < alpha)
+            return value;
+    }
 
     // Step 7. Futility pruning: child node (~25 Elo).
     // The depth condition is important for mate finding.
