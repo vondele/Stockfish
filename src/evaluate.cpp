@@ -1103,7 +1103,7 @@ Value Eval::evaluate(const Position& pos) {
        int complexity = 35 * abs(nnue - psq) / 256;
 
        Value optimism = pos.this_thread()->optimism[stm];
-       optimism = optimism * (8 + complexity) * (77 * 1024 + 5 * pos.non_pawn_material()) / (32 * 1024 * 1024);
+       optimism = optimism * (21 + complexity) * (72 * 1024 + 8 * pos.non_pawn_material()) / (32 * 1024 * 1024);
 
        int scale      = 1136 + 20 * pos.non_pawn_material() / 1024;
        v = nnue * scale / 1024 + optimism;
