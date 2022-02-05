@@ -61,6 +61,9 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
+  // Razoring parameters as a function of depth
+  const int RazorBound[6] = {872, 1305, 3708, 6245, 6922, 8074};
+
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
     return Value(214 * (d - improving));
@@ -776,7 +779,9 @@ namespace {
     // Step 7. Razoring.
     // If eval is really low check with qsearch if it can exceed alpha, if it can't,
     // return a fail low.
-    if (!PvNode && depth <= 6 && eval < alpha - 400 - 300 * depth * depth)
+    if (   !PvNode
+        && depth <= 6
+        && eval < alpha - RazorBound[depth - 1])
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha)
