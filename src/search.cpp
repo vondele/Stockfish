@@ -783,8 +783,8 @@ namespace {
         && depth <= 6
         && eval < alpha - RazorBound[depth - 1])
     {
-        value = qsearch<NonPV>(pos, ss, alpha, alpha + 1);
-        if (value <= alpha)
+        value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
+        if (value < alpha)
             return value;
     }
 
