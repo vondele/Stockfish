@@ -303,7 +303,7 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
 
-  complexityAverage.set(190, 1);
+  complexityAverage.set(232, 1);
 
   trend         = SCORE_ZERO;
   optimism[ us] = Value(34);
