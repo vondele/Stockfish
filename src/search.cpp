@@ -1180,8 +1180,8 @@ moves_loop: // When in check, search starts here
           // deeper than the first move (this may lead to hidden double extensions).
           int deeper =   r >= -1                   ? 0
                        : moveCount <= 5            ? 2
-                       : PvNode && depth > 4       ? 1
-                       : cutNode && moveCount <= 5 ? 1
+                       : PvNode && depth > 6       ? 1
+                       : cutNode && moveCount <= 7 ? 1
                        :                             0;
 
           Depth d = std::clamp(newDepth - r, 1, newDepth + deeper);
@@ -1190,7 +1190,7 @@ moves_loop: // When in check, search starts here
 
           // If the son is reduced and fails high it will be re-searched at full depth
           doFullDepthSearch = value > alpha && d < newDepth;
-          doDeeperSearch = value > (alpha + 80 + 20 * (newDepth - d));
+          doDeeperSearch = value > (alpha + 62 + 20 * (newDepth - d));
           didLMR = true;
       }
       else
