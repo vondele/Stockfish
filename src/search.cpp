@@ -1080,7 +1080,7 @@ moves_loop: // When in check, search starts here
 
                   // Avoid search explosion by limiting the number of double extensions
                   if (  !PvNode
-                      && value < singularBeta - 71
+                      && value < singularBeta - 75
                       && ss->doubleExtensions <= 6)
                       extension = 2;
               }
@@ -1100,15 +1100,15 @@ moves_loop: // When in check, search starts here
 
           // Check extensions (~1 Elo)
           else if (   givesCheck
-                   && depth > 7
-                   && abs(ss->staticEval) > 128)
+                   && depth > 6
+                   && abs(ss->staticEval) > 100)
               extension = 1;
 
           // Quiet ttMove extensions (~0 Elo)
           else if (   PvNode
                    && move == ttMove
                    && move == ss->killers[0]
-                   && (*contHist[0])[movedPiece][to_sq(move)] >= 8932)
+                   && (*contHist[0])[movedPiece][to_sq(move)] >= 10000)
               extension = 1;
       }
 
