@@ -61,18 +61,13 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
-  int base   = 180;
-  TUNE(SetRange(130,230),base);
-  int factor = 128;
-  TUNE(factor);
-
   // Search stage (useful for parameters which are sensitive to "time scaling")
   int search_stage(Thread* thisThread) {
       uint64_t nodes = thisThread->nodes;
 
-      return nodes <  std::pow(2.0, base/10.0)                    ? 0 :
-             nodes <  std::pow(2.0, base/10.0) * 8 * factor / 128 ? 1 :
-                                                                  2 ;
+      return nodes <   7826848 ? 0 :
+             nodes <  61147250 ? 1 :
+                                 2 ;
   }
 
   // Futility margin
