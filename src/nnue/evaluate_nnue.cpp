@@ -157,7 +157,7 @@ namespace Stockfish::Eval::NNUE {
 
     ASSERT_ALIGNED(transformedFeatures, alignment);
 
-    const int bucket = (pos.count<ALL_PIECES>() - 1) / 4;
+    const int bucket = ((pos.count<ALL_PIECES>() - 1) / 8) * 2 + pos.count<PAWN>(BLACK) == pos.count<PAWN>(WHITE);
     const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
     const auto positional = network[bucket]->propagate(transformedFeatures);
 
