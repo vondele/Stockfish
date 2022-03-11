@@ -18,6 +18,7 @@
 
 #include <cassert>
 
+#include "bitboard.h"
 #include "movepick.h"
 
 namespace Stockfish {
@@ -106,6 +107,7 @@ void MovePicker::score() {
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
   for (auto& m : *this)
+  {
       if constexpr (Type == CAPTURES)
           m.value =  int(PieceValue[MG][pos.piece_on(to_sq(m))]) * 6
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
@@ -120,13 +122,20 @@ void MovePicker::score() {
       else // Type == EVASIONS
       {
           if (pos.capture(m))
+          {
               m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - Value(type_of(pos.moved_piece(m)));
+                       - Value(type_of(pos.moved_piece(m)))
+                       + 4000 * int(pos.checkers() & to_sq(m));
+          }
           else
               m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
                        + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                        - (1 << 28);
       }
+
+      if (pos.gives_check(m))
+          m.value += 20000 - 400 * distance(pos.square<KING>(~pos.side_to_move()), to_sq(m));
+  }
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
@@ -197,6 +206,7 @@ top:
                                     && !pos.capture(*cur)
                                     &&  pos.pseudo_legal(*cur); }))
           return *(cur - 1);
+
       ++stage;
       [[fallthrough]];
 
@@ -268,6 +278,7 @@ top:
   }
 
   assert(false);
+
   return MOVE_NONE; // Silence warning
 }
 

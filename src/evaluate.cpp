@@ -193,8 +193,8 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold1    =  Value(3631);
-  constexpr Value LazyThreshold2    =  Value(2084);
+//  constexpr Value LazyThreshold1    =  Value(3631);
+//  constexpr Value LazyThreshold2    =  Value(2084);
   constexpr Value SpaceThreshold    =  Value(11551);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
@@ -537,7 +537,7 @@ namespace {
     constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
                                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB);
 
-    Bitboard weak, b1, b2, b3, safe, unsafeChecks = 0;
+    Bitboard kingSquares, weak, b1, b2, b3, safe, unsafeChecks = 0;
     Bitboard rookChecks, queenChecks, bishopChecks, knightChecks;
     int kingDanger = 0;
     const Square ksq = pos.square<KING>(Us);
@@ -549,6 +549,10 @@ namespace {
     weak =  attackedBy[Them][ALL_PIECES]
           & ~attackedBy2[Us]
           & (~attackedBy[Us][ALL_PIECES] | attackedBy[Us][KING] | attackedBy[Us][QUEEN]);
+
+    kingSquares =   attackedBy[Us][KING]
+                 & ~attackedBy[Them][ALL_PIECES]
+                 & ~pos.pieces(Us);
 
     // Analyse the safe enemy's checks which are possible on next move
     safe  = ~pos.pieces(Them);
@@ -604,8 +608,10 @@ namespace {
                  +  69 * kingAttacksCount[Them]                               // (~0.5 Elo)
                  +   3 * kingFlankAttack * kingFlankAttack / 8                // (~0.5 Elo)
                  +       mg_value(mobility[Them] - mobility[Us])              // (~0.5 Elo)
-                 - 873 * !pos.count<QUEEN>(Them)                              // (~24 Elo)
+//                 - 873 * !pos.count<QUEEN>(Them)                              // (~24 Elo)
+                 - 473 * !pos.count<QUEEN>(Them)                              // (~24 Elo)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])  // (~5 Elo)
+                 - 100 * popcount(kingSquares)
                  -   6 * mg_value(score) / 8                                  // (~8 Elo)
                  -   4 * kingFlankDefense                                     // (~5 Elo)
                  +  37;                                                       // (~0.5 Elo)
@@ -970,6 +976,8 @@ namespace {
 
     assert(!pos.checkers());
 
+    bool mateSearch = Options["MateSearch"];
+
     // Probe the material hash table
     me = Material::probe(pos);
 
@@ -988,14 +996,14 @@ namespace {
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
     // Early exit if score is high
-    auto lazy_skip = [&](Value lazyThreshold) {
+/*    auto lazy_skip = [&](Value lazyThreshold) {
         return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
                                                         + std::abs(pos.this_thread()->bestValue) * 5 / 4
                                                         + pos.non_pawn_material() / 32;
     };
-
-    if (lazy_skip(LazyThreshold1))
-        goto make_v;
+*/
+//    if (lazy_skip(LazyThreshold1))
+//        goto make_v;
 
     // Main evaluation begins here
     initialize<WHITE>();
@@ -1014,13 +1022,14 @@ namespace {
     score +=  king<   WHITE>() - king<   BLACK>()
             + passed< WHITE>() - passed< BLACK>();
 
-    if (lazy_skip(LazyThreshold2))
-        goto make_v;
+    Score kingScore = king<WHITE>() - king<BLACK>();
+
+//    if (lazy_skip(LazyThreshold2))
+//        goto make_v;
 
     score +=  threats<WHITE>() - threats<BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 
-make_v:
     // Derive single value from mg and eg parts of score
     Value v = winnable(score);
 
@@ -1033,13 +1042,22 @@ make_v:
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
 
+    Value mgk = mg_value(kingScore);
+    Value egk = eg_value(kingScore);
+
+    // Interpolate between the middlegame and endgame score
+    Value vk =  mgk * int(me->game_phase())
+              + egk * int(PHASE_MIDGAME - me->game_phase());
+    vk /= PHASE_MIDGAME;
+
     // Evaluation grain
     v = (v / 16) * 16;
 
     // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v);
+    v  = (pos.side_to_move() == WHITE ? v  : -v);
+    vk = (pos.side_to_move() == WHITE ? vk : -vk);
 
-    return v;
+    return mateSearch ? vk : v;
   }
 
 
@@ -1091,7 +1109,7 @@ Value Eval::evaluate(const Position& pos) {
       || abs(eg_value(pos.psq_score())) * 5 > (849 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
   {
       v = Evaluation<NO_TRACE>(pos).value();          // classical
-      useClassical = abs(v) >= 298;
+      useClassical = Options["MateSearch"] || abs(v) >= 298;
   }
 
   // If result of a classical evaluation is much lower than threshold fall back to NNUE
@@ -1110,6 +1128,9 @@ Value Eval::evaluate(const Position& pos) {
        if (pos.is_chess960())
            v += fix_FRC(pos);
   }
+  
+  if (useClassical)
+      return v;
 
   // Damp down the evaluation linearly when shuffling
   v = v * (208 - pos.rule50_count()) / 208;

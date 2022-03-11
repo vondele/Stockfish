@@ -1019,10 +1019,6 @@ moves_loop: // When in check, search starts here
                   && ss->staticEval + 281 + 179 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
                   continue;
-
-              // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-203) * depth))
-                  continue;
           }
           else
           {
@@ -1044,7 +1040,8 @@ moves_loop: // When in check, search starts here
                   continue;
 
               // Prune moves with negative SEE (~3 Elo)
-              if (!pos.see_ge(move, Value(-25 * lmrDepth * lmrDepth - 20 * lmrDepth)))
+              if (   !givesCheck
+                  && !pos.see_ge(move, Value(-25 * lmrDepth * lmrDepth - 20 * lmrDepth)))
                   continue;
           }
       }
@@ -1142,6 +1139,9 @@ moves_loop: // When in check, search starts here
               || (cutNode && (ss-1)->moveCount > 1)))
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
+
+          if (givesCheck && r > 2)
+              r--;
 
           // Decrease reduction at some PvNodes (~2 Elo)
           if (   PvNode

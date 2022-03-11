@@ -20,6 +20,7 @@
 
 #include "bitboard.h"
 #include "endgame.h"
+#include "misc.h"
 #include "position.h"
 #include "psqt.h"
 #include "search.h"
