@@ -437,7 +437,8 @@ void Thread::search() {
       // Have we found a "mate in x"?
       if (   Limits.mate
           && bestValue >= VALUE_MATE_IN_MAX_PLY
-          && VALUE_MATE - bestValue <= 2 * Limits.mate)
+          && VALUE_MATE - bestValue <= 2 * Limits.mate
+          && int(rootMoves[0].pv.size()) == 2 * Limits.mate - 1)
           Threads.stop = true;
 
       if (!mainThread)
