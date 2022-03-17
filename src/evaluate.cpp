@@ -192,9 +192,7 @@ using namespace Trace;
 
 namespace {
 
-  // Threshold for lazy and space evaluation
-//  constexpr Value LazyThreshold1    =  Value(3631);
-//  constexpr Value LazyThreshold2    =  Value(2084);
+  // Threshold for space evaluation
   constexpr Value SpaceThreshold    =  Value(11551);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
@@ -608,7 +606,6 @@ namespace {
                  +  69 * kingAttacksCount[Them]                               // (~0.5 Elo)
                  +   3 * kingFlankAttack * kingFlankAttack / 8                // (~0.5 Elo)
                  +       mg_value(mobility[Them] - mobility[Us])              // (~0.5 Elo)
-//                 - 873 * !pos.count<QUEEN>(Them)                              // (~24 Elo)
                  - 473 * !pos.count<QUEEN>(Them)                              // (~24 Elo)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])  // (~5 Elo)
                  - 100 * popcount(kingSquares)
@@ -995,16 +992,6 @@ namespace {
     pe = Pawns::probe(pos);
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
-    // Early exit if score is high
-/*    auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
-                                                        + std::abs(pos.this_thread()->bestValue) * 5 / 4
-                                                        + pos.non_pawn_material() / 32;
-    };
-*/
-//    if (lazy_skip(LazyThreshold1))
-//        goto make_v;
-
     // Main evaluation begins here
     initialize<WHITE>();
     initialize<BLACK>();
@@ -1023,9 +1010,6 @@ namespace {
             + passed< WHITE>() - passed< BLACK>();
 
     Score kingScore = king<WHITE>() - king<BLACK>();
-
-//    if (lazy_skip(LazyThreshold2))
-//        goto make_v;
 
     score +=  threats<WHITE>() - threats<BLACK>()
             + space<  WHITE>() - space<  BLACK>();

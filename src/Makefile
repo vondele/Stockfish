@@ -39,9 +39,9 @@ endif
 
 ### Executable name
 ifeq ($(target_windows),yes)
-	EXE = stockfish.exe
+	EXE = huntsman.exe
 else
-	EXE = stockfish
+	EXE = huntsman
 endif
 
 ### Installation dir definitions
@@ -72,29 +72,30 @@ VPATH = syzygy:nnue:nnue/features
 # flag                --- Comp switch      --- Description
 # ----------------------------------------------------------------------------
 #
-# debug = yes/no      --- -DNDEBUG         --- Enable/Disable debug mode
+# debug = yes/no      --- -DNDEBUG             --- Enable/Disable debug mode
+# embed = yes/no      --- -DNNUE_EMBEDDING_OFF --- Enable/Disable embedding of the NNUE file
 # sanitize = none/<sanitizer> ... (-fsanitize )
-#                     --- ( undefined )    --- enable undefined behavior checks
-#                     --- ( thread    )    --- enable threading error checks
-#                     --- ( address   )    --- enable memory access checks
-#                     --- ...etc...        --- see compiler documentation for supported sanitizers
-# optimize = yes/no   --- (-O3/-fast etc.) --- Enable/Disable optimizations
-# arch = (name)       --- (-arch)          --- Target architecture
-# bits = 64/32        --- -DIS_64BIT       --- 64-/32-bit operating system
-# prefetch = yes/no   --- -DUSE_PREFETCH   --- Use prefetch asm-instruction
-# popcnt = yes/no     --- -DUSE_POPCNT     --- Use popcnt asm-instruction
-# pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
-# sse = yes/no        --- -msse            --- Use Intel Streaming SIMD Extensions
-# mmx = yes/no        --- -mmmx            --- Use Intel MMX instructions
-# sse2 = yes/no       --- -msse2           --- Use Intel Streaming SIMD Extensions 2
-# ssse3 = yes/no      --- -mssse3          --- Use Intel Supplemental Streaming SIMD Extensions 3
-# sse41 = yes/no      --- -msse4.1         --- Use Intel Streaming SIMD Extensions 4.1
-# avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
-# avxvnni = yes/no    --- -mavxvnni        --- Use Intel Vector Neural Network Instructions AVX
-# avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
-# vnni256 = yes/no    --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 256
-# vnni512 = yes/no    --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 512
-# neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
+#                     --- ( undefined )        --- Enable undefined behavior checks
+#                     --- ( thread    )        --- Enable threading error checks
+#                     --- ( address   )        --- Enable memory access checks
+#                     --- ...etc...            --- See compiler documentation for supported sanitizers
+# optimize = yes/no   --- (-O3/-fast etc.)     --- Enable/Disable optimizations
+# arch = (name)       --- (-arch)              --- Target architecture
+# bits = 64/32        --- -DIS_64BIT           --- 64-/32-bit operating system
+# prefetch = yes/no   --- -DUSE_PREFETCH       --- Use prefetch asm-instruction
+# popcnt = yes/no     --- -DUSE_POPCNT         --- Use popcnt asm-instruction
+# pext = yes/no       --- -DUSE_PEXT           --- Use pext x86_64 asm-instruction
+# sse = yes/no        --- -msse                --- Use Intel Streaming SIMD Extensions
+# mmx = yes/no        --- -mmmx                --- Use Intel MMX instructions
+# sse2 = yes/no       --- -msse2               --- Use Intel Streaming SIMD Extensions 2
+# ssse3 = yes/no      --- -mssse3              --- Use Intel Supplemental Streaming SIMD Extensions 3
+# sse41 = yes/no      --- -msse4.1             --- Use Intel Streaming SIMD Extensions 4.1
+# avx2 = yes/no       --- -mavx2               --- Use Intel Advanced Vector Extensions 2
+# avxvnni = yes/no    --- -mavxvnni            --- Use Intel Vector Neural Network Instructions AVX
+# avx512 = yes/no     --- -mavx512bw           --- Use Intel Advanced Vector Extensions 512
+# vnni256 = yes/no    --- -mavx512vnni         --- Use Intel Vector Neural Network Instructions 256
+# vnni512 = yes/no    --- -mavx512vnni         --- Use Intel Vector Neural Network Instructions 512
+# neon = yes/no       --- -DUSE_NEON           --- Use ARM SIMD architecture
 #
 # Note that Makefile is space sensitive, so when adding new architectures
 # or modifying existing flags, you have to make sure there are no extra spaces
@@ -124,6 +125,7 @@ endif
 
 optimize = yes
 debug = no
+embed = no
 sanitize = none
 bits = 64
 prefetch = no
@@ -525,7 +527,12 @@ else
 	CXXFLAGS += -g
 endif
 
-### 3.2.2 Debugging with undefined behavior sanitizers
+### 3.2.2 NNUE embedding
+ifeq ($(embed),no)
+        CXXFLAGS += -DNNUE_EMBEDDING_OFF
+endif
+
+### 3.2.3 Debugging with undefined behavior sanitizers
 ifneq ($(sanitize),none)
         CXXFLAGS += -g3 $(addprefix -fsanitize=,$(sanitize))
         LDFLAGS += $(addprefix -fsanitize=,$(sanitize))
