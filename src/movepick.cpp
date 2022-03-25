@@ -97,6 +97,27 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const Cap
                              && pos.see_ge(ttm, threshold));
 }
 
+
+template <Color Us>
+Bitboard threats (const Position& pos)
+{
+    Bitboard our = pos.pieces(Us) & ~pos.pieces(Us, KING) & ~pos.pieces(Us, QUEEN) & ~pos.pieces(Us, PAWN);
+    Bitboard threats = 0;
+    while (our)
+    {
+      Square s = pop_lsb(our);
+      if (type_of(pos.piece_on(s)) == KNIGHT)
+          threats |= attacks_bb<KNIGHT>(s, pos.pieces()) & pos.pieces(~Us, ROOK, QUEEN);
+      else if (type_of(pos.piece_on(s)) == BISHOP)
+          threats |= attacks_bb<BISHOP>(s, pos.pieces()) & pos.pieces(~Us, ROOK, QUEEN);
+      else
+          threats |= attacks_bb<ROOK>(s, pos.pieces()) & pos.pieces(~Us, QUEEN);
+    }
+    Bitboard pawnAttacks = pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
+    threats |= pawnAttacks & (pos.pieces(~Us, ROOK, QUEEN) | pos.pieces(~Us, KNIGHT, BISHOP));
+    return threats;
+}
+
 /// MovePicker::score() assigns a numerical value to each move in a list, used
 /// for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 /// captures with a good history. Quiets moves are ordered using the histories.
@@ -104,6 +125,12 @@ template<GenType Type>
 void MovePicker::score() {
 
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+
+  Bitboard threatened;
+  if constexpr (Type == QUIETS)
+     threatened = pos.side_to_move() == WHITE ? threats<BLACK>(pos) : threats<WHITE>(pos);
+  else
+     (void) threatened; // Silence unused variable warning
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
@@ -115,7 +142,12 @@ void MovePicker::score() {
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)];
+                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+                   +     (threatened & from_sq(m) ?
+                                                    (type_of(pos.piece_on(from_sq(m))) == QUEEN ? (1 << 28)
+                                                  :  type_of(pos.piece_on(from_sq(m))) == ROOK  ? (1 << 27)
+                                                  :                                               (1 << 26))
+                                                  : 0);
 
       else // Type == EVASIONS
       {
