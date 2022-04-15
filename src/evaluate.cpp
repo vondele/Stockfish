@@ -1116,7 +1116,7 @@ Value Eval::evaluate(const Position& pos) {
   v = v * (207 - pos.rule50_count()) / 207;
 
   // scale down with game ply
-  v = v * 122 / (122+ pos.game_ply() / 16);
+  v = v * 122 / (122+ pos.game_ply() / 32);
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
