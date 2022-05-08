@@ -95,10 +95,10 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   }
 
   // Never use more than 80% of the available time for this move, and subtract moveOverhead and internal overhead (10ms), use at least 1ms
-  optimumTime = TimePoint(std::min({limits.time[us] - 10. - moveOverhead - (mtg - 1) * std::min(TimePoint(0), moveOverhead - limits.inc[us]),
+  optimumTime = TimePoint(std::min({limits.time[us] - 10. - moveOverhead - (mtg - 1) * std::max(TimePoint(0), moveOverhead - limits.inc[us]),
                                     0.8 * limits.time[us],
                                     optScale * timeLeft - moveOverhead}));
-  maximumTime = TimePoint(std::min({limits.time[us] - 10. - moveOverhead - (mtg - 1) * std::min(TimePoint(0), moveOverhead - limits.inc[us]),
+  maximumTime = TimePoint(std::min({limits.time[us] - 10. - moveOverhead - (mtg - 1) * std::max(TimePoint(0), moveOverhead - limits.inc[us]),
                                     0.8 * limits.time[us],
                                     maxScale * optimumTime}));
   optimumTime = std::max(TimePoint(1), optimumTime);
