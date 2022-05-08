@@ -65,10 +65,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   int mtg = limits.movestogo ? std::min(limits.movestogo, 50) : 50;
 
   // Make sure timeLeft is > 0 since we may use it as a divisor
-  TimePoint timeBase =  std::max(TimePoint(1),
-      limits.time[us] - moveOverhead * mtg);
-  TimePoint timeLeft =  std::max(TimePoint(1),
-      limits.time[us] - moveOverhead * mtg + limits.inc[us] * (mtg - 1));
+  TimePoint timeLeft = limits.time[us] + limits.inc[us] * (mtg - 1);
 
 
   // Use extra time with larger increments
@@ -84,7 +81,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   if (limits.movestogo == 0)
   {
       optScale = std::min(0.0084 + std::pow(ply + 3.0, 0.5) * 0.0042,
-                           0.2 * timeBase / double(timeLeft))
+                           0.2 * limits.time[us] / double(timeLeft))
                  * optExtra;
       maxScale = std::min(7.0, 4.0 + ply / 12.0);
   }
@@ -93,13 +90,15 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   else
   {
       optScale = std::min((0.88 + ply / 116.4) / mtg,
-                            0.88 * timeBase / double(timeLeft));
+                            0.88 * limits.time[us] / double(timeLeft));
       maxScale = std::min(6.3, 1.5 + 0.11 * mtg);
   }
 
-  // Never use more than 80% of the available time for this move, and always leave moveOverhead, plus internal overhead.
-  optimumTime = TimePoint(std::min({limits.time[us] - moveOverhead - 10., 0.8 * limits.time[us], optScale * timeLeft}));
+  // Never use more than 80% of the available time for this move, and subtract moveOverhead and internal overhead (10ms), use at least 1ms
+  optimumTime = TimePoint(std::min({limits.time[us] - moveOverhead - 10., 0.8 * limits.time[us], optScale * (timeLeft - moveOverhead * mtg)}));
   maximumTime = TimePoint(std::min({limits.time[us] - moveOverhead - 10., 0.8 * limits.time[us], maxScale * optimumTime}));
+  optimumTime = std::max(TimePoint(1), optimumTime);
+  maximumTime = std::max(TimePoint(1), maximumTime);
 
   if (Options["Ponder"])
       optimumTime += optimumTime / 4;
