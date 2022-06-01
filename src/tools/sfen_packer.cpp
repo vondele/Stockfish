@@ -94,7 +94,7 @@ namespace Stockfish::Tools {
     //
     struct SfenPacker
     {
-        void pack(const Position& pos);
+        void pack(const Position& pos, bool resetCastlingRights);
 
         // sfen packed by pack() (256bit = 32bytes)
         // Or sfen to decode with unpack()
@@ -149,7 +149,7 @@ namespace Stockfish::Tools {
     };
 
     // Pack sfen and store in data[32].
-    void SfenPacker::pack(const Position& pos)
+    void SfenPacker::pack(const Position& pos, bool resetCastlingRights)
     {
         memset(data, 0, 32 /* 256bit */);
         stream.set_data(data);
@@ -175,11 +175,17 @@ namespace Stockfish::Tools {
             }
         }
 
-        // TODO(someone): Support chess960.
-        stream.write_one_bit(pos.can_castle(WHITE_OO));
-        stream.write_one_bit(pos.can_castle(WHITE_OOO));
-        stream.write_one_bit(pos.can_castle(BLACK_OO));
-        stream.write_one_bit(pos.can_castle(BLACK_OOO));
+        if (resetCastlingRights)
+        {
+            stream.write_n_bit(0, 4);
+        }
+        else
+        {
+            stream.write_one_bit(pos.can_castle(WHITE_OO));
+            stream.write_one_bit(pos.can_castle(WHITE_OOO));
+            stream.write_one_bit(pos.can_castle(BLACK_OO));
+            stream.write_one_bit(pos.can_castle(BLACK_OOO));
+        }
 
         if (pos.ep_square() == SQ_NONE) {
             stream.write_one_bit(0);
@@ -249,7 +255,7 @@ namespace Stockfish::Tools {
         return make_piece(c, pr);
     }
 
-    int set_from_packed_sfen(Position& pos, const PackedSfen& sfen, StateInfo* si, Thread* th)
+    int set_from_packed_sfen(Position& pos, const PackedSfen& sfen, StateInfo* si, Thread* th, bool chess960)
     {
         SfenPacker packer;
         auto& stream = packer.stream;
@@ -362,7 +368,7 @@ namespace Stockfish::Tools {
 
         assert(stream.get_cursor() <= 256);
 
-        pos.chess960 = false;
+        pos.chess960 = chess960;
         pos.thisThread = th;
         pos.set_state(pos.st);
 
@@ -371,13 +377,13 @@ namespace Stockfish::Tools {
         return 0;
     }
 
-    PackedSfen sfen_pack(Position& pos)
+    PackedSfen sfen_pack(Position& pos, bool resetCastlingRights)
     {
         PackedSfen sfen;
 
         SfenPacker sp;
         sp.data = (uint8_t*)&sfen;
-        sp.pack(pos);
+        sp.pack(pos, resetCastlingRights);
 
         return sfen;
     }
