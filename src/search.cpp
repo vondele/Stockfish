@@ -784,7 +784,7 @@ namespace {
         && depth <= 7
         && eval < alpha - 348 - 258 * depth * depth)
     {
-        value = qsearch<NonPV>(pos, ss, alpha - 1, alpha, std::min(0, depth - 3));
+        value = qsearch<NonPV>(pos, ss, alpha - 1, alpha, std::min(0, depth - 5));
         if (value < alpha)
             return value;
     }
