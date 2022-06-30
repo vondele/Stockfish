@@ -115,7 +115,7 @@ struct ThreadPool : public std::vector<Thread*> {
   void start_searching();
   void wait_for_search_finished() const;
 
-  std::atomic_bool stop, increaseDepth;
+  std::atomic_bool stop;
 
 private:
   StateListPtr setupStates;
