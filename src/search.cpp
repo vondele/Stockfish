@@ -85,8 +85,8 @@ namespace {
   }
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
-  Value value_draw(const Thread* thisThread) {
-    return VALUE_DRAW - 1 + Value(thisThread->nodes & 0x2);
+  Value value_draw(const Position& pos, int ply) {
+    return VALUE_DRAW - 1 + Value(pos.this_thread()->nodes & 0x2) + ply % 2 ? pos.draw_shift() : -pos.draw_shift();
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
@@ -533,10 +533,10 @@ namespace {
     // if the opponent had an alternative move earlier to this position.
     if (   !rootNode
         && pos.rule50_count() >= 3
-        && alpha < VALUE_DRAW + 1  // max value of value_draw()
+        && alpha < VALUE_DRAW + 1 + std::abs(pos.draw_shift())  // max value of value_draw()
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = std::max(alpha, value_draw(pos.this_thread()));
+        alpha = std::max(alpha, value_draw(pos, ss->ply));
         if (alpha >= beta)
             return alpha;
     }
@@ -589,7 +589,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
-                                                        : value_draw(thisThread);
+                                                        : value_draw(pos, ss->ply);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1327,7 +1327,7 @@ moves_loop: // When in check, search starts here
     if (!moveCount)
         bestValue = excludedMove ? alpha :
                     ss->inCheck  ? mated_in(ss->ply)
-                                 : value_draw(thisThread);
+                                 : value_draw(pos, ss->ply);
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
@@ -1407,7 +1407,7 @@ moves_loop: // When in check, search starts here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : value_draw(thisThread);
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : value_draw(pos, ss->ply);
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
