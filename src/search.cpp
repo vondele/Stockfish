@@ -532,10 +532,10 @@ namespace {
     // if the opponent had an alternative move earlier to this position.
     if (   !rootNode
         && pos.rule50_count() >= 3
-        && alpha < VALUE_DRAW
+        && alpha < VALUE_DRAW + 1  // max value of value_draw()
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = value_draw(pos.this_thread());
+        alpha = std::max(alpha, value_draw(pos.this_thread()));
         if (alpha >= beta)
             return alpha;
     }
@@ -588,7 +588,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
-                                                        : value_draw(pos.this_thread());
+                                                        : value_draw(thisThread);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -695,7 +695,7 @@ namespace {
                 // use the range VALUE_MATE_IN_MAX_PLY to VALUE_TB_WIN_IN_MAX_PLY to score
                 value =  wdl < -drawScore ? VALUE_MATED_IN_MAX_PLY + ss->ply + 1
                        : wdl >  drawScore ? VALUE_MATE_IN_MAX_PLY - ss->ply - 1
-                                          : VALUE_DRAW + 2 * wdl * drawScore;
+                                          : VALUE_DRAW + 2 * wdl * drawScore;      // TODO this might need fixing
 
                 Bound b =  wdl < -drawScore ? BOUND_UPPER
                          : wdl >  drawScore ? BOUND_LOWER : BOUND_EXACT;
@@ -741,10 +741,6 @@ namespace {
             ss->staticEval = eval = evaluate(pos, &complexity);
         else // Fall back to (semi)classical complexity for TT hits, the NNUE complexity is lost
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
-
-        // Randomize draw evaluation
-        if (eval == VALUE_DRAW)
-            eval = value_draw(thisThread);
 
         // ttValue can be used as a better position evaluation (~4 Elo)
         if (    ttValue != VALUE_NONE
@@ -1320,14 +1316,6 @@ moves_loop: // When in check, search starts here
       }
     }
 
-    // The following condition would detect a stop only after move loop has been
-    // completed. But in this case bestValue is valid because we have fully
-    // searched our subtree, and we can anyhow save the result in TT.
-    /*
-       if (Threads.stop)
-        return VALUE_DRAW;
-    */
-
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
     // must be a mate or a stalemate. If we are in a singular extension search then
@@ -1338,7 +1326,7 @@ moves_loop: // When in check, search starts here
     if (!moveCount)
         bestValue = excludedMove ? alpha :
                     ss->inCheck  ? mated_in(ss->ply)
-                                 : VALUE_DRAW;
+                                 : value_draw(thisThread);
 
     // If there is a move which produces search value greater than alpha we update stats of searched moves
     else if (bestMove)
@@ -1418,7 +1406,7 @@ moves_loop: // When in check, search starts here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : value_draw(thisThread);
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
