@@ -164,6 +164,8 @@ public:
   Value psq_eg_stm() const;
   Value non_pawn_material(Color c) const;
   Value non_pawn_material() const;
+  Value draw_shift() const;
+  void set_draw_shift(Value s);
 
   // Position consistency check, for debugging
   bool pos_is_ok() const;
@@ -200,9 +202,18 @@ private:
   Color sideToMove;
   Score psq;
   bool chess960;
+  Value drawShift;
 };
 
 extern std::ostream& operator<<(std::ostream& os, const Position& pos);
+
+inline Value Position::draw_shift() const {
+  return drawShift;
+}
+
+inline void Position::set_draw_shift(Value s) {
+  drawShift = s;
+}
 
 inline Color Position::side_to_move() const {
   return sideToMove;
