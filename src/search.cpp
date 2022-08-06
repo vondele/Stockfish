@@ -84,9 +84,11 @@ namespace {
     return std::min((8 * d + 240) * d - 276 , 1907);
   }
 
+  const int DrawShift = PawnValueEg * 35 / 100;
+
   // Add a small random component to draw evaluations to avoid 3-fold blindness
   Value value_draw(const Position& pos, int ply) {
-    return VALUE_DRAW - 1 + Value(pos.this_thread()->nodes & 0x2) + (ply % 2 ? pos.draw_shift() : -pos.draw_shift());
+    return VALUE_DRAW - 1 + Value(pos.this_thread()->nodes & 0x2) + (ply % 2 ? DrawShift : -DrawShift);
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
@@ -273,7 +275,6 @@ void Thread::search() {
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
-  rootPos.set_draw_shift(PawnValueEg * int(Options["DrawShift"]) / 100);
   int iterIdx = 0;
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -533,7 +534,7 @@ namespace {
     // if the opponent had an alternative move earlier to this position.
     if (   !rootNode
         && pos.rule50_count() >= 3
-        && alpha < VALUE_DRAW + 1 + std::abs(pos.draw_shift())  // max value of value_draw()
+        && alpha < VALUE_DRAW + 1 + DrawShift  // max value of value_draw()
         && pos.has_game_cycle(ss->ply))
     {
         alpha = std::max(alpha, value_draw(pos, ss->ply));
