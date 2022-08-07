@@ -310,6 +310,7 @@ void Thread::search() {
   complexityAverage.set(174, 1);
 
   trend         = SCORE_ZERO;
+  rootColor     = us;
   optimism[ us] = Value(39);
   optimism[~us] = -optimism[us];
 

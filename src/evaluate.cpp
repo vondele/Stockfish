@@ -1070,7 +1070,8 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   if (useNNUE && !useClassical)
   {
        int nnueComplexity;
-       int scale = 1064 + 106 * pos.non_pawn_material() / 5120;
+       int npm = pos.non_pawn_material();
+       int scale = 1064 + 106 * npm / 5120;
        Value optimism = pos.this_thread()->optimism[stm];
 
        Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
@@ -1081,6 +1082,9 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
 
        optimism = optimism * (269 + nnueComplexity) / 256;
        v = (nnue * scale + optimism * (scale - 754)) / 1024;
+
+       Color rootColor = pos.this_thread()->rootColor;
+       v+= (rootColor == stm ? 1 : -1 ) * npm / 64;
   }
 
   // Damp down the evaluation linearly when shuffling
@@ -1119,6 +1123,7 @@ std::string Eval::trace(Position& pos) {
   pos.this_thread()->bestValue       = VALUE_ZERO;
   pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
   pos.this_thread()->optimism[BLACK] = VALUE_ZERO;
+  pos.this_thread()->rootColor       = pos.side_to_move();
 
   v = Evaluation<TRACE>(pos).value();
 
