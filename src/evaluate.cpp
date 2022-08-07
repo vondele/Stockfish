@@ -1070,7 +1070,8 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   if (useNNUE && !useClassical)
   {
        int nnueComplexity;
-       int scale = 1064 + 106 * pos.non_pawn_material() / 5120;
+       int npm = pos.non_pawn_material();
+       int scale = 1064 + 106 * npm / 5120;
        Value optimism = pos.this_thread()->optimism[stm];
 
        Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
@@ -1081,6 +1082,22 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
 
        optimism = optimism * (269 + nnueComplexity) / 256;
        v = (nnue * scale + optimism * (scale - 754)) / 1024;
+
+       if (pos.this_thread()->rootColor != stm || true)
+       {
+           uint64_t k = pos.key();
+           uint64_t mask = 255;
+           int   r =   ((k & (mask <<  0)) >>  0)
+                     + ((k & (mask <<  8)) >>  8)
+                     + ((k & (mask << 16)) >> 16)
+                     + ((k & (mask << 24)) >> 24)
+                     + ((k & (mask << 32)) >> 32)
+                     + ((k & (mask << 40)) >> 40)
+                     + ((k & (mask << 48)) >> 48)
+                     + ((k & (mask << 56)) >> 56) - 1020;
+           int i = 1;
+           v = (Value(r) * i + (65536 - i) * v) / (65536);
+       }
   }
 
   // Damp down the evaluation linearly when shuffling
@@ -1119,6 +1136,7 @@ std::string Eval::trace(Position& pos) {
   pos.this_thread()->bestValue       = VALUE_ZERO;
   pos.this_thread()->optimism[WHITE] = VALUE_ZERO;
   pos.this_thread()->optimism[BLACK] = VALUE_ZERO;
+  pos.this_thread()->rootColor       = pos.side_to_move();
 
   v = Evaluation<TRACE>(pos).value();
 
