@@ -1084,7 +1084,7 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
        v = (nnue * scale + optimism * (scale - 754)) / 1024;
 
        Color rootColor = pos.this_thread()->rootColor;
-       v+= (rootColor == stm ? -1 : 1 ) * npm / 128;
+       v+= (rootColor == stm ? -1 : 1 ) * npm / 64;
   }
 
   // Damp down the evaluation linearly when shuffling
