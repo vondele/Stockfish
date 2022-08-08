@@ -742,9 +742,8 @@ namespace {
         else // Fall back to (semi)classical complexity for TT hits, the NNUE complexity is lost
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
 
-        // Randomize draw evaluation
-        if (eval == VALUE_DRAW)
-            eval = value_draw(thisThread);
+        // Randomize evaluation
+        eval += Value(thisThread->nodes & 0x2) - 1;
 
         // ttValue can be used as a better position evaluation (~4 Elo)
         if (    ttValue != VALUE_NONE
