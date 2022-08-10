@@ -1095,7 +1095,7 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
                      + ((k & (mask << 40)) >> 40)
                      + ((k & (mask << 48)) >> 48)
                      + ((k & (mask << 56)) >> 56) - 1020;
-           int i = 8192;
+           int i = 32768;
            v = (Value(r) * i + (65536 - i) * v) / (65536);
        }
   }
