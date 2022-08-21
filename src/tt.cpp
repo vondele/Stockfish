@@ -30,6 +30,10 @@ namespace Stockfish {
 
 TranspositionTable TT; // Our global transposition table
 
+int repa = 64, repb = 256;
+TUNE(SetRange(48,80), repa);
+TUNE(repb);
+
 /// TTEntry::save() populates the TTEntry with a new node's data, possibly
 /// overwriting an old position. Update is not atomic and can be racy.
 
@@ -42,7 +46,7 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
   // Overwrite less valuable entries (cheapest checks first)
   if (   b == BOUND_EXACT
       || (uint16_t)k != key16
-      || d - DEPTH_OFFSET + 2 * pv > depth8 - 4)
+      || d - DEPTH_OFFSET + 2 * pv > (repa * depth8 - repb) / 64)
   {
       assert(d > DEPTH_OFFSET);
       assert(d < 256 + DEPTH_OFFSET);
