@@ -298,6 +298,9 @@ void Thread::search() {
   }
 
   size_t multiPV = size_t(Options["MultiPV"]);
+  if (rootPos.game_ply() < 16)
+      multiPV = 5;
+
   Skill skill(Options["Skill Level"], Options["UCI_LimitStrength"] ? int(Options["UCI_Elo"]) : 0);
 
   // When playing with strength handicap enable MultiPV search that we will
@@ -514,6 +517,18 @@ void Thread::search() {
   if (skill.enabled())
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
+
+  int maxPV=0;
+  for (unsigned int i=1; i<rootMoves.size(); ++i)
+       if (rootMoves[i].score + PawnValueEg * 2 / 10 > rootMoves[0].score)
+           maxPV=i;
+  static PRNG rng(now());
+  int iPV;
+  if (maxPV > 0)
+      iPV = rng.rand<unsigned>() % maxPV + 1;
+  else
+      iPV = 0;
+  std::swap(rootMoves[0], rootMoves[iPV]);
 }
 
 
