@@ -298,8 +298,8 @@ void Thread::search() {
   }
 
   size_t multiPV = size_t(Options["MultiPV"]);
-  if (rootPos.game_ply() < 16)
-      multiPV = 5;
+  if (rootPos.game_ply() < int(Options["Random Op. Plies"]))
+      multiPV = int(Options["Random Op. MultiPV"]);
 
   Skill skill(Options["Skill Level"], Options["UCI_LimitStrength"] ? int(Options["UCI_Elo"]) : 0);
 
@@ -520,7 +520,7 @@ void Thread::search() {
 
   int maxPV=0;
   for (unsigned int i=1; i<rootMoves.size(); ++i)
-       if (rootMoves[i].score + PawnValueEg * 2 / 10 > rootMoves[0].score)
+       if (rootMoves[i].score + PawnValueEg * int(Options["Random Op. Score"]) / 100 > rootMoves[0].score)
            maxPV=i;
   static PRNG rng(now());
   int iPV;
