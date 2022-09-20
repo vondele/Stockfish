@@ -53,7 +53,13 @@ const vector<string> Defaults = {
   "n1rb4/1p3p1p/1p6/1R5K/8/p3p1PN/1PP1R3/N6k w - - 0 1",
   "1r3n2/2pB1pq1/1bR3p1/N2NR2b/KP1kpp1r/1p2p3/1PP2Q1n/8 w - - 0 1",
 
+  // Mate in 6
+  "8/8/8/5B2/6QN/3prp2/3r1p2/3bbk1K w - - 0 1",
+
   // Mates with checks only
+  // Mate in 6
+  "1N1RK3/1p1N1p1b/1P1kBp1b/n2P3p/2p1Pr2/1n5Q/2q5/8 w - - 0 1",
+  
   // Mate in 11
   "6r1/p1pq1p1p/1p1p1Qnk/3PrR2/2n1P1PP/P1P5/4R3/6K1 w - -",
 
@@ -135,8 +141,9 @@ vector<string> setup_bench(const Position& current, istream& is) {
           cnt++;
 
           if (isDefault)
-              go = cnt == 17 ? "go mate 12" :
-                   cnt == 16 ? "go mate 11" :
+              go = cnt == 19 ? "go mate 12" :
+                   cnt == 18 ? "go mate 11" :
+                   cnt >= 16 ? "go mate 6"  :
                    cnt >= 14 ? "go mate 5"  :
                    cnt >=  9 ? "go mate 4"  :
                    cnt >=  5 ? "go mate 3"  : "go mate 2";
