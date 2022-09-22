@@ -102,7 +102,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   if (fenFile == "default")
   {
       isDefault = true;
-	  limit = 2;
+      limit = 2;
       fens = Defaults;
   }
   

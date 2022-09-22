@@ -21,7 +21,6 @@
 #ifndef SEARCH_H_INCLUDED
 #define SEARCH_H_INCLUDED
 
-#include <atomic>
 #include <vector>
 
 #include "misc.h"
@@ -50,7 +49,6 @@ struct Stack {
 struct RankedMove {
 
   RankedMove(Move m, int r) : move(m), rank(r) {}
-
   bool operator<(const RankedMove& rm) const {
     return rm.rank < rank;
   }

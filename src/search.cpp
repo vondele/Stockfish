@@ -60,9 +60,9 @@ namespace {
   // Helper used to detect a basic mate config
   bool is_basic_mate(const Position& pos) {
 	  
-	Color us = pos.side_to_move();
+    Color us = pos.side_to_move();
 	
-	Value npm =  pos.count<KNIGHT>(us) * KnightValueMg
+    Value npm =  pos.count<KNIGHT>(us) * KnightValueMg
 	           + pos.count<BISHOP>(us) * BishopValueMg
 	           + pos.count<ROOK  >(us) * RookValueMg
 	           + pos.count<QUEEN >(us) * QueenValueMg;
@@ -80,7 +80,7 @@ namespace {
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth);
   Value syzygy_search(Position& pos, int ply);
 
-  // Some global variables
+  // Global variables
   int allMoves, kingMoves;
 
 
@@ -104,6 +104,7 @@ namespace {
             nodes += cnt;
             pos.undo_move(m);
         }
+
         if (Root)
             sync_cout << UCI::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
     }
@@ -121,8 +122,8 @@ namespace {
 void Search::init(Position& pos) {
 
   // Read UCI options
-  kingMoves   = Options["KingMoves"];
-  allMoves    = Options["AllMoves"];
+  kingMoves = Options["KingMoves"];
+  allMoves  = Options["AllMoves"];
 
   // Prepare the root moves
   RootMoves searchMoves;
@@ -147,7 +148,7 @@ void Search::init(Position& pos) {
       
       for (auto& rm : searchMoves)
       {
-		  rm.tbRank = 0;
+          rm.tbRank = 0;
 
           // Check bonuses
           if (pos.gives_check(rm.pv[0]))
@@ -167,10 +168,10 @@ void Search::init(Position& pos) {
 
           // Bonus for a move freeing a potential promotion square
           Bitboard ourPawns = pos.pieces(us, PAWN);
-		  
-		  if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(rm.pv[0]))
-		      || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(rm.pv[0])))
-			  rm.tbRank += 500;          
+    
+          if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(rm.pv[0]))
+              || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(rm.pv[0])))
+              rm.tbRank += 500;          
 
           if (pos.capture(rm.pv[0]))
               rm.tbRank += MVVLVA[type_of(pos.piece_on(to_sq(rm.pv[0])))];
@@ -293,11 +294,10 @@ void Thread::search() {
   if (   TB::RootInTB
       && is_basic_mate(rootPos))
   {
-	  if (   this == Threads.main()
+      if (   this == Threads.main()
           && rootMoves[0].tbRank > 900)
       {
-	      StateInfo rootSt;
-	  
+          StateInfo rootSt;
           rootMoves[0].pv.resize(1);
 
           rootPos.do_move(rootMoves[0].pv[0], rootSt);
@@ -373,7 +373,7 @@ void Thread::search() {
 
               // Sort the PV lines searched so far
               std::stable_sort(rootMoves.begin(), rootMoves.begin() + pvIdx + 1);
-	      }
+          }
 
           // Have we found a "mate in x" within the specified limit?
           if (bestValue >= alpha)
@@ -431,8 +431,8 @@ namespace {
     // or zero. No evaluation needed!
     if (depth == 0)
     {
-		thisThread->selDepth = std::max(thisThread->selDepth, ss->ply);
-		
+        thisThread->selDepth = std::max(thisThread->selDepth, ss->ply);
+
         if (inCheck && !MoveList<LEGAL>(pos).size())
             return mated_in(ss->ply);
         else
@@ -467,19 +467,19 @@ namespace {
 
     for (const auto& m : MoveList<LEGAL>(pos))
     {
-		// Checking moves get a high enough rank for both sides
+        // Checking moves get a high enough rank for both sides
         if (pos.gives_check(m))
             rankThisMove += 4000;
 
         if (pos.capture(m))
             rankThisMove += MVVLVA[type_of(pos.piece_on(to_sq(m)))];
 
-		if (ss->ply & 1) // Side to get mated
-		{
+        if (ss->ply & 1) // Side to get mated
+        {
             if (inCheck)
             {
-				// Rank moves first which capture the checking piece
-				if (pos.capture(m))
+                // Rank moves first which capture the checking piece
+                if (pos.capture(m))
                     rankThisMove += 1000;
             }
         }
@@ -500,16 +500,16 @@ namespace {
 
             // Bonus for a move freeing a potential promotion square
             Bitboard ourPawns = pos.pieces(us, PAWN);
-		  
-		    if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(m))
-		        || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
-			    rankThisMove += 500;          
+  
+            if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(m))
+                || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
+                rankThisMove += 500;          
 
             // Bonus for a knight probably able to give check on the next move
             if (   type_of(pos.moved_piece(m)) == KNIGHT
                 && pos.attacks_from<KNIGHT>(to_sq(m)) & pos.check_squares(KNIGHT))
-			    rankThisMove += 300;
-	    }
+                rankThisMove += 300;
+        }
 
         // Add this ranked move
         legalMoves.emplace_back(RankedMove(m, rankThisMove));
