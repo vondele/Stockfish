@@ -56,10 +56,10 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq ($(SDE_PATH),)
-	PGOBENCH = $(WINE_PATH) ./$(EXE) bench
+	PGOBENCH = $(WINE_PATH) ./$(EXE) bench 128 1 8 default depth NNUE
 	PGOGENSFEN = $(WINE_PATH) ./$(EXE) gensfen depth 3 loop 1000 sfen_format bin output_file_name $(PGO_TRAINING_DATA_FILE)
 else
-	PGOBENCH = $(SDE_PATH) -- $(WINE_PATH) ./$(EXE) bench
+	PGOBENCH = $(SDE_PATH) -- $(WINE_PATH) ./$(EXE) bench 128 1 8 default depth NNUE
 	PGOGENSFEN = $(SDE_PATH) -- $(WINE_PATH) ./$(EXE) gensfen depth 3 loop 1000 sfen_format bin output_file_name $(PGO_TRAINING_DATA_FILE)
 endif
 
