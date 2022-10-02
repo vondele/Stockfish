@@ -7,7 +7,7 @@ It is mainly inspired by the publication REALIZATION OF THE CHESS MATE SOLVER AP
 http://www.doiserbia.nb.rs/img/doi/0354-0243/2004/0354-02430402273V.pdf
 and discussions on Talkchess and the german CSS forum.
 
-It's still way beyond the functionality and speed offered by ChestUCI or Gustav.
+It's still far from the functionality and speed offered by ChestUCI or Gustav.
 Matefish is best used in a terminal or Windows command line.
 
 
