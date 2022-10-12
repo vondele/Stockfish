@@ -59,14 +59,14 @@ namespace {
 
   // Helper used to detect a basic mate config
   bool is_basic_mate(const Position& pos) {
-	  
+  
     Color us = pos.side_to_move();
-	
+
     Value npm =  pos.count<KNIGHT>(us) * KnightValueMg
-	           + pos.count<BISHOP>(us) * BishopValueMg
-	           + pos.count<ROOK  >(us) * RookValueMg
-	           + pos.count<QUEEN >(us) * QueenValueMg;
-	           
+               + pos.count<BISHOP>(us) * BishopValueMg
+               + pos.count<ROOK  >(us) * RookValueMg
+               + pos.count<QUEEN >(us) * QueenValueMg;
+           
     return   !more_than_one(pos.pieces(~us))
           && !pos.count<PAWN>(us)
           && (   npm == RookValueMg
@@ -82,7 +82,6 @@ namespace {
 
   // Global variables
   int allMoves, kingMoves;
-
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -125,6 +124,11 @@ void Search::init(Position& pos) {
   kingMoves = Options["KingMoves"];
   allMoves  = Options["AllMoves"];
 
+  // Analyze the root position in order to find some
+  // automatic settings for the search if possible.
+  const Color us = pos.side_to_move();
+  const auto king = pos.square<KING>(~us);
+
   // Prepare the root moves
   RootMoves searchMoves;
   StateInfo rootSt;
@@ -143,9 +147,6 @@ void Search::init(Position& pos) {
 
   else
   {
-      const auto king = pos.square<KING>(~pos.side_to_move());
-      Color us = pos.side_to_move();
-      
       for (auto& rm : searchMoves)
       {
           rm.tbRank = 0;
@@ -187,6 +188,11 @@ void Search::init(Position& pos) {
          [](const RootMove &sm1, const RootMove &sm2) { return sm1.tbRank > sm2.tbRank; });
   }
 
+  // If requested, print out the root moves and their ranking
+  if (Options["RootMoveStats"])
+      for (const auto& rm : searchMoves)
+          std::cout << "Root move: " << UCI::move(rm.pv[0], pos.is_chess960()) << "   Rank: " << rm.tbRank << std::endl;
+  
   // Finally, distribute the ranked root moves among all available threads
   auto it = searchMoves.begin();
 
@@ -320,7 +326,7 @@ void Thread::search() {
 
   ss->pv.clear();
 
-  Depth targetDepth = Limits.mate ? 2 * Limits.mate - 1 : MAX_PLY;
+  targetDepth = Limits.mate ? 2 * Limits.mate - 1 : MAX_PLY;
   size_t multiPV = rootMoves.size();
 
   // Setting alpha, beta and bestValue such that we achieve
@@ -465,11 +471,12 @@ namespace {
     std::vector<RankedMove> legalMoves;
     legalMoves.reserve(64);
 
+    // Score the moves! VERY IMPORTANT!!!
     for (const auto& m : MoveList<LEGAL>(pos))
     {
         // Checking moves get a high enough rank for both sides
         if (pos.gives_check(m))
-            rankThisMove += 4000;
+            rankThisMove += 6000;
 
         if (pos.capture(m))
             rankThisMove += MVVLVA[type_of(pos.piece_on(to_sq(m)))];
@@ -485,7 +492,7 @@ namespace {
         }
         else
         {
-            if (rankThisMove >= 4000) // Checking move
+            if (rankThisMove > 4000) // Checking move
             {
                 // Bonus for a knight check
                 if (type_of(pos.moved_piece(m)) == KNIGHT)
@@ -505,9 +512,24 @@ namespace {
                 || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
                 rankThisMove += 500;          
 
-            // Bonus for a knight probably able to give check on the next move
+            // Bonus for a knight eventually able to give check on the next move
             if (   type_of(pos.moved_piece(m)) == KNIGHT
                 && pos.attacks_from<KNIGHT>(to_sq(m)) & pos.check_squares(KNIGHT))
+                rankThisMove += 600;
+
+            // Bonus for a queen eventually able to give check on the next move
+            else if (   type_of(pos.moved_piece(m)) == QUEEN
+                && pos.attacks_from<QUEEN>(to_sq(m)) & pos.check_squares(QUEEN))
+                rankThisMove += 500;
+
+            // Bonus for a rook eventually able to give check on the next move
+            else if (   type_of(pos.moved_piece(m)) == ROOK
+                && pos.attacks_from<ROOK>(to_sq(m)) & pos.check_squares(ROOK))
+                rankThisMove += 400;
+
+            // Bonus for a bishop eventually able to give check on the next move
+            else if (   type_of(pos.moved_piece(m)) == BISHOP
+                && pos.attacks_from<BISHOP>(to_sq(m)) & pos.check_squares(BISHOP))
                 rankThisMove += 300;
         }
 
@@ -521,23 +543,51 @@ namespace {
     while (!legalMoves.empty())
     {
         extension = 0;
-        
+
         // Pick the next best move
         auto rm = std::max_element(legalMoves.begin(), legalMoves.end(),
                                 [](const RankedMove& a, const RankedMove& b) { return b.rank > a.rank; });
 
         // Extensions
+        // Not more than one extension and not in the last iteration.
         if (   Limits.mate > 2
             && depth == 1
-            && ss->ply < thisThread->rootDepth)
+            && ss->ply < thisThread->rootDepth
+            && thisThread->rootDepth < thisThread->targetDepth)
         {
-            if ((*rm).rank >= 3000) // Check extension
+            // Check extension. Always extend up to the
+            // specified mate limit.
+            if ((*rm).rank > 4000)
                 extension = 2 * Limits.mate - ss->ply - 2;
+
+            // Extend knight moves by 2 plies if the opponent king is caged
+            // by own pieces, or we do not have any major piece.
+            if (  !extension
+                && type_of(pos.moved_piece((*rm).move)) == KNIGHT)
+            {
+                const bool cagedKing =  popcount(pos.attacks_from<KING>(pos.square<KING>(~us)))
+                                      - popcount(pos.attacks_from<KING>(pos.square<KING>(~us)) & pos.pieces(~us)) < 2;
+                const int majorsCount = pos.count<QUEEN>(us) + pos.count<ROOK>(us);
+
+                if (cagedKing || majorsCount == 0)
+                    extension = 2;
+            }
         }
 
-        // At frontier nodes we can skip all non-checking moves
-        if (   (depth == 1 || (ss->ply > thisThread->rootDepth && !(ss->ply & 1)))
-            && (*rm).rank < 3000)
+        // At frontier nodes we can skip all non-checking moves.
+        // Since checking moves are ranked first, simply break from the
+        // moves loop as soon as we hit the first non-checking move.
+        if (    depth == 1
+            && !extension
+            && (*rm).rank < 4000)
+            break;
+
+        // At interior nodes beyond the nominal search depth,
+        // do the same for the root side-to-move, because this can only
+        // mean we're in a check extension search. 
+        if (    ss->ply > thisThread->rootDepth
+            && !(ss->ply & 1)
+            && (*rm).rank < 4000)
             break;
 
         moveCount++;
