@@ -1087,6 +1087,13 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   // Damp down the evaluation linearly when shuffling
   v = v * (195 - pos.rule50_count()) / 211;
 
+  int keepMaterial = pos.non_pawn_material() * pos.game_ply() / 15258;
+
+  if (pos.side_to_move() == pos.this_thread()->rootColor)
+      v += keepMaterial;
+  else
+      v -= keepMaterial;
+
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 

@@ -71,6 +71,7 @@ public:
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth, previousDepth;
   Value rootDelta;
+  Color rootColor;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;
