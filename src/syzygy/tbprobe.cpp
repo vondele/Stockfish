@@ -1544,7 +1544,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
             dtz =  dtz > 0 ? dtz + 1
                  : dtz < 0 ? dtz - 1 : dtz;
 
-            dtz = std::clamp(-999, 999, dtz);
+            dtz = std::clamp(dtz, -999, 999);
         }
 
         // Make sure that a mating move is assigned a dtz value of 1
