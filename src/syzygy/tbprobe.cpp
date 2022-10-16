@@ -1523,13 +1523,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
         pos.do_move(m.pv[0], st);
 
         // Calculate dtz for the current move counting from the root position
-        if (pos.rule50_count() == 0)
-        {
-            // In case of a zeroing move, dtz is one of -101/-1/0/1/101
-            WDLScore wdl = -probe_wdl(pos, &result);
-            dtz = dtz_before_zeroing(wdl);
-        }
-        else if (pos.is_draw(1))
+        if (pos.is_draw(1))
         {
             // In case a root move leads to a draw by repetition or
             // 50-move rule, we set dtz to zero. Note: since we are
@@ -1537,12 +1531,20 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
             // repetition inside the game history.
             dtz = 0;
         }
+        else if (pos.rule50_count() == 0)
+        {
+            // In case of a zeroing move, dtz is one of -101/-1/0/1/101
+            WDLScore wdl = -probe_wdl(pos, &result);
+            dtz = dtz_before_zeroing(wdl);
+        }
         else
         {
             // Otherwise, take dtz for the new position and correct by 1 ply
             dtz = -probe_dtz(pos, &result);
             dtz =  dtz > 0 ? dtz + 1
                  : dtz < 0 ? dtz - 1 : dtz;
+
+            dtz = std::clamp(-999, 999, dtz);
         }
 
         // Make sure that a mating move is assigned a dtz value of 1
