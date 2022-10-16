@@ -179,7 +179,7 @@ void Search::init(Position& pos) {
 
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
-          rm.tbRank -= 20 * int(MoveList<LEGAL>(pos).size());
+          rm.tbRank -= 10 * int(MoveList<LEGAL>(pos).size());
           pos.undo_move(rm.pv[0]);
       }
 
@@ -350,7 +350,7 @@ void Thread::search() {
               continue;
 
           if (   rootDepth == 1
-              && rootMoves[pvIdx].tbRank < 3000)
+              && rootMoves[pvIdx].tbRank < 5000)
               continue;
 
           selDepth = 0;
@@ -492,7 +492,7 @@ namespace {
         }
         else
         {
-            if (rankThisMove > 4000) // Checking move
+            if (rankThisMove >= 6000) // Checking move
             {
                 // Bonus for a knight check
                 if (type_of(pos.moved_piece(m)) == KNIGHT)
@@ -557,7 +557,7 @@ namespace {
         {
             // Check extension. Always extend up to the
             // specified mate limit.
-            if ((*rm).rank > 4000)
+            if ((*rm).rank >= 6000)
                 extension = 2 * Limits.mate - ss->ply - 2;
 
             // Extend knight moves by 2 plies if the opponent king is caged
@@ -579,7 +579,7 @@ namespace {
         // moves loop as soon as we hit the first non-checking move.
         if (    depth == 1
             && !extension
-            && (*rm).rank < 4000)
+            && (*rm).rank < 6000)
             break;
 
         // At interior nodes beyond the nominal search depth,
@@ -587,7 +587,7 @@ namespace {
         // mean we're in a check extension search. 
         if (    ss->ply > thisThread->rootDepth
             && !(ss->ply & 1)
-            && (*rm).rank < 4000)
+            && (*rm).rank < 6000)
             break;
 
         moveCount++;
