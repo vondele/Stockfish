@@ -1105,6 +1105,7 @@ moves_loop: // When in check, search starts here
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5177)
               extension = 1;
           else if (   priorCapture
+                   && type_of(pos.captured_piece()) != PAWN
                    && (pos.non_pawn_material() == 2 * RookValueMg || pos.non_pawn_material() == 4 * RookValueMg))
               extension = 1;
       }
