@@ -1087,7 +1087,7 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   // Damp down the evaluation linearly when shuffling
   v = v * (195 - pos.rule50_count()) / 211;
 
-  int keepMaterial = msb(1 + pos.non_pawn_material() * pos.game_ply());
+  int keepMaterial = msb(1 + pos.non_pawn_material() * pos.game_ply()) * 2;
 
   if (pos.side_to_move() == pos.this_thread()->rootColor)
       v += keepMaterial;
