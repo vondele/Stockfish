@@ -167,6 +167,10 @@ void Search::init(Position& pos) {
                    rm.tbRank += 500;
           }
 
+          // Bonus for captures by MVV
+          if (pos.capture(rm.pv[0]))
+              rm.tbRank += MVVLVA[type_of(pos.piece_on(to_sq(rm.pv[0])))];
+
           // Bonus for a move freeing a potential promotion square
           Bitboard ourPawns = pos.pieces(us, PAWN);
     
@@ -174,19 +178,36 @@ void Search::init(Position& pos) {
               || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(rm.pv[0])))
               rm.tbRank += 500;          
 
-          if (pos.capture(rm.pv[0]))
-              rm.tbRank += MVVLVA[type_of(pos.piece_on(to_sq(rm.pv[0])))];
+          // Bonus for a knight eventually able to give check on the next move
+          if (   type_of(pos.moved_piece(rm.pv[0])) == KNIGHT
+              && pos.attacks_from<KNIGHT>(to_sq(rm.pv[0])) & pos.check_squares(KNIGHT))
+              rm.tbRank += 600;
+
+          // Bonus for a queen eventually able to give check on the next move
+          else if (   type_of(pos.moved_piece(rm.pv[0])) == QUEEN
+                   && pos.attacks_from<QUEEN>(to_sq(rm.pv[0])) & pos.check_squares(QUEEN))
+              rm.tbRank += 500;
+
+          // Bonus for a rook eventually able to give check on the next move
+          else if (   type_of(pos.moved_piece(rm.pv[0])) == ROOK
+                   && pos.attacks_from<ROOK>(to_sq(rm.pv[0])) & pos.check_squares(ROOK))
+              rm.tbRank += 400;
+
+          // Bonus for a bishop eventually able to give check on the next move
+          else if (   type_of(pos.moved_piece(rm.pv[0])) == BISHOP
+                   && pos.attacks_from<BISHOP>(to_sq(rm.pv[0])) & pos.check_squares(BISHOP))
+              rm.tbRank += 300;
 
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
           rm.tbRank -= 10 * int(MoveList<LEGAL>(pos).size());
           pos.undo_move(rm.pv[0]);
       }
-
-      // Now, sort the moves by their rank
-      std::stable_sort(searchMoves.begin(), searchMoves.end(),
-         [](const RootMove &sm1, const RootMove &sm2) { return sm1.tbRank > sm2.tbRank; });
   }
+
+  // Now, sort the moves by their rank
+  std::stable_sort(searchMoves.begin(), searchMoves.end(),
+      [](const RootMove &a, const RootMove &b) { return a.tbRank > b.tbRank; });
 
   // If requested, print out the root moves and their ranking
   if (Options["RootMoveStats"])
@@ -349,12 +370,15 @@ void Thread::search() {
               && rootMoves[pvIdx].tbRank <= 0)
               continue;
 
-          if (   rootDepth == 1
+          if (  !TB::RootInTB
+              && rootDepth == 1
               && rootMoves[pvIdx].tbRank < 5000)
               continue;
 
           selDepth = 0;
 
+          assert(is_ok(rootMoves[pvIdx].pv[0]));
+          
           // Make, search and undo the root move
           rootPos.do_move(rootMoves[pvIdx].pv[0], rootSt);
           nodes++;
@@ -404,7 +428,10 @@ void Thread::search() {
           sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
       }
 
-      rootDepth += 2;
+      if (rootDepth == 3)
+          rootDepth = std::max(targetDepth - 4, 5);
+      else
+          rootDepth += 2;
   }
 }
 
@@ -423,7 +450,7 @@ namespace {
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
 
-    assert(alpha < beta);
+    assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
 
     // Start with a fresh pv
     ss->pv.clear();
@@ -456,7 +483,7 @@ namespace {
             return VALUE_DRAW;
     }
 
-    // Check for draw by repetition and 50-move rule
+    // Check for draw by repetition
     if (pos.is_draw(ss->ply))
         return VALUE_DRAW;
 
@@ -550,21 +577,22 @@ namespace {
 
         // Extensions
         // Not more than one extension and not in the last iteration.
-        if (   Limits.mate > 2
-            && depth == 1
+        if (   depth == 1
+            && Limits.mate > 2
             && ss->ply < thisThread->rootDepth
             && thisThread->rootDepth < thisThread->targetDepth)
         {
             // Check extension. Always extend up to the
             // specified mate limit.
             if ((*rm).rank >= 6000)
-                extension = 2 * Limits.mate - ss->ply - 2;
+                extension = thisThread->targetDepth - thisThread->rootDepth;
 
             // Extend knight moves by 2 plies if the opponent king is caged
             // by own pieces, or we do not have any major piece.
-            if (  !extension
-                && type_of(pos.moved_piece((*rm).move)) == KNIGHT)
+            else if (   type_of(pos.moved_piece((*rm).move)) == KNIGHT)
             {
+                assert(pos.piece_on(from_sq((*rm).move)) == make_piece(us, KNIGHT));
+                
                 const bool cagedKing =  popcount(pos.attacks_from<KING>(pos.square<KING>(~us)))
                                       - popcount(pos.attacks_from<KING>(pos.square<KING>(~us)) & pos.pieces(~us)) < 2;
                 const int majorsCount = pos.count<QUEEN>(us) + pos.count<ROOK>(us);
@@ -580,7 +608,10 @@ namespace {
         if (    depth == 1
             && !extension
             && (*rm).rank < 6000)
-            break;
+        {
+            legalMoves.erase(rm);
+            continue;
+        }
 
         // At interior nodes beyond the nominal search depth,
         // do the same for the root side-to-move, because this can only
@@ -592,6 +623,8 @@ namespace {
 
         moveCount++;
 
+        assert(is_ok((*rm).move));
+        
         pos.do_move((*rm).move, st);
         thisThread->nodes++;
         
@@ -779,14 +812,8 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
             RootInTB = root_probe_wdl(pos, rootMoves);
     }
 
-    if (RootInTB)
-        // Sort moves according to TB rank
-        std::stable_sort(rootMoves.begin(), rootMoves.end(),
-                  [](const RootMove &a, const RootMove &b) { return a.tbRank > b.tbRank; } );
-    else
-    {
-        // Clean up if both, root_probe() and root_probe_wdl() have failed!
+    // Clean up if both, root_probe() and root_probe_wdl() have failed!
+    if (!RootInTB)
         for (auto& rm : rootMoves)
             rm.tbRank = 0;
-    }
 }

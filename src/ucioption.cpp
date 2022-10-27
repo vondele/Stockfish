@@ -68,7 +68,7 @@ void init(OptionsMap& o) {
   o["UCI_AnalyseMode"]       << Option(false);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
-  o["Syzygy50MoveRule"]      << Option(true);
+  o["Syzygy50MoveRule"]      << Option(false);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
 }
 
