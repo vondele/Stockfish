@@ -19,6 +19,7 @@
 */
 
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -82,6 +83,7 @@ namespace {
 
   // Global variables
   int allMoves, kingMoves;
+  std::atomic<int> Movecount[MAX_PLY];
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -123,6 +125,10 @@ void Search::init(Position& pos) {
   // Read UCI options
   kingMoves = Options["KingMoves"];
   allMoves  = Options["AllMoves"];
+
+  // Initialize Movecount array
+  for (int i = 0; i < MAX_PLY; i++)
+      Movecount[i] = 0;
 
   // Analyze the root position in order to find some
   // automatic settings for the search if possible.
@@ -360,11 +366,6 @@ void Thread::search() {
   {
       for (pvIdx = 0; pvIdx < multiPV; ++pvIdx)
       {
-          if (Time.elapsed() > 500 && this == Threads.main())
-              sync_cout << "info depth " << rootDepth
-                        << " currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
-                        << " currmovenumber " << pvIdx + 1 << sync_endl;
-
           // Only search winning moves
           if (   TB::RootInTB
               && rootMoves[pvIdx].tbRank <= 0)
@@ -374,6 +375,12 @@ void Thread::search() {
               && rootDepth == 1
               && rootMoves[pvIdx].tbRank < 5000)
               continue;
+
+          ++Movecount[rootDepth];
+
+          if (Time.elapsed() > 500 && this == Threads.main())
+              sync_cout << "currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
+                        << " currmovenumber " << Movecount[rootDepth].load() << sync_endl;
 
           selDepth = 0;
 
