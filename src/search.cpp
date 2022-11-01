@@ -379,7 +379,7 @@ void Thread::search() {
           ++Movecount[rootDepth];
 
           if (Time.elapsed() > 500 && this == Threads.main())
-              sync_cout << "currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
+              sync_cout << "info currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
                         << " currmovenumber " << Movecount[rootDepth].load() << sync_endl;
 
           selDepth = 0;
