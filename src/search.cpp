@@ -204,6 +204,11 @@ void Search::init(Position& pos) {
                    && pos.attacks_from<BISHOP>(to_sq(rm.pv[0])) & pos.check_squares(BISHOP))
               rm.tbRank += 300;
 
+          // Bonus for pawns
+          if (type_of(pos.moved_piece(rm.pv[0])) == PAWN)
+              rm.tbRank += 16 * (  edge_distance(file_of(to_sq(rm.pv[0])))
+                                 + relative_rank(us, to_sq(rm.pv[0])));
+
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
           rm.tbRank -= 10 * int(MoveList<LEGAL>(pos).size());
