@@ -510,6 +510,8 @@ namespace {
     std::vector<RankedMove> legalMoves;
     legalMoves.reserve(64);
 
+    [[maybe_unused]] Bitboard ourPawns = pos.pieces(us, PAWN);
+
     // Score the moves! VERY IMPORTANT!!!
     for (const auto& m : MoveList<LEGAL>(pos))
     {
@@ -545,8 +547,6 @@ namespace {
             }
 
             // Bonus for a move freeing a potential promotion square
-            Bitboard ourPawns = pos.pieces(us, PAWN);
-  
             if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(m))
                 || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
                 rankThisMove += 500;          
@@ -621,6 +621,8 @@ namespace {
             && !extension
             && (*rm).rank < 6000)
         {
+            assert(!pos.gives_check((*rm).move));
+
             legalMoves.erase(rm);
             continue;
         }
@@ -631,7 +633,11 @@ namespace {
         if (    ss->ply > thisThread->rootDepth
             && !(ss->ply & 1)
             && (*rm).rank < 6000)
+        {
+            assert(!pos.gives_check((*rm).move));
+
             break;
+        }
 
         moveCount++;
 
