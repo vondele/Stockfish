@@ -605,8 +605,7 @@ namespace {
             {
                 assert(pos.piece_on(from_sq((*rm).move)) == make_piece(us, KNIGHT));
                 
-                const bool cagedKing =  popcount(pos.attacks_from<KING>(pos.square<KING>(~us)))
-                                      - popcount(pos.attacks_from<KING>(pos.square<KING>(~us)) & pos.pieces(~us)) < 2;
+                const bool cagedKing = popcount(pos.attacks_from<KING>(pos.square<KING>(~us)) & ~pos.pieces(~us)) < 2;
                 const int majorsCount = pos.count<QUEEN>(us) + pos.count<ROOK>(us);
 
                 if (cagedKing || majorsCount == 0)
