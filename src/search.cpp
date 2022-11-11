@@ -931,6 +931,16 @@ moves_loop: // When in check, search starts here
         pos.setRule50(r50cNext);
         value = search<PV>(pos, ss, alpha, beta, depth - 5 , false);
         pos.setRule50(r50c);
+
+        if (value >= beta)
+        {
+            tte = TT.probe(posKey, ss->ttHit);
+            ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+            ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
+                    : ss->ttHit    ? tte->move() : MOVE_NONE;
+            ttCapture = ttMove && pos.capture(ttMove);
+        }
+
     }
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
