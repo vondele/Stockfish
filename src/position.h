@@ -175,6 +175,7 @@ public:
   void put_piece(Piece pc, Square s);
   void remove_piece(Square s);
 
+  void setRule50(int ply);
 private:
   // Initialization helpers (used while setting up a position)
   void set_castling_right(Color c, Square rfrom);
@@ -367,6 +368,7 @@ inline int Position::game_ply() const {
   return gamePly;
 }
 
+// rule50 has a range from [0, 100], after 100 the game should be adjudicated
 inline int Position::rule50_count() const {
   return st->rule50;
 }
@@ -415,6 +417,10 @@ inline void Position::remove_piece(Square s) {
   pieceCount[pc]--;
   pieceCount[make_piece(color_of(pc), ALL_PIECES)]--;
   psq -= PSQT::psq[pc][s];
+}
+
+inline void Position::setRule50(int ply) {
+  st->rule50 = ply;
 }
 
 inline void Position::move_piece(Square from, Square to) {

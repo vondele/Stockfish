@@ -923,6 +923,16 @@ moves_loop: // When in check, search starts here
                                           nullptr                   , (ss-4)->continuationHistory,
                                           nullptr                   , (ss-6)->continuationHistory };
 
+    // See if we can learn something from a search with modified r50c
+    int r50c=pos.rule50_count();
+    int r50cNext=101 + 5 - depth;
+    if (PvNode && r50c > 5 && depth > 5 && r50cNext > r50c)
+    {
+        pos.setRule50(r50cNext);
+        value = search<PV>(pos, ss, alpha, beta, depth - 5 , false);
+        pos.setRule50(r50c);
+    }
+
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
@@ -1100,6 +1110,7 @@ moves_loop: // When in check, search starts here
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5177)
               extension = 1;
       }
+
 
       // Add extension to new depth
       newDepth += extension;
