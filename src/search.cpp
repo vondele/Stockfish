@@ -565,14 +565,11 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    thisThread->selDepth = std::max(thisThread->selDepth, ss->ply + 1);
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
-
-    // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
-    if (PvNode && thisThread->selDepth < ss->ply + 1)
-        thisThread->selDepth = ss->ply + 1;
 
     if (!rootNode)
     {
@@ -1401,6 +1398,7 @@ moves_loop: // When in check, search starts here
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
     moveCount = 0;
+    thisThread->selDepth = std::max(thisThread->selDepth, ss->ply + 1);
 
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
