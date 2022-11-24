@@ -578,14 +578,12 @@ namespace {
         rankThisMove = 0;
     }
 
+    std::sort(legalMoves.begin(), legalMoves.end());
+
     // Search all legal moves
-    while (!legalMoves.empty())
+    for (auto& lm : legalMoves)
     {
         extension = 0;
-
-        // Pick the next best move
-        auto rm = std::max_element(legalMoves.begin(), legalMoves.end(),
-                                [](const RankedMove& a, const RankedMove& b) { return b.rank > a.rank; });
 
         // Extensions
         // Not more than one extension and not in the last iteration.
@@ -594,16 +592,16 @@ namespace {
             && ss->ply < thisThread->rootDepth
             && thisThread->rootDepth < thisThread->targetDepth)
         {
-            // Check extension. Always extend up to the
-            // specified mate limit.
-            if ((*rm).rank >= 6000)
+            // Check extension.
+            // Always extend up to the specified mate limit.
+            if (lm.rank >= 6000)
                 extension = thisThread->targetDepth - thisThread->rootDepth;
 
             // Extend knight moves by 2 plies if the opponent king is caged
             // by own pieces, or we do not have any major piece.
-            else if (   type_of(pos.moved_piece((*rm).move)) == KNIGHT)
+            else if (type_of(pos.moved_piece(lm.move)) == KNIGHT)
             {
-                assert(pos.piece_on(from_sq((*rm).move)) == make_piece(us, KNIGHT));
+                assert(pos.piece_on(from_sq(lm.move)) == make_piece(us, KNIGHT));
                 
                 const bool cagedKing = popcount(pos.attacks_from<KING>(pos.square<KING>(~us)) & ~pos.pieces(~us)) < 2;
                 const int majorsCount = pos.count<QUEEN>(us) + pos.count<ROOK>(us);
@@ -618,36 +616,36 @@ namespace {
         // moves loop as soon as we hit the first non-checking move.
         if (    depth == 1
             && !extension
-            && (*rm).rank < 6000)
+            &&  lm.rank < 6000)
         {
-            assert(!pos.gives_check((*rm).move));
+            assert(!pos.gives_check(lm.move));
 
-            legalMoves.erase(rm);
             continue;
         }
 
         // At interior nodes beyond the nominal search depth,
         // do the same for the root side-to-move, because this can only
         // mean we're in a check extension search. 
-        if (    ss->ply > thisThread->rootDepth
+        if (   (ss->ply > thisThread->rootDepth
+            || (thisThread->rootDepth < thisThread->fullDepth && ss->ply > thisThread->fullDepth))
             && !(ss->ply & 1)
-            && (*rm).rank < 6000)
+            &&  lm.rank < 6000)
         {
-            assert(!pos.gives_check((*rm).move));
+            assert(!pos.gives_check(lm.move));
 
             break;
         }
 
         moveCount++;
 
-        assert(is_ok((*rm).move));
+        assert(is_ok(lm.move));
         
-        pos.do_move((*rm).move, st);
+        pos.do_move(lm.move, st);
         thisThread->nodes++;
         
         value = -search(pos, ss+1, -beta, -alpha, depth-1+extension);
         
-        pos.undo_move((*rm).move);
+        pos.undo_move(lm.move);
 
         // Do we have a new best value?
         if (value > bestValue)
@@ -665,16 +663,13 @@ namespace {
 
                 // Reset PV and insert current best move
                 ss->pv.clear();
-                ss->pv.push_back((*rm).move);
+                ss->pv.push_back(lm.move);
 
                 // Append child pv
                 for (auto& m : (ss+1)->pv)
                     ss->pv.push_back(m);
             }
         }
-
-        // Delete this move from the list
-        legalMoves.erase(rm);
 
         // If we have found a mate within the specified limit,
         // we can immediately break from the moves loop.
