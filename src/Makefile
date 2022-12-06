@@ -360,7 +360,7 @@ ifeq ($(MAKELEVEL),0)
        export ENV_LDFLAGS := $(LDFLAGS)
 endif
 
-CXXFLAGS = $(ENV_CXXFLAGS) -Wall -Wcast-qual -fno-exceptions -std=c++17 -DNNUE_EMBEDDING_OFF $(EXTRACXXFLAGS)
+CXXFLAGS = $(ENV_CXXFLAGS) -Wall -Wcast-qual -fno-exceptions -std=c++17 -DNNUE_EMBEDDING_ON $(EXTRACXXFLAGS)
 DEPENDFLAGS = $(ENV_DEPENDFLAGS) -std=c++17
 LDFLAGS = $(ENV_LDFLAGS) $(EXTRALDFLAGS)
 
