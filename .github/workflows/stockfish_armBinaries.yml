@@ -82,13 +82,16 @@ jobs:
           export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
           export LDFLAGS="-static -Wno-unused-command-line-argument"
 
+          make net
+          cp nn-*.nnue ../jni
           cd ../jni
           cp Application_v8.mk Application.mk
           ndk-build
           cd ../libs/arm64-v8a
           cp Stockfish ../../src/SFnps_armv8
-          #Net is here, for tests
+          #Net is in /src and /jni for tests
           cd ../../src/
+
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.config.run_armv8_tests }}
         with:
@@ -115,13 +118,16 @@ jobs:
           export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
           export LDFLAGS="-static -Wno-unused-command-line-argument"
     
+          make net
+          cp nn-*.nnue ../jni
           cd ../jni
           cp Application_v7.mk Application.mk
           ndk-build
           cd ../libs/armeabi-v7a
           cp Stockfish ../../src/SFnps_armv7
-          #Net is here, for tests
+          #Net is in /src and /jni for tests
           cd ../../src/
+          
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.config.run_armv7_tests }}
         with:
