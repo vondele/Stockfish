@@ -15,4 +15,4 @@ ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
 endif
 
 LOCAL_LDFLAGS += 
-include $(BUILD_EXECUTABLE)
+include $(BUILD_EXECUTABLE)  
