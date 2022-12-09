@@ -223,7 +223,7 @@ Thread* ThreadPool::get_best_thread() const {
     // Vote according to score and depth, and select the best thread
     auto thread_value = [minScore](Thread* th) {
             return (std::min(th->rootMoves[0].score,th->rootMoves[0].uciScore) - minScore + 14) *
-                    int(th->completedDepth - 2 * (th->rootMoves[0].pv.size() < 2));
+                    int(th->completedDepth - 2 * (th->rootMoves[0].pv.size() < 3));
         };
 
     for (Thread* th : *this)
