@@ -19,6 +19,8 @@
 #include <cassert>
 
 #include <algorithm> // For std::count
+#include <iomanip>
+#include <iostream>
 #include "movegen.h"
 #include "search.h"
 #include "thread.h"
@@ -241,6 +243,18 @@ Thread* ThreadPool::get_best_thread() const {
                          || (   votes[th->rootMoves[0].pv[0]] == votes[bestThread->rootMoves[0].pv[0]]
                              && thread_value(th) > thread_value(bestThread)))))
             bestThread = th;
+
+    int i = 0;
+    for (Thread* th : *this)
+    {
+        std::cout << std::setw(5) << i << " : " << UCI::move(th->rootMoves[0].pv[0], false) << " (" << std::setw(5) << votes[th->rootMoves[0].pv[0]]
+                                       << ") score: " << std::setw(5) << th->rootMoves[0].score
+                                       << " depth: " << std::setw(5) << int(th->completedDepth)
+                                       << " pvlength: " << std::setw(5) << th->rootMoves[0].pv.size()
+                                       << " value: " << thread_value(th)
+                                       << (bestThread == th ? " <---- Best" : "") << std::endl;
+        i++;
+    }
 
     return bestThread;
 }
