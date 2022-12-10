@@ -228,23 +228,11 @@ void MainThread::search() {
       Time.availableNodes += Limits.inc[us] - Threads.nodes_searched();
 
   Thread* bestThread = this;
-  Skill skill = Skill(Options["Skill Level"], Options["UCI_LimitStrength"] ? int(Options["UCI_Elo"]) : 0);
-
-  if (   int(Options["MultiPV"]) == 1
-      && !Limits.depth
-      && !skill.enabled()
-      && rootMoves[0].pv[0] != MOVE_NONE)
-      bestThread = Threads.get_best_thread();
-
   bestPreviousScore = bestThread->rootMoves[0].score;
   bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
 
   for (Thread* th : Threads)
     th->previousDepth = bestThread->completedDepth;
-
-  // Send again PV info if we have a new best thread
-  if (bestThread != this)
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth) << sync_endl;
 
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
