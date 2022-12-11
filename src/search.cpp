@@ -372,6 +372,7 @@ void Thread::search() {
   ss->pv.clear();
 
   targetDepth = Limits.mate ? 2 * Limits.mate - 1 : MAX_PLY;
+  fullDepth = std::max(targetDepth - 4, 1);
   size_t multiPV = rootMoves.size();
 
   // Setting alpha, beta and bestValue such that we achieve
@@ -396,7 +397,7 @@ void Thread::search() {
 
           ++Movecount[rootDepth];
 
-          if (Time.elapsed() > 500 && this == Threads.main())
+          if (Time.elapsed() > 300 && this == Threads.main())
               sync_cout << "info currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
                         << " currmovenumber " << Movecount[rootDepth].load() << sync_endl;
 
@@ -453,10 +454,7 @@ void Thread::search() {
           sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
       }
 
-      if (rootDepth == 3)
-          rootDepth = std::max(targetDepth - 4, 5);
-      else
-          rootDepth += 2;
+      rootDepth += 2;
   }
 }
 
