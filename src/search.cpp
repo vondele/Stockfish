@@ -134,6 +134,7 @@ void Search::init(Position& pos) {
   // automatic settings for the search if possible.
   const Color us = pos.side_to_move();
   const auto king = pos.square<KING>(~us);
+  const Bitboard kingRing = pos.attacks_from<KING>(king);
 
   // Prepare the root moves
   RootMoves searchMoves;
@@ -185,29 +186,41 @@ void Search::init(Position& pos) {
               rm.tbRank += 500;          
 
           // Bonus for a knight eventually able to give check on the next move
-          if (   type_of(pos.moved_piece(rm.pv[0])) == KNIGHT
-              && pos.attacks_from<KNIGHT>(to_sq(rm.pv[0])) & pos.check_squares(KNIGHT))
-              rm.tbRank += 600;
+          if (type_of(pos.moved_piece(rm.pv[0])) == KNIGHT)
+          {
+              if (pos.attacks_from<KNIGHT>(to_sq(rm.pv[0])) & pos.check_squares(KNIGHT))
+                  rm.tbRank += 600;
+          }
 
           // Bonus for a queen eventually able to give check on the next move
-          else if (   type_of(pos.moved_piece(rm.pv[0])) == QUEEN
-                   && pos.attacks_from<QUEEN>(to_sq(rm.pv[0])) & pos.check_squares(QUEEN))
-              rm.tbRank += 500;
+          else if (type_of(pos.moved_piece(rm.pv[0])) == QUEEN)
+          {
+              if (pos.attacks_from<QUEEN>(to_sq(rm.pv[0])) & pos.check_squares(QUEEN))
+                  rm.tbRank += 500;
+
+              rm.tbRank += 8 * (PseudoAttacks[QUEEN][to_sq(rm.pv[0])] & kingRing);
+          }
 
           // Bonus for a rook eventually able to give check on the next move
-          else if (   type_of(pos.moved_piece(rm.pv[0])) == ROOK
-                   && pos.attacks_from<ROOK>(to_sq(rm.pv[0])) & pos.check_squares(ROOK))
-              rm.tbRank += 400;
+          else if (type_of(pos.moved_piece(rm.pv[0])) == ROOK)
+          {
+              if (pos.attacks_from<ROOK>(to_sq(rm.pv[0])) & pos.check_squares(ROOK))
+                  rm.tbRank += 400;
+
+              rm.tbRank += 32 * (PseudoAttacks[ROOK][to_sq(rm.pv[0])] & kingRing);
+          }
 
           // Bonus for a bishop eventually able to give check on the next move
-          else if (   type_of(pos.moved_piece(rm.pv[0])) == BISHOP
-                   && pos.attacks_from<BISHOP>(to_sq(rm.pv[0])) & pos.check_squares(BISHOP))
-              rm.tbRank += 300;
+          else if (type_of(pos.moved_piece(rm.pv[0])) == BISHOP)
+          {
+              if (pos.attacks_from<BISHOP>(to_sq(rm.pv[0])) & pos.check_squares(BISHOP))
+                  rm.tbRank += 300;
+          }
 
           // Bonus for pawns
           if (type_of(pos.moved_piece(rm.pv[0])) == PAWN)
-              rm.tbRank +=  64 * edge_distance(file_of(to_sq(rm.pv[0])))
-                          + 32 * relative_rank(us, to_sq(rm.pv[0]));
+              rm.tbRank +=   64 * edge_distance(file_of(to_sq(rm.pv[0])))
+                          + 128 * relative_rank(us, to_sq(rm.pv[0]));
 
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
