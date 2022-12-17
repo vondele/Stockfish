@@ -557,6 +557,9 @@ namespace {
                    rankThisMove += 500;
             }
 
+            if (pos.advanced_pawn_push(m))
+                rankThisMove += 1000;
+                
             // Bonus for a move freeing a potential promotion square
             if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(m))
                 || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
@@ -608,9 +611,15 @@ namespace {
             if (lm.rank >= 6000)
                 extension = thisThread->targetDepth - thisThread->rootDepth;
 
+            // Extend captures and promotions
+            else if (   thisThread->rootDepth >= thisThread->fullDepth
+                     && pos.capture_or_promotion(lm.move))
+                extension = 2;
+                
             // Extend knight moves by 2 plies if the opponent king is caged
             // by own pieces, or we do not have any major piece.
-            else if (type_of(pos.moved_piece(lm.move)) == KNIGHT)
+            else if (   thisThread->rootDepth >= thisThread->fullDepth
+                     && type_of(pos.moved_piece(lm.move)) == KNIGHT)
             {
                 assert(pos.piece_on(from_sq(lm.move)) == make_piece(us, KNIGHT));
                 
@@ -637,8 +646,8 @@ namespace {
         // At interior nodes beyond the nominal search depth,
         // do the same for the root side-to-move, because this can only
         // mean we're in a check extension search. 
-        if (   (ss->ply > thisThread->rootDepth
-            || (thisThread->rootDepth < thisThread->fullDepth && ss->ply > thisThread->fullDepth))
+        if (    ss->ply > thisThread->rootDepth
+//            || (thisThread->rootDepth < thisThread->fullDepth && ss->ply > thisThread->fullDepth))
             && !(ss->ply & 1)
             &&  lm.rank < 6000)
         {
