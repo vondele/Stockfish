@@ -1053,7 +1053,7 @@ make_v:
   int optimism01=278;
   TUNE(SetRange(228,328), optimism01);
   int scale03=755;
-  TUNE(SetRange(500,1000), scale01);
+  TUNE(SetRange(500,1000), scale03);
 
 } // namespace Eval
 
