@@ -1042,6 +1042,19 @@ make_v:
     return v;
   }
 
+  int scale01=1076, scale02=96;
+  TUNE(SetRange(1020,1130),scale01);
+  TUNE(SetRange(64,128),scale02);
+  int classical01=1760;
+  TUNE(SetRange(1000,3000),classical01);
+  int complex01=412, complex02=428, complex03=64;
+  TUNE(SetRange(200,600),complex01,complex02);
+  TUNE(SetRange(32,96),complex03);
+  int optimism01=278;
+  TUNE(SetRange(228,328), optimism01);
+  int scale03=755;
+  TUNE(SetRange(500,1000), scale03);
+
 } // namespace Eval
 
 
@@ -1056,14 +1069,14 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   // We use the much less accurate but faster Classical eval when the NNUE
   // option is set to false. Otherwise we use the NNUE eval unless the
   // PSQ advantage is decisive and several pieces remain. (~3 Elo)
-  bool useClassical = !useNNUE || (pos.count<ALL_PIECES>() > 7 && abs(psq) > 1760);
+  bool useClassical = !useNNUE || (pos.count<ALL_PIECES>() > 7 && abs(psq) > classical01);
 
   if (useClassical)
       v = Evaluation<NO_TRACE>(pos).value();
   else
   {
       int nnueComplexity;
-      int scale = 1076 + 96 * pos.non_pawn_material() / 5120;
+      int scale = scale01 + scale02 * pos.non_pawn_material() / 4096;
 
       Color stm = pos.side_to_move();
       Value optimism = pos.this_thread()->optimism[stm];
@@ -1071,17 +1084,17 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
       Value nnue = NNUE::evaluate(pos, true, &nnueComplexity);
 
       // Blend nnue complexity with (semi)classical complexity
-      nnueComplexity = (  412 * nnueComplexity
-                        + 428 * abs(psq - nnue)
-                        + (optimism  > 0 ? int(optimism) * int(psq - nnue) : 0)
+      nnueComplexity = (  complex01 * nnueComplexity
+                        + complex02 * abs(psq - nnue)
+                        + (optimism  > 0 ? complex03 * int(optimism) * int(psq - nnue) / 64 : 0)
                         ) / 1024;
 
       // Return hybrid NNUE complexity to caller
       if (complexity)
           *complexity = nnueComplexity;
 
-      optimism = optimism * (278 + nnueComplexity) / 256;
-      v = (nnue * scale + optimism * (scale - 755)) / 1024;
+      optimism = optimism * (optimism01 + nnueComplexity) / 256;
+      v = (nnue * scale + optimism * (scale - scale03)) / 1024;
   }
 
   // Damp down the evaluation linearly when shuffling
