@@ -1042,18 +1042,11 @@ make_v:
     return v;
   }
 
-  int scale01=1076, scale02=96;
-  TUNE(SetRange(1020,1130),scale01);
-  TUNE(SetRange(64,128),scale02);
-  int classical01=1760;
-  TUNE(SetRange(1000,3000),classical01);
-  int complex01=412, complex02=428, complex03=64;
-  TUNE(SetRange(200,600),complex01,complex02);
-  TUNE(SetRange(32,96),complex03);
-  int optimism01=278;
-  TUNE(SetRange(228,328), optimism01);
-  int scale03=755;
-  TUNE(SetRange(500,1000), scale03);
+  const int scale01=1076, scale02=96;
+  const int classical01=1760;
+  const int complex01=412, complex02=428, complex03=64;
+  const int optimism01=278;
+  const int scale03=755;
 
 } // namespace Eval
 
