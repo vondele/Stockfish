@@ -1042,11 +1042,11 @@ make_v:
     return v;
   }
 
-  const int scale01=1069, scale02=69;
-  const int classical01=2119;
-  const int complex01=257, complex02=282, complex03=71;
-  const int optimism01=270;
-  const int scale03=736;
+  const int scale01=1085, scale02=75;
+  const int classical01=2117;
+  const int complex01=350, complex02=425, complex03=56;
+  const int optimism01=261;
+  const int scale03=867;
 
 } // namespace Eval
 
