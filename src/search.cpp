@@ -86,8 +86,10 @@ namespace {
   }
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
-  Value value_draw(const Thread* thisThread) {
-    return VALUE_DRAW - 1 + Value(thisThread->nodes & 0x2);
+  Value value_draw(const Position& pos) {
+    const int drawCost = UCI::NormalizeToPawnValue * 25 / 100;
+    int drawNow = pos.side_to_move() == pos.this_thread()->rootColor ? -drawCost : drawCost;
+    return Value(drawNow - 1 + (pos.this_thread()->nodes & 0x2));
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
@@ -201,7 +203,7 @@ void MainThread::search() {
   {
       rootMoves.emplace_back(MOVE_NONE);
       sync_cout << "info depth 0 score "
-                << UCI::value(rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW)
+                << UCI::value(rootPos.checkers() ? -VALUE_MATE : value_draw(rootPos))
                 << sync_endl;
   }
   else
@@ -519,10 +521,10 @@ namespace {
     // if the opponent had an alternative move earlier to this position.
     if (   !rootNode
         && pos.rule50_count() >= 3
-        && alpha < VALUE_DRAW
+        && alpha < value_draw(pos)
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = value_draw(pos.this_thread());
+        alpha = value_draw(pos);
         if (alpha >= beta)
             return alpha;
     }
@@ -574,7 +576,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
-                                                        : value_draw(pos.this_thread());
+                                                        : value_draw(pos);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1329,7 +1331,7 @@ moves_loop: // When in check, search starts here
     // searched our subtree, and we can anyhow save the result in TT.
     /*
        if (Threads.stop)
-        return VALUE_DRAW;
+        return value_draw(pos);
     */
 
     // Step 21. Check for mate and stalemate
@@ -1342,7 +1344,7 @@ moves_loop: // When in check, search starts here
     if (!moveCount)
         bestValue = excludedMove ? alpha :
                     ss->inCheck  ? mated_in(ss->ply)
-                                 : VALUE_DRAW;
+                                 : value_draw(pos);
 
     // If there is a move that produces search value greater than alpha we update the stats of searched moves
     else if (bestMove)
@@ -1398,7 +1400,7 @@ moves_loop: // When in check, search starts here
         && alpha < VALUE_DRAW
         && pos.has_game_cycle(ss->ply))
     {
-        alpha = value_draw(pos.this_thread());
+        alpha = value_draw(pos);
         if (alpha >= beta)
             return alpha;
     }
@@ -1430,7 +1432,7 @@ moves_loop: // When in check, search starts here
     // Step 2. Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : value_draw(pos);
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
