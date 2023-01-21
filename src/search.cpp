@@ -1230,8 +1230,10 @@ moves_loop: // When in check, search starts here
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
 
+          thisThread->seCount += (PvNode && moveCount == 1 && extension > 0);
           value = -search<PV>(pos, ss+1, -beta, -alpha,
                               std::min(maxNextDepth, newDepth), false);
+          thisThread->seCount -= (PvNode && moveCount == 1 && extension > 0);
       }
 
       // Step 19. Undo move
