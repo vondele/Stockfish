@@ -1104,6 +1104,11 @@ moves_loop: // When in check, search starts here
                    && move == ss->killers[0]
                    && (*contHist[0])[movedPiece][to_sq(move)] >= 5600)
               extension = 1;
+
+          if (   depth > 4
+              && pos.rule50_count() == 0
+              && pos.non_pawn_material() % RookValueEg == 0)
+              extension = 1;
       }
 
       // Add extension to new depth
