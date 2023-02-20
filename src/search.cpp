@@ -733,10 +733,7 @@ namespace {
         // excludeMove implies that we had a ttHit on the containing non-excluded search with ss->staticEval filled from TT
         // However static evals from the TT aren't good enough (-13 elo), presumably due to changing optimism context
         // Recalculate value with current optimism (without updating thread avgComplexity)
-        if (Eval::useNNUE)
-            Eval::NNUE::hint_common_parent_position(pos);
-        eval = ss->staticEval;
-        complexity = abs(ss->staticEval - pos.psq_eg_stm());
+        ss->staticEval = eval = evaluate(pos, &complexity);
     }
     else if (ss->ttHit)
     {
