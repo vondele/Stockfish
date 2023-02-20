@@ -950,7 +950,7 @@ moves_loop: // When in check, search starts here
                          && (tte->bound() & BOUND_UPPER)
                          && tte->depth() >= depth;
 
-    if (Eval::useNNUE && likelyFailLow && !ss->inCheck && depth > 2)
+    if (Eval::useNNUE && likelyFailLow && !ss->inCheck && depth > 4)
         Eval::NNUE::hint_common_parent_position(pos);
 
 
