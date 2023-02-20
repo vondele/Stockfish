@@ -136,6 +136,26 @@ namespace Stockfish::Eval::NNUE {
     return (bool)stream;
   }
 
+  void hint_evaluate(const Position& pos) {
+     constexpr uint64_t alignment = CacheLineSize;
+
+#if defined(ALIGNAS_ON_STACK_VARIABLES_BROKEN)
+    TransformedFeatureType transformedFeaturesUnaligned[
+      FeatureTransformer::BufferSize + alignment / sizeof(TransformedFeatureType)];
+
+    auto* transformedFeatures = align_ptr_up<alignment>(&transformedFeaturesUnaligned[0]);
+#else
+    alignas(alignment)
+      TransformedFeatureType transformedFeatures[FeatureTransformer::BufferSize];
+#endif
+
+    ASSERT_ALIGNED(transformedFeatures, alignment);
+
+    const int bucket = (pos.count<ALL_PIECES>() - 1) / 4;
+    featureTransformer->transform(pos, transformedFeatures, bucket);
+
+  }
+
   // Evaluation function. Perform differential calculation.
   Value evaluate(const Position& pos, bool adjusted, int* complexity) {
 

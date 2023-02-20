@@ -729,12 +729,6 @@ namespace {
         complexity = 0;
         goto moves_loop;
     }
-    else if (excludedMove) {
-        // excludeMove implies that we had a ttHit on the containing non-excluded search with ss->staticEval filled from TT
-        // However static evals from the TT aren't good enough (-13 elo), presumably due to changing optimism context
-        // Recalculate value with current optimism (without updating thread avgComplexity)
-        ss->staticEval = eval = evaluate(pos, &complexity);
-    }
     else if (ss->ttHit)
     {
         // Never assume anything about values stored in TT
@@ -743,6 +737,7 @@ namespace {
             ss->staticEval = eval = evaluate(pos, &complexity);
         else // Fall back to (semi)classical complexity for TT hits, the NNUE complexity is lost
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
+
 
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (    ttValue != VALUE_NONE
@@ -756,6 +751,9 @@ namespace {
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
     thisThread->complexityAverage.update(complexity);
+
+    if (excludedMove && Eval::useNNUE && ss->ttHit)
+        Eval::NNUE::hint_evaluate(pos);
 
     // Use static evaluation difference to improve quiet move ordering (~4 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
