@@ -1521,7 +1521,7 @@ moves_loop: // When in check, search starts here
 
     int quietCheckEvasions = 0;
 
-    if (ss->ttHit && depth > 6)
+    if (ss->ttHit && depth > 2)
         Eval::NNUE::hint_common_parent_position(pos);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain
