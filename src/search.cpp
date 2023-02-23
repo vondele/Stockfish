@@ -1521,6 +1521,9 @@ moves_loop: // When in check, search starts here
 
     int quietCheckEvasions = 0;
 
+    if (ss->ttHit && depth > 4)
+        Eval::NNUE::hint_common_parent_position(pos);
+
     // Step 5. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != MOVE_NONE)
