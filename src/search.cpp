@@ -717,6 +717,9 @@ namespace {
         }
     }
 
+    if (PvNode && depth > 18)
+       sync_cout << "fen: " << pos.fen() << sync_endl;
+
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
 
     // Step 6. Static evaluation of the position
