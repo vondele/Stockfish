@@ -190,6 +190,8 @@ void Search::init(Position& pos) {
           {
               if (pos.attacks_from<KNIGHT>(to_sq(rm.pv[0])) & pos.check_squares(KNIGHT))
                   rm.tbRank += 600;
+
+              rm.tbRank += 256 * popcount(PseudoAttacks[KNIGHT][to_sq(rm.pv[0])] & kingRing);
           }
 
           // Bonus for a queen eventually able to give check on the next move
@@ -198,7 +200,7 @@ void Search::init(Position& pos) {
               if (pos.attacks_from<QUEEN>(to_sq(rm.pv[0])) & pos.check_squares(QUEEN))
                   rm.tbRank += 500;
 
-              rm.tbRank += 8 * (PseudoAttacks[QUEEN][to_sq(rm.pv[0])] & kingRing);
+              rm.tbRank += 128 * popcount(PseudoAttacks[QUEEN][to_sq(rm.pv[0])] & kingRing);
           }
 
           // Bonus for a rook eventually able to give check on the next move
@@ -207,7 +209,7 @@ void Search::init(Position& pos) {
               if (pos.attacks_from<ROOK>(to_sq(rm.pv[0])) & pos.check_squares(ROOK))
                   rm.tbRank += 400;
 
-              rm.tbRank += 32 * (PseudoAttacks[ROOK][to_sq(rm.pv[0])] & kingRing);
+              rm.tbRank += 96 * popcount(PseudoAttacks[ROOK][to_sq(rm.pv[0])] & kingRing);
           }
 
           // Bonus for a bishop eventually able to give check on the next move
@@ -215,16 +217,20 @@ void Search::init(Position& pos) {
           {
               if (pos.attacks_from<BISHOP>(to_sq(rm.pv[0])) & pos.check_squares(BISHOP))
                   rm.tbRank += 300;
+
+              rm.tbRank += 64 * popcount(PseudoAttacks[BISHOP][to_sq(rm.pv[0])] & kingRing);
           }
 
-          // Bonus for pawns
+          // Bonus for pawns TODO: promotions
           if (type_of(pos.moved_piece(rm.pv[0])) == PAWN)
+          {
               rm.tbRank +=   64 * edge_distance(file_of(to_sq(rm.pv[0])))
                           + 128 * relative_rank(us, to_sq(rm.pv[0]));
+          }
 
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
-          rm.tbRank -= 10 * int(MoveList<LEGAL>(pos).size());
+          rm.tbRank -= 8 * int(MoveList<LEGAL>(pos).size());
           pos.undo_move(rm.pv[0]);
       }
   }
@@ -522,6 +528,7 @@ namespace {
     legalMoves.reserve(64);
 
     [[maybe_unused]] Bitboard ourPawns = pos.pieces(us, PAWN);
+    [[maybe_unused]] Bitboard kingRing = pos.attacks_from<KING>(pos.square<KING>(~us));
 
     // Score the moves! VERY IMPORTANT!!!
     for (const auto& m : MoveList<LEGAL>(pos))
@@ -565,25 +572,36 @@ namespace {
                 || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
                 rankThisMove += 500;          
 
-            // Bonus for a knight eventually able to give check on the next move
-            if (   type_of(pos.moved_piece(m)) == KNIGHT
-                && pos.attacks_from<KNIGHT>(to_sq(m)) & pos.check_squares(KNIGHT))
-                rankThisMove += 600;
+            // Bonus for a piece eventually able to give check on the next move
+            // or to attack squares next to the opponent's king.
+            if (type_of(pos.moved_piece(m)) == KNIGHT)
+            {
+                if (pos.attacks_from<KNIGHT>(to_sq(m)) & pos.check_squares(KNIGHT))
+                    rankThisMove += 600;
 
-            // Bonus for a queen eventually able to give check on the next move
-            else if (   type_of(pos.moved_piece(m)) == QUEEN
-                && pos.attacks_from<QUEEN>(to_sq(m)) & pos.check_squares(QUEEN))
-                rankThisMove += 500;
+                rankThisMove += 256 * popcount(PseudoAttacks[KNIGHT][to_sq(m)] & kingRing);
+            }
+            else if (type_of(pos.moved_piece(m)) == QUEEN)
+            {
+                if (pos.attacks_from<QUEEN>(to_sq(m)) & pos.check_squares(QUEEN))
+                    rankThisMove += 500;
 
-            // Bonus for a rook eventually able to give check on the next move
-            else if (   type_of(pos.moved_piece(m)) == ROOK
-                && pos.attacks_from<ROOK>(to_sq(m)) & pos.check_squares(ROOK))
-                rankThisMove += 400;
+                rankThisMove += 128 * popcount(PseudoAttacks[QUEEN][to_sq(m)] & kingRing);
+            }
+            else if (type_of(pos.moved_piece(m)) == ROOK)
+            {
+                if (pos.attacks_from<ROOK>(to_sq(m)) & pos.check_squares(ROOK))
+                    rankThisMove += 400;
 
-            // Bonus for a bishop eventually able to give check on the next move
-            else if (   type_of(pos.moved_piece(m)) == BISHOP
-                && pos.attacks_from<BISHOP>(to_sq(m)) & pos.check_squares(BISHOP))
-                rankThisMove += 300;
+                rankThisMove += 96 * popcount(PseudoAttacks[ROOK][to_sq(m)] & kingRing);
+            }
+            else if (type_of(pos.moved_piece(m)) == BISHOP)
+            {
+                if (pos.attacks_from<BISHOP>(to_sq(m)) & pos.check_squares(BISHOP))
+                    rankThisMove += 300;
+
+                rankThisMove += 64 * popcount(PseudoAttacks[BISHOP][to_sq(m)] & kingRing);
+            }
         }
 
         // Add this ranked move
