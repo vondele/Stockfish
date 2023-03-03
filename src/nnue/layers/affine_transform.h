@@ -169,6 +169,178 @@ namespace Stockfish::Eval::NNUE::Layers {
   constexpr IndexType LargeInputSize = std::numeric_limits<IndexType>::max();
 #endif
 
+#if defined (USE_AMX)
+  static constexpr IndexType TileMaxRows = 16;
+  static constexpr IndexType TileMaxCols = 64;
+
+  struct TileConfig
+  {
+    uint8_t palette_id;
+    uint8_t start_row;
+    uint8_t reserved_0[14];
+    uint16_t colsb[16];
+    uint8_t rows[16];
+  };
+
+  // A specialization for large inputs and AMX.
+  // The implementation hardcodes 16 outputs because
+  // it's not easy to generalize to different sizes with AMX.
+  template <IndexType InDims, IndexType OutDims>
+  class AffineTransform<InDims, OutDims, std::enable_if_t<(ceil_to_multiple<IndexType>(InDims, MaxSimdWidth) >= LargeInputSize)>> {
+    // Current OutDims==16 fits well with maximum utilization of the AMX tiles.
+    // Different OutDims requires either multiple result tiles or different tile layours.
+    static_assert(OutDims == TileMaxRows);
+
+    // We try to process the largest tiles possible.
+    // This requirement should not cause issues in the future.
+    static_assert(InDims % TileMaxCols == 0);
+
+   public:
+    // Input/output type
+    using InputType = std::uint8_t;
+    using OutputType = std::int32_t;
+
+    // Number of input/output dimensions
+    static constexpr IndexType InputDimensions = InDims;
+    static constexpr IndexType OutputDimensions = OutDims;
+
+    static constexpr IndexType PaddedInputDimensions =
+      ceil_to_multiple<IndexType>(InputDimensions, MaxSimdWidth);
+    static constexpr IndexType PaddedOutputDimensions =
+      ceil_to_multiple<IndexType>(OutputDimensions, MaxSimdWidth);
+
+    using OutputBuffer = OutputType[PaddedOutputDimensions];
+
+    static_assert(PaddedInputDimensions >= LargeInputSize, "Something went wrong. This specialization should not have been chosen.");
+
+    // Hash value embedded in the evaluation file
+    static constexpr std::uint32_t get_hash_value(std::uint32_t prevHash) {
+      std::uint32_t hashValue = 0xCC03DAE4u;
+      hashValue += OutputDimensions;
+      hashValue ^= prevHash >> 1;
+      hashValue ^= prevHash << 31;
+      return hashValue;
+    }
+
+    static IndexType get_weight_index(IndexType i)
+    {
+      // We need to interleave 4 consecutive rows for dpbusd-like accumulation in MAX tile mul.
+      // We also need to transpose because we keep the matrix column-major.
+      //
+      // Weight matrix layout in storage (1024 rows, 16 cols, column-major):
+      //    0 1024  ...
+      //    1 1025  ...
+      //    2 1026  ...
+      //    .    .
+      //    .    .
+      //    .    .
+      //
+      // Corresponding weight indices after permuting to the layout needed for tiled mul (256 rows, 64 cols, row-major):
+      //    0    1    2    3 1024 1025 1026 1027  ...
+      //    4    5    6    7 1028 1029 1030 1031  ...
+      //    8    9   10   11 1032 1033 1034 1035  ...
+      //   12   13   14   15 1036 1037 1038 1039  ...
+      //    .    .    .    .    .    .    .    .
+      //    .    .    .    .    .    .    .    .
+      //    .    .    .    .    .    .    .    .
+
+      const IndexType col = i / InputDimensions;
+      const IndexType row = i % InputDimensions;
+      const IndexType row4 = row / 4;
+      const IndexType col4 = row % 4 * 16 + col;
+      const IndexType col16 = col4 % 16;
+      const IndexType col4a = col4 / 16;
+
+      return row4 * 64 + col16 * 4 + col4a;
+    }
+
+    // Read network parameters
+    bool read_parameters(std::istream& stream) {
+      for (IndexType i = 0; i < OutputDimensions; ++i)
+        biases[i] = read_little_endian<BiasType>(stream);
+
+      for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+        weights[get_weight_index(i)] = read_little_endian<WeightType>(stream);
+
+      return !stream.fail();
+    }
+
+    // Write network parameters
+    bool write_parameters(std::ostream& stream) const {
+      for (IndexType i = 0; i < OutputDimensions; ++i)
+          write_little_endian<BiasType>(stream, biases[i]);
+
+      for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+        write_little_endian<WeightType>(stream, weights[get_weight_index(i)]);
+
+      return !stream.fail();
+    }
+
+    // Forward propagation
+    const OutputType* propagate(
+        const InputType* input, OutputType* output) const {
+
+// These need to be literals, not constant expressions,
+// because GCC doesn't allow non-literals as tmm register indices.
+#define INPUT_TILE 0
+#define WEIGHT_TILE 1
+#define RESULT_TILE 2
+
+      static TileConfig s_tilecfg = []() {
+        TileConfig tilecfg;
+        std::memset(&tilecfg, 0, sizeof(tilecfg));
+
+        tilecfg.palette_id = 1;
+        tilecfg.start_row = 0;
+
+        tilecfg.rows[INPUT_TILE] = 1;
+        tilecfg.colsb[INPUT_TILE] = TileMaxCols;
+
+        tilecfg.rows[WEIGHT_TILE] = TileMaxRows;
+        tilecfg.colsb[WEIGHT_TILE] = TileMaxCols;
+
+        tilecfg.rows[RESULT_TILE] = 1;
+        // 4 times fewer accumulators because of vnni-like accumulation.
+        // 4 bytes for each accumulator.
+        tilecfg.colsb[RESULT_TILE] = TileMaxCols / 4 * 4;
+
+        return tilecfg;
+      }();
+
+      _tile_loadconfig(&s_tilecfg);
+
+      _tile_loadd(RESULT_TILE, biases, TileMaxCols / 4 * 4);
+
+      // We're processing the matrix only in one direction, no need for 2D blocking with the current size.
+      static_assert(TileMaxCols == OutputDimensions * 4);
+      for (IndexType block = 0; block < InputDimensions / TileMaxCols; ++block)
+      {
+        _tile_loadd(INPUT_TILE, input + block * TileMaxCols, TileMaxCols);
+        _tile_loadd(WEIGHT_TILE, weights + block * TileMaxCols * TileMaxRows, TileMaxCols);
+        _tile_dpbusd(RESULT_TILE, INPUT_TILE, WEIGHT_TILE);
+      }
+
+      _tile_stored(RESULT_TILE, output, TileMaxCols);
+
+      _tile_release();
+
+#undef INPUT_TILE
+#undef WEIGHT_TILE
+#undef RESULT_TILE
+
+      return output;
+    }
+
+   private:
+    using BiasType = OutputType;
+    using WeightType = std::int8_t;
+
+    alignas(CacheLineSize) BiasType biases[OutputDimensions];
+    alignas(CacheLineSize) WeightType weights[OutputDimensions * PaddedInputDimensions];
+  };
+
+#else
+
   // A specialization for large inputs.
   template <IndexType InDims, IndexType OutDims>
   class AffineTransform<InDims, OutDims, std::enable_if_t<(ceil_to_multiple<IndexType>(InDims, MaxSimdWidth) >= LargeInputSize)>> {
@@ -397,6 +569,7 @@ namespace Stockfish::Eval::NNUE::Layers {
     alignas(CacheLineSize) BiasType biases[OutputDimensions];
     alignas(CacheLineSize) WeightType weights[OutputDimensions * PaddedInputDimensions];
   };
+#endif
 
   template <IndexType InDims, IndexType OutDims>
   class AffineTransform<InDims, OutDims, std::enable_if_t<(ceil_to_multiple<IndexType>(InDims, MaxSimdWidth) < LargeInputSize)>> {
