@@ -1084,9 +1084,9 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
   }
 
   if (v > 0)
-      v = v - std::min(Value(pos.game_ply() / 2),  v);
+      v = v - std::min(Value(UCI::NormalizeToPawnValue * pos.game_ply() / 200),  v);
   else
-      v = v + std::min(Value(pos.game_ply() / 2), -v);
+      v = v + std::min(Value(UCI::NormalizeToPawnValue * pos.game_ply() / 200), -v);
 
   // Damp down the evaluation linearly when shuffling
   v = v * (200 - pos.rule50_count()) / 214;
