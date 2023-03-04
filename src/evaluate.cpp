@@ -1083,8 +1083,14 @@ Value Eval::evaluate(const Position& pos, int* complexity) {
       v = (nnue * scale + optimism * (scale - 748)) / 1024;
   }
 
+  if (v > 0)
+      v = v - std::min(Value(pos.game_ply() / 2),  v);
+  else
+      v = v + std::min(Value(pos.game_ply() / 2), -v);
+
   // Damp down the evaluation linearly when shuffling
   v = v * (200 - pos.rule50_count()) / 214;
+
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
