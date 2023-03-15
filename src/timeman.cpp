@@ -37,6 +37,7 @@ TimeManagement Time; // Our global time management object
 void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
 
   (void) ply;
+  startTime = limits.startTime;
   optimumTime = TimePoint(limits.time[us]/20);
   maximumTime = TimePoint(limits.time[us]/10);
 
