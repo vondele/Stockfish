@@ -299,7 +299,7 @@ void Thread::search() {
       {
           int rootComplexity;
           Eval::evaluate(rootPos, &rootComplexity);
-          mainThread->complexity = std::min(1.03 + (rootComplexity - 241) / 1552.0, 1.45);
+          mainThread->complexity = (mainThread->complexity + std::min(1.03 + (rootComplexity - 241) / 1552.0, 1.45)) / 2;
       }
 
       if (mainThread->bestPreviousScore == VALUE_INFINITE)
