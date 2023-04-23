@@ -102,7 +102,7 @@ namespace Stockfish {
 /// should be used, the limit value spent for each position, a file name
 /// where to look for positions in FEN format, the type of the limit:
 /// depth, perft, nodes and movetime (in millisecs), and evaluation type
-/// mixed (default), classical, NNUE.
+/// NNUE (default, and the only option supported).
 ///
 /// bench -> search default positions up to depth 13
 /// bench 64 1 15 -> search default positions up to depth 15 (TT = 64MB)
@@ -121,7 +121,14 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string limit     = (is >> token) ? token : "13";
   string fenFile   = (is >> token) ? token : "default";
   string limitType = (is >> token) ? token : "depth";
-  string evalType  = (is >> token) ? token : "mixed";
+  string evalType  = (is >> token) ? token : "NNUE";
+
+  if (evalType != "NNUE")
+  {
+        string msg1 = "Unsupported evaluation type. The only supported type is \"NNUE\".";
+        sync_cout << "info string ERROR: " << msg1 << sync_endl;
+        exit(EXIT_FAILURE);
+  }
 
   go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
 
