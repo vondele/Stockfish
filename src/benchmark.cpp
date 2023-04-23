@@ -104,6 +104,8 @@ namespace Stockfish {
 /// depth, perft, nodes and movetime (in millisecs), and evaluation type:
 /// NNUE (default, and the only option supported).
 ///
+/// All benchmark parameters are case-sensitive.
+///
 /// bench -> search default positions up to depth 13
 /// bench 64 1 15 -> search default positions up to depth 15 (TT = 64MB)
 /// bench 64 4 5000 current movetime -> search current position with 4 threads for 5 sec
@@ -127,6 +129,11 @@ vector<string> setup_bench(const Position& current, istream& is) {
   {
         string msg1 = "Unsupported evaluation type. The only supported type is \"NNUE\".";
         sync_cout << "info string ERROR: " << msg1 << sync_endl;
+        if (evalType == "nnue")
+        {
+          string msg2 = "All benchmark parameters are case-sensitive!";
+          sync_cout << "info string ERROR: " << msg2 << sync_endl;
+        }
         exit(EXIT_FAILURE);
   }
 
