@@ -101,7 +101,7 @@ namespace Stockfish {
 /// are five parameters: TT size in MB, number of search threads that
 /// should be used, the limit value spent for each position, a file name
 /// where to look for positions in FEN format, the type of the limit:
-/// depth, perft, nodes and movetime (in millisecs), and evaluation type
+/// depth, perft, nodes and movetime (in millisecs), and evaluation type:
 /// NNUE (default, and the only option supported).
 ///
 /// bench -> search default positions up to depth 13
