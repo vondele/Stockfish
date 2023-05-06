@@ -56,7 +56,7 @@ using namespace Search;
 namespace {
 
   // Basic piece values used for move-ordering
-  constexpr int MVVLVA[PIECE_TYPE_NB] = { 0, 100, 300, 305, 500, 900, 0, 0 };
+  constexpr int MVV[PIECE_TYPE_NB] = { 0, 100, 300, 305, 500, 900, 0, 0 };
 
   // Helper used to detect a basic mate config
   bool is_basic_mate(const Position& pos) {
@@ -176,7 +176,7 @@ void Search::init(Position& pos) {
 
           // Bonus for captures by MVV
           if (pos.capture(rm.pv[0]))
-              rm.tbRank += MVVLVA[type_of(pos.piece_on(to_sq(rm.pv[0])))];
+              rm.tbRank += MVV[type_of(pos.piece_on(to_sq(rm.pv[0])))];
 
           // Bonus for a move freeing a potential promotion square
           Bitboard ourPawns = pos.pieces(us, PAWN);
@@ -538,7 +538,7 @@ namespace {
             rankThisMove += 6000;
 
         if (pos.capture(m))
-            rankThisMove += MVVLVA[type_of(pos.piece_on(to_sq(m)))];
+            rankThisMove += MVV[type_of(pos.piece_on(to_sq(m)))];
 
         if (ss->ply & 1) // Side to get mated
         {
@@ -618,7 +618,7 @@ namespace {
         extension = 0;
 
         // Extensions
-        // Not more than one extension and not in the last iteration.
+        // Not more than one extension and not during the last iteration.
         if (   depth == 1
             && Limits.mate > 2
             && ss->ply < thisThread->rootDepth
@@ -629,22 +629,18 @@ namespace {
             if (lm.rank >= 6000)
                 extension = thisThread->targetDepth - thisThread->rootDepth;
 
-            // Extend captures and promotions
-            else if (   thisThread->rootDepth >= thisThread->fullDepth
-                     && pos.capture_or_promotion(lm.move))
-                extension = 2;
-                
-            // Extend knight moves by 2 plies if the opponent king is caged
-            // by own pieces, or we do not have any major piece.
-            else if (   thisThread->rootDepth >= thisThread->fullDepth
-                     && type_of(pos.moved_piece(lm.move)) == KNIGHT)
+            // Other extensions, yet only during the final iterations.
+            else if (thisThread->rootDepth >= thisThread->fullDepth)
             {
-                assert(pos.piece_on(from_sq(lm.move)) == make_piece(us, KNIGHT));
-                
-                const bool cagedKing = popcount(pos.attacks_from<KING>(pos.square<KING>(~us)) & ~pos.pieces(~us)) < 2;
-                const int majorsCount = pos.count<QUEEN>(us) + pos.count<ROOK>(us);
+                // Extend captures and promotions.
+                if (pos.capture_or_promotion(lm.move))
+                    extension = 2;
 
-                if (cagedKing || majorsCount == 0)
+                // Extend moving pieces able to reach potential checking squares with the subsequent move.
+                else if (   (type_of(pos.moved_piece(lm.move)) == KNIGHT && pos.attacks_from<KNIGHT>(to_sq(lm.move)) & pos.check_squares(KNIGHT))
+                         || (type_of(pos.moved_piece(lm.move)) == BISHOP && pos.attacks_from<BISHOP>(to_sq(lm.move)) & pos.check_squares(BISHOP))
+                         || (type_of(pos.moved_piece(lm.move)) == ROOK   && pos.attacks_from<ROOK  >(to_sq(lm.move)) & pos.check_squares(ROOK))
+                         || (type_of(pos.moved_piece(lm.move)) == QUEEN  && pos.attacks_from<QUEEN >(to_sq(lm.move)) & pos.check_squares(QUEEN)))
                     extension = 2;
             }
         }
@@ -665,7 +661,6 @@ namespace {
         // do the same for the root side-to-move, because this can only
         // mean we're in a check extension search. 
         if (    ss->ply > thisThread->rootDepth
-//            || (thisThread->rootDepth < thisThread->fullDepth && ss->ply > thisThread->fullDepth))
             && !(ss->ply & 1)
             &&  lm.rank < 6000)
         {
