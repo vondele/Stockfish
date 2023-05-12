@@ -387,7 +387,7 @@ void Thread::search() {
   ss->pv.clear();
 
   targetDepth = Limits.mate ? 2 * Limits.mate - 1 : MAX_PLY;
-  fullDepth = std::max(targetDepth - 4, 1);
+  fullDepth = std::max(targetDepth - (Limits.mate > 5 ? 4 : 2), 1);
   size_t multiPV = rootMoves.size();
 
   // Setting alpha, beta and bestValue such that we achieve
@@ -484,7 +484,7 @@ namespace {
     Value bestValue, value;
     bool inCheck = !!pos.checkers();
     int moveCount;
-    Depth extension;
+    bool extension;
     Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
 
@@ -545,7 +545,7 @@ namespace {
     {
         // Checking moves get a high enough rank for both sides
         if (pos.gives_check(m))
-            rankThisMove += 6000;
+            rankThisMove += 8000;
 
         if (pos.capture(m))
             rankThisMove += MVV[type_of(pos.piece_on(to_sq(m)))];
@@ -632,39 +632,39 @@ namespace {
     // Search all legal moves
     for (auto& lm : legalMoves)
     {
-        extension = 0;
+        extension = false;
 
         // Extensions
         // Not more than one extension and not during the last iteration.
         if (   depth == 1
-            && Limits.mate > 2
-            && ss->ply < thisThread->rootDepth
+            && ss->ply < thisThread->targetDepth - 1
             && thisThread->rootDepth < thisThread->targetDepth)
         {
-            // Check extension.
-            // Always extend up to the specified mate limit.
+            // Check extension
+            // Fires always during all iterations except the last one,
+            // and up to the specified mate limit.
             if (lm.rank >= 6000)
-                extension = thisThread->targetDepth - thisThread->rootDepth;
+                extension = true;
 
-            // Other extensions, yet only during the final iterations.
+            // Other moves will only be extended during the one
+            // or the two iterations just before the last one.
             else if (thisThread->rootDepth >= thisThread->fullDepth)
             {
-                // Extend captures and promotions.
+                // Extend captures and promotions
                 if (pos.capture_or_promotion(lm.move))
-                    extension = 2;
+                    extension = true;
 
-                // Extend moving pieces able to reach potential checking squares with the subsequent move.
+                // and piece moves which can reach a possible checking square with the next move.
                 else if (   (type_of(pos.moved_piece(lm.move)) == KNIGHT && pos.attacks_from<KNIGHT>(to_sq(lm.move)) & pos.check_squares(KNIGHT))
                          || (type_of(pos.moved_piece(lm.move)) == BISHOP && pos.attacks_from<BISHOP>(to_sq(lm.move)) & pos.check_squares(BISHOP))
                          || (type_of(pos.moved_piece(lm.move)) == ROOK   && pos.attacks_from<ROOK  >(to_sq(lm.move)) & pos.check_squares(ROOK))
                          || (type_of(pos.moved_piece(lm.move)) == QUEEN  && pos.attacks_from<QUEEN >(to_sq(lm.move)) & pos.check_squares(QUEEN)))
-                    extension = 2;
+                    extension = true;
             }
         }
 
-        // At frontier nodes we can skip all non-checking moves.
-        // Since checking moves are ranked first, simply break from the
-        // moves loop as soon as we hit the first non-checking move.
+        // At frontier nodes we can skip all non-checking
+        // and non-extended moves.
         if (    depth == 1
             && !extension
             &&  lm.rank < 6000)
@@ -674,18 +674,6 @@ namespace {
             continue;
         }
 
-        // At interior nodes beyond the nominal search depth,
-        // do the same for the root side-to-move, because this can only
-        // mean we're in a check extension search. 
-        if (    ss->ply > thisThread->rootDepth
-            && !(ss->ply & 1)
-            &&  lm.rank < 6000)
-        {
-            assert(!pos.gives_check(lm.move));
-
-            break;
-        }
-
         moveCount++;
 
         assert(is_ok(lm.move));
@@ -693,7 +681,7 @@ namespace {
         pos.do_move(lm.move, st);
         thisThread->nodes++;
         
-        value = -search(pos, ss+1, -beta, -alpha, depth-1+extension);
+        value = -search(pos, ss+1, -beta, -alpha, depth - 1 + 2 * extension);
         
         pos.undo_move(lm.move);
 
