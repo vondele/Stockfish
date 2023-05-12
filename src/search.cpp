@@ -163,7 +163,7 @@ void Search::init(Position& pos) {
           // Check bonuses
           if (pos.gives_check(rm.pv[0]))
           {
-              rm.tbRank += 6000;
+              rm.tbRank += 8000;
 
               // Bonus for a knight check
               if (type_of(pos.moved_piece(rm.pv[0])) == KNIGHT)
