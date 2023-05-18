@@ -136,6 +136,7 @@ void Search::init(Position& pos) {
   const auto ourKing = pos.square<KING>(us);
   const auto theirKing = pos.square<KING>(~us);
   const Bitboard kingRing = pos.attacks_from<KING>(theirKing);
+  int oppMoves;
 
   // Prepare the root moves
   RootMoves searchMoves;
@@ -239,8 +240,11 @@ void Search::init(Position& pos) {
 
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
-          rm.tbRank -= 8 * int(MoveList<LEGAL>(pos).size());
+          oppMoves = int(MoveList<LEGAL>(pos).size());
           pos.undo_move(rm.pv[0]);
+
+          // Give an extra boost for mating moves!
+          rm.tbRank += oppMoves == 0 ? 4096 : -8 * oppMoves;
       }
   }
 
@@ -531,7 +535,8 @@ namespace {
 
     bestValue = -VALUE_INFINITE;
     moveCount = 0;
-    auto rankThisMove = 0;
+    int rankThisMove = 0;
+    int oppMoves;
 
     std::vector<RankedMove> legalMoves;
     legalMoves.reserve(64);
@@ -572,6 +577,13 @@ namespace {
                          || type_of(pos.moved_piece(m)) == ROOK)
                          && distance(pos.square<KING>(~us), to_sq(m)) == 1)
                    rankThisMove += 500;
+
+                pos.do_move(m, st);
+                oppMoves = int(MoveList<LEGAL>(pos).size());
+                pos.undo_move(m);
+
+                // Give an extra boost for mating moves!
+                rankThisMove += oppMoves == 0 ? 4096 : -8 * oppMoves;
             }
 
             if (pos.advanced_pawn_push(m))
