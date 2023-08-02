@@ -136,7 +136,7 @@ void Search::init(Position& pos) {
   const auto ourKing = pos.square<KING>(us);
   const auto theirKing = pos.square<KING>(~us);
   const Bitboard kingRing = pos.attacks_from<KING>(theirKing);
-  int oppMoves;
+  int oppMoves, oppKingMoves;
 
   // Prepare the root moves
   RootMoves searchMoves;
@@ -241,10 +241,12 @@ void Search::init(Position& pos) {
           // R-Mobility (kind of ?)
           pos.do_move(rm.pv[0], rootSt);
           oppMoves = int(MoveList<LEGAL>(pos).size());
+          oppKingMoves = int(MoveList<LEGAL, KING>(pos).size());
           pos.undo_move(rm.pv[0]);
 
           // Give an extra boost for mating moves!
           rm.tbRank += oppMoves == 0 ? 4096 : -8 * oppMoves;
+          rm.tbRank -= 40 * oppKingMoves;
       }
   }
 
@@ -420,6 +422,23 @@ void Thread::search() {
               sync_cout << "info currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
                         << " currmovenumber " << Movecount[rootDepth].load() << sync_endl;
 
+          if (   targetDepth > 9
+              && rootDepth > 3
+              && rootDepth < targetDepth)
+          {
+              if (   rootDepth < targetDepth - 4
+                  && rootMoves[pvIdx].tbRank < 8000)
+                  continue;
+
+              else if (   rootDepth < targetDepth - 2
+                       && rootMoves[pvIdx].tbRank < 4000)
+                  continue;
+
+              else if (   rootDepth < targetDepth
+                       && rootMoves[pvIdx].tbRank < 0)
+                  continue;
+          }
+
           selDepth = 0;
 
           assert(is_ok(rootMoves[pvIdx].pv[0]));
@@ -541,6 +560,7 @@ namespace {
     std::vector<RankedMove> legalMoves;
     legalMoves.reserve(64);
 
+    [[maybe_unused]] Bitboard b1 = pos.checkers();
     [[maybe_unused]] Bitboard ourPawns = pos.pieces(us, PAWN);
     [[maybe_unused]] Bitboard kingRing = pos.attacks_from<KING>(pos.square<KING>(~us));
     [[maybe_unused]] Square ourKing = pos.square<KING>(us);
@@ -562,6 +582,11 @@ namespace {
                 // Rank moves first which capture the checking piece
                 if (pos.capture(m))
                     rankThisMove += 1000;
+
+                // Bonus for intercepting a check
+                else if (   type_of(pos.moved_piece(m)) != KING
+                         && aligned(lsb(b1), ourKing, to_sq(m)))
+                    rankThisMove += 400;
             }
         }
         else
