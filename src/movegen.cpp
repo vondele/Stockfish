@@ -25,7 +25,7 @@
 
 namespace {
 
-  template<GenType Type, Direction D>
+  template<Direction D>
   ExtMove* make_promotions(ExtMove* moveList, Square to) {
 
     *moveList++ = make<PROMOTION>(to - D, to, QUEEN);
@@ -118,13 +118,13 @@ namespace {
         Bitboard b3 = shift<Up     >(pawnsOn7) & emptySquares;
 
         while (b1)
-            moveList = make_promotions<Type, UpRight>(moveList, pop_lsb(&b1));
+            moveList = make_promotions<UpRight>(moveList, pop_lsb(&b1));
 
         while (b2)
-            moveList = make_promotions<Type, UpLeft >(moveList, pop_lsb(&b2));
+            moveList = make_promotions<UpLeft>(moveList, pop_lsb(&b2));
 
         while (b3)
-            moveList = make_promotions<Type, Up     >(moveList, pop_lsb(&b3));
+            moveList = make_promotions<Up>(moveList, pop_lsb(&b3));
     }
 
     // Standard and en-passant captures
