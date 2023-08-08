@@ -375,9 +375,10 @@ inline Square msb(Bitboard b) {
 
 /// pop_lsb() finds and clears the least significant bit in a non-zero bitboard
 
-inline Square pop_lsb(Bitboard* b) {
-  const Square s = lsb(*b);
-  *b &= *b - 1;
+inline Square pop_lsb(Bitboard& b) {
+  assert(b);
+  const Square s = lsb(b);
+  b &= b - 1;
   return s;
 }
 

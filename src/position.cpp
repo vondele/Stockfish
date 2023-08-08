@@ -74,7 +74,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
      << std::setfill(' ') << std::dec << "\nCheckers: ";
 
   for (Bitboard b = pos.checkers(); b; )
-      os << UCI::square(pop_lsb(&b)) << " ";
+      os << UCI::square(pop_lsb(b)) << " ";
 
   os << "\nLegal moves: " << MoveList<LEGAL>(pos).size();
 
@@ -344,7 +344,7 @@ void Position::set_state(StateInfo* si) const {
 
   for (Bitboard b = pieces(); b; )
   {
-      Square s = pop_lsb(&b);
+      Square s = pop_lsb(b);
       Piece pc = piece_on(s);
       si->key ^= Zobrist::psq[pc][s];
   }
@@ -455,7 +455,7 @@ Bitboard Position::slider_blockers(Bitboard sliders, Square s, Bitboard& pinners
 
   while (snipers)
   {
-    Square sniperSq = pop_lsb(&snipers);
+    Square sniperSq = pop_lsb(snipers);
     Bitboard b = between_bb(s, sniperSq) & occupancy;
 
     if (b && !more_than_one(b))

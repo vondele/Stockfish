@@ -93,13 +93,13 @@ namespace {
 
         while (b1)
         {
-            Square to = pop_lsb(&b1);
+            Square to = pop_lsb(b1);
             *moveList++ = make_move(to - Up, to);
         }
 
         while (b2)
         {
-            Square to = pop_lsb(&b2);
+            Square to = pop_lsb(b2);
             *moveList++ = make_move(to - Up - Up, to);
         }
     }
@@ -118,13 +118,13 @@ namespace {
         Bitboard b3 = shift<Up     >(pawnsOn7) & emptySquares;
 
         while (b1)
-            moveList = make_promotions<UpRight>(moveList, pop_lsb(&b1));
+            moveList = make_promotions<UpRight>(moveList, pop_lsb(b1));
 
         while (b2)
-            moveList = make_promotions<UpLeft>(moveList, pop_lsb(&b2));
+            moveList = make_promotions<UpLeft>(moveList, pop_lsb(b2));
 
         while (b3)
-            moveList = make_promotions<Up>(moveList, pop_lsb(&b3));
+            moveList = make_promotions<Up>(moveList, pop_lsb(b3));
     }
 
     // Standard and en-passant captures
@@ -135,13 +135,13 @@ namespace {
 
         while (b1)
         {
-            Square to = pop_lsb(&b1);
+            Square to = pop_lsb(b1);
             *moveList++ = make_move(to - UpRight, to);
         }
 
         while (b2)
         {
-            Square to = pop_lsb(&b2);
+            Square to = pop_lsb(b2);
             *moveList++ = make_move(to - UpLeft, to);
         }
 
@@ -160,7 +160,7 @@ namespace {
             assert(b1);
 
             while (b1)
-                *moveList++ = make<ENPASSANT>(pop_lsb(&b1), pos.ep_square());
+                *moveList++ = make<ENPASSANT>(pop_lsb(b1), pos.ep_square());
         }
     }
 
@@ -181,7 +181,7 @@ namespace {
         Bitboard b = pos.attacks_from<Pt>(from) & target;
 
         while (b)
-            *moveList++ = make_move(from, pop_lsb(&b));
+            *moveList++ = make_move(from, pop_lsb(b));
     }
 
     return moveList;
@@ -206,7 +206,7 @@ namespace {
         Bitboard b = pos.attacks_from<KING>(ksq) & target;
 
         while (b)
-            *moveList++ = make_move(ksq, pop_lsb(&b));
+            *moveList++ = make_move(ksq, pop_lsb(b));
 
         if (Type != CAPTURES && pos.can_castle(CastlingRights(OO | OOO)))
         {
@@ -261,7 +261,7 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
   // useless legality checks later on.
   while (sliders)
   {
-      Square checksq = pop_lsb(&sliders);
+      Square checksq = pop_lsb(sliders);
       sliderAttacks |= LineBB[checksq][ksq] ^ checksq;
   }
 
@@ -269,7 +269,7 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
   Bitboard b = pos.attacks_from<KING>(ksq) & ~pos.pieces(us) & ~sliderAttacks;
 
   while (b)
-      *moveList++ = make_move(ksq, pop_lsb(&b));
+      *moveList++ = make_move(ksq, pop_lsb(b));
 
   // Double check, only a king move can save the day
   if (more_than_one(pos.checkers()))
