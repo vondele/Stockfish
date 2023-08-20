@@ -854,16 +854,14 @@ string UCI::pv(const Position& pos, Depth depth) {
           ss << "\n";
 
       ss << "info"
+         << " time "     << elapsed
+         << " multipv "  << 1
          << " depth "    << depth
          << " seldepth " << rootMoves[0].selDepth
-         << " multipv "  << 1
-         << " score "    << UCI::value(rootMoves[0].score);
-
-      ss << " nodes "    << nodesSearched
-         << " nps "      << nodesSearched * 1000 / elapsed;
-
-      ss << " tbhits "   << tbHits
-         << " time "     << elapsed
+         << " nodes "    << nodesSearched
+         << " nps "      << nodesSearched * 1000 / elapsed
+         << " tbhits "   << tbHits
+         << " score "    << UCI::value(rootMoves[0].score)
          << " pv";
 
       for (Move m : rootMoves[0].pv)
