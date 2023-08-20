@@ -341,8 +341,15 @@ void MainThread::search() {
           && th->rootMoves[0].score > bestThread->rootMoves[0].score)
           bestThread = th;
 
+  // Give some info about the final result of the search
   if (bestThread->rootMoves[0].score < VALUE_MATE_IN_MAX_PLY)
       sync_cout << "info string Failure! No mate found!" << sync_endl;
+  else
+      sync_cout << "info string Success! Mate in "
+                << (VALUE_MATE - bestThread->rootMoves[0].score + 1) / 2 << " found!" << sync_endl;
+
+  // Print the best PV line
+  sync_cout << UCI::pv(bestThread->rootPos, bestThread->rootDepth) << sync_endl;
 
   // Send best move and ponder move (if available)
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], bestThread->rootPos.is_chess960());
@@ -402,7 +409,7 @@ void Thread::search() {
   beta  = VALUE_INFINITE;
   bestValue = VALUE_MATE_IN_MAX_PLY - 1;
 
-  while (rootDepth <= targetDepth)
+  while (true)
   {
       for (pvIdx = 0; pvIdx < multiPV; ++pvIdx)
       {
@@ -439,7 +446,7 @@ void Thread::search() {
                   continue;
           }
 
-          selDepth = 0;
+          selDepth = 1;
 
           assert(is_ok(rootMoves[pvIdx].pv[0]));
           
@@ -471,13 +478,7 @@ void Thread::search() {
 
           // Have we found a "mate in x" within the specified limit?
           if (bestValue >= alpha)
-          {
               Threads.stop = true;
-
-              sync_cout << "info string Success! Mate in "
-                        << (VALUE_MATE - rootMoves[0].score + 1) / 2 << " found!" << sync_endl;
-              sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
-          }
 
           if (Threads.stop.load())
               break;
@@ -486,11 +487,15 @@ void Thread::search() {
       if (Threads.stop.load())
           break;
 
-      if (this == Threads.main())
-      {
-          rootMoves[0].selDepth = rootDepth;
+      rootMoves[0].selDepth = selDepth;
+
+      // Let the main thread report about the just finished depth
+      if (this == Threads.main() && rootDepth < targetDepth)
           sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
-      }
+
+      // Target depth reached?
+      if (rootDepth == targetDepth)
+          break;
 
       rootDepth += 2;
   }
@@ -514,7 +519,9 @@ namespace {
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
 
     // Start with a fresh pv
+    // Start with a fresh pv
     ss->pv.clear();
+    thisThread->selDepth = std::max(thisThread->selDepth, ss->ply);
 
     // Check for aborted search or maximum ply reached
     if (   Threads.stop.load()
@@ -525,8 +532,6 @@ namespace {
     // or zero. No evaluation needed!
     if (depth == 0)
     {
-        thisThread->selDepth = std::max(thisThread->selDepth, ss->ply);
-
         if (inCheck && !MoveList<LEGAL>(pos).size())
             return mated_in(ss->ply);
         else
