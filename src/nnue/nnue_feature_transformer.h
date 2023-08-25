@@ -368,6 +368,7 @@ namespace Stockfish::Eval::NNUE {
     void update_accumulator_incremental(const Position& pos, StateInfo* computed_st, StateInfo* states_to_update[N]) const {
       static_assert(N > 0);
       assert(states_to_update[N-1] == nullptr);
+      abort();
 
   #ifdef VECTOR
       // Gcc-10.2 unnecessarily spills AVX2 registers if this array
@@ -626,7 +627,7 @@ namespace Stockfish::Eval::NNUE {
 
       auto [oldest_st, _] = try_find_computed_accumulator<Perspective>(pos);
 
-      if (oldest_st->accumulator.computed[Perspective])
+      if (false && oldest_st->accumulator.computed[Perspective])
       {
         // Only update current position accumulator to minimize work.
         StateInfo* states_to_update[2] = { pos.state(), nullptr };
@@ -643,7 +644,7 @@ namespace Stockfish::Eval::NNUE {
 
       auto [oldest_st, next] = try_find_computed_accumulator<Perspective>(pos);
 
-      if (oldest_st->accumulator.computed[Perspective])
+      if (false && oldest_st->accumulator.computed[Perspective])
       {
         if (next == nullptr)
           return;
