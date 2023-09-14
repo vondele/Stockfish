@@ -63,6 +63,7 @@ void init(OptionsMap& o) {
   o["Slow Mover"]            << Option(84, 10, 1000);
   o["KingMoves"]             << Option(8, 0, 8);
   o["AllMoves"]              << Option(250, 0, 250);
+  o["ProofNumberSearch"]     << Option(false);
   o["RootMoveStats"]         << Option(false);
   o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);

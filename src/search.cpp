@@ -22,13 +22,13 @@
 #include <atomic>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <sstream>
 
 #include "bitboard.h"
 #include "misc.h"
 #include "movegen.h"
-#include "position.h"
 #include "search.h"
 #include "thread.h"
 #include "timeman.h"
@@ -55,6 +55,8 @@ using namespace Search;
 
 namespace {
 
+  constexpr uint32_t PROOF_MAX_INT = 10000000;
+
   // Basic piece values used for move-ordering
   constexpr int MVV[PIECE_TYPE_NB] = { 0, 100, 300, 305, 500, 900, 0, 0 };
 
@@ -79,6 +81,7 @@ namespace {
 
   // Function prototypes
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth);
+  void pn_search(Position& pos);
   Value syzygy_search(Position& pos, int ply);
 
   // Global variables
@@ -317,22 +320,29 @@ void MainThread::search() {
 
   Time.init(Limits, rootPos.side_to_move(), rootPos.game_ply());
 
-  for (Thread* th : Threads)
-      if (th != this)
-          th->start_searching();
+  // Start the Proof-Number search, if requested
+  if (Options["ProofNumberSearch"])
+      pn_search(rootPos);
 
-  Thread::search(); // Let's start searching!
+  else // Otherwise, start the default AB search
+  {
+      for (Thread* th : Threads)
+          if (th != this)
+              th->start_searching();
+
+      Thread::search(); // Let's start searching!
+  }
 
   while (!Threads.stop && Limits.infinite)
   {} // Busy wait for a stop
+
+  // Stop the threads if not already stopped
+  Threads.stop = true;
 
   // Wait until all threads have finished
   for (Thread* th : Threads)
       if (th != this)
           th->wait_for_search_finished();
-
-  // Stop the threads if not already stopped
-  Threads.stop = true;
 
   Thread* bestThread = this;
 
@@ -768,10 +778,369 @@ namespace {
     return bestValue;
   }
 
+  // pn_search() is the Proof-Number search.
+  //
+  // See https://www.chessprogramming.org/Proof-Number_Search
+  // and http://mcts.ai/pubs/mcts-survey-master.pdf
 
-  // tb_sequence() tries to build a mating sequence if the
+  void pn_search(Position& pos) {
+
+    // Prepare our PNS Hash Table where we store all nodes
+    PnsHash pns;
+    pns.reserve(32000000); // About 1024 MB hash size
+
+    // A small stack
+    PnsStack stack[128], *ss = stack;
+
+    for (int i = 0; i < 128; i++)
+        (ss+i)->ply = i;
+
+    Move PVTable[512][MAX_PLY]; // For storing the PVs
+    for (int j = 0; j < 512; j++)
+        for (int k = 0; k < MAX_PLY; k++)
+            PVTable[j][k] = MOVE_NONE;
+
+    bool giveOutput, updatePV;
+    int targetDepth = std::min(2 * Limits.mate - 1, MAX_PLY-1);
+    int pvLine = 0;
+    uint64_t iteration;
+    uint32_t minPN, minDN, sumChildrenPN, sumChildrenDN;
+
+    Thread* thisThread = pos.this_thread();
+    TimePoint elapsed, lastOutputTime;
+
+    // Prepare the iterators
+    const auto rootIndex = pns.begin(); // Index of the root node
+    auto currentIndex = rootIndex;
+    auto bestIndex = currentIndex;
+    auto nextIndex = rootIndex + 1; // The next node will have this index
+
+    for (RootMove& rm : thisThread->rootMoves)
+        rm.score = VALUE_ZERO, rm.selDepth = targetDepth;
+    thisThread->rootDepth = targetDepth;
+
+    // Create the root node
+    pns.push_back(Node(rootIndex, MOVE_NONE, false, 1, 1));
+    thisThread->nodes++;
+
+    lastOutputTime = now();
+    giveOutput = updatePV = false;
+    iteration = 0;
+
+
+    // Now we can start the main MCTS loop, which consists of 4 steps:
+    // Selection, Expansion, Simulation, and Backpropagation.
+    while (!Threads.stop.load())
+    {
+        //////////////////////////////////////
+        //                                  //
+        //   Step 1: SELECTION              //
+        //                                  //
+        //////////////////////////////////////
+
+        // Determine the most promising node for further expansion.
+        // At OR nodes we are selecting the child node with the smallest
+        // Proof Number (PN), while at AND nodes we are selecting the
+        // one with the smallest Disproof Number (DN)!
+        while ((*currentIndex).is_expanded() && ss->ply < targetDepth)
+        {
+            assert(!(*currentIndex).children.empty());
+
+            if (ss->ply & 1) // AND node
+            {
+                minDN = PROOF_MAX_INT + 1;
+
+                for (auto child : (*currentIndex).children)
+                {
+                    if ((*child).DN() < minDN)
+                    {
+                        minDN = (*child).DN();
+                        bestIndex = child;
+                    }
+                }
+            }
+            else // OR node
+            {
+                minPN = PROOF_MAX_INT + 1;
+
+                for (auto child : (*currentIndex).children)
+                {
+                    if ((*child).PN() < minPN)
+                    {
+                        minPN = (*child).PN();
+                        bestIndex = child;
+                    }
+                }
+            }
+
+            // Reset the StateInfo object
+            std::memset(&ss->st, 0, sizeof(StateInfo));
+
+            // Make the move
+            pos.do_move((*bestIndex).action(), ss->st);
+
+            // Increment the stack level
+            ss++;
+
+            currentIndex = bestIndex;
+        }
+
+
+        //////////////////////////////////////
+        //                                  //
+        //   Step 2: EXPANSION              //
+        //                                  //
+        //////////////////////////////////////
+
+        // We determined the Most-Proving Node (MPN). Simply
+        // generate all child nodes and mark this node as
+        // fully expanded.
+
+        // The expanded node is 1 ply away
+        const bool andNode = (ss->ply + 1) & 1;
+
+        std::memset(&ss->st, 0, sizeof(StateInfo));
+
+        for (auto& move : MoveList<LEGAL>(pos))
+        {
+            // Skip moves at the root which are not part
+            // of the root moves of this thread.
+            if (    currentIndex == rootIndex
+                && !std::count(thisThread->rootMoves.begin(),
+                               thisThread->rootMoves.end(), move))
+                continue;
+
+            if (    ss->ply == targetDepth - 1
+                && !pos.gives_check(move))
+            {
+                assert(andNode);
+                continue;
+            }
+
+            pos.do_move(move, ss->st);
+            ss++;
+
+            int n = int(MoveList<LEGAL>(pos).size());
+            
+            // Create the new node: new nodes are default-initialized as
+            // non-terminal internal nodes with pn = 1 and dn = 1.
+            pns.push_back(Node(currentIndex, move, false, andNode ? n : 1, andNode ? 1 : n));
+            thisThread->nodes++;
+
+            // Add index of this node as child node to the parent node
+            (*currentIndex).children.push_back(nextIndex);
+
+            // Check for mate, draw by repetition, 50-move rule or
+            // maximum ply reached.
+            if (n == 0)
+            {
+                if (pos.checkers()) // WIN for the root side
+                {
+                    (*nextIndex).pn = andNode ? 0 : PROOF_MAX_INT;
+                    (*nextIndex).dn = andNode ? PROOF_MAX_INT : 0;
+
+                    // If we have reached the specified mate distance, add
+                    // the move leading to this node to the current PV line.
+                    if (   ss->ply == targetDepth
+                        && pvLine < 512)
+                    {
+                        assert(andNode);
+
+//                        sync_cout << "Starting PV" << sync_endl;
+                        PVTable[pvLine][ss->ply-1] = move;
+                        updatePV = true;
+                    }
+                }
+                else // Treat stalemates as a LOSS for the root side
+                {
+                    (*nextIndex).pn = PROOF_MAX_INT;
+                    (*nextIndex).dn = 0;
+                }
+            }
+            else if (pos.is_draw(ss->ply) || ss->ply == targetDepth)
+            {
+                (*nextIndex).pn = PROOF_MAX_INT;
+                (*nextIndex).dn = 0;
+            }
+//            else if (pos.is_draw(ss->ply)) // Treat repetitions as a LOSS for the root side
+//            {
+//                (*nextIndex).pn = PROOF_MAX_INT;
+//                (*nextIndex).dn = 0;
+//            }
+
+            nextIndex++;
+
+            pos.undo_move(move);
+            ss--;
+
+//            if (   ( andNode && (*(nextIndex-1)).PN() == 0)
+//                || (!andNode && (*(nextIndex-1)).DN() == 0))
+//                break;
+        }
+
+        (*currentIndex).mark_as_expanded();
+
+
+        //////////////////////////////////////
+        //                                  //
+        //   Step 3: SIMULATION             //
+        //                                  //
+        //////////////////////////////////////
+
+
+        //////////////////////////////////////
+        //                                  //
+        //   Step 4: BACKPROPAGATION        //
+        //                                  //
+        //////////////////////////////////////
+
+        // Now we have to unwind all made moves
+        // to get back to the root position and we're
+        // updating every single node on this way.
+        while (true)
+        {
+            if (ss->ply & 1) // AND node
+            {
+                sumChildrenPN = 0;
+                minDN = PROOF_MAX_INT + 1;
+
+                for (auto idx : (*currentIndex).children)
+                {
+                    sumChildrenPN = std::min(sumChildrenPN + (*idx).PN(), PROOF_MAX_INT);
+
+                    if ((*idx).DN() < minDN)
+                        minDN = (*idx).DN();
+                }
+
+                (*currentIndex).pn = sumChildrenPN;
+                (*currentIndex).dn = minDN;
+            }
+            else // OR node
+            {
+                minPN = PROOF_MAX_INT + 1;
+                sumChildrenDN = 0;
+
+                for (auto idx : (*currentIndex).children)
+                {
+                    if ((*idx).PN() < minPN)
+                        minPN = (*idx).PN();
+
+                    sumChildrenDN = std::min(sumChildrenDN + (*idx).DN(), PROOF_MAX_INT);
+                }
+
+                (*currentIndex).pn = minPN;
+                (*currentIndex).dn = sumChildrenDN;
+            }
+
+            if (currentIndex == rootIndex)
+                break;
+
+            // Update PV if necessary
+            if (updatePV)
+                PVTable[pvLine][ss->ply-1] = (*currentIndex).action();
+
+            // Go back to the parent node
+            pos.undo_move((*currentIndex).action());
+            ss--;
+
+            currentIndex = (*currentIndex).parent_id();
+        }
+
+        // We are back at the root!
+        assert(currentIndex == rootIndex);
+        assert(ss->ply == 0);
+
+        // Iteration finished
+        iteration++;
+        bestIndex = rootIndex;
+
+        if (updatePV)
+        {
+            pvLine++;
+            updatePV = false;
+        }
+
+        // Now check for some stop conditions
+        if (   iteration >= 10000000
+            || (*rootIndex).PN() == 0
+            || (*rootIndex).DN() == 0)
+            Threads.stop = true;
+
+        else if (   Limits.nodes
+                 && iteration >= uint64_t(Limits.nodes))
+            Threads.stop = true;
+            
+        else if (   Limits.movetime
+                 && Time.elapsed() >= Limits.movetime)
+            Threads.stop = true;
+
+        // Time for another GUI update?
+        if (!Threads.stop.load())
+        {
+            elapsed = now();
+
+            giveOutput =  Time.elapsed() <  2100 ? elapsed - lastOutputTime >= 200
+                        : Time.elapsed() < 10100 ? elapsed - lastOutputTime >= 1000
+                        : Time.elapsed() < 60100 ? elapsed - lastOutputTime >= 2500
+                                                 : elapsed - lastOutputTime >= 5000;
+            if (giveOutput)
+                lastOutputTime = now();
+        }
+
+        // Update the root moves stats and send info
+        if (   Threads.stop.load()
+            || giveOutput)
+        {
+            // Assign the score and the PV to one root move only.
+            // In the best case it's the proving move.
+            std::vector<Node>::iterator pvNode;
+
+            for (auto rootChild : (*rootIndex).children)
+            {
+                sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
+                                                                                                 << "   DN: " << (*rootChild).DN() << sync_endl;
+                if ((*rootChild).PN() == 0)
+                    pvNode = rootChild;
+            }
+
+            if ((*rootIndex).PN() == 0 && PVTable[0][0] != MOVE_NONE)
+            {
+                assert((*pvNode).PN() == 0);
+
+                RootMove& rm = *std::find(thisThread->rootMoves.begin(),
+                                          thisThread->rootMoves.end(), (*pvNode).action());
+                rm.pv.resize(1);
+
+                int m, n;
+                for (m = 0; m < 512; m++)
+                    if (PVTable[m][0] == rm.pv[0]) break;
+
+                for (n = 1; n < MAX_PLY; ++n)
+                {
+                    if (PVTable[m][n] == MOVE_NONE)
+                        break;
+
+                    rm.pv.push_back(PVTable[m][n]);
+                }
+
+                rm.score = VALUE_MATE - int(rm.pv.size());
+            }
+
+            // Sort the root moves and update the GUI
+            std::stable_sort(thisThread->rootMoves.begin(), thisThread->rootMoves.end());
+
+            if (!Threads.stop.load())
+                sync_cout << UCI::pv(pos, targetDepth) << sync_endl;
+        }
+
+    }
+
+    pns.clear();
+  }
+
+  // syzygy_search() tries to build a mating sequence if the
   // root position is a winning TB position. It repeatedly
-  // calls itself until we hit a mate.
+  // calls itself until a mate is found.
 
   Value syzygy_search(Position& pos, int ply) {
 
