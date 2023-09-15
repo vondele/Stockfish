@@ -152,5 +152,30 @@ vector<string> setup_bench(const Position& current, istream& is) {
           list.emplace_back(go);
       }
 
+  list.emplace_back("setoption name ProofNumberSearch value true");
+  list.emplace_back("ucinewgame");
+  cnt = 0;
+
+  for (const string& fen : fens)
+      if (fen.find("setoption") != string::npos)
+          list.emplace_back(fen);
+      else
+      {
+          cnt++;
+
+          if (isDefault)
+              go = cnt == 19 ? "go mate 12" :
+                   cnt == 18 ? "go mate 11" :
+                   cnt >= 16 ? "go mate 6"  :
+                   cnt >= 14 ? "go mate 5"  :
+                   cnt >=  9 ? "go mate 4"  :
+                   cnt >=  5 ? "go mate 3"  : "go mate 2";
+
+          list.emplace_back("position fen " + fen);
+          list.emplace_back(go);
+      }
+
+  list.emplace_back("setoption name ProofNumberSearch value false");
+
   return list;
 }
