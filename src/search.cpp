@@ -957,6 +957,13 @@ namespace {
                     (*nextIndex).dn = 0;
                 }
             }
+            else if (   andNode
+                     && kingMoves < 8
+                     && int(MoveList<LEGAL, KING>(pos).size()) > kingMoves)
+            {
+                (*nextIndex).pn = PROOF_MAX_INT;
+                (*nextIndex).dn = 0;
+            }
             else if (pos.is_draw(ss->ply) || ss->ply == targetDepth)
             {
                 (*nextIndex).pn = PROOF_MAX_INT;
