@@ -921,7 +921,6 @@ namespace {
 
             pos.do_move(move, ss->st);
             ss++;
-//            ss->parentNode = currentNode;
 
             int n = int(MoveList<LEGAL>(pos).size());
             
@@ -972,12 +971,6 @@ namespace {
                 (*nextNode).pn = PROOF_MAX_INT;
                 (*nextNode).dn = 0;
             }
-
-//            else if (pos.is_draw(ss->ply)) // Treat repetitions as a LOSS for the root side
-//            {
-//                (*nextNode).pn = PROOF_MAX_INT;
-//                (*nextNode).dn = 0;
-//            }
 
             nextNode++;
 
@@ -1109,8 +1102,6 @@ namespace {
 
             for (auto rootChild : (*rootNode).children)
             {
-                sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
-                                                                                                 << "   DN: " << (*rootChild).DN() << sync_endl;
                 if ((*rootChild).PN() == 0)
                     pvNode = rootChild;
             }
