@@ -84,25 +84,14 @@ struct RootMove {
 using RootMoves = std::vector<RootMove>;
 
 
-/// A small stack for the PNS search
-
-struct PnsStack {
-
-  StateInfo st;
-  int ply;
-};
-
-
 /// Node struct holds all the info needed, like the place
 /// in the HashTable, proof and disproof numbers, etc.
 
 struct Node {
 
-  Node(std::vector<Node>::iterator pidx, Move m, bool exp, uint32_t pnr, uint32_t dnr) :
-    parentIndex(pidx), move(m), isExpanded(exp), pn(pnr), dn(dnr) {
+  Node(Move m, bool exp, uint32_t pnr, uint32_t dnr) :
+    move(m), isExpanded(exp), pn(pnr), dn(dnr) {
   }
-
-  std::vector<Node>::iterator parent_id() const { return parentIndex; }
 
   uint32_t PN() const { return pn; }
   uint32_t DN() const { return dn; }
@@ -111,7 +100,6 @@ struct Node {
   bool is_expanded() const { return isExpanded; }
   void mark_as_expanded() { isExpanded = true; }
 
-  std::vector<Node>::iterator parentIndex;           // Index of the parent node TODO: move to the stack!
   Move move;                                         // Move which leads to this node
   bool isExpanded;                                   // True if all child nodes have been generated
   uint32_t pn;                                       // Proof number
@@ -120,6 +108,16 @@ struct Node {
 };
 
 using PnsHash = std::vector<Node>;
+
+
+/// A small stack for the PNS search
+
+struct PnsStack {
+
+  StateInfo st;
+  int ply;
+  std::vector<Node>::iterator parentNode;
+};
 
 
 /// LimitsType struct stores information sent by GUI about available time to

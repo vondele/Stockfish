@@ -810,19 +810,20 @@ namespace {
     TimePoint elapsed, lastOutputTime;
 
     // Prepare the iterators
-    const auto rootIndex = pns.begin(); // Index of the root node
-    auto currentIndex = rootIndex;
-    auto bestIndex = currentIndex;
-    auto nextIndex = rootIndex + 1; // The next node will have this index
+    const auto rootNode = pns.begin(); // Index of the root node
+    auto currentNode = rootNode;
+    auto bestNode = currentNode;
+    auto nextNode = rootNode + 1; // The next node will have this index
 
     for (RootMove& rm : thisThread->rootMoves)
         rm.score = VALUE_ZERO, rm.selDepth = targetDepth;
     thisThread->rootDepth = targetDepth;
 
     // Create the root node
-    pns.push_back(Node(rootIndex, MOVE_NONE, false, 1, 1));
+    pns.push_back(Node(MOVE_NONE, false, 1, 1));
     thisThread->nodes++;
 
+    ss->parentNode = rootNode;
     lastOutputTime = now();
     giveOutput = updatePV = false;
     iteration = 0;
@@ -842,20 +843,20 @@ namespace {
         // At OR nodes we are selecting the child node with the smallest
         // Proof Number (PN), while at AND nodes we are selecting the
         // one with the smallest Disproof Number (DN)!
-        while ((*currentIndex).is_expanded() && ss->ply < targetDepth)
+        while ((*currentNode).is_expanded() && ss->ply < targetDepth)
         {
-            assert(!(*currentIndex).children.empty());
+            assert(!(*currentNode).children.empty());
 
             if (ss->ply & 1) // AND node
             {
                 minDN = PROOF_MAX_INT + 1;
 
-                for (auto child : (*currentIndex).children)
+                for (auto child : (*currentNode).children)
                 {
                     if ((*child).DN() < minDN)
                     {
                         minDN = (*child).DN();
-                        bestIndex = child;
+                        bestNode = child;
                     }
                 }
             }
@@ -863,12 +864,12 @@ namespace {
             {
                 minPN = PROOF_MAX_INT + 1;
 
-                for (auto child : (*currentIndex).children)
+                for (auto child : (*currentNode).children)
                 {
                     if ((*child).PN() < minPN)
                     {
                         minPN = (*child).PN();
-                        bestIndex = child;
+                        bestNode = child;
                     }
                 }
             }
@@ -877,12 +878,13 @@ namespace {
             std::memset(&ss->st, 0, sizeof(StateInfo));
 
             // Make the move
-            pos.do_move((*bestIndex).action(), ss->st);
+            pos.do_move((*bestNode).action(), ss->st);
 
-            // Increment the stack level
+            // Increment the stack level and set parent node
             ss++;
+            ss->parentNode = currentNode;
 
-            currentIndex = bestIndex;
+            currentNode = bestNode;
         }
 
 
@@ -905,7 +907,7 @@ namespace {
         {
             // Skip moves at the root which are not part
             // of the root moves of this thread.
-            if (    currentIndex == rootIndex
+            if (    currentNode == rootNode
                 && !std::count(thisThread->rootMoves.begin(),
                                thisThread->rootMoves.end(), move))
                 continue;
@@ -919,16 +921,17 @@ namespace {
 
             pos.do_move(move, ss->st);
             ss++;
+//            ss->parentNode = currentNode;
 
             int n = int(MoveList<LEGAL>(pos).size());
             
             // Create the new node: new nodes are default-initialized as
             // non-terminal internal nodes with pn = 1 and dn = 1.
-            pns.push_back(Node(currentIndex, move, false, andNode ? n : 1, andNode ? 1 : n));
+            pns.push_back(Node(move, false, andNode ? n : 1, andNode ? 1 : n));
             thisThread->nodes++;
 
             // Add index of this node as child node to the parent node
-            (*currentIndex).children.push_back(nextIndex);
+            (*currentNode).children.push_back(nextNode);
 
             // Check for mate, draw by repetition, 50-move rule or
             // maximum ply reached.
@@ -936,8 +939,8 @@ namespace {
             {
                 if (pos.checkers()) // WIN for the root side
                 {
-                    (*nextIndex).pn = andNode ? 0 : PROOF_MAX_INT;
-                    (*nextIndex).dn = andNode ? PROOF_MAX_INT : 0;
+                    (*nextNode).pn = andNode ? 0 : PROOF_MAX_INT;
+                    (*nextNode).dn = andNode ? PROOF_MAX_INT : 0;
 
                     // If we have reached the specified mate distance, add
                     // the move leading to this node to the current PV line.
@@ -953,39 +956,40 @@ namespace {
                 }
                 else // Treat stalemates as a LOSS for the root side
                 {
-                    (*nextIndex).pn = PROOF_MAX_INT;
-                    (*nextIndex).dn = 0;
+                    (*nextNode).pn = PROOF_MAX_INT;
+                    (*nextNode).dn = 0;
                 }
             }
             else if (   andNode
                      && kingMoves < 8
                      && int(MoveList<LEGAL, KING>(pos).size()) > kingMoves)
             {
-                (*nextIndex).pn = PROOF_MAX_INT;
-                (*nextIndex).dn = 0;
+                (*nextNode).pn = PROOF_MAX_INT;
+                (*nextNode).dn = 0;
             }
             else if (pos.is_draw(ss->ply) || ss->ply == targetDepth)
             {
-                (*nextIndex).pn = PROOF_MAX_INT;
-                (*nextIndex).dn = 0;
+                (*nextNode).pn = PROOF_MAX_INT;
+                (*nextNode).dn = 0;
             }
+
 //            else if (pos.is_draw(ss->ply)) // Treat repetitions as a LOSS for the root side
 //            {
-//                (*nextIndex).pn = PROOF_MAX_INT;
-//                (*nextIndex).dn = 0;
+//                (*nextNode).pn = PROOF_MAX_INT;
+//                (*nextNode).dn = 0;
 //            }
 
-            nextIndex++;
+            nextNode++;
 
             pos.undo_move(move);
             ss--;
 
-//            if (   ( andNode && (*(nextIndex-1)).PN() == 0)
-//                || (!andNode && (*(nextIndex-1)).DN() == 0))
+//            if (   ( andNode && (*(nextNode-1)).PN() == 0)
+//                || (!andNode && (*(nextNode-1)).DN() == 0))
 //                break;
         }
 
-        (*currentIndex).mark_as_expanded();
+        (*currentNode).mark_as_expanded();
 
 
         //////////////////////////////////////
@@ -1011,7 +1015,7 @@ namespace {
                 sumChildrenPN = 0;
                 minDN = PROOF_MAX_INT + 1;
 
-                for (auto idx : (*currentIndex).children)
+                for (auto idx : (*currentNode).children)
                 {
                     sumChildrenPN = std::min(sumChildrenPN + (*idx).PN(), PROOF_MAX_INT);
 
@@ -1019,15 +1023,15 @@ namespace {
                         minDN = (*idx).DN();
                 }
 
-                (*currentIndex).pn = sumChildrenPN;
-                (*currentIndex).dn = minDN;
+                (*currentNode).pn = sumChildrenPN;
+                (*currentNode).dn = minDN;
             }
             else // OR node
             {
                 minPN = PROOF_MAX_INT + 1;
                 sumChildrenDN = 0;
 
-                for (auto idx : (*currentIndex).children)
+                for (auto idx : (*currentNode).children)
                 {
                     if ((*idx).PN() < minPN)
                         minPN = (*idx).PN();
@@ -1035,31 +1039,32 @@ namespace {
                     sumChildrenDN = std::min(sumChildrenDN + (*idx).DN(), PROOF_MAX_INT);
                 }
 
-                (*currentIndex).pn = minPN;
-                (*currentIndex).dn = sumChildrenDN;
+                (*currentNode).pn = minPN;
+                (*currentNode).dn = sumChildrenDN;
             }
 
-            if (currentIndex == rootIndex)
+            if (currentNode == rootNode)
                 break;
 
             // Update PV if necessary
             if (updatePV)
-                PVTable[pvLine][ss->ply-1] = (*currentIndex).action();
+                PVTable[pvLine][ss->ply-1] = (*currentNode).action();
 
             // Go back to the parent node
-            pos.undo_move((*currentIndex).action());
+            pos.undo_move((*currentNode).action());
+
+            currentNode = ss->parentNode;
             ss--;
 
-            currentIndex = (*currentIndex).parent_id();
         }
 
         // We are back at the root!
-        assert(currentIndex == rootIndex);
+        assert(currentNode == rootNode);
         assert(ss->ply == 0);
 
         // Iteration finished
         iteration++;
-        bestIndex = rootIndex;
+        bestNode = rootNode;
 
         if (updatePV)
         {
@@ -1069,8 +1074,8 @@ namespace {
 
         // Now check for some stop conditions
         if (   iteration >= 10000000
-            || (*rootIndex).PN() == 0
-            || (*rootIndex).DN() == 0)
+            || (*rootNode).PN() == 0
+            || (*rootNode).DN() == 0)
             Threads.stop = true;
 
         else if (   Limits.nodes
@@ -1102,7 +1107,7 @@ namespace {
             // In the best case it's the proving move.
             std::vector<Node>::iterator pvNode;
 
-            for (auto rootChild : (*rootIndex).children)
+            for (auto rootChild : (*rootNode).children)
             {
                 sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
                                                                                                  << "   DN: " << (*rootChild).DN() << sync_endl;
@@ -1110,7 +1115,7 @@ namespace {
                     pvNode = rootChild;
             }
 
-            if ((*rootIndex).PN() == 0 && PVTable[0][0] != MOVE_NONE)
+            if ((*rootNode).PN() == 0 && PVTable[0][0] != MOVE_NONE)
             {
                 assert((*pvNode).PN() == 0);
 
