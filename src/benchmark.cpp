@@ -74,10 +74,11 @@ const vector<string> Defaults = {
 } // namespace
 
 /// setup_bench() builds a list of UCI commands to be run by bench. There
-/// are five parameters: TT size in MB, number of search threads that
+/// are six parameters: TT size in MB, number of search threads that
 /// should be used, the limit value spent for each position, a file name
-/// where to look for positions in FEN format and the type of the limit:
-/// depth, perft, nodes and movetime (in millisecs).
+/// where to look for positions in FEN format, the type of the limit to be
+/// used (depth, mate, perft, nodes and movetime (in millisecs)), and the
+/// search type, ab, pns or mixed (default).
 ///
 /// bench -> search default positions up to depth 13
 /// bench 64 1 15 -> search default positions up to depth 15 (TT = 64MB)
@@ -93,11 +94,12 @@ vector<string> setup_bench(const Position& current, istream& is) {
   int cnt = 0;
   
   // Assign default values to missing arguments
-  string ttSize    = (is >> token) ? token : "16";
-  string threads   = (is >> token) ? token : "1";
-  string limit     = (is >> token) ? token : "12";
-  string fenFile   = (is >> token) ? token : "default";
-  string limitType = (is >> token) ? token : "mate";
+  string ttSize     = (is >> token) ? token : "16";
+  string threads    = (is >> token) ? token : "1";
+  string limit      = (is >> token) ? token : "12";
+  string fenFile    = (is >> token) ? token : "default";
+  string limitType  = (is >> token) ? token : "mate";
+  string searchType = (is >> token) ? token : "mixed";
 
   if (fenFile == "default")
   {
@@ -133,12 +135,19 @@ vector<string> setup_bench(const Position& current, istream& is) {
   list.emplace_back("setoption name Hash value " + ttSize);
   list.emplace_back("ucinewgame");
 
+  int posCounter = 0;
+
   for (const string& fen : fens)
       if (fen.find("setoption") != string::npos)
           list.emplace_back(fen);
       else
       {
           cnt++;
+
+          if (searchType == "pns" || (searchType == "mixed" && posCounter % 2 != 0))
+              list.emplace_back("setoption name ProofNumberSearch value true");
+          else if (searchType == "ab" || (searchType == "mixed" && posCounter % 2 == 0))
+              list.emplace_back("setoption name ProofNumberSearch value false");
 
           if (isDefault)
               go = cnt == 19 ? "go mate 12" :
@@ -150,29 +159,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
 
           list.emplace_back("position fen " + fen);
           list.emplace_back(go);
-      }
-
-  list.emplace_back("setoption name ProofNumberSearch value true");
-  list.emplace_back("ucinewgame");
-  cnt = 0;
-
-  for (const string& fen : fens)
-      if (fen.find("setoption") != string::npos)
-          list.emplace_back(fen);
-      else
-      {
-          cnt++;
-
-          if (isDefault)
-              go = cnt == 19 ? "go mate 12" :
-                   cnt == 18 ? "go mate 11" :
-                   cnt >= 16 ? "go mate 6"  :
-                   cnt >= 14 ? "go mate 5"  :
-                   cnt >=  9 ? "go mate 4"  :
-                   cnt >=  5 ? "go mate 3"  : "go mate 2";
-
-          list.emplace_back("position fen " + fen);
-          list.emplace_back(go);
+          posCounter++;
       }
 
   list.emplace_back("setoption name ProofNumberSearch value false");
