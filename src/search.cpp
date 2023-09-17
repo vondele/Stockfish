@@ -322,10 +322,14 @@ void MainThread::search() {
 
   // Start the Proof-Number search, if requested
   if (Options["ProofNumberSearch"])
+  {
+      sync_cout << "info string Starting Proof-Number Search ..." << sync_endl;
       pn_search(rootPos);
-
+  }
   else // Otherwise, start the default AB search
   {
+      sync_cout << "info string Starting Alpha-Beta Search ..." << sync_endl;
+
       for (Thread* th : Threads)
           if (th != this)
               th->start_searching();
@@ -797,8 +801,8 @@ namespace {
     for (int i = 0; i < 128; i++)
         (ss+i)->ply = i;
 
-    Move PVTable[512][MAX_PLY]; // For storing the PVs
-    for (int j = 0; j < 512; j++)
+    Move PVTable[16384][MAX_PLY]; // For storing the PVs
+    for (int j = 0; j < 1024; j++)
         for (int k = 0; k < MAX_PLY; k++)
             PVTable[j][k] = MOVE_NONE;
 
@@ -966,13 +970,12 @@ namespace {
                     // If we have reached the specified mate distance, add
                     // the move leading to this node to the current PV line.
                     if (   ss->ply == targetDepth
-                        && pvLine < 512)
+                        && pvLine < 16384)
                     {
                         assert(andNode);
 
-//                        sync_cout << "Starting PV" << sync_endl;
-                        PVTable[pvLine][ss->ply-1] = move;
                         updatePV = true;
+                        PVTable[pvLine][ss->ply-1] = move;
                     }
                 }
                 else // Treat stalemates as a LOSS for the root side
@@ -1123,8 +1126,6 @@ namespace {
 
             while (rootChild != rootNode)
             {
-//                sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
-//                                                                                                 << "   DN: " << (*rootChild).DN() << sync_endl;
                 if ((*rootChild).PN() == 0)
                 {
                     pvNode = rootChild;
@@ -1142,17 +1143,27 @@ namespace {
                                           thisThread->rootMoves.end(), (*pvNode).action());
                 rm.pv.resize(1);
 
-                int m, n;
-                for (m = 0; m < 512; m++)
+                int m, n, pvLength;
+                for (m = 0; m < 16384; m++)
                 {
+                    pvLength = 1;
+
                     if (PVTable[m][0] == rm.pv[0])
                     {
-                        // TODO: Make sure the PV is of requested mate length
-                        break;
+                        for (n = 1; n < MAX_PLY; n++)
+                        {
+                            if (PVTable[m][n] != MOVE_NONE)
+                                pvLength++;
+                            else
+                                break;
+                        }
                     }
+
+                    if (pvLength == targetDepth)
+                        break;
                 }
 
-                for (n = 1; n < MAX_PLY; ++n)
+                for (n = 1; n < MAX_PLY; n++)
                 {
                     if (PVTable[m][n] == MOVE_NONE)
                         break;
