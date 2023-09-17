@@ -778,16 +778,18 @@ namespace {
     return bestValue;
   }
 
+
   // pn_search() is the Proof-Number search.
   //
   // See https://www.chessprogramming.org/Proof-Number_Search
   // and http://mcts.ai/pubs/mcts-survey-master.pdf
+  // Very helpful: https://minimax.dev/docs/ultimate/pn-search/variants/
 
   void pn_search(Position& pos) {
 
     // Prepare our PNS Hash Table where we store all nodes
     PnsHash pns;
-    pns.reserve(32000000); // About 1024 MB hash size
+    pns.reserve(32000000); // TODO: Reserve space according to the set hash size and the size of a Node
 
     // A small stack
     PnsStack stack[128], *ss = stack;
@@ -813,14 +815,17 @@ namespace {
     const auto rootNode = pns.begin(); // Index of the root node
     auto currentNode = rootNode;
     auto bestNode = currentNode;
+    auto childNode = bestNode;
     auto nextNode = rootNode + 1; // The next node will have this index
 
     for (RootMove& rm : thisThread->rootMoves)
         rm.score = VALUE_ZERO, rm.selDepth = targetDepth;
     thisThread->rootDepth = targetDepth;
 
-    // Create the root node
-    pns.push_back(Node(MOVE_NONE, false, 1, 1));
+    // Create the root node.
+    // rootNode is used as a sentinel, because it can never
+    // be a child or a sibling for any node!
+    pns.push_back(Node(MOVE_NONE, 1, 1, rootNode, rootNode));
     thisThread->nodes++;
 
     ss->parentNode = rootNode;
@@ -843,34 +848,39 @@ namespace {
         // At OR nodes we are selecting the child node with the smallest
         // Proof Number (PN), while at AND nodes we are selecting the
         // one with the smallest Disproof Number (DN)!
-        while ((*currentNode).is_expanded() && ss->ply < targetDepth)
+        while ((*currentNode).firstChild != rootNode && ss->ply < targetDepth)
         {
-            assert(!(*currentNode).children.empty());
+            childNode = (*currentNode).firstChild;
 
             if (ss->ply & 1) // AND node
             {
                 minDN = PROOF_MAX_INT + 1;
 
-                for (auto child : (*currentNode).children)
+                while (childNode != rootNode)
                 {
-                    if ((*child).DN() < minDN)
+                    if ((*childNode).DN() < minDN)
                     {
-                        minDN = (*child).DN();
-                        bestNode = child;
+                        minDN = (*childNode).DN();
+                        bestNode = childNode;
                     }
+
+                    childNode = (*childNode).nextSibling;
                 }
+                
             }
             else // OR node
             {
                 minPN = PROOF_MAX_INT + 1;
 
-                for (auto child : (*currentNode).children)
+                while (childNode != rootNode)
                 {
-                    if ((*child).PN() < minPN)
+                    if ((*childNode).PN() < minPN)
                     {
-                        minPN = (*child).PN();
-                        bestNode = child;
+                        minPN = (*childNode).PN();
+                        bestNode = childNode;
                     }
+
+                    childNode = (*childNode).nextSibling;
                 }
             }
 
@@ -894,12 +904,19 @@ namespace {
         //                                  //
         //////////////////////////////////////
 
+        //////////////////////////////////////
+        //                                  //
+        //   Step 3: EVALUATION             //
+        //                                  //
+        //////////////////////////////////////
+
         // We determined the Most-Proving Node (MPN). Simply
         // generate all child nodes and mark this node as
         // fully expanded.
 
         // The expanded node is 1 ply away
         const bool andNode = (ss->ply + 1) & 1;
+        bool firstMove = true;
 
         std::memset(&ss->st, 0, sizeof(StateInfo));
 
@@ -925,12 +942,17 @@ namespace {
             int n = int(MoveList<LEGAL>(pos).size());
             
             // Create the new node: new nodes are default-initialized as
-            // non-terminal internal nodes with pn = 1 and dn = 1.
-            pns.push_back(Node(move, false, andNode ? n : 1, andNode ? 1 : n));
+            // non-terminal internal nodes with the number of moves necessary
+            // to prove or to disprove a node.
+            pns.push_back(Node(move, andNode ? n : 1, andNode ? 1 : n, rootNode, rootNode));
             thisThread->nodes++;
 
-            // Add index of this node as child node to the parent node
-            (*currentNode).children.push_back(nextNode);
+            // Either add this node as first child node to the parent node,
+            // or as next sibling node to the previous node.
+            if (firstMove)
+                (*currentNode).firstChild = nextNode;
+            else
+                (*(nextNode-1)).nextSibling = nextNode;
 
             // Check for mate, draw by repetition, 50-move rule or
             // maximum ply reached.
@@ -972,6 +994,7 @@ namespace {
                 (*nextNode).dn = 0;
             }
 
+            firstMove = false;
             nextNode++;
 
             pos.undo_move(move);
@@ -981,15 +1004,6 @@ namespace {
 //                || (!andNode && (*(nextNode-1)).DN() == 0))
 //                break;
         }
-
-        (*currentNode).mark_as_expanded();
-
-
-        //////////////////////////////////////
-        //                                  //
-        //   Step 3: SIMULATION             //
-        //                                  //
-        //////////////////////////////////////
 
 
         //////////////////////////////////////
@@ -1003,17 +1017,21 @@ namespace {
         // updating every single node on this way.
         while (true)
         {
+            childNode = (*currentNode).firstChild;
+
             if (ss->ply & 1) // AND node
             {
                 sumChildrenPN = 0;
                 minDN = PROOF_MAX_INT + 1;
 
-                for (auto idx : (*currentNode).children)
+                while (childNode != rootNode)
                 {
-                    sumChildrenPN = std::min(sumChildrenPN + (*idx).PN(), PROOF_MAX_INT);
+                    sumChildrenPN = std::min(sumChildrenPN + (*childNode).PN(), PROOF_MAX_INT);
 
-                    if ((*idx).DN() < minDN)
-                        minDN = (*idx).DN();
+                    if ((*childNode).DN() < minDN)
+                        minDN = (*childNode).DN();
+
+                    childNode = (*childNode).nextSibling;
                 }
 
                 (*currentNode).pn = sumChildrenPN;
@@ -1024,12 +1042,14 @@ namespace {
                 minPN = PROOF_MAX_INT + 1;
                 sumChildrenDN = 0;
 
-                for (auto idx : (*currentNode).children)
+                while (childNode != rootNode)
                 {
-                    if ((*idx).PN() < minPN)
-                        minPN = (*idx).PN();
+                    if ((*childNode).PN() < minPN)
+                        minPN = (*childNode).PN();
 
-                    sumChildrenDN = std::min(sumChildrenDN + (*idx).DN(), PROOF_MAX_INT);
+                    sumChildrenDN = std::min(sumChildrenDN + (*childNode).DN(), PROOF_MAX_INT);
+
+                    childNode = (*childNode).nextSibling;
                 }
 
                 (*currentNode).pn = minPN;
@@ -1098,12 +1118,20 @@ namespace {
         {
             // Assign the score and the PV to one root move only.
             // In the best case it's the proving move.
-            std::vector<Node>::iterator pvNode;
+            std::vector<Node>::iterator pvNode, rootChild;
+            rootChild = (*rootNode).firstChild;
 
-            for (auto rootChild : (*rootNode).children)
+            while (rootChild != rootNode)
             {
+//                sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
+//                                                                                                 << "   DN: " << (*rootChild).DN() << sync_endl;
                 if ((*rootChild).PN() == 0)
+                {
                     pvNode = rootChild;
+                    break;
+                }
+
+                rootChild = (*rootChild).nextSibling;
             }
 
             if ((*rootNode).PN() == 0 && PVTable[0][0] != MOVE_NONE)
@@ -1116,7 +1144,13 @@ namespace {
 
                 int m, n;
                 for (m = 0; m < 512; m++)
-                    if (PVTable[m][0] == rm.pv[0]) break;
+                {
+                    if (PVTable[m][0] == rm.pv[0])
+                    {
+                        // TODO: Make sure the PV is of requested mate length
+                        break;
+                    }
+                }
 
                 for (n = 1; n < MAX_PLY; ++n)
                 {
@@ -1140,6 +1174,7 @@ namespace {
 
     pns.clear();
   }
+
 
   // syzygy_search() tries to build a mating sequence if the
   // root position is a winning TB position. It repeatedly

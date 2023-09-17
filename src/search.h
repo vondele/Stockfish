@@ -89,22 +89,19 @@ using RootMoves = std::vector<RootMove>;
 
 struct Node {
 
-  Node(Move m, bool exp, uint32_t pnr, uint32_t dnr) :
-    move(m), isExpanded(exp), pn(pnr), dn(dnr) {
+  Node(Move m, uint32_t pnr, uint32_t dnr, std::vector<Node>::iterator nS, std::vector<Node>::iterator fC) :
+    move(m), pn(pnr), dn(dnr), nextSibling(nS), firstChild(fC) {
   }
 
   uint32_t PN() const { return pn; }
   uint32_t DN() const { return dn; }
+  Move action() const { return move; }
 
-  Move action()      const { return move; }
-  bool is_expanded() const { return isExpanded; }
-  void mark_as_expanded() { isExpanded = true; }
-
-  Move move;                                         // Move which leads to this node
-  bool isExpanded;                                   // True if all child nodes have been generated
-  uint32_t pn;                                       // Proof number
-  uint32_t dn;                                       // Disproof number
-  std::vector<std::vector<Node>::iterator> children; // Holds the indices of all child nodes
+  Move move;                               // Move which leads to this node
+  uint32_t pn;                             // Proof number
+  uint32_t dn;                             // Disproof number
+  std::vector<Node>::iterator nextSibling; // Index of the next sibling node
+  std::vector<Node>::iterator firstChild;  // Index of the first generated child node
 };
 
 using PnsHash = std::vector<Node>;

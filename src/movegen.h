@@ -42,7 +42,7 @@ struct ExtMove {
   int value;
 
   operator Move() const { return move; }
-  void operator=(Move m) { move = m; }
+  void operator=(Move m) { move = m; value = 0; }
 
   // Inhibit unwanted implicit conversions to Move
   // with an ambiguity that yields to a compile error.
