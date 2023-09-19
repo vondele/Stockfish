@@ -55,6 +55,7 @@ using namespace Search;
 
 namespace {
 
+  constexpr int NODESIZE = 32;
   constexpr uint32_t PROOF_MAX_INT = 10000000;
 
   // Basic piece values used for move-ordering
@@ -793,7 +794,11 @@ namespace {
 
     // Prepare our PNS Hash Table where we store all nodes
     PnsHash pns;
-    pns.reserve(32000000); // TODO: Reserve space according to the set hash size and the size of a Node
+    int mbSize = Options["Hash"];
+    int nodeCount = mbSize * 1024 * 1024 / NODESIZE;
+
+    // Reserve
+    pns.reserve(nodeCount);
 
     // A small stack
     PnsStack stack[128], *ss = stack;
@@ -802,7 +807,7 @@ namespace {
         (ss+i)->ply = i;
 
     Move PVTable[16384][MAX_PLY]; // For storing the PVs
-    for (int j = 0; j < 1024; j++)
+    for (int j = 0; j < 16384; j++)
         for (int k = 0; k < MAX_PLY; k++)
             PVTable[j][k] = MOVE_NONE;
 
@@ -815,12 +820,12 @@ namespace {
     Thread* thisThread = pos.this_thread();
     TimePoint elapsed, lastOutputTime;
 
-    // Prepare the iterators
-    const auto rootNode = pns.begin(); // Index of the root node
-    auto currentNode = rootNode;
-    auto bestNode = currentNode;
-    auto childNode = bestNode;
-    auto nextNode = rootNode + 1; // The next node will have this index
+    // Prepare the pointers
+    Node* rootNode = pns.data();   // Pointer to the root node
+    Node* currentNode = rootNode;
+    Node* bestNode = currentNode;
+    Node* childNode = bestNode;
+    Node* nextNode = rootNode + 1; // Pointer to the next node
 
     for (RootMove& rm : thisThread->rootMoves)
         rm.score = VALUE_ZERO, rm.selDepth = targetDepth;
@@ -836,7 +841,6 @@ namespace {
     lastOutputTime = now();
     giveOutput = updatePV = false;
     iteration = 0;
-
 
     // Now we can start the main MCTS loop, which consists of 4 steps:
     // Selection, Expansion, Simulation, and Backpropagation.
@@ -958,8 +962,9 @@ namespace {
             else
                 (*(nextNode-1)).nextSibling = nextNode;
 
-            // Check for mate, draw by repetition, 50-move rule or
-            // maximum ply reached.
+            // Check for mate, draw by repetition, 50-move rule or maximum
+            // ply reached. Note: we don't have to explicitly flag terminal
+            // nodes, the Proof- and Disproof Numbers are doing this for us!
             if (n == 0)
             {
                 if (pos.checkers()) // WIN for the root side
@@ -974,6 +979,7 @@ namespace {
                     {
                         assert(andNode);
 
+//                        sync_cout << "Starting PV" << sync_endl;
                         updatePV = true;
                         PVTable[pvLine][ss->ply-1] = move;
                     }
@@ -1089,8 +1095,7 @@ namespace {
         }
 
         // Now check for some stop conditions
-        if (   iteration >= 10000000
-            || (*rootNode).PN() == 0
+        if (   (*rootNode).PN() == 0
             || (*rootNode).DN() == 0)
             Threads.stop = true;
 
@@ -1101,6 +1106,12 @@ namespace {
         else if (   Limits.movetime
                  && Time.elapsed() >= Limits.movetime)
             Threads.stop = true;
+
+        else if (int(pns.size()) > nodeCount - 200)
+        {
+            sync_cout << "info string Running out of memory ..." << sync_endl;
+            Threads.stop = true;
+        }
 
         // Time for another GUI update?
         if (!Threads.stop.load())
@@ -1121,11 +1132,13 @@ namespace {
         {
             // Assign the score and the PV to one root move only.
             // In the best case it's the proving move.
-            std::vector<Node>::iterator pvNode, rootChild;
-            rootChild = (*rootNode).firstChild;
+            Node* pvNode = rootNode;
+            Node* rootChild  = (*rootNode).firstChild;
 
             while (rootChild != rootNode)
             {
+//                sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
+//                                                                                                 << "   DN: " << (*rootChild).DN() << sync_endl;
                 if ((*rootChild).PN() == 0)
                 {
                     pvNode = rootChild;

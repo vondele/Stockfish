@@ -89,7 +89,7 @@ using RootMoves = std::vector<RootMove>;
 
 struct Node {
 
-  Node(Move m, uint32_t pnr, uint32_t dnr, std::vector<Node>::iterator nS, std::vector<Node>::iterator fC) :
+  Node(Move m, uint32_t pnr, uint32_t dnr, Node* nS, Node* fC) :
     move(m), pn(pnr), dn(dnr), nextSibling(nS), firstChild(fC) {
   }
 
@@ -97,11 +97,11 @@ struct Node {
   uint32_t DN() const { return dn; }
   Move action() const { return move; }
 
-  Move move;                               // Move which leads to this node
-  uint32_t pn;                             // Proof number
-  uint32_t dn;                             // Disproof number
-  std::vector<Node>::iterator nextSibling; // Index of the next sibling node
-  std::vector<Node>::iterator firstChild;  // Index of the first generated child node
+  Move move;         // Move which leads to this node
+  uint32_t pn;       // Proof number
+  uint32_t dn;       // Disproof number
+  Node* nextSibling; // Pointer to the next sibling node
+  Node* firstChild;  // Pointer to the first generated child node
 };
 
 using PnsHash = std::vector<Node>;
@@ -113,7 +113,7 @@ struct PnsStack {
 
   StateInfo st;
   int ply;
-  std::vector<Node>::iterator parentNode;
+  Node* parentNode;
 };
 
 
