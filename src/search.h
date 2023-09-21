@@ -107,7 +107,7 @@ struct Node {
 using PnsHash = std::vector<Node>;
 
 
-/// A small stack for the PNS search
+/// A small stack for the proof-number search
 
 struct PnsStack {
 

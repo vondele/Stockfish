@@ -55,7 +55,6 @@ using namespace Search;
 
 namespace {
 
-  constexpr int NODESIZE = 32;
   constexpr uint32_t PROOF_MAX_INT = 10000000;
 
   // Basic piece values used for move-ordering
@@ -794,10 +793,10 @@ namespace {
 
     // Prepare our PNS Hash Table where we store all nodes
     PnsHash pns;
-    int mbSize = Options["Hash"];
-    int nodeCount = mbSize * 1024 * 1024 / NODESIZE;
 
-    // Reserve
+    // Reserve as many items as do fit
+    int mbSize = Options["Hash"];
+    int nodeCount = mbSize * 1024 * 1024 / sizeof(Node);
     pns.reserve(nodeCount);
 
     // A small stack
@@ -856,9 +855,9 @@ namespace {
         // At OR nodes we are selecting the child node with the smallest
         // Proof Number (PN), while at AND nodes we are selecting the
         // one with the smallest Disproof Number (DN)!
-        while ((*currentNode).firstChild != rootNode && ss->ply < targetDepth)
+        while (currentNode->firstChild != rootNode && ss->ply < targetDepth)
         {
-            childNode = (*currentNode).firstChild;
+            childNode = currentNode->firstChild;
 
             if (ss->ply & 1) // AND node
             {
@@ -866,13 +865,13 @@ namespace {
 
                 while (childNode != rootNode)
                 {
-                    if ((*childNode).DN() < minDN)
+                    if (childNode->DN() < minDN)
                     {
-                        minDN = (*childNode).DN();
+                        minDN = childNode->DN();
                         bestNode = childNode;
                     }
 
-                    childNode = (*childNode).nextSibling;
+                    childNode = childNode->nextSibling;
                 }
                 
             }
@@ -882,13 +881,13 @@ namespace {
 
                 while (childNode != rootNode)
                 {
-                    if ((*childNode).PN() < minPN)
+                    if (childNode->PN() < minPN)
                     {
-                        minPN = (*childNode).PN();
+                        minPN = childNode->PN();
                         bestNode = childNode;
                     }
 
-                    childNode = (*childNode).nextSibling;
+                    childNode = childNode->nextSibling;
                 }
             }
 
@@ -896,7 +895,7 @@ namespace {
             std::memset(&ss->st, 0, sizeof(StateInfo));
 
             // Make the move
-            pos.do_move((*bestNode).action(), ss->st);
+            pos.do_move(bestNode->action(), ss->st);
 
             // Increment the stack level and set parent node
             ss++;
@@ -958,7 +957,7 @@ namespace {
             // Either add this node as first child node to the parent node,
             // or as next sibling node to the previous node.
             if (firstMove)
-                (*currentNode).firstChild = nextNode;
+                currentNode->firstChild = nextNode;
             else
                 (*(nextNode-1)).nextSibling = nextNode;
 
@@ -969,8 +968,8 @@ namespace {
             {
                 if (pos.checkers()) // WIN for the root side
                 {
-                    (*nextNode).pn = andNode ? 0 : PROOF_MAX_INT;
-                    (*nextNode).dn = andNode ? PROOF_MAX_INT : 0;
+                    nextNode->pn = andNode ? 0 : PROOF_MAX_INT;
+                    nextNode->dn = andNode ? PROOF_MAX_INT : 0;
 
                     // If we have reached the specified mate distance, add
                     // the move leading to this node to the current PV line.
@@ -986,21 +985,21 @@ namespace {
                 }
                 else // Treat stalemates as a LOSS for the root side
                 {
-                    (*nextNode).pn = PROOF_MAX_INT;
-                    (*nextNode).dn = 0;
+                    nextNode->pn = PROOF_MAX_INT;
+                    nextNode->dn = 0;
                 }
             }
             else if (   andNode
                      && kingMoves < 8
                      && int(MoveList<LEGAL, KING>(pos).size()) > kingMoves)
             {
-                (*nextNode).pn = PROOF_MAX_INT;
-                (*nextNode).dn = 0;
+                nextNode->pn = PROOF_MAX_INT;
+                nextNode->dn = 0;
             }
             else if (pos.is_draw(ss->ply) || ss->ply == targetDepth)
             {
-                (*nextNode).pn = PROOF_MAX_INT;
-                (*nextNode).dn = 0;
+                nextNode->pn = PROOF_MAX_INT;
+                nextNode->dn = 0;
             }
 
             firstMove = false;
@@ -1008,10 +1007,6 @@ namespace {
 
             pos.undo_move(move);
             ss--;
-
-//            if (   ( andNode && (*(nextNode-1)).PN() == 0)
-//                || (!andNode && (*(nextNode-1)).DN() == 0))
-//                break;
         }
 
 
@@ -1026,7 +1021,7 @@ namespace {
         // updating every single node on this way.
         while (true)
         {
-            childNode = (*currentNode).firstChild;
+            childNode = currentNode->firstChild;
 
             if (ss->ply & 1) // AND node
             {
@@ -1035,16 +1030,16 @@ namespace {
 
                 while (childNode != rootNode)
                 {
-                    sumChildrenPN = std::min(sumChildrenPN + (*childNode).PN(), PROOF_MAX_INT);
+                    sumChildrenPN = std::min(sumChildrenPN + childNode->PN(), PROOF_MAX_INT);
 
-                    if ((*childNode).DN() < minDN)
-                        minDN = (*childNode).DN();
+                    if (childNode->DN() < minDN)
+                        minDN = childNode->DN();
 
-                    childNode = (*childNode).nextSibling;
+                    childNode = childNode->nextSibling;
                 }
 
-                (*currentNode).pn = sumChildrenPN;
-                (*currentNode).dn = minDN;
+                currentNode->pn = sumChildrenPN;
+                currentNode->dn = minDN;
             }
             else // OR node
             {
@@ -1053,16 +1048,16 @@ namespace {
 
                 while (childNode != rootNode)
                 {
-                    if ((*childNode).PN() < minPN)
-                        minPN = (*childNode).PN();
+                    if (childNode->PN() < minPN)
+                        minPN = childNode->PN();
 
-                    sumChildrenDN = std::min(sumChildrenDN + (*childNode).DN(), PROOF_MAX_INT);
+                    sumChildrenDN = std::min(sumChildrenDN + childNode->DN(), PROOF_MAX_INT);
 
-                    childNode = (*childNode).nextSibling;
+                    childNode = childNode->nextSibling;
                 }
 
-                (*currentNode).pn = minPN;
-                (*currentNode).dn = sumChildrenDN;
+                currentNode->pn = minPN;
+                currentNode->dn = sumChildrenDN;
             }
 
             if (currentNode == rootNode)
@@ -1070,10 +1065,10 @@ namespace {
 
             // Update PV if necessary
             if (updatePV)
-                PVTable[pvLine][ss->ply-1] = (*currentNode).action();
+                PVTable[pvLine][ss->ply-1] = currentNode->action();
 
             // Go back to the parent node
-            pos.undo_move((*currentNode).action());
+            pos.undo_move(currentNode->action());
 
             currentNode = ss->parentNode;
             ss--;
@@ -1095,8 +1090,8 @@ namespace {
         }
 
         // Now check for some stop conditions
-        if (   (*rootNode).PN() == 0
-            || (*rootNode).DN() == 0)
+        if (   rootNode->PN() == 0
+            || rootNode->DN() == 0)
             Threads.stop = true;
 
         else if (   Limits.nodes
@@ -1133,27 +1128,25 @@ namespace {
             // Assign the score and the PV to one root move only.
             // In the best case it's the proving move.
             Node* pvNode = rootNode;
-            Node* rootChild  = (*rootNode).firstChild;
+            Node* rootChild  = rootNode->firstChild;
 
             while (rootChild != rootNode)
             {
-//                sync_cout << "Root move " << UCI::move((*rootChild).action(), pos.is_chess960()) << "   PN: " << (*rootChild).PN()
-//                                                                                                 << "   DN: " << (*rootChild).DN() << sync_endl;
-                if ((*rootChild).PN() == 0)
+                if (rootChild->PN() == 0)
                 {
                     pvNode = rootChild;
                     break;
                 }
 
-                rootChild = (*rootChild).nextSibling;
+                rootChild = rootChild->nextSibling;
             }
 
-            if ((*rootNode).PN() == 0 && PVTable[0][0] != MOVE_NONE)
+            if (rootNode->PN() == 0 && PVTable[0][0] != MOVE_NONE)
             {
-                assert((*pvNode).PN() == 0);
+                assert(pvNode->PN() == 0);
 
                 RootMove& rm = *std::find(thisThread->rootMoves.begin(),
-                                          thisThread->rootMoves.end(), (*pvNode).action());
+                                          thisThread->rootMoves.end(), pvNode->action());
                 rm.pv.resize(1);
 
                 int m, n, pvLength;
