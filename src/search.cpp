@@ -1007,6 +1007,16 @@ namespace {
 
             pos.undo_move(move);
             ss--;
+
+            // If the parent node is a OR node, we can break as soon
+            // as one child node has a proof number of zero. The same
+            // applies to a AND node and a disproof number of zero
+            // for a child node.
+            // Move-ordering will be very important for this kind of
+            // enhancement!
+            if (   ( andNode && (nextNode-1)->PN() == 0)
+                || (!andNode && (nextNode-1)->DN() == 0))
+                break;
         }
 
 
