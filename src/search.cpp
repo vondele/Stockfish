@@ -55,7 +55,7 @@ using namespace Search;
 
 namespace {
 
-  constexpr uint32_t PROOF_MAX_INT = 10000000;
+  constexpr uint32_t INFINITE = 10000000;
 
   // Basic piece values used for move-ordering
   constexpr int MVV[PIECE_TYPE_NB] = { 0, 100, 300, 305, 500, 900, 0, 0 };
@@ -841,8 +841,8 @@ namespace {
     giveOutput = updatePV = false;
     iteration = 0;
 
-    // Now we can start the main MCTS loop, which consists of 4 steps:
-    // Selection, Expansion, Simulation, and Backpropagation.
+    // Now we can start the main PNS loop, which consists of 4 steps:
+    // Selection, Expansion, Evaluation, and Backpropagation.
     while (!Threads.stop.load())
     {
         //////////////////////////////////////
@@ -861,7 +861,7 @@ namespace {
 
             if (ss->ply & 1) // AND node
             {
-                minDN = PROOF_MAX_INT + 1;
+                minDN = INFINITE + 1;
 
                 while (childNode != rootNode)
                 {
@@ -877,7 +877,7 @@ namespace {
             }
             else // OR node
             {
-                minPN = PROOF_MAX_INT + 1;
+                minPN = INFINITE + 1;
 
                 while (childNode != rootNode)
                 {
@@ -917,9 +917,9 @@ namespace {
         //                                  //
         //////////////////////////////////////
 
-        // We determined the Most-Proving Node (MPN). Simply
-        // generate all child nodes and mark this node as
-        // fully expanded.
+        // We determined the Most-Proving Node (MPN).
+        // Now, generate all child nodes and evaluate them
+        // immediately.
 
         // The expanded node is 1 ply away
         const bool andNode = (ss->ply + 1) & 1;
@@ -968,8 +968,8 @@ namespace {
             {
                 if (pos.checkers()) // WIN for the root side
                 {
-                    nextNode->pn = andNode ? 0 : PROOF_MAX_INT;
-                    nextNode->dn = andNode ? PROOF_MAX_INT : 0;
+                    nextNode->pn = andNode ? 0 : INFINITE;
+                    nextNode->dn = andNode ? INFINITE : 0;
 
                     // If we have reached the specified mate distance, add
                     // the move leading to this node to the current PV line.
@@ -985,7 +985,7 @@ namespace {
                 }
                 else // Treat stalemates as a LOSS for the root side
                 {
-                    nextNode->pn = PROOF_MAX_INT;
+                    nextNode->pn = INFINITE;
                     nextNode->dn = 0;
                 }
             }
@@ -993,12 +993,12 @@ namespace {
                      && kingMoves < 8
                      && int(MoveList<LEGAL, KING>(pos).size()) > kingMoves)
             {
-                nextNode->pn = PROOF_MAX_INT;
+                nextNode->pn = INFINITE;
                 nextNode->dn = 0;
             }
             else if (pos.is_draw(ss->ply) || ss->ply == targetDepth)
             {
-                nextNode->pn = PROOF_MAX_INT;
+                nextNode->pn = INFINITE;
                 nextNode->dn = 0;
             }
 
@@ -1012,8 +1012,6 @@ namespace {
             // as one child node has a proof number of zero. The same
             // applies to a AND node and a disproof number of zero
             // for a child node.
-            // Move-ordering will be very important for this kind of
-            // enhancement!
             if (   ( andNode && (nextNode-1)->PN() == 0)
                 || (!andNode && (nextNode-1)->DN() == 0))
                 break;
@@ -1036,11 +1034,11 @@ namespace {
             if (ss->ply & 1) // AND node
             {
                 sumChildrenPN = 0;
-                minDN = PROOF_MAX_INT + 1;
+                minDN = INFINITE + 1;
 
                 while (childNode != rootNode)
                 {
-                    sumChildrenPN = std::min(sumChildrenPN + childNode->PN(), PROOF_MAX_INT);
+                    sumChildrenPN = std::min(sumChildrenPN + childNode->PN(), INFINITE);
 
                     if (childNode->DN() < minDN)
                         minDN = childNode->DN();
@@ -1053,7 +1051,7 @@ namespace {
             }
             else // OR node
             {
-                minPN = PROOF_MAX_INT + 1;
+                minPN = INFINITE + 1;
                 sumChildrenDN = 0;
 
                 while (childNode != rootNode)
@@ -1061,7 +1059,7 @@ namespace {
                     if (childNode->PN() < minPN)
                         minPN = childNode->PN();
 
-                    sumChildrenDN = std::min(sumChildrenDN + childNode->DN(), PROOF_MAX_INT);
+                    sumChildrenDN = std::min(sumChildrenDN + childNode->DN(), INFINITE);
 
                     childNode = childNode->nextSibling;
                 }
