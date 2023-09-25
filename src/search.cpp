@@ -951,7 +951,7 @@ namespace {
             // Create the new node: new nodes are default-initialized as
             // non-terminal internal nodes with the number of moves necessary
             // to prove or to disprove a node.
-            pns.push_back(Node(move, andNode ? n : 1, andNode ? 1 : n, rootNode, rootNode));
+            pns.push_back(Node(move, andNode ? 1 + n : 1, andNode ? 1 : 1 + n, rootNode, rootNode));
             thisThread->nodes++;
 
             // Either add this node as first child node to the parent node,
