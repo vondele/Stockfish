@@ -896,6 +896,7 @@ namespace {
 
             // Make the move
             pos.do_move(bestNode->action(), ss->st);
+            thisThread->nodes++;
 
             // Increment the stack level and set parent node
             ss++;
@@ -944,6 +945,7 @@ namespace {
             }
 
             pos.do_move(move, ss->st);
+            thisThread->nodes++;
             ss++;
 
             int n = int(MoveList<LEGAL>(pos).size());
@@ -952,7 +954,6 @@ namespace {
             // non-terminal internal nodes with the number of moves necessary
             // to prove or to disprove a node.
             pns.push_back(Node(move, andNode ? 1 + n : 1, andNode ? 1 : 1 + n, rootNode, rootNode));
-            thisThread->nodes++;
 
             // Either add this node as first child node to the parent node,
             // or as next sibling node to the previous node.
