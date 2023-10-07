@@ -769,7 +769,7 @@ namespace {
     if (eval < alpha - 456 - 252 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
-        if (value < alpha)
+        if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
             return value;
     }
 
