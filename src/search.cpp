@@ -129,6 +129,8 @@ namespace {
 
   template <NodeType nodeType>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
+  template <NodeType nodeType>
+  Value qsearch_inner(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
 
   Value value_to_tt(Value v, int ply);
   Value value_from_tt(Value v, int ply, int r50c);
@@ -1398,6 +1400,10 @@ moves_loop: // When in check, search starts here
   // (~155 Elo)
   template <NodeType nodeType>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
+        return std::clamp(qsearch_inner<nodeType>(pos, ss, alpha, beta, depth), VALUE_TB_LOSS_IN_MAX_PLY, VALUE_TB_WIN_IN_MAX_PLY);
+  }
+  template <NodeType nodeType>
+  Value qsearch_inner(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
     static_assert(nodeType != Root);
     constexpr bool PvNode = nodeType == PV;
