@@ -377,7 +377,7 @@ DEPENDFLAGS = $(ENV_DEPENDFLAGS) -std=c++17
 LDFLAGS = $(ENV_LDFLAGS) $(EXTRALDFLAGS)
 
 ifeq ($(NATIVE_ARCH),true)
-	CXXFLAGS += -march=native
+	CXXFLAGS += -mtune=native
 endif
 
 ifeq ($(COMP),)
