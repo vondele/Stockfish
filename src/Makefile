@@ -109,6 +109,9 @@ endif
 
 ifeq ($(ARCH), native)
    override ARCH = $(shell $(SHELL) ../scripts/get_native_properties.sh | cut -d " " -f 1)
+   NATIVE_ARCH=true
+else
+   NATIVE_ARCH=false
 endif
 
 # explicitly check for the list of supported architectures (as listed with make help),
@@ -372,6 +375,10 @@ endif
 CXXFLAGS = $(ENV_CXXFLAGS) -Wall -Wcast-qual -fno-exceptions -std=c++17 $(EXTRACXXFLAGS)
 DEPENDFLAGS = $(ENV_DEPENDFLAGS) -std=c++17
 LDFLAGS = $(ENV_LDFLAGS) $(EXTRALDFLAGS)
+
+ifeq ($(NATIVE_ARCH),true)
+	CXXFLAGS += -march=native
+endif
 
 ifeq ($(COMP),)
 	COMP=gcc
@@ -716,7 +723,11 @@ endif
 
 ### 3.8.3 Try to include architecture
 ifneq ($(ARCH), )
-	CXXFLAGS += -DARCH=$(ARCH)
+ifeq ($(NATIVE_ARCH), true)
+	CXXFLAGS += -DARCH='$(ARCH) (native)'
+else
+	CXXFLAGS += -DARCH='$(ARCH)'
+endif
 endif
 
 ### 3.9 Link Time Optimization
@@ -843,26 +854,26 @@ endif
 	clang-profile-use clang-profile-make FORCE
 
 analyze: net config-sanity objclean
-	$(MAKE) -k ARCH=$(ARCH) COMP=$(COMP) $(OBJS)
+	$(MAKE) -k ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) $(OBJS)
 
 build: net config-sanity
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) all
 
 profile-build: net config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	$(PGOBENCH) > PGOBENCH.out 2>&1
 	tail -n 4 PGOBENCH.out
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) objclean
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) $(profile_use)
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) profileclean
 
 strip:
 	$(STRIP) $(EXE)
@@ -1012,42 +1023,42 @@ misc.o: FORCE
 FORCE:
 
 clang-profile-make:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-generate ' \
 	EXTRALDFLAGS=' -fprofile-instr-generate' \
 	all
 
 clang-profile-use:
 	$(XCRUN) llvm-profdata merge -output=stockfish.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
 	@mkdir -p profdir
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-generate=profdir' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 icx-profile-make:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-generate ' \
 	EXTRALDFLAGS=' -fprofile-instr-generate' \
 	all
 
 icx-profile-use:
 	$(XCRUN) llvm-profdata merge -output=stockfish.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MAKE) ARCH=$(ARCH) NATIVE_ARCH=$(NATIVE_ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
