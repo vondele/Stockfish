@@ -34,6 +34,7 @@
 #include "../position.h"
 #include "../types.h"
 #include "../uci.h"
+#include "../thread.h"
 #include "nnue_accumulator.h"
 #include "nnue_common.h"
 
@@ -63,8 +64,34 @@ namespace Stockfish::Eval::NNUE {
   void initialize(LargePagePtr<T>& pointer) {
 
     static_assert(alignof(T) <= 4096, "aligned_large_pages_alloc() may fail for such a big alignment requirement of T");
-    pointer.reset(reinterpret_cast<T*>(aligned_large_pages_alloc(sizeof(T))));
-    std::memset(pointer.get(), 0, sizeof(T));
+    void* mem = aligned_large_pages_alloc(sizeof(T));
+
+    // TODO refactor out?
+    std::vector<std::thread> threads;
+
+    for (size_t idx = 0; idx < size_t(Options["Threads"]); ++idx)
+    {
+        threads.emplace_back([mem, idx]() {
+
+            // Thread binding gives faster search on systems with a first-touch policy
+            if (Options["Threads"] > 8)
+                WinProcGroup::bindThisThread(idx);
+
+            // Each thread will zero its part of the hash table
+            const size_t stride = size_t(sizeof(T) / Options["Threads"]),
+                         start  = size_t(stride * idx),
+                         len    = idx != size_t(Options["Threads"]) - 1 ?
+                                  stride : sizeof(T) - start;
+
+            std::memset(reinterpret_cast<unsigned char*>(mem)+start, 0, len);
+        });
+    }
+
+    for (std::thread& th : threads)
+        th.join();
+
+    pointer.reset(reinterpret_cast<T*>(mem));
+
   }
 
   // Read evaluation function parameters
