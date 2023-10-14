@@ -18,6 +18,8 @@
 
 // Code for calculating NNUE evaluation function
 
+#include <sys/mman.h>
+
 #include "evaluate_nnue.h"
 
 #include <cmath>
@@ -89,6 +91,8 @@ namespace Stockfish::Eval::NNUE {
 
     for (std::thread& th : threads)
         th.join();
+
+    mlock(mem, sizeof(T)) ;
 
     pointer.reset(reinterpret_cast<T*>(mem));
 
