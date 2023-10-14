@@ -16,6 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <sys/mman.h>
+
+
 #include "tt.h"
 
 #include <cassert>
@@ -110,6 +113,9 @@ void TranspositionTable::clear() {
 
   for (std::thread& th : threads)
       th.join();
+
+  mlock(&table[0], clusterCount * sizeof(Cluster));
+
 }
 
 
