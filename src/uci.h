@@ -28,6 +28,8 @@
 
 namespace Stockfish {
 
+int win_rate_model(Value v, int ply);
+
 class Position;
 
 namespace UCI {

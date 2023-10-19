@@ -43,6 +43,32 @@
 
 namespace Stockfish {
 
+  // The win rate model returns the probability of winning (in per mille units) given an
+  // eval and a game ply. It fits the LTC fishtest statistics rather accurately.
+  int win_rate_model(Value v, int ply) {
+
+     // The model only captures up to 240 plies, so limit the input and then rescale
+     double m = std::min(240, ply) / 64.0;
+
+     // The coefficients of a third-order polynomial fit is based on the fishtest data
+     // for two parameters that need to transform eval to the argument of a logistic
+     // function.
+     constexpr double as[] = {   0.38036525,   -2.82015070,   23.17882135,  307.36768407};
+     constexpr double bs[] = {  -2.29434733,   13.27689788,  -14.26828904,   63.45318330 };
+
+     // Enforce that NormalizeToPawnValue corresponds to a 50% win rate at ply 64
+     static_assert(UCI::NormalizeToPawnValue == int(as[0] + as[1] + as[2] + as[3]));
+
+     double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
+     double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
+
+     // Transform the eval to centipawns with limited range
+     double x = std::clamp(double(v), -4000.0, 4000.0);
+
+     // Return the win rate in per mille units, rounded to the nearest integer
+     return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
+  }
+
 namespace {
 
   // FEN string for the initial position in standard chess
@@ -165,10 +191,9 @@ namespace {
   void bench(Position& pos, std::istream& args, StateListPtr& states) {
 
     std::string token;
-    uint64_t num, nodes = 0, cnt = 1;
+    uint64_t nodes = 0;
 
     std::vector<std::string> list = setup_bench(pos, args);
-    num = count_if(list.begin(), list.end(), [](const std::string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
 
@@ -179,12 +204,14 @@ namespace {
 
         if (token == "go" || token == "eval")
         {
-            std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << std::endl;
             if (token == "go")
             {
                go(pos, is, states);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
+               Value v = Threads.main()->bestPreviousScore;
+               std::cout << pos.fen() << " ; " << " depth " << Threads.main()->completedDepth <<
+                            " score "    << UCI::value(v) << UCI::wdl(v, pos.game_ply()) << "\n";
             }
             else
                trace_eval(pos);
@@ -198,37 +225,12 @@ namespace {
 
     dbg_print();
 
-    std::cerr << "\n==========================="
+    std::cout << "\n==========================="
               << "\nTotal time (ms) : " << elapsed
               << "\nNodes searched  : " << nodes
               << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
   }
 
-  // The win rate model returns the probability of winning (in per mille units) given an
-  // eval and a game ply. It fits the LTC fishtest statistics rather accurately.
-  int win_rate_model(Value v, int ply) {
-
-     // The model only captures up to 240 plies, so limit the input and then rescale
-     double m = std::min(240, ply) / 64.0;
-
-     // The coefficients of a third-order polynomial fit is based on the fishtest data
-     // for two parameters that need to transform eval to the argument of a logistic
-     // function.
-     constexpr double as[] = {   0.38036525,   -2.82015070,   23.17882135,  307.36768407};
-     constexpr double bs[] = {  -2.29434733,   13.27689788,  -14.26828904,   63.45318330 };
-
-     // Enforce that NormalizeToPawnValue corresponds to a 50% win rate at ply 64
-     static_assert(UCI::NormalizeToPawnValue == int(as[0] + as[1] + as[2] + as[3]));
-
-     double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
-     double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
-
-     // Transform the eval to centipawns with limited range
-     double x = std::clamp(double(v), -4000.0, 4000.0);
-
-     // Return the win rate in per mille units, rounded to the nearest integer
-     return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
-  }
 
 } // namespace
 

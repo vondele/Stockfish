@@ -130,7 +130,7 @@ namespace Eval {
         exit(EXIT_FAILURE);
     }
 
-    sync_cout << "info string NNUE evaluation using " << eval_file << sync_endl;
+    // sync_cout << "info string NNUE evaluation using " << eval_file << sync_endl;
   }
 }
 

@@ -147,6 +147,7 @@ std::vector<std::string> setup_bench(const Position& current, std::istream& is) 
 
   list.emplace_back("setoption name Threads value " + threads);
   list.emplace_back("setoption name Hash value " + ttSize);
+  list.emplace_back("setoption name UCI_showWDL value true");
   list.emplace_back("ucinewgame");
 
   for (const std::string& fen : fens)

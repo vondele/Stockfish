@@ -254,7 +254,7 @@ void MainThread::search() {
 
   bestPreviousScore = bestThread->rootMoves[0].score;
   bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
-
+/*
   // Send again PV info if we have a new best thread
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth) << sync_endl;
@@ -265,6 +265,7 @@ void MainThread::search() {
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
+*/
 }
 
 
@@ -393,6 +394,7 @@ void Thread::search() {
               if (Threads.stop)
                   break;
 
+/*
               // When failing high/low give some update (without cluttering
               // the UI) before a re-search.
               if (   mainThread
@@ -400,6 +402,7 @@ void Thread::search() {
                   && (bestValue <= alpha || bestValue >= beta)
                   && Time.elapsed() > 3000)
                   sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
+*/
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
@@ -427,10 +430,11 @@ void Thread::search() {
 
           // Sort the PV lines searched so far and update the GUI
           std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
-
+/*
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
+*/
       }
 
       if (!Threads.stop)
@@ -454,6 +458,24 @@ void Thread::search() {
       // If the skill level is enabled and time is up, pick a sub-optimal best move
       if (skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
+
+      // start early exit analysis at depth 5
+      const int startDepth = 5;
+      if (completedDepth >= startDepth)
+      {
+         int wdl_w = Stockfish::win_rate_model( bestValue, rootPos.game_ply());
+         int wdl_l = Stockfish::win_rate_model(-bestValue, rootPos.game_ply());
+         int wdl_d = 1000 - wdl_w - wdl_l;
+         // final target a 400 - 600 draw rate.
+         // initiall allowing the full interval, but narrowing down as completedDepth is reached
+         const int target = 400;
+         double ratio   = std::pow(double(Limits.depth - completedDepth) / Limits.depth, 0.5);
+         double startit = std::pow(double(Limits.depth - startDepth) / Limits.depth, 0.5);
+         int margin = target * ratio / startit;
+         // outside ofthe interval, exit early
+         if (wdl_d <= target - margin || wdl_d >= 1000 - target + margin)
+             Threads.stop = true;
+      }
 
       // Use part of the gained time from a previous stable move for the current move
       for (Thread* th : Threads)
@@ -962,10 +984,12 @@ moves_loop: // When in check, search starts here
 
       ss->moveCount = ++moveCount;
 
+      /*
       if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
           sync_cout << "info depth " << depth
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
+      */
       if (PvNode)
           (ss+1)->pv = nullptr;
 
