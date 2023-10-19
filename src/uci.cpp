@@ -48,13 +48,13 @@ namespace Stockfish {
   int win_rate_model(Value v, int ply) {
 
      // The model only captures up to 240 plies, so limit the input and then rescale
-     double m = std::min(240, ply) / 64.0;
+     double m = std::clamp(ply, 16, 240) / 64.0;
 
      // The coefficients of a third-order polynomial fit is based on the fishtest data
      // for two parameters that need to transform eval to the argument of a logistic
      // function.
-     constexpr double as[] = {   0.38036525,   -2.82015070,   23.17882135,  307.36768407};
-     constexpr double bs[] = {  -2.29434733,   13.27689788,  -14.26828904,   63.45318330 };
+     constexpr double as[] = {   0.75170298,   -3.37684624,    9.47489420,  329.72844289};
+     constexpr double bs[] = {  -3.17092339,   20.38077166,  -33.74463112,   76.14500036 };
 
      // Enforce that NormalizeToPawnValue corresponds to a 50% win rate at ply 64
      static_assert(UCI::NormalizeToPawnValue == int(as[0] + as[1] + as[2] + as[3]));
