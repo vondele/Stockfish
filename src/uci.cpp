@@ -224,8 +224,8 @@ void bench(Position& pos, std::istream& args, StateListPtr& states) {
 
 std::pair<double, double> win_rate_params(int ply) {
 
-    // The model only captures up to 240 plies, so limit the input and then rescale
-    double m = std::min(240, ply) / 64.0;
+    // the model only uses data for moves in [11, 120], and is anchored at move 32
+    double m = std::clamp(ply / 2 + 1, 11, 120) / 32.0;
 
     // The coefficients of a third-order polynomial fit is based on the fishtest data
     // for two parameters that need to transform eval to the argument of a logistic
