@@ -330,6 +330,17 @@ void Thread::search() {
 
     multiPV = std::min(multiPV, rootMoves.size());
 
+    // Compute the eval shift based on the rating advantage.
+    // This really just shifts the relative value of guaranteed draws.
+    int ratingAdv = int(Options["RatingAdv"]);
+    if (ratingAdv)
+    {
+        // 2 * log(10) * wdl_model b
+        const int prefactor  = 2 * 2.302585 * 60;
+        this->advantage[us]  = Value(prefactor * ratingAdv / 400);
+        this->advantage[~us] = -this->advantage[us];
+    }
+
     int searchAgainCounter = 0;
 
     // Iterative deepening loop until requested to stop or the target depth is reached

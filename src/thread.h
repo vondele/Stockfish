@@ -56,7 +56,7 @@ class Thread {
     size_t                pvIdx, pvLast;
     std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
     int                   selDepth, nmpMinPly;
-    Value                 bestValue, optimism[COLOR_NB];
+    Value                 bestValue, optimism[COLOR_NB], advantage[COLOR_NB];
 
     Position              rootPos;
     StateInfo             rootState;
