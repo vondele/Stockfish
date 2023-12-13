@@ -24,6 +24,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <new>
 #include <sstream>
 
 #include "bitboard.h"
@@ -792,12 +793,17 @@ namespace {
   void pn_search(Position& pos) {
 
     // Prepare our PNS Hash Table where we store all nodes
-    PnsHash pns;
-
-    // Reserve as many items as do fit
     int mbSize = Options["Hash"];
     int nodeCount = mbSize * 1024 * 1024 / sizeof(Node);
-    pns.reserve(nodeCount);
+
+    Node* table = (Node*) new(std::nothrow) Node [nodeCount];
+
+    if (table == nullptr)
+    {
+        std::cout << "info string Failed to allocate " << mbSize
+                  << " MB for PNS hash." << std::endl;
+        return;
+    }
 
     // A small stack
     PnsStack stack[128], *ss = stack;
@@ -820,7 +826,7 @@ namespace {
     TimePoint elapsed, lastOutputTime;
 
     // Prepare the pointers
-    Node* rootNode = pns.data();   // Pointer to the root node
+    Node* rootNode = &table[0];    // Pointer to the root node
     Node* currentNode = rootNode;
     Node* bestNode = currentNode;
     Node* childNode = bestNode;
@@ -833,8 +839,10 @@ namespace {
     // Create the root node.
     // rootNode is used as a sentinel, because it can never
     // be a child or a sibling for any node!
-    pns.push_back(Node(MOVE_NONE, 1, 1, rootNode, rootNode));
-    thisThread->nodes++;
+    rootNode->pn = 1;
+    rootNode->dn = 1;
+    rootNode->nextSibling = rootNode;
+    rootNode->firstChild = rootNode;
 
     ss->parentNode = rootNode;
     lastOutputTime = now();
@@ -953,7 +961,11 @@ namespace {
             // Create the new node: new nodes are default-initialized as
             // non-terminal internal nodes with the number of moves necessary
             // to prove or to disprove a node.
-            pns.push_back(Node(move, andNode ? 1 + n : 1, andNode ? 1 : 1 + n, rootNode, rootNode));
+            nextNode->move = move;
+            nextNode->pn = andNode ? 1 + n : 1;
+            nextNode->dn = andNode ? 1 : 1 + n;
+            nextNode->nextSibling = rootNode;
+            nextNode->firstChild = rootNode;
 
             // Either add this node as first child node to the parent node,
             // or as next sibling node to the previous node.
@@ -979,7 +991,6 @@ namespace {
                     {
                         assert(andNode);
 
-//                        sync_cout << "Starting PV" << sync_endl;
                         updatePV = true;
                         PVTable[pvLine][ss->ply-1] = move;
                     }
@@ -1111,7 +1122,7 @@ namespace {
                  && Time.elapsed() >= Limits.movetime)
             Threads.stop = true;
 
-        else if (int(pns.size()) > nodeCount - 200)
+        else if (Threads.nodes_searched() > uint64_t(nodeCount - 200))
         {
             sync_cout << "info string Running out of memory ..." << sync_endl;
             Threads.stop = true;
@@ -1198,7 +1209,8 @@ namespace {
 
     }
 
-    pns.clear();
+    // Free allocated memory!
+    delete[] table;
   }
 
 

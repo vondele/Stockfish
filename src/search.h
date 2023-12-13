@@ -89,8 +89,8 @@ using RootMoves = std::vector<RootMove>;
 
 struct Node {
 
-  Node(Move m, uint32_t pnr, uint32_t dnr, Node* nS, Node* fC) :
-    move(m), pn(pnr), dn(dnr), nextSibling(nS), firstChild(fC) {
+  Node() :
+    move(MOVE_NONE), pn(0), dn(0), nextSibling(nullptr), firstChild(nullptr) {
   }
 
   uint32_t PN() const { return pn; }
@@ -103,8 +103,6 @@ struct Node {
   Node* nextSibling; // Pointer to the next sibling node
   Node* firstChild;  // Pointer to the first generated child node
 };
-
-using PnsHash = std::vector<Node>;
 
 
 /// A small stack for the proof-number search
