@@ -440,7 +440,7 @@ void Thread::search() {
 
           ++Movecount[rootDepth];
 
-          if (Time.elapsed() > 300 && this == Threads.main())
+          if (this == Threads.main() && (Time.elapsed() > 300 || rootDepth > 11))
               sync_cout << "info currmove "  << UCI::move(rootMoves[pvIdx].pv[0], rootPos.is_chess960())
                         << " currmovenumber " << Movecount[rootDepth].load() << sync_endl;
 
@@ -534,8 +534,8 @@ namespace {
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
 
     // Start with a fresh pv
-    // Start with a fresh pv
     ss->pv.clear();
+
     thisThread->selDepth = std::max(thisThread->selDepth, ss->ply);
 
     // Check for aborted search or maximum ply reached
@@ -568,9 +568,29 @@ namespace {
     if (pos.is_draw(ss->ply))
         return VALUE_DRAW;
 
-    // TODO: Tablebase probe
-    // For the root color we can immediately return on
-    // TB draws or losses
+    // Tablebase probe
+    if (    TB::MaxCardinality >= pos.count<ALL_PIECES>()
+        && !pos.can_castle(ANY_CASTLING))
+    {
+        TB::ProbeState err;
+        TB::WDLScore wdl = TB::probe_wdl(pos, &err);
+
+        if (err != TB::ProbeState::FAIL)
+        {
+            thisThread->tbHits++;
+
+            if (ss->ply & 1)
+            {
+                if (wdl != TB::WDLLoss && wdl != TB::WDLBlessedLoss)
+                    return VALUE_DRAW;
+            }
+            else
+            {
+                if (wdl != TB::WDLWin && wdl != TB::WDLCursedWin)
+                    return VALUE_DRAW;
+            }
+        }
+    }
 
     bestValue = -VALUE_INFINITE;
     moveCount = 0;
@@ -1012,6 +1032,40 @@ namespace {
             {
                 nextNode->pn = INFINITE;
                 nextNode->dn = 0;
+            }
+            // Tablebase probe
+            else if (    TB::MaxCardinality >= pos.count<ALL_PIECES>()
+                     && !pos.can_castle(ANY_CASTLING))
+            {
+                TB::ProbeState err;
+                TB::WDLScore wdl = TB::probe_wdl(pos, &err);
+
+                if (err != TB::ProbeState::FAIL)
+                {
+                    thisThread->tbHits++;
+
+                    if (wdl == TB::WDLLoss || wdl == TB::WDLBlessedLoss)
+                    {
+                        if (!andNode)
+                        {
+                            nextNode->pn = INFINITE;
+                            nextNode->dn = 0;
+                        }
+                    }
+                    else if (wdl == TB::WDLWin || wdl == TB::WDLCursedWin)
+                    {
+                        if (andNode)
+                        {
+                            nextNode->pn = INFINITE;
+                            nextNode->dn = 0;
+                        }
+                    }
+                    else if (wdl == TB::WDLDraw)
+                    {
+                        nextNode->pn = INFINITE;
+                        nextNode->dn = 0;
+                    }
+                }
             }
 
             firstMove = false;
