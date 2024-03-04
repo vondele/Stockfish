@@ -185,6 +185,12 @@ void Search::init(Position& pos) {
           if (pos.capture(rm.pv[0]))
               rm.tbRank += MVV[type_of(pos.piece_on(to))];
 
+          // Bonus for the king approaching the defending king
+          if (   type_of(pos.moved_piece(rm.pv[0])) == KING
+              && pos.count<QUEEN>(us) == 0
+              && pos.count<ROOK >(us) <= 1)
+              rm.tbRank += 480 - 20 * distance(to, theirKing);
+
           // Bonus for a move freeing a potential promotion square
           Bitboard ourPawns = pos.pieces(us, PAWN);
     
@@ -602,8 +608,9 @@ namespace {
 
     [[maybe_unused]] Bitboard b1 = pos.checkers();
     [[maybe_unused]] Bitboard ourPawns = pos.pieces(us, PAWN);
-    [[maybe_unused]] Bitboard kingRing = pos.attacks_from<KING>(pos.square<KING>(~us));
     [[maybe_unused]] Square ourKing = pos.square<KING>(us);
+    [[maybe_unused]] Square theirKing = pos.square<KING>(~us);
+    [[maybe_unused]] Bitboard kingRing = pos.attacks_from<KING>(theirKing);
 
     // Score the moves! VERY IMPORTANT!!!
     for (const auto& m : MoveList<LEGAL>(pos))
@@ -613,7 +620,7 @@ namespace {
             rankThisMove += 8000;
 
         if (pos.capture(m))
-            rankThisMove += MVV[type_of(pos.piece_on(to_sq(m)))];
+            rankThisMove += 2 * MVV[type_of(pos.piece_on(to_sq(m)))];
 
         if (ss->ply & 1) // Side to get mated
         {
@@ -653,7 +660,13 @@ namespace {
 
             if (pos.advanced_pawn_push(m))
                 rankThisMove += 1000;
-                
+
+            // Bonus for the king approaching the defending king
+            if (   type_of(pos.moved_piece(m)) == KING
+                && pos.count<QUEEN>(us) == 0
+                && pos.count<ROOK >(us) <= 1)
+                rankThisMove += 480 - 20 * distance(to_sq(m), theirKing);
+
             // Bonus for a move freeing a potential promotion square
             if (   (us == WHITE && shift<NORTH>(ourPawns) & Rank8BB & from_sq(m))
                 || (us == BLACK && shift<SOUTH>(ourPawns) & Rank1BB & from_sq(m)))
@@ -739,6 +752,18 @@ namespace {
                     extension = true;
             }
         }
+
+        // ***** Experimental patch *****
+        // In positions with many bishops of the same color
+        // for the defending side, skip bishop moves to 
+        // prevent search explosion.
+        if (   ss->ply & 1
+            && depth > 1
+            && moveCount > 4
+            && pos.count<BISHOP>(us) > 3
+            && type_of(pos.moved_piece(lm.move)) == BISHOP
+            && bool(pos.pieces(us, BISHOP) & DarkSquares) != bool(pos.pieces(~us) & DarkSquares))
+            continue;
 
         // At frontier nodes we can skip all non-checking
         // and non-extended moves.
@@ -977,8 +1002,8 @@ namespace {
             ss++;
 
             int n = int(MoveList<LEGAL>(pos).size());
-            
-            // Create the new node: new nodes are default-initialized as
+
+            // Save the new node: new nodes are default-initialized as
             // non-terminal internal nodes with the number of moves necessary
             // to prove or to disprove a node.
             nextNode->move = move;
@@ -992,7 +1017,7 @@ namespace {
             if (firstMove)
                 currentNode->firstChild = nextNode;
             else
-                (*(nextNode-1)).nextSibling = nextNode;
+                (nextNode-1)->nextSibling = nextNode;
 
             // Check for mate, draw by repetition, 50-move rule or maximum
             // ply reached. Note: we don't have to explicitly flag terminal
