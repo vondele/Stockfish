@@ -620,7 +620,7 @@ namespace {
             rankThisMove += 8000;
 
         if (pos.capture(m))
-            rankThisMove += 2 * MVV[type_of(pos.piece_on(to_sq(m)))];
+            rankThisMove += MVV[type_of(pos.piece_on(to_sq(m)))];
 
         if (ss->ply & 1) // Side to get mated
         {
@@ -635,6 +635,23 @@ namespace {
                          && aligned(lsb(b1), ourKing, to_sq(m)))
                     rankThisMove += 400;
             }
+
+            // Bonus for sliding pieces attacking the enemy king,
+            // possibly creating a pin.
+            if (   type_of(pos.moved_piece(m)) == BISHOP
+                && PseudoAttacks[BISHOP][to_sq(m)] & theirKing
+                && rankThisMove < 6000)
+                rankThisMove += 200;
+
+            if (   type_of(pos.moved_piece(m)) == ROOK
+                && PseudoAttacks[ROOK][to_sq(m)] & theirKing
+                && rankThisMove < 6000)
+                rankThisMove += 300;
+
+            if (   type_of(pos.moved_piece(m)) == QUEEN
+                && PseudoAttacks[QUEEN][to_sq(m)] & theirKing
+                && rankThisMove < 6000)
+                rankThisMove += 350;
         }
         else
         {
@@ -759,7 +776,7 @@ namespace {
         // prevent search explosion.
         if (   ss->ply & 1
             && depth > 1
-            && moveCount > 4
+            && moveCount > 5
             && pos.count<BISHOP>(us) > 3
             && type_of(pos.moved_piece(lm.move)) == BISHOP
             && bool(pos.pieces(us, BISHOP) & DarkSquares) != bool(pos.pieces(~us) & DarkSquares))
