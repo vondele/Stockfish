@@ -639,18 +639,18 @@ namespace {
             // Bonus for sliding pieces attacking the enemy king,
             // possibly creating a pin.
             if (   type_of(pos.moved_piece(m)) == BISHOP
-                && PseudoAttacks[BISHOP][to_sq(m)] & theirKing
+                && PseudoAttacks[BISHOP][theirKing] & to_sq(m)
                 && rankThisMove < 6000)
                 rankThisMove += 200;
 
-            if (   type_of(pos.moved_piece(m)) == ROOK
-                && PseudoAttacks[ROOK][to_sq(m)] & theirKing
-                && rankThisMove < 6000)
+            else if (   type_of(pos.moved_piece(m)) == ROOK
+                     && PseudoAttacks[ROOK][theirKing] & to_sq(m)
+                     && rankThisMove < 6000)
                 rankThisMove += 300;
 
-            if (   type_of(pos.moved_piece(m)) == QUEEN
-                && PseudoAttacks[QUEEN][to_sq(m)] & theirKing
-                && rankThisMove < 6000)
+            else if (   type_of(pos.moved_piece(m)) == QUEEN
+                     && PseudoAttacks[QUEEN][theirKing] & to_sq(m)
+                     && rankThisMove < 6000)
                 rankThisMove += 350;
         }
         else
