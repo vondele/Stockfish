@@ -25,6 +25,7 @@
 #include <cstring>
 #include <iostream>
 #include <new>
+#include <queue>
 #include <sstream>
 
 #include "bitboard.h"
@@ -858,7 +859,7 @@ namespace {
     int mbSize = Options["Hash"];
     int nodeCount = mbSize * 1024 * 1024 / sizeof(Node);
 
-    Node* table = (Node*) new(std::nothrow) Node [nodeCount];
+    Node* table = (Node*) new(std::nothrow) Node[nodeCount];
 
     if (table == nullptr)
     {
@@ -878,7 +879,10 @@ namespace {
         for (int k = 0; k < MAX_PLY; k++)
             PVTable[j][k] = MOVE_NONE;
 
-    bool giveOutput, updatePV;
+    // Reuse nodes in a FIFO way
+    std::queue<Node*> recyclingBin;
+    
+    bool recycling, giveOutput, updatePV;
     int targetDepth = std::min(2 * Limits.mate - 1, MAX_PLY-1);
     int pvLine = 0;
     uint64_t iteration;
@@ -891,8 +895,10 @@ namespace {
     Node* rootNode = &table[0];    // Pointer to the root node
     Node* currentNode = rootNode;
     Node* bestNode = currentNode;
+    Node* previousSiblingNode = currentNode;
     Node* childNode = bestNode;
     Node* nextNode = rootNode + 1; // Pointer to the next node
+    Node* tmpNode;
 
     for (RootMove& rm : thisThread->rootMoves)
         rm.score = VALUE_ZERO, rm.selDepth = targetDepth;
@@ -925,12 +931,18 @@ namespace {
         // At OR nodes we are selecting the child node with the smallest
         // Proof Number (PN), while at AND nodes we are selecting the
         // one with the smallest Disproof Number (DN)!
-        while (currentNode->firstChild != rootNode && ss->ply < targetDepth)
+        while (   currentNode->firstChild != rootNode
+//               && rootNode->PN() > 0
+//               && rootNode->DN() > 0
+               && ss->ply < targetDepth)
         {
             childNode = currentNode->firstChild;
 
             if (ss->ply & 1) // AND node
             {
+                assert(currentNode->PN() < INFINITE);
+                assert(currentNode->DN() > 0);
+
                 minDN = INFINITE + 1;
 
                 while (childNode != rootNode)
@@ -941,12 +953,18 @@ namespace {
                         bestNode = childNode;
                     }
 
+                    if (childNode->DN() == currentNode->DN())
+                        break;
+
                     childNode = childNode->nextSibling;
                 }
                 
             }
             else // OR node
             {
+                assert(currentNode->PN() > 0);
+                assert(currentNode->DN() < INFINITE);
+
                 minPN = INFINITE + 1;
 
                 while (childNode != rootNode)
@@ -957,12 +975,17 @@ namespace {
                         bestNode = childNode;
                     }
 
+                    if (childNode->PN() == currentNode->PN())
+                        break;
+
                     childNode = childNode->nextSibling;
                 }
             }
 
             // Reset the StateInfo object
             std::memset(&ss->st, 0, sizeof(StateInfo));
+
+            assert(MoveList<LEGAL>(pos).contains(bestNode->action()));
 
             // Make the move
             pos.do_move(bestNode->action(), ss->st);
@@ -1020,6 +1043,26 @@ namespace {
 
             int n = int(MoveList<LEGAL>(pos).size());
 
+            // Make a copy of the next node!
+            tmpNode = nextNode;
+            recycling = false;
+
+            // If we have nodes to reuse, we overwrite them
+            // instead of creating new nodes.
+            if (recyclingBin.size() >= 40)
+            {
+                recycling = true;
+
+                // Use the oldest node first
+                nextNode = recyclingBin.front();
+
+//                std::cout << "Recycling node with PN = " << nextNode->PN() <<
+//                                          "   and DN = " << nextNode->DN() << std::endl;
+
+                // Delete the recycled node
+                recyclingBin.pop();
+            }
+
             // Save the new node: new nodes are default-initialized as
             // non-terminal internal nodes with the number of moves necessary
             // to prove or to disprove a node.
@@ -1034,7 +1077,7 @@ namespace {
             if (firstMove)
                 currentNode->firstChild = nextNode;
             else
-                (nextNode-1)->nextSibling = nextNode;
+                previousSiblingNode->nextSibling = nextNode;
 
             // Check for mate, draw by repetition, 50-move rule or maximum
             // ply reached. Note: we don't have to explicitly flag terminal
@@ -1111,7 +1154,7 @@ namespace {
             }
 
             firstMove = false;
-            nextNode++;
+            previousSiblingNode = nextNode;
 
             pos.undo_move(move);
             ss--;
@@ -1120,9 +1163,30 @@ namespace {
             // as one child node has a proof number of zero. The same
             // applies to a AND node and a disproof number of zero
             // for a child node.
-            if (   ( andNode && (nextNode-1)->PN() == 0)
-                || (!andNode && (nextNode-1)->DN() == 0))
+            if (   ( andNode && nextNode->PN() == 0)
+                || (!andNode && nextNode->DN() == 0))
+            {
+                nextNode = tmpNode;
+
+                if (!recycling)
+                    nextNode++;
+
                 break;
+            }
+
+            // Restore the previous next node
+            nextNode = tmpNode;
+
+            if (!recycling)
+                nextNode++;
+
+            if (nextNode > &table[nodeCount-200] && recyclingBin.size() < 40)
+            {
+                sync_cout << "info string Running out of memory ..." << sync_endl;
+
+                Threads.stop = true;
+//                break;
+            }
         }
 
 
@@ -1151,6 +1215,11 @@ namespace {
                     if (childNode->DN() < minDN)
                         minDN = childNode->DN();
 
+                    // Recycle disproven child nodes
+                    if (   childNode->PN() == INFINITE
+                        && childNode->DN() == 0)
+                        recyclingBin.push(childNode);
+
                     childNode = childNode->nextSibling;
                 }
 
@@ -1168,6 +1237,11 @@ namespace {
                         minPN = childNode->PN();
 
                     sumChildrenDN = std::min(sumChildrenDN + childNode->DN(), INFINITE);
+
+                    // Recycle proven child nodes
+                    if (   childNode->PN() == 0
+                        && childNode->DN() == INFINITE)
+                        recyclingBin.push(childNode);
 
                     childNode = childNode->nextSibling;
                 }
@@ -1211,18 +1285,12 @@ namespace {
             Threads.stop = true;
 
         else if (   Limits.nodes
-                 && iteration >= uint64_t(Limits.nodes))
+                 && Threads.nodes_searched() >= uint64_t(Limits.nodes))
             Threads.stop = true;
             
         else if (   Limits.movetime
                  && Time.elapsed() >= Limits.movetime)
             Threads.stop = true;
-
-        else if (Threads.nodes_searched() > uint64_t(nodeCount - 200))
-        {
-            sync_cout << "info string Running out of memory ..." << sync_endl;
-            Threads.stop = true;
-        }
 
         // Time for another GUI update?
         if (!Threads.stop.load())
