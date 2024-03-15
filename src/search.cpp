@@ -1056,9 +1056,6 @@ namespace {
                 // Use the oldest node first
                 nextNode = recyclingBin.front();
 
-//                std::cout << "Recycling node with PN = " << nextNode->PN() <<
-//                                          "   and DN = " << nextNode->DN() << std::endl;
-
                 // Delete the recycled node
                 recyclingBin.pop();
             }
