@@ -233,7 +233,14 @@ void UCI::loop(int argc, char* argv[]) {
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
       else if (token == "flip")     pos.flip();
-      else if (token == "bench")    bench(pos, is, states);
+      else if (token == "bench")
+      {
+          auto currentFen = pos.fen();
+          auto currentChess960 = pos.is_chess960();
+          StateListPtr benchStates(new std::deque<StateInfo>(1));
+          bench(pos, is, benchStates);
+          pos.set(currentFen, currentChess960, &states->back(), Threads.main());
+      }
       else if (token == "d")        sync_cout << pos << sync_endl;
       else if (token == "eval")     sync_cout << "No eval available!" << sync_endl;
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
