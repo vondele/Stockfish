@@ -909,13 +909,10 @@ namespace {
         rm.score = VALUE_ZERO, rm.selDepth = targetDepth;
     thisThread->rootDepth = targetDepth;
 
-    // Create the root node.
-    // rootNode is used as a sentinel, because it can never
+    // Save the root node.
+    // 'rootNode' is used as a sentinel, because it can never
     // be a child or a sibling for any node!
-    rootNode->pn = 1;
-    rootNode->dn = 1;
-    rootNode->nextSibling = rootNode;
-    rootNode->firstChild = rootNode;
+    rootNode->save(1, 1, MOVE_NONE, rootNode, rootNode);
 
     ss->parentNode = rootNode;
     lastOutputTime = now();
@@ -937,8 +934,6 @@ namespace {
         // Proof Number (PN), while at AND nodes we are selecting the
         // one with the smallest Disproof Number (DN)!
         while (   currentNode->firstChild != rootNode
-//               && rootNode->get_pn() > 0
-//               && rootNode->get_dn() > 0
                && ss->ply < targetDepth)
         {
             childNode = currentNode->firstChild;
@@ -1068,11 +1063,7 @@ namespace {
             // Save the new node: new nodes are default-initialized as
             // non-terminal internal nodes with the number of moves necessary
             // to prove or to disprove a node.
-            nextNode->move = move;
-            nextNode->pn = andNode ? 1 + n : 1;
-            nextNode->dn = andNode ? 1 : 1 + n;
-            nextNode->nextSibling = rootNode;
-            nextNode->firstChild = rootNode;
+            nextNode->save((andNode ? 1 + n : 1), (andNode ? 1 : 1 + n), move, rootNode, rootNode);
 
             // Either add this node as first child node to the parent node,
             // or as next sibling node to the previous node.
