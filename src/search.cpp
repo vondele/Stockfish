@@ -513,7 +513,12 @@ void Thread::search() {
 
       // Let the main thread report about the just finished depth
       if (this == Threads.main() && rootDepth < targetDepth)
+      {
           sync_cout << UCI::pv(rootPos, rootDepth) << sync_endl;
+
+          if (rootDepth > 7)
+              sync_cout << "info string No mate in " << (rootDepth + 1) / 2 << " found ..." << sync_endl; 
+      }
 
       // Target depth reached?
       if (rootDepth == targetDepth)
@@ -932,28 +937,28 @@ namespace {
         // Proof Number (PN), while at AND nodes we are selecting the
         // one with the smallest Disproof Number (DN)!
         while (   currentNode->firstChild != rootNode
-//               && rootNode->PN() > 0
-//               && rootNode->DN() > 0
+//               && rootNode->get_pn() > 0
+//               && rootNode->get_dn() > 0
                && ss->ply < targetDepth)
         {
             childNode = currentNode->firstChild;
 
             if (ss->ply & 1) // AND node
             {
-                assert(currentNode->PN() < INFINITE);
-                assert(currentNode->DN() > 0);
+                assert(currentNode->get_pn() < INFINITE);
+                assert(currentNode->get_dn() > 0);
 
                 minDN = INFINITE + 1;
 
                 while (childNode != rootNode)
                 {
-                    if (childNode->DN() < minDN)
+                    if (childNode->get_dn() < minDN)
                     {
-                        minDN = childNode->DN();
+                        minDN = childNode->get_dn();
                         bestNode = childNode;
                     }
 
-                    if (childNode->DN() == currentNode->DN())
+                    if (childNode->get_dn() == currentNode->get_dn())
                         break;
 
                     childNode = childNode->nextSibling;
@@ -962,20 +967,20 @@ namespace {
             }
             else // OR node
             {
-                assert(currentNode->PN() > 0);
-                assert(currentNode->DN() < INFINITE);
+                assert(currentNode->get_pn() > 0);
+                assert(currentNode->get_dn() < INFINITE);
 
                 minPN = INFINITE + 1;
 
                 while (childNode != rootNode)
                 {
-                    if (childNode->PN() < minPN)
+                    if (childNode->get_pn() < minPN)
                     {
-                        minPN = childNode->PN();
+                        minPN = childNode->get_pn();
                         bestNode = childNode;
                     }
 
-                    if (childNode->PN() == currentNode->PN())
+                    if (childNode->get_pn() == currentNode->get_pn())
                         break;
 
                     childNode = childNode->nextSibling;
@@ -1160,8 +1165,8 @@ namespace {
             // as one child node has a proof number of zero. The same
             // applies to a AND node and a disproof number of zero
             // for a child node.
-            if (   ( andNode && nextNode->PN() == 0)
-                || (!andNode && nextNode->DN() == 0))
+            if (   ( andNode && nextNode->get_pn() == 0)
+                || (!andNode && nextNode->get_dn() == 0))
             {
                 nextNode = tmpNode;
 
@@ -1182,7 +1187,6 @@ namespace {
                 sync_cout << "info string Running out of memory ..." << sync_endl;
 
                 Threads.stop = true;
-//                break;
             }
         }
 
@@ -1207,14 +1211,14 @@ namespace {
 
                 while (childNode != rootNode)
                 {
-                    sumChildrenPN = std::min(sumChildrenPN + childNode->PN(), INFINITE);
+                    sumChildrenPN = std::min(sumChildrenPN + childNode->get_pn(), INFINITE);
 
-                    if (childNode->DN() < minDN)
-                        minDN = childNode->DN();
+                    if (childNode->get_dn() < minDN)
+                        minDN = childNode->get_dn();
 
                     // Recycle disproven child nodes
-                    if (   childNode->PN() == INFINITE
-                        && childNode->DN() == 0)
+                    if (   childNode->get_pn() == INFINITE
+                        && childNode->get_dn() == 0)
                         recyclingBin.push(childNode);
 
                     childNode = childNode->nextSibling;
@@ -1230,14 +1234,14 @@ namespace {
 
                 while (childNode != rootNode)
                 {
-                    if (childNode->PN() < minPN)
-                        minPN = childNode->PN();
+                    if (childNode->get_pn() < minPN)
+                        minPN = childNode->get_pn();
 
-                    sumChildrenDN = std::min(sumChildrenDN + childNode->DN(), INFINITE);
+                    sumChildrenDN = std::min(sumChildrenDN + childNode->get_dn(), INFINITE);
 
                     // Recycle proven child nodes
-                    if (   childNode->PN() == 0
-                        && childNode->DN() == INFINITE)
+                    if (   childNode->get_pn() == 0
+                        && childNode->get_dn() == INFINITE)
                         recyclingBin.push(childNode);
 
                     childNode = childNode->nextSibling;
@@ -1277,8 +1281,8 @@ namespace {
         }
 
         // Now check for some stop conditions
-        if (   rootNode->PN() == 0
-            || rootNode->DN() == 0)
+        if (   rootNode->get_pn() == 0
+            || rootNode->get_dn() == 0)
             Threads.stop = true;
 
         else if (   Limits.nodes
@@ -1313,7 +1317,7 @@ namespace {
 
             while (rootChild != rootNode)
             {
-                if (rootChild->PN() == 0)
+                if (rootChild->get_pn() == 0)
                 {
                     pvNode = rootChild;
                     break;
@@ -1322,9 +1326,9 @@ namespace {
                 rootChild = rootChild->nextSibling;
             }
 
-            if (rootNode->PN() == 0 && PVTable[0][0] != MOVE_NONE)
+            if (rootNode->get_pn() == 0 && PVTable[0][0] != MOVE_NONE)
             {
-                assert(pvNode->PN() == 0);
+                assert(pvNode->get_pn() == 0);
 
                 RootMove& rm = *std::find(thisThread->rootMoves.begin(),
                                           thisThread->rootMoves.end(), pvNode->action());

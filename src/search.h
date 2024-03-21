@@ -93,8 +93,8 @@ struct Node {
     move(MOVE_NONE), pn(0), dn(0), nextSibling(nullptr), firstChild(nullptr) {
   }
 
-  uint32_t PN() const { return pn; }
-  uint32_t DN() const { return dn; }
+  uint32_t get_pn() const { return pn; }
+  uint32_t get_dn() const { return dn; }
   Move action() const { return move; }
 
   Move move;         // Move which leads to this node
