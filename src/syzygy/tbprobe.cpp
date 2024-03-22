@@ -26,9 +26,9 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <mutex>
 #include <sstream>
 #include <type_traits>
-#include <mutex>
 
 #include "../bitboard.h"
 #include "../movegen.h"
@@ -96,9 +96,10 @@ constexpr Value WDL_to_value[] = {
 template<typename T, int Half = sizeof(T) / 2, int End = sizeof(T) - 1>
 inline void swap_endian(T& x)
 {
-    static_assert(std::is_unsigned<T>::value, "Argument of swap_endian not unsigned");
+    static_assert(std::is_unsigned_v<T>, "Argument of swap_endian not unsigned");
 
     uint8_t tmp, *c = (uint8_t*)&x;
+
     for (int i = 0; i < Half; ++i)
         tmp = c[i], c[i] = c[End - i], c[End - i] = tmp;
 }
@@ -118,6 +119,7 @@ template<typename T, int LE> T number(void* addr)
 
     if (LE != IsLittleEndian)
         swap_endian(v);
+
     return v;
 }
 
@@ -193,21 +195,22 @@ public:
         std::stringstream ss(Paths);
         std::string path;
 
-        while (std::getline(ss, path, SepChar)) {
+        while (std::getline(ss, path, SepChar))
+        {
             fname = path + "/" + f;
             std::ifstream::open(fname);
+
             if (is_open())
                 return;
         }
     }
 
-    // Memory map the file and check it. File should be already open and will be
+    // Memory map the file and check it. File should already be open and will be
     // closed after mapping.
     uint8_t* map(void** baseAddress, uint64_t* mapping, TBType type) {
 
-        assert(is_open());
-
-        close(); // Need to re-open to get native file descriptor
+        if (is_open())
+            close(); // Need to re-open to get native file descriptor
 
 #ifndef _WIN32
         struct stat statbuf;
@@ -279,6 +282,7 @@ public:
         {
             std::cerr << "Corrupted table in file " << fname << std::endl;
             unmap(*baseAddress, *mapping);
+
             return *baseAddress = nullptr, nullptr;
         }
 
@@ -329,7 +333,7 @@ struct PairsData {
 // first access, when the corresponding file is memory mapped.
 template<TBType Type>
 struct TBTable {
-    typedef typename std::conditional<Type == WDL, WDLScore, int>::type Ret;
+    typedef typename std::conditional_t<Type == WDL, WDLScore, int> Ret;
 
     static constexpr int Sides = Type == WDL ? 2 : 1;
 
@@ -368,8 +372,8 @@ TBTable<WDL>::TBTable(const std::string& code) : TBTable() {
     key = pos.set(code, WHITE, &st).material_key();
     pieceCount = pos.count<ALL_PIECES>();
     hasPawns = pos.pieces(PAWN);
-
     hasUniquePieces = false;
+
     for (Color c : { WHITE, BLACK })
         for (PieceType pt = PAWN; pt < KING; ++pt)
             if (popcount(pos.pieces(c, pt)) == 1)
@@ -429,9 +433,12 @@ class TBTables {
          Entry entry{ key, wdl, dtz };
 
         // Ensure last element is empty to avoid overflow when looking up
-        for (uint32_t bucket = homeBucket; bucket < Size + Overflow - 1; ++bucket) {
+        for (uint32_t bucket = homeBucket; bucket < Size + Overflow - 1; ++bucket)
+        {
             Key otherKey = hashTable[bucket].key;
-            if (otherKey == key || !hashTable[bucket].get<WDL>()) {
+
+            if (otherKey == key || !hashTable[bucket].get<WDL>())
+            {
                 hashTable[bucket] = entry;
                 return;
             }
@@ -439,12 +446,15 @@ class TBTables {
             // Robin Hood hashing: If we've probed for longer than this element,
             // insert here and search for a new spot for the other element instead.
             uint32_t otherHomeBucket = (uint32_t)otherKey & (Size - 1);
-            if (otherHomeBucket > homeBucket) {
+
+            if (otherHomeBucket > homeBucket)
+            {
                 std::swap(entry, hashTable[bucket]);
                 key = otherKey;
                 homeBucket = otherHomeBucket;
             }
         }
+
         std::cerr << "TB hash table size too low!" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -452,7 +462,9 @@ class TBTables {
 public:
     template<TBType Type>
     TBTable<Type>* get(Key key) {
-        for (const Entry* entry = &hashTable[(uint32_t)key & (Size - 1)]; ; ++entry) {
+
+        for (const Entry* entry = &hashTable[(uint32_t)key & (Size - 1)]; ; ++entry)
+        {
             if (entry->key == key || !entry->get<Type>())
                 return entry->get<Type>();
         }
@@ -463,6 +475,7 @@ public:
         wdlTable.clear();
         dtzTable.clear();
     }
+
     size_t size() const { return wdlTable.size(); }
     void add(const std::vector<PieceType>& pieces);
 };
@@ -699,8 +712,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     // For pawns, TB files store 4 separate tables according if leading pawn is on
     // file a, b, c or d after reordering. The leading pawn is the one with maximum
     // MapPawns[] value, that is the one most toward the edges and with lowest rank.
-    if (entry->hasPawns) {
-
+    if (entry->hasPawns)
+    {
         // In all the 4 tables, pawns are at the beginning of the piece sequence and
         // their color is the reference one. So we just pick the first one.
         Piece pc = Piece(entry->get(0, 0)->pieces[0] ^ flipColor);
@@ -708,9 +721,10 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
         assert(type_of(pc) == PAWN);
 
         leadPawns = b = pos.pieces(color_of(pc), PAWN);
-        do
+
+        do {
             squares[size++] = pop_lsb(b) ^ flipSquares;
-        while (b);
+        } while (b);
 
         leadPawnsCnt = size;
 
@@ -728,6 +742,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     // Now we are ready to get all the position pieces (but the lead pawns) and
     // directly map them to the correct color and square.
     b = pos.pieces() ^ leadPawns;
+
     do {
         Square s = pop_lsb(b);
         squares[size] = s ^ flipSquares;
@@ -746,6 +761,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
             {
                 std::swap(pieces[i], pieces[j]);
                 std::swap(squares[i], squares[j]);
+
                 break;
             }
 
@@ -757,7 +773,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
 
     // Encode leading pawns starting with the one with minimum MapPawns[] and
     // proceeding in ascending order.
-    if (entry->hasPawns) {
+    if (entry->hasPawns)
+    {
         idx = LeadPawnIdx[leadPawnsCnt][squares[0]];
 
         std::sort(squares + 1, squares + leadPawnsCnt, pawns_comp);
@@ -776,7 +793,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
 
     // Look for the first piece of the leading group not on the A1-D4 diagonal
     // and ensure it is mapped below the diagonal.
-    for (int i = 0; i < d->groupLen[0]; ++i) {
+    for (int i = 0; i < d->groupLen[0]; ++i)
+    {
         if (!off_A1H8(squares[i]))
             continue;
 
@@ -813,7 +831,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     //
     // In case we have at least 3 unique pieces (inlcuded kings) we encode them
     // together.
-    if (entry->hasUniquePieces) {
+    if (entry->hasUniquePieces)
+    {
 
         int adjust1 =  squares[1] > squares[0];
         int adjust2 = (squares[2] > squares[0]) + (squares[2] > squares[1]);
@@ -847,7 +866,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
                  +  rank_of(squares[0])         * 7 * 6
                  + (rank_of(squares[1]) - adjust1)  * 6
                  + (rank_of(squares[2]) - adjust2);
-    } else
+    }
+    else
         // We don't have at least 3 unique pieces, like in KRRvKBB, just map
         // the kings.
         idx = MapKK[MapA1D1D4[squares[0]]][squares[1]];
@@ -1001,7 +1021,8 @@ uint8_t* set_sizes(PairsData* d, uint8_t* data) {
     // Starting from this we compute a base64[] table indexed by symbol length
     // and containing 64 bit values so that d->base64[i] >= d->base64[i+1].
     // See http://www.eecs.harvard.edu/~michaelm/E210/huffman.pdf
-    for (int i = d->base64.size() - 2; i >= 0; --i) {
+    for (int i = d->base64.size() - 2; i >= 0; --i)
+    {
         d->base64[i] = (d->base64[i + 1] + number<Sym, LittleEndian>(&d->lowestSym[i])
                                          - number<Sym, LittleEndian>(&d->lowestSym[i + 1])) / 2;
 
@@ -1026,7 +1047,7 @@ uint8_t* set_sizes(PairsData* d, uint8_t* data) {
     // See http://www.larsson.dogma.net/dcc99.pdf
     std::vector<bool> visited(d->symlen.size());
 
-    for (Sym sym = 0; sym < d->symlen.size(); ++sym)
+    for (size_t sym = 0; sym < d->symlen.size(); ++sym)
         if (!visited[sym])
             d->symlen[sym] = set_symlen(d, sym, visited);
 
@@ -1039,18 +1060,26 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
 
     e.map = data;
 
-    for (File f = FILE_A; f <= maxFile; ++f) {
+    for (File f = FILE_A; f <= maxFile; ++f)
+    {
         auto flags = e.get(0, f)->flags;
-        if (flags & TBFlag::Mapped) {
-            if (flags & TBFlag::Wide) {
+
+        if (flags & TBFlag::Mapped)
+        {
+            if (flags & TBFlag::Wide)
+            {
                 data += (uintptr_t)data & 1;  // Word alignment, we may have a mixed table
-                for (int i = 0; i < 4; ++i) { // Sequence like 3,x,x,x,1,x,0,2,x,x
+
+                for (int i = 0; i < 4; ++i)  // Sequence like 3,x,x,x,1,x,0,2,x,x
+                {
                     e.get(0, f)->map_idx[i] = (uint16_t)((uint16_t *)data - (uint16_t *)e.map + 1);
                     data += 2 * number<uint16_t, LittleEndian>(data) + 2;
                 }
             }
-            else {
-                for (int i = 0; i < 4; ++i) {
+            else
+            {
+                for (int i = 0; i < 4; ++i)
+                {
                     e.get(0, f)->map_idx[i] = (uint16_t)(data - e.map + 1);
                     data += *data + 1;
                 }
@@ -1082,8 +1111,8 @@ void set(T& e, uint8_t* data) {
 
     assert(!pp || e.pawnCount[0]);
 
-    for (File f = FILE_A; f <= maxFile; ++f) {
-
+    for (File f = FILE_A; f <= maxFile; ++f)
+    {
         for (int i = 0; i < sides; i++)
             *e.get(i, f) = PairsData();
 
@@ -1108,19 +1137,22 @@ void set(T& e, uint8_t* data) {
     data = set_dtz_map(e, data, maxFile);
 
     for (File f = FILE_A; f <= maxFile; ++f)
-        for (int i = 0; i < sides; i++) {
+        for (int i = 0; i < sides; i++)
+        {
             (d = e.get(i, f))->sparseIndex = (SparseEntry*)data;
             data += d->sparseIndexSize * sizeof(SparseEntry);
         }
 
     for (File f = FILE_A; f <= maxFile; ++f)
-        for (int i = 0; i < sides; i++) {
+        for (int i = 0; i < sides; i++)
+        {
             (d = e.get(i, f))->blockLength = (uint16_t*)data;
             data += d->blockLengthSize * sizeof(uint16_t);
         }
 
     for (File f = FILE_A; f <= maxFile; ++f)
-        for (int i = 0; i < sides; i++) {
+        for (int i = 0; i < sides; i++)
+        {
             data = (uint8_t*)(((uintptr_t)data + 0x3F) & ~0x3F); // 64 byte alignment
             (d = e.get(i, f))->data = data;
             data += d->blocksNum * d->sizeofBlock;
@@ -1141,14 +1173,15 @@ void* mapped(TBTable<Type>& e, const Position& pos) {
     if (e.ready.load(std::memory_order_acquire))
         return e.baseAddress; // Could be nullptr if file does not exist
 
-    std::unique_lock<std::mutex> lk(mutex);
+    std::scoped_lock<std::mutex> lk(mutex);
 
     if (e.ready.load(std::memory_order_relaxed)) // Recheck under lock
         return e.baseAddress;
 
     // Pieces strings in decreasing order for each color, like ("KPP","KR")
     std::string fname, w, b;
-    for (PieceType pt = KING; pt >= PAWN; --pt) {
+    for (PieceType pt = KING; pt >= PAWN; --pt)
+    {
         w += std::string(popcount(pos.pieces(WHITE, pt)), PieceToChar[pt]);
         b += std::string(popcount(pos.pieces(BLACK, pt)), PieceToChar[pt]);
     }
@@ -1162,6 +1195,7 @@ void* mapped(TBTable<Type>& e, const Position& pos) {
         set(e, data);
 
     e.ready.store(true, std::memory_order_release);
+
     return e.baseAddress;
 }
 
@@ -1271,6 +1305,7 @@ void Tablebases::init(const std::string& paths) {
 
     // MapB1H1H7[] encodes a square below a1-h8 diagonal to 0..27
     int code = 0;
+
     for (Square s = SQ_A1; s <= SQ_H8; ++s)
         if (off_A1H8(s) < 0)
             MapB1H1H7[s] = code++;
@@ -1278,22 +1313,26 @@ void Tablebases::init(const std::string& paths) {
     // MapA1D1D4[] encodes a square in the a1-d1-d4 triangle to 0..9
     std::vector<Square> diagonal;
     code = 0;
+
     for (Square s = SQ_A1; s <= SQ_D4; ++s)
+    {
         if (off_A1H8(s) < 0 && file_of(s) <= FILE_D)
             MapA1D1D4[s] = code++;
 
         else if (!off_A1H8(s) && file_of(s) <= FILE_D)
             diagonal.push_back(s);
+    }
 
     // Diagonal squares are encoded as last ones
     for (auto s : diagonal)
         MapA1D1D4[s] = code++;
 
-    // MapKK[] encodes all the 461 possible legal positions of two kings where
+    // MapKK[] encodes all the 462 possible legal positions of two kings where
     // the first is in the a1-d1-d4 triangle. If the first king is on the a1-d4
     // diagonal, the other one shall not to be above the a1-h8 diagonal.
     std::vector<std::pair<int, Square>> bothOnDiagonal;
     code = 0;
+
     for (int idx = 0; idx < 10; idx++)
         for (Square s1 = SQ_A1; s1 <= SQ_D4; ++s1)
             if (MapA1D1D4[s1] == idx && (idx || s1 == SQ_B1)) // SQ_B1 is mapped to 0
@@ -1356,28 +1395,34 @@ void Tablebases::init(const std::string& paths) {
                     MapPawns[sq] = availableSquares--;
                     MapPawns[sq ^ 7] = availableSquares--; // Horizontal flip
                 }
+
                 LeadPawnIdx[leadPawnsCnt][sq] = idx;
                 idx += Binomial[leadPawnsCnt - 1][MapPawns[sq]];
             }
+
             // After a file is traversed, store the cumulated per-file index
             LeadPawnsSize[leadPawnsCnt][f] = idx;
         }
 
     // Add entries in TB tables if the corresponding ".rtbw" file exsists
-    for (PieceType p1 = PAWN; p1 < KING; ++p1) {
+    for (PieceType p1 = PAWN; p1 < KING; ++p1)
+    {
         TBTables.add({KING, p1, KING});
 
-        for (PieceType p2 = PAWN; p2 <= p1; ++p2) {
+        for (PieceType p2 = PAWN; p2 <= p1; ++p2)
+        {
             TBTables.add({KING, p1, p2, KING});
             TBTables.add({KING, p1, KING, p2});
 
             for (PieceType p3 = PAWN; p3 < KING; ++p3)
                 TBTables.add({KING, p1, p2, KING, p3});
 
-            for (PieceType p3 = PAWN; p3 <= p2; ++p3) {
+            for (PieceType p3 = PAWN; p3 <= p2; ++p3)
+            {
                 TBTables.add({KING, p1, p2, p3, KING});
 
-                for (PieceType p4 = PAWN; p4 <= p3; ++p4) {
+                for (PieceType p4 = PAWN; p4 <= p3; ++p4)
+                {
                     TBTables.add({KING, p1, p2, p3, p4, KING});
 
                     for (PieceType p5 = PAWN; p5 <= p4; ++p5)
@@ -1387,7 +1432,8 @@ void Tablebases::init(const std::string& paths) {
                         TBTables.add({KING, p1, p2, p3, p4, KING, p5});
                 }
 
-                for (PieceType p4 = PAWN; p4 < KING; ++p4) {
+                for (PieceType p4 = PAWN; p4 < KING; ++p4)
+                {
                     TBTables.add({KING, p1, p2, p3, KING, p4});
 
                     for (PieceType p5 = PAWN; p5 <= p4; ++p5)
@@ -1512,7 +1558,7 @@ int Tablebases::probe_dtz(Position& pos, ProbeState* result) {
 // A return value false indicates that not all probes were successful.
 bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
 
-    ProbeState result;
+    ProbeState result = OK;
     StateInfo st;
 
     int dtz;
@@ -1577,7 +1623,7 @@ bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
 
     static const int WDL_to_rank[] = { -1000, -899, 0, 899, 1000 };
 
-    ProbeState result;
+    ProbeState result = OK;
     StateInfo st;
     WDLScore wdl;
 
@@ -1603,6 +1649,7 @@ bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
         if (!rule50)
             wdl =  wdl > WDLDraw ? WDLWin
                  : wdl < WDLDraw ? WDLLoss : WDLDraw;
+
         m.tbScore = WDL_to_value[wdl + 2];
     }
 
