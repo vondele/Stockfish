@@ -21,8 +21,9 @@
 #include <fstream>
 #include <iostream>
 #include <istream>
-#include <vector>
+// #include <vector>
 
+#include "benchmark.h"
 #include "position.h"
 
 using namespace std;
