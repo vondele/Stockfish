@@ -57,6 +57,7 @@ void init(OptionsMap& o) {
   o["Debug Log File"]        << Option("", on_logger);
   o["Threads"]               << Option(1, 1, 64, on_threads);
   o["Hash"]                  << Option(32, 1, 16384, on_hash_size);
+  o["PNS Hash"]              << Option(32, 1, 16384);
   o["MultiPV"]               << Option(1, 1, 500);
   o["Move Overhead"]         << Option(30, 0, 5000);
   o["Minimum Thinking Time"] << Option(20, 0, 5000);

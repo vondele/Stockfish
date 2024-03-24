@@ -23,6 +23,7 @@
 #include <sstream>
 #include <string>
 
+#include "benchmark.h"
 #include "movegen.h"
 #include "position.h"
 #include "search.h"
