@@ -75,6 +75,11 @@ std::string move(Move m, bool chess960);
 std::string pv(const Position& pos, Depth depth);
 Move to_move(const Position& pos, std::string& str);
 
+void on_hash_size(const Option&);
+void on_logger(const Option&);
+void on_threads(const Option&);
+void on_tb_path(const Option&);
+
 } // namespace UCI
 
 extern UCI::OptionsMap Options;
