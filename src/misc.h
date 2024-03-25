@@ -100,6 +100,7 @@ public:
 /// Peter Österlund.
 
 namespace WinProcGroup {
+  int best_group(size_t idx);
   void bindThisThread(size_t idx);
 }
 
