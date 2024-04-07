@@ -82,10 +82,6 @@ Value Eval::evaluate(const Eval::NNUE::Networks& networks, const Position& pos, 
     else
         adjustEval(499, 32793, 903, 9, 147, 1067, 208, 211);
 
-    // std::cout << "xxx " << pos.non_pawn_material() / PawnValue << std::endl;
-    if (pos.non_pawn_material() / PawnValue > 88)
-        std::cout << "yyy " <<  pos.fen() << std::endl;
-
     v += 5 * (pos.non_pawn_material() > PawnValue * (64 - pos.count<PAWN>())) * ((v > 0) - (v < 0));
 
     // Guarantee evaluation does not hit the tablebase range
