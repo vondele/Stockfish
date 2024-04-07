@@ -34,6 +34,13 @@
 
 namespace Stockfish {
 
+int param01 = 64;
+int param02 = 64;
+int param03 = 64;
+TUNE(SetRange(48,80), param01);
+TUNE(SetRange(16,128), param02);
+TUNE(SetRange(16,128), param03);
+
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
@@ -82,7 +89,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks& networks, const Position& pos, 
     else
         adjustEval(499, 32793, 903, 9, 147, 1067, 208, 211);
 
-    v += 10 * (pos.non_pawn_material() > PawnValue * (64 - pos.count<PAWN>())) * ((v > 0) - (v < 0));
+    v += (pos.non_pawn_material() > PawnValue * (param01 - pos.count<PAWN>())) * ( param02 * (v > 0) - param03 * (v < 0)) / 8;
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
