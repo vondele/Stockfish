@@ -34,12 +34,12 @@
 
 namespace Stockfish {
 
-int param01 = 64;
-int param02 = 64;
-int param03 = 64;
-TUNE(SetRange(48,80), param01);
-TUNE(SetRange(16,128), param02);
-TUNE(SetRange(16,128), param03);
+int param01 = 53;
+int param02 = 50;
+int param03 = 21;
+TUNE(SetRange(40,66), param01);
+TUNE(SetRange(10,90), param02);
+TUNE(SetRange(-20,60), param03);
 
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
