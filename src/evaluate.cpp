@@ -88,7 +88,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     else
         adjustEval(515, 32793, 944, 9, 140, 1067, 206, 206);
 
-    v += (pos.non_pawn_material() > PawnValue * (53 - pos.count<PAWN>())) * ( 73 * (v > 0) - 4 * (v < 0)) / 8;
+    v += (pos.non_pawn_material() > PawnValue * (60 - pos.count<PAWN>())) * ( 34 * (v > 0) - 29 * (v < 0)) / 8;
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
