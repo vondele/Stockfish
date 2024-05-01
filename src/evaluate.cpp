@@ -86,7 +86,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     else if (psqtOnly)
         adjustEval(517, 32857, 908, 7, 155, 1006, 224, 238);
     else
-        adjustEval(555, 33747, 969, 9, 143, 1071, 202, 201);
+        adjustEval(502, 37520, 975, 8, 151, 929, 182, 209);
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
