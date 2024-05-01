@@ -82,7 +82,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     };
 
     if (!smallNet)
-        adjustEval(585, 33312, 1010, 11, 136, 1110, 182, 196);
+        adjustEval(597, 34762, 1052, 11, 132, 1157, 184, 196);
     else if (psqtOnly)
         adjustEval(517, 32857, 908, 7, 155, 1006, 224, 238);
     else
