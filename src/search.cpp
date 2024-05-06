@@ -84,7 +84,10 @@ int stat_bonus(Depth d) { return std::clamp(208 * d - 297, 16, 1406); }
 int stat_malus(Depth d) { return (d < 4 ? 520 * d - 312 : 1479); }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
-Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
+Value value_draw(bool isRootColor, size_t nodes) {
+   int drawCost= PawnValue * 20;
+   return (isRootColor ? -drawCost : drawCost) - 1 + Value(nodes & 0x2);
+}
 
 // Skill structure is used to implement strength limit. If we have a UCI_Elo,
 // we convert it to an appropriate skill level, anchored to the Stash engine.
@@ -164,7 +167,7 @@ void Search::Worker::start_searching() {
     {
         rootMoves.emplace_back(Move::none());
         main_manager()->updates.onUpdateNoMoves(
-          {0, {rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW, rootPos}});
+          {0, {rootPos.checkers() ? -VALUE_MATE : value_draw(true, 0), rootPos}});
     }
     else
     {
@@ -523,15 +526,6 @@ Value Search::Worker::search(
     if (depth <= 0)
         return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
 
-    // Check if we have an upcoming move that draws by repetition, or
-    // if the opponent had an alternative move earlier to this position.
-    if (!rootNode && alpha < VALUE_DRAW && pos.has_game_cycle(ss->ply))
-    {
-        alpha = value_draw(this->nodes);
-        if (alpha >= beta)
-            return alpha;
-    }
-
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
     assert(0 < depth && depth < MAX_PLY);
@@ -575,7 +569,7 @@ Value Search::Worker::search(
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck)
                    ? evaluate(networks, pos, refreshTable, thisThread->optimism[us])
-                   : value_draw(thisThread->nodes);
+                   : value_draw(pos.side_to_move() == thisThread->rootColor, thisThread->nodes);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply + 1), but if alpha is already bigger because
@@ -668,7 +662,7 @@ Value Search::Worker::search(
                 // use the range VALUE_TB to VALUE_TB_WIN_IN_MAX_PLY to score
                 value = wdl < -drawScore ? -tbValue
                       : wdl > drawScore  ? tbValue
-                                         : VALUE_DRAW + 2 * wdl * drawScore;
+                                         : value_draw(pos.side_to_move() == thisThread->rootColor, thisThread->nodes) + 2 * wdl * drawScore;
 
                 Bound b = wdl < -drawScore ? BOUND_UPPER
                         : wdl > drawScore  ? BOUND_LOWER
@@ -1324,7 +1318,7 @@ moves_loop:  // When in check, search starts here
         bestValue = (bestValue * depth + beta) / (depth + 1);
 
     if (!moveCount)
-        bestValue = excludedMove ? alpha : ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
+        bestValue = excludedMove ? alpha : ss->inCheck ? mated_in(ss->ply) : value_draw(pos.side_to_move() == thisThread->rootColor, thisThread->nodes);
 
     // If there is a move that produces search value greater than alpha we update the stats of searched moves
     else if (bestMove)
@@ -1389,15 +1383,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     assert(PvNode || (alpha == beta - 1));
     assert(depth <= 0);
 
-    // Check if we have an upcoming move that draws by repetition, or if
-    // the opponent had an alternative move earlier to this position. (~1 Elo)
-    if (alpha < VALUE_DRAW && pos.has_game_cycle(ss->ply))
-    {
-        alpha = value_draw(this->nodes);
-        if (alpha >= beta)
-            return alpha;
-    }
-
     Move      pv[MAX_PLY + 1];
     StateInfo st;
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
@@ -1431,7 +1416,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !ss->inCheck)
                ? evaluate(networks, pos, refreshTable, thisThread->optimism[us])
-               : VALUE_DRAW;
+               : value_draw(pos.side_to_move() == thisThread->rootColor, thisThread->nodes);
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 

@@ -290,6 +290,7 @@ class Worker {
     RootMoves rootMoves;
     Depth     rootDepth, completedDepth;
     Value     rootDelta;
+    Color     rootColor;
 
     size_t thread_idx;
 

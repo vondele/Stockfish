@@ -221,6 +221,7 @@ void ThreadPool::start_thinking(const OptionsMap&  options,
         th->worker->nodes = th->worker->tbHits = th->worker->nmpMinPly =
           th->worker->bestMoveChanges          = 0;
         th->worker->rootDepth = th->worker->completedDepth = 0;
+        th->worker->rootColor = pos.side_to_move();
         th->worker->rootMoves                              = rootMoves;
         th->worker->rootPos.set(pos.fen(), pos.is_chess960(), &th->worker->rootState);
         th->worker->rootState = setupStates->back();
