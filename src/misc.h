@@ -88,7 +88,7 @@ inline TimePoint now() {
       .count();
 }
 
-std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
+inline std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
     size_t begin = 0;
     std::vector<std::string> res;
 
