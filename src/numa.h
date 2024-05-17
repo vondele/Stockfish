@@ -25,6 +25,7 @@
 #include <map>
 #include <thread>
 #include <string>
+#include <memory>
 
 #include "misc.h"
 
@@ -143,6 +144,55 @@ private:
 
     return true;
   }
+};
+
+class NumaReplicatedBase {
+public:
+  struct UpdateNumaConfigPermission {
+    friend class NumaReplicationContext;
+  private:
+    UpdateNumaConfigPermission() {}
+  };
+
+  struct CreateObjectPermission {
+    friend class NumaReplicationContext;
+  private:
+    CreateObjectPermission() {}
+  };
+
+  virtual void onNumaConfigChanged(UpdateNumaConfigPermission, const NumaConfig& cfg) = 0;
+  virtual ~NumaReplicatedBase() = default;
+};
+
+// We force boxing with a unique_ptr. If this becomes an issue due to added indirection we
+// may need to add an option for a custom boxing type.
+// When the NUMA config changes the value stored at the index 0 is replicated to other nodes.
+template <typename T>
+class NumaReplicated : public NumaReplicatedBase{
+  static_assert(std::is_copy_constructible_v<T>);
+public:
+  NumaReplicated() = delete;
+
+  NumaReplicated(const NumaReplicated&) = delete;
+  NumaReplicated(NumaReplicated&&) = delete;
+
+  NumaReplicated& operator=(const NumaReplicated&) = delete;
+  NumaReplicated& operator=(NumaReplicated&&) = delete;
+
+  ~NumaReplicated() override = default;
+
+  NumaReplicated(CreateObjectPermission) {}
+
+  void onNumaConfigChanged(UpdateNumaConfigPermission, const NumaConfig& cfg) override {
+    // TODO: replicate
+  }
+
+private:
+  std::vector<std::unique_ptr<T>> instances;
+};
+
+class NumaReplicationContext {
+
 };
 
 }  // namespace Stockfish
