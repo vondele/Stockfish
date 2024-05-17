@@ -175,7 +175,7 @@ public:
     auto    SetThreadSelectedCpuSetMasks_f = SetThreadSelectedCpuSetMasks_t((void (*)()) GetProcAddress(k32, "SetThreadSelectedCpuSetMasks"));
 
     if (SetThreadSelectedCpuSetMasks_f != nullptr) {
-      const size_t numProcGroups = highestCpuIndex + 63 / 64;
+      const size_t numProcGroups = (highestCpuIndex + 1) + 63 / 64;
       std::unique_ptr<GROUP_AFFINITY[]> groupAffinities(numProcGroups);
       std::memset(groupAffinities.get(), 0, sizeof(GROUP_AFFINITY) * numProcGroups);
       for (WORD i = 0; i < numProcGroups; ++i)
