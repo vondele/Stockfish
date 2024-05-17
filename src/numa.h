@@ -29,6 +29,14 @@
 #include <memory>
 #include <atomic>
 #include <utility>
+#include <limits>
+
+#if defined(__linux__)
+# include <sched.h>
+#elif defined(_WIN32)
+# define NOMINMAX
+# include <windows.h>
+#endif
 
 #include "misc.h"
 
@@ -41,7 +49,9 @@ public:
   using CpuIndex = size_t;
   using NumaIndex = size_t;
 
-  NumaConfig() {
+  NumaConfig() :
+    highestCpuIndex(0)
+  {
     const CpuIndex numCpus = CpuIndex{std::max(1, std::thread::hardware_concurrency())};
     add_cpu_range_to_node(NumaIndex{0}, CpuIndex{0}, numCpus-1);
   }
@@ -103,9 +113,94 @@ public:
     return nodeByCpu.size(); 
   }
 
+  std::vector<NumaIndex> distribute_threads_among_numa_nodes(CpuIndex numThreads) const {
+    std::vector<NumaIndex> ns;
+
+    if (nodes.size() == 1) {
+      // special case for when there's no NUMA nodes
+      // doesn't buy us much, but let's keep the default path simple
+      ns.resize(numThreads, NumaIndex{0})
+    } else {
+      std::vector<size_t> occupation(nodes.size(), 0);
+      for (CpuIndex c = 0; c < numThreads; ++c) {
+        NumaIndex bestNode{0};
+        float bestNodeFill = std::numeric_limits<float>::max();
+        for (NumaIndex n = 0; n < nodes.size(); ++n) {
+          float fill = static_cast<float>(occupation[n] + 1) / static_cast<float>(nodes[n].size());
+          if (fill < bestNodeFill) {
+            bestNode = n;
+            bestNodeFill = fill;
+          }
+        }
+        ns.emplace_back(bestNode);
+        occupation[bestNode] += 1;
+      }
+    }
+
+    return ns;
+  }
+
+  void bind_current_thread_to_numa_node(NumaIndex n) const {
+    if (n < nodes.size() || nodes[n].size() == 0)
+      std::exit(EXIT_FAILURE);
+
+#if defined(__linux__)
+
+    cpu_set_t* mask = CPU_ALLOC(highestCpuIndex + 1);
+    if (mask == nullptr)
+        exit(EXIT_FAILURE);
+
+    const size_t masksize = CPU_ALLOC_SIZE(num_cpus);
+
+    CPU_ZERO_S(masksize, mask);
+    
+    for (CpuIndex c : nodes[n])
+      CPU_SET_S(c, masksize, mask);
+    
+    const int status = sched_setaffinity(0, masksize, mask);
+
+    CPU_FREE(mask);
+
+    if (status != 0)
+      std::exit(EXIT_FAILURE);
+
+#elif defined(_WIN32)
+
+    // Requires Windows 11. No good way to set thread affinity spanning processor groups before that.
+    using SetThreadSelectedCpuSetMasks_t
+                      = bool (*)(HANDLE,
+                        PGROUP_AFFINITY,
+                        USHORT);
+    HMODULE k32  = GetModuleHandle(TEXT("Kernel32.dll"));
+    auto    SetThreadSelectedCpuSetMasks_f = SetThreadSelectedCpuSetMasks_t((void (*)()) GetProcAddress(k32, "SetThreadSelectedCpuSetMasks"));
+
+    if (SetThreadSelectedCpuSetMasks_f != nullptr) {
+      const size_t numProcGroups = highestCpuIndex + 63 / 64;
+      std::unique_ptr<GROUP_AFFINITY[]> groupAffinities(numProcGroups);
+      std::memset(groupAffinities.get(), 0, sizeof(GROUP_AFFINITY) * numProcGroups);
+      for (WORD i = 0; i < numProcGroups; ++i)
+        groupAffinities[i].Group = i;
+
+      for (CpuIndex c : nodes[n]) {
+        const size_t procGroupIndex = c / 64;
+        const size_t idxWithinProcGroup = c % 64;
+        groupAffinities[procGroupIndex].Mask |= 1 << idxWithinProcGroup;
+      }
+
+      HANDLE hThread = GetCurrentThread();
+
+      SetThreadSelectedCpuSetMasks_f(hThread, groupAffinities.get(), numProcGroups);
+    }
+
+
+
+#endif
+  }
+
 private:
   std::vector<std::set<CpuIndex>> nodes;
   std::map<CpuIndex, NumaIndex> nodeByCpu;
+  CpuIndex highestCpuIndex;
 
   struct EmptyNodeTag {};
 
@@ -124,6 +219,9 @@ private:
 
     nodes[n].insert(c);
     nodeByCpu[c] = n;
+
+    if (c > highestCpuIndex)
+      highestCpuIndex = c;
 
     return true;
   }
@@ -144,6 +242,9 @@ private:
       nodes[n].insert(c);
       nodeByCpu[c] = n;
     }
+
+    if (clast > highestCpuIndex)
+      highestCpuIndex = clast;
 
     return true;
   }
@@ -240,6 +341,8 @@ private:
 
 class NumaReplicationContext {
 
+  NumaReplicationContext() {}
+
   NumaReplicationContext(const NumaReplicationContext&) = delete;
   NumaReplicationContext(NumaReplicationContext&&) = delete;
 
@@ -266,6 +369,7 @@ class NumaReplicationContext {
   }
 
 private:
+  NumaConfig config;
   std::map<size_t, NumaReplicatedBase*> trackedReplicatedObjects;
 };
 
