@@ -189,7 +189,9 @@ public:
 
       HANDLE hThread = GetCurrentThread();
 
-      SetThreadSelectedCpuSetMasks_f(hThread, groupAffinities.get(), numProcGroups);
+      const BOOL status = SetThreadSelectedCpuSetMasks_f(hThread, groupAffinities.get(), numProcGroups);
+      if (status == 0)
+        std::exit(EXIT_FAILURE);
     }
 
 
@@ -423,7 +425,8 @@ NumaReplicatedBase& NumaReplicatedBase::operator=(NumaReplicatedBase&& other) no
 }
 
 NumaReplicatedBase::~NumaReplicatedBase() {
-  context->detach(this);
+  if (context != nullptr)
+    context->detach(this);
 }
 
 }  // namespace Stockfish
