@@ -65,12 +65,12 @@ public:
         auto parts = split(cpuStr, "-");
         if (parts.size() == 1) {
           const CpuIndex c = CpuIndex{std::stoll(parts[0])};
-          if (!addCpuToNode(n, c))
+          if (!cfg.addCpuToNode(n, c))
             std::exit(EXIT_FAILURE);
         } else if (parts.size() == 2) {
           const CpuIndex cfirst = CpuIndex{std::stoll(parts[0])};
           const CpuIndex clast = CpuIndex{std::stoll(parts[1])};
-          if (!addCpuRangeToNode(n, cfirst, clast))
+          if (!cfg.addCpuRangeToNode(n, cfirst, clast))
             std::exit(EXIT_FAILURE);
         } else {
           std::exit(EXIT_FAILURE);
@@ -78,6 +78,8 @@ public:
       }
       n += 1;
     }
+
+    return cfg;
   }
 
   NumaConfig(const NumaConfig&) = delete;
