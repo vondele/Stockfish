@@ -295,19 +295,34 @@ class NumaReplicated : public NumaReplicatedBase {
 public:
   using ReplicatorFuncType = std::function<void(T&, const T&)>;
 
-  NumaReplicated() :
-    NumaReplicatedBase(),
+  NumaReplicated(NumaReplicationContext& ctx) :
+    NumaReplicatedBase(ctx),
     replicatorFunc([](T& destination, const T& source) { destination = source; }) 
   {
-    instances.emplace_back(std::make_unique<T>());
+    replicateFrom(T{});
+  }
+
+  NumaReplicated(NumaReplicationContext& ctx, const T& source) :
+    NumaReplicatedBase(ctx),
+    replicatorFunc([](T& destination, const T& source) { destination = source; }) 
+  {
+    replicateFrom(source);
   }
 
   template <typename FuncT>
-  NumaReplicated(FuncT&& func) :
-    NumaReplicatedBase(),
+  NumaReplicated(NumaReplicationContext& ctx, FuncT&& func) :
+    NumaReplicatedBase(ctx),
     replicatorFunc(std::forward<FuncT>(func)) 
   {
-    instances.emplace_back(std::make_unique<T>());
+    replicateFrom(T{});
+  }
+
+  template <typename FuncT>
+  NumaReplicated(NumaReplicationContext& ctx, const T& source, FuncT&& func) :
+    NumaReplicatedBase(ctx),
+    replicatorFunc(std::forward<FuncT>(func)) 
+  {
+    replicateFrom(source);
   }
 
   NumaReplicated(const NumaReplicated&) = delete;
@@ -326,17 +341,29 @@ public:
     instances = std::exchange(other.instances, {});
   }
 
+  NumaReplicated& operator=(const T& source) {
+    replicateFrom(source);
+  }
+
   ~NumaReplicated() override = default;
 
   NumaReplicated(CreateObjectPermission) {}
 
   void on_numa_config_changed() override {
-    // TODO: replicate
+    // Use the first one as the source. It doesn't matter which one we use, because they all must
+    // be identical, but the first one is guaranteed to exist.
+    auto source = std::move(instances[0]);
+    replicateFrom(source);
   }
 
 private:
   ReplicatorFuncType replicatorFunc;
   std::vector<std::unique_ptr<T>> instances;
+
+  void replicateFrom(const T& source) {
+    instances.clear();
+    // TODO: replicate
+  }
 };
 
 class NumaReplicationContext {
@@ -366,6 +393,12 @@ class NumaReplicationContext {
     assert(trackedReplicatedObjects.count(newObj->get_unique_id()) == 1);
     assert(trackedReplicatedObjects[newObj->get_unique_id()] == oldObj);
     trackedReplicatedObjects[newObj->get_unique_id()] = newObj;
+  }
+
+  void set_numa_config(NumaConfig&& cfg) {
+    config = std::move(cfg);
+    for (auto&& [id, obj] : trackedReplicatedObjects)
+      obj->on_numa_config_changed();
   }
 
 private:
