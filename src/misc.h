@@ -88,6 +88,23 @@ inline TimePoint now() {
       .count();
 }
 
+std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
+    size_t begin = 0;
+    std::vector<std::string> res;
+
+    for(;;) {
+        const size_t end = s.find(delimiter, begin);
+        if (end == std::string::npos)
+            break;
+
+        res.emplace_back(s.substr(begin, end - begin));
+        begin = end + delimiter.size();
+    }
+
+    res.emplace_back(s.substr(begin));
+
+    return res;
+}
 
 enum SyncCout {
     IO_LOCK,
