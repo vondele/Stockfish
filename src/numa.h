@@ -164,6 +164,9 @@ public:
     if (status != 0)
       std::exit(EXIT_FAILURE);
 
+    // Might not be necessary, might not be enough, we'll see.
+    sched_yield();
+
 #elif defined(_WIN32)
 
     // Requires Windows 11. No good way to set thread affinity spanning processor groups before that.
@@ -192,11 +195,21 @@ public:
       const BOOL status = SetThreadSelectedCpuSetMasks_f(hThread, groupAffinities.get(), numProcGroups);
       if (status == 0)
         std::exit(EXIT_FAILURE);
+
+      // Might not be necessary, might not be enough, we'll see.
+      SwitchToThread();
     }
 
-
-
 #endif
+  }
+
+  template <typename FuncT>
+  void execute_on_numa_node(NumaIndex n, FuncT&& f) const {
+    std::thread th([this, &f, n](){
+      bind_current_thread_to_numa_node(n);
+    });
+
+    th.join();
   }
 
 private:
@@ -277,6 +290,10 @@ public:
     return uniqueId;
   }
 
+  const NumaConfig& get_numa_config() const {
+    return context->get_numa_config();
+  }
+
 private:
   NumaReplicationContext* context;
   size_t uniqueId;
@@ -295,18 +312,18 @@ private:
 template <typename T>
 class NumaReplicated : public NumaReplicatedBase {
 public:
-  using ReplicatorFuncType = std::function<void(T&, const T&)>;
+  using ReplicatorFuncType = std::function<T(const T&)>;
 
   NumaReplicated(NumaReplicationContext& ctx) :
     NumaReplicatedBase(ctx),
-    replicatorFunc([](T& destination, const T& source) { destination = source; }) 
+    replicatorFunc([](const T& source) -> T { return source; }) 
   {
     replicateFrom(T{});
   }
 
   NumaReplicated(NumaReplicationContext& ctx, const T& source) :
     NumaReplicatedBase(ctx),
-    replicatorFunc([](T& destination, const T& source) { destination = source; }) 
+    replicatorFunc([](const T& source) -> T { return source; }) 
   {
     replicateFrom(source);
   }
@@ -364,7 +381,11 @@ private:
 
   void replicateFrom(const T& source) {
     instances.clear();
-    // TODO: replicate
+
+    const NumaConfig& cfg = get_numa_config();
+    for (NumaIndex n = 0; n < cfg.num_numa_nodes(); ++n) {
+      cfg.execute_on_numa_node(n, [&instances, &source](){ instances.emplace_back(replicatorFunc(source)); });
+    }
   }
 };
 
@@ -401,6 +422,10 @@ class NumaReplicationContext {
     config = std::move(cfg);
     for (auto&& [id, obj] : trackedReplicatedObjects)
       obj->on_numa_config_changed();
+  }
+
+  const NumaConfig& get_numa_config() const {
+    return config;
   }
 
 private:
