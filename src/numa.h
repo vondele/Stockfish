@@ -184,7 +184,7 @@ public:
       for (CpuIndex c : nodes[n]) {
         const size_t procGroupIndex = c / 64;
         const size_t idxWithinProcGroup = c % 64;
-        groupAffinities[procGroupIndex].Mask |= 1 << idxWithinProcGroup;
+        groupAffinities[procGroupIndex].Mask |= KAFFINITY(1) << idxWithinProcGroup;
       }
 
       HANDLE hThread = GetCurrentThread();
