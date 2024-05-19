@@ -30,30 +30,59 @@
 #include <atomic>
 #include <utility>
 #include <limits>
+#include <iostream>
 
 #if defined(__linux__)
 # include <sched.h>
 #elif defined(_WIN32)
-# define NOMINMAX
+# if !defined(NOMINMAX)
+#   define NOMINMAX
+# endif
 # include <windows.h>
 #endif
 
 #include "misc.h"
 
+inline std::string GetLastErrorAsString()
+{
+    //Get the error message ID, if any.
+    DWORD errorMessageID = ::GetLastError();
+    if(errorMessageID == 0) {
+        return std::string("No recorded error"); //No error message has been recorded
+    }
+    
+    LPSTR messageBuffer = nullptr;
+
+    //Ask Win32 to give us the string version of that message ID.
+    //The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    
+    //Copy the error message into a std::string.
+    std::string message(messageBuffer, size);
+    
+    //Free the Win32's string's buffer.
+    LocalFree(messageBuffer);
+            
+    return message;
+}
+
 namespace Stockfish {
+
+using CpuIndex = size_t;
+using NumaIndex = size_t;
 
 // Designed as immutable, because there is no good reason to alter an already existing config
 // in a way that doesn't require recreating it completely.
 class NumaConfig {
 public:
-  using CpuIndex = size_t;
-  using NumaIndex = size_t;
-
   NumaConfig() :
     highestCpuIndex(0)
   {
-    const CpuIndex numCpus = CpuIndex{std::max(1, std::thread::hardware_concurrency())};
+    const CpuIndex numCpus = CpuIndex{std::max<CpuIndex>(1, std::thread::hardware_concurrency())};
+    std::cout << "creating numa config with " << numCpus << " cpus\n";
     add_cpu_range_to_node(NumaIndex{0}, CpuIndex{0}, numCpus-1);
+    std::cout << "created numa config\n";
   }
 
   static NumaConfig empty() {
@@ -62,6 +91,7 @@ public:
 
   static NumaConfig from_system() {
     // TODO: winapi/lscpu
+    return empty();
   }
 
   // ':'-separated numa nodes
@@ -74,16 +104,16 @@ public:
     for (auto&& nodeStr : split(s, ":")) {
       for (const std::string& cpuStr : split(nodeStr, ",")) {
         if (cpuStr.empty())
-          continue
+          continue;
 
         auto parts = split(cpuStr, "-");
         if (parts.size() == 1) {
-          const CpuIndex c = CpuIndex{std::stoll(parts[0])};
+          const CpuIndex c = CpuIndex{std::stoull(parts[0])};
           if (!cfg.add_cpu_to_node(n, c))
             std::exit(EXIT_FAILURE);
         } else if (parts.size() == 2) {
-          const CpuIndex cfirst = CpuIndex{std::stoll(parts[0])};
-          const CpuIndex clast = CpuIndex{std::stoll(parts[1])};
+          const CpuIndex cfirst = CpuIndex{std::stoull(parts[0])};
+          const CpuIndex clast = CpuIndex{std::stoull(parts[1])};
           if (!cfg.add_cpu_range_to_node(n, cfirst, clast))
             std::exit(EXIT_FAILURE);
         } else {
@@ -119,7 +149,7 @@ public:
     if (nodes.size() == 1) {
       // special case for when there's no NUMA nodes
       // doesn't buy us much, but let's keep the default path simple
-      ns.resize(numThreads, NumaIndex{0})
+      ns.resize(numThreads, NumaIndex{0});
     } else {
       std::vector<size_t> occupation(nodes.size(), 0);
       for (CpuIndex c = 0; c < numThreads; ++c) {
@@ -141,7 +171,7 @@ public:
   }
 
   void bind_current_thread_to_numa_node(NumaIndex n) const {
-    if (n < nodes.size() || nodes[n].size() == 0)
+    if (n >= nodes.size() || nodes[n].size() == 0)
       std::exit(EXIT_FAILURE);
 
 #if defined(__linux__)
@@ -178,8 +208,8 @@ public:
     auto    SetThreadSelectedCpuSetMasks_f = SetThreadSelectedCpuSetMasks_t((void (*)()) GetProcAddress(k32, "SetThreadSelectedCpuSetMasks"));
 
     if (SetThreadSelectedCpuSetMasks_f != nullptr) {
-      const size_t numProcGroups = (highestCpuIndex + 1) + 63 / 64;
-      std::unique_ptr<GROUP_AFFINITY[]> groupAffinities(numProcGroups);
+      const USHORT numProcGroups = ((highestCpuIndex + 1) + 63) / 64;
+      auto groupAffinities = std::make_unique<GROUP_AFFINITY[]>(numProcGroups);
       std::memset(groupAffinities.get(), 0, sizeof(GROUP_AFFINITY) * numProcGroups);
       for (WORD i = 0; i < numProcGroups; ++i)
         groupAffinities[i].Group = i;
@@ -190,11 +220,20 @@ public:
         groupAffinities[procGroupIndex].Mask |= KAFFINITY(1) << idxWithinProcGroup;
       }
 
+      std::cout << "highest cpu index: " << highestCpuIndex << '\n';
+      std::cout << "num proc groups: " << numProcGroups << '\n';
+      for (int i = 0; i < numProcGroups; ++i) {
+        std::cout << "\t" << groupAffinities[i].Mask << '\n';
+      }
+
       HANDLE hThread = GetCurrentThread();
 
       const BOOL status = SetThreadSelectedCpuSetMasks_f(hThread, groupAffinities.get(), numProcGroups);
-      if (status == 0)
+      if (status == 0) {
+        auto err = GetLastErrorAsString();
+        std::cerr << "ERR: " << err << '\n';
         std::exit(EXIT_FAILURE);
+      }
 
       // Might not be necessary, might not be enough, we'll see.
       SwitchToThread();
@@ -206,7 +245,10 @@ public:
   template <typename FuncT>
   void execute_on_numa_node(NumaIndex n, FuncT&& f) const {
     std::thread th([this, &f, n](){
+      std::cout << "before bind on node " << n << ": " << GetCurrentProcessorNumber() << '\n';
       bind_current_thread_to_numa_node(n);
+      std::cout << "after bind: " << GetCurrentProcessorNumber() << '\n';
+      std::forward<FuncT>(f)();
     });
 
     th.join();
@@ -219,16 +261,21 @@ private:
 
   struct EmptyNodeTag {};
 
-  NumaConfig(EmptyNodeTag) {}
+  NumaConfig(EmptyNodeTag) :
+    highestCpuIndex(0)
+  {
+    
+  }
 
   // Returns true if successful
   // Returns false if failed, i.e. when the cpu is already present
   //                          strong guarantee, the structure remains unmodified
   bool add_cpu_to_node(NumaIndex n, CpuIndex c) {
+    std::cout << "adding cpu " << c << " to node " << n << '\n';
     if (is_cpu_assigned(c))
       return false;
 
-    while (nodes.size() < n) {
+    while (nodes.size() <= n) {
       nodes.emplace_back();
     }
 
@@ -245,11 +292,12 @@ private:
   // Returns false if failed, i.e. when any of the cpus is already present
   //                          strong guarantee, the structure remains unmodified
   bool add_cpu_range_to_node(NumaIndex n, CpuIndex cfirst, CpuIndex clast) {
+    std::cout << "adding cpu range " << cfirst << "-" << clast << " to node " << n << '\n';
     for (CpuIndex c = cfirst; c <= clast; ++c)
       if (is_cpu_assigned(c))
         return false;
 
-    while (nodes.size() < n) {
+    while (nodes.size() <= n) {
       nodes.emplace_back();
     }
 
@@ -270,37 +318,30 @@ class NumaReplicationContext;
 // Instances of this class are tracked by the context
 class NumaReplicatedBase {
 public:
-  NumaReplicatedBase(NumaReplicationContext& ctx) :
-    context(&ctx),
-    uniqueId(getNextUniqueId()) 
-  {
-
-  }
+  NumaReplicatedBase(NumaReplicationContext& ctx);
 
   NumaReplicatedBase(const NumaReplicatedBase&) = delete;
-  NumaReplicatedBase(NumaReplicatedBase&& other);
+  NumaReplicatedBase(NumaReplicatedBase&& other) noexcept;
 
   NumaReplicatedBase& operator=(const NumaReplicatedBase&) = delete;
-  NumaReplicatedBase& operator=(NumaReplicatedBase&& other);
+  NumaReplicatedBase& operator=(NumaReplicatedBase&& other) noexcept;
 
-  virtual void on_numa_config_changed(UpdateNumaConfigPermission) = 0;
+  virtual void on_numa_config_changed() = 0;
   virtual ~NumaReplicatedBase();
 
   size_t get_unique_id() const {
     return uniqueId;
   }
 
-  const NumaConfig& get_numa_config() const {
-    return context->get_numa_config();
-  }
+  const NumaConfig& get_numa_config() const;
 
 private:
   NumaReplicationContext* context;
   size_t uniqueId;
 
-  static size_t InvalidUniqueId = size_t(-1);
+  static constexpr size_t InvalidUniqueId = size_t(-1);
 
-  static size_t getNextUniqueId() {
+  static size_t get_next_unique_id() {
     static std::atomic<size_t> counter{0};
     return counter.fetch_add(1);
   }
@@ -316,16 +357,16 @@ public:
 
   NumaReplicated(NumaReplicationContext& ctx) :
     NumaReplicatedBase(ctx),
-    replicatorFunc([](const T& source) -> T { return source; }) 
+    replicatorFunc([](const T& src) -> T { return src; }) 
   {
-    replicateFrom(T{});
+    replicate_from(T{});
   }
 
   NumaReplicated(NumaReplicationContext& ctx, const T& source) :
     NumaReplicatedBase(ctx),
-    replicatorFunc([](const T& source) -> T { return source; }) 
+    replicatorFunc([](const T& src) -> T { return src; }) 
   {
-    replicateFrom(source);
+    replicate_from(source);
   }
 
   template <typename FuncT>
@@ -333,7 +374,7 @@ public:
     NumaReplicatedBase(ctx),
     replicatorFunc(std::forward<FuncT>(func)) 
   {
-    replicateFrom(T{});
+    replicate_from(T{});
   }
 
   template <typename FuncT>
@@ -341,7 +382,7 @@ public:
     NumaReplicatedBase(ctx),
     replicatorFunc(std::forward<FuncT>(func)) 
   {
-    replicateFrom(source);
+    replicate_from(source);
   }
 
   NumaReplicated(const NumaReplicated&) = delete;
@@ -358,39 +399,43 @@ public:
     NumaReplicatedBase::operator=(*this, std::move(other));
     replicatorFunc = std::exchange(other.replicatorFunc, nullptr);
     instances = std::exchange(other.instances, {});
+
+    return *this;
   }
 
   NumaReplicated& operator=(const T& source) {
-    replicateFrom(source);
+    replicate_from(source);
+
+    return *this;
   }
 
   ~NumaReplicated() override = default;
 
-  NumaReplicated(CreateObjectPermission) {}
+  NumaReplicated() {}
 
   void on_numa_config_changed() override {
     // Use the first one as the source. It doesn't matter which one we use, because they all must
     // be identical, but the first one is guaranteed to exist.
     auto source = std::move(instances[0]);
-    replicateFrom(source);
+    replicate_from(*source);
   }
 
 private:
   ReplicatorFuncType replicatorFunc;
   std::vector<std::unique_ptr<T>> instances;
 
-  void replicateFrom(const T& source) {
+  void replicate_from(const T& source) {
     instances.clear();
 
     const NumaConfig& cfg = get_numa_config();
     for (NumaIndex n = 0; n < cfg.num_numa_nodes(); ++n) {
-      cfg.execute_on_numa_node(n, [&instances, &source](){ instances.emplace_back(replicatorFunc(source)); });
+      cfg.execute_on_numa_node(n, [this, &source](){ instances.emplace_back(std::make_unique<T>(replicatorFunc(source))); });
     }
   }
 };
 
 class NumaReplicationContext {
-
+public:
   NumaReplicationContext() {}
 
   NumaReplicationContext(const NumaReplicationContext&) = delete;
@@ -405,14 +450,21 @@ class NumaReplicationContext {
       std::exit(EXIT_FAILURE);
   }
 
+  void attach(NumaReplicatedBase* obj) {
+    assert(trackedReplicatedObjects.count(obj->get_unique_id()) == 0);
+    trackedReplicatedObjects.try_emplace(obj->get_unique_id(), obj);
+  }
+
   void detach(NumaReplicatedBase* obj) {
+    std::cout << "detach " << obj->get_unique_id() << '\n';
     assert(trackedReplicatedObjects.count(obj->get_unique_id()) == 1);
     assert(trackedReplicatedObjects[obj->get_unique_id()] == obj);
     trackedReplicatedObjects.erase(obj->get_unique_id());
   }
 
   // oldObj may be invalid at this point
-  void move_attached(NumaReplicatedBase* oldObj, NumaReplicatedBase* newObj) {
+  void move_attached([[maybe_unused]] NumaReplicatedBase* oldObj, NumaReplicatedBase* newObj) {
+    std::cout << "move " << newObj->get_unique_id() << '\n';
     assert(trackedReplicatedObjects.count(newObj->get_unique_id()) == 1);
     assert(trackedReplicatedObjects[newObj->get_unique_id()] == oldObj);
     trackedReplicatedObjects[newObj->get_unique_id()] = newObj;
@@ -433,6 +485,12 @@ private:
   std::map<size_t, NumaReplicatedBase*> trackedReplicatedObjects;
 };
 
+NumaReplicatedBase::NumaReplicatedBase(NumaReplicationContext& ctx) :
+  context(&ctx),
+  uniqueId(get_next_unique_id()) 
+{
+  context->attach(this);
+}
 
 NumaReplicatedBase::NumaReplicatedBase(NumaReplicatedBase&& other) noexcept : 
   context(std::exchange(other.context, nullptr)),
@@ -447,11 +505,17 @@ NumaReplicatedBase& NumaReplicatedBase::operator=(NumaReplicatedBase&& other) no
   uniqueId = std::exchange(other.uniqueId, InvalidUniqueId);
 
   context->move_attached(&other, this);
+
+  return *this;
 }
 
 NumaReplicatedBase::~NumaReplicatedBase() {
   if (context != nullptr)
     context->detach(this);
+}
+
+const NumaConfig& NumaReplicatedBase::get_numa_config() const {
+  return context->get_numa_config();
 }
 
 }  // namespace Stockfish

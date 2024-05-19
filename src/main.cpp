@@ -24,10 +24,25 @@
 #include "types.h"
 #include "uci.h"
 #include "tune.h"
+#include "numa.h"
 
 using namespace Stockfish;
 
 int main(int argc, char* argv[]) {
+
+    std::cout << "creating context\n";
+    NumaReplicationContext ctx;
+    std::cout << "created context\n";
+
+    std::cout << "creating replicated\n";
+    NumaReplicated<int> r(ctx);
+    std::cout << "created replicated\n";
+
+    std::cout << "setting numa config\n";
+    ctx.set_numa_config(NumaConfig::from_string("0:1:2:3:4:5:6:7:8:9:10-15"));
+    std::cout << "set numa config\n";
+
+    return 0;
 
     std::cout << engine_info() << std::endl;
 
