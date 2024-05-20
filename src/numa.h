@@ -90,8 +90,32 @@ public:
   }
 
   static NumaConfig from_system() {
-    // TODO: winapi/lscpu
-    return empty();
+    NumaConfig cfg = empty();
+
+#if defined(__linux__)
+
+    // TODO: parse lscpu
+
+#elif defined(_WIN32)
+
+    WORD numProcGroups = GetActiveProcessorGroupCount();
+    for (WORD procGroup = 0; procGroup < numProcGroups; ++procGroup) {
+      for (BYTE number = 0; number < 64; ++number) {
+        PROCESSOR_NUMBER procnum;
+        procnum.Group = procGroup;
+        procnum.Number = number;
+        procnum.Reserved = 0;
+        USHORT nodeNumber;
+        const BOOL status = GetNumaProcessorNodeEx(&procnum, &nodeNumber);
+        if (status != 0 && nodeNumber != std::numeric_limits<USHORT>::max()) {
+          cfg.add_cpu_to_node(nodeNumber, static_cast<CpuIndex>(procGroup) * 64 + static_cast<CpuIndex>(number));
+        }
+      }
+    }
+    
+#endif
+
+    return cfg;
   }
 
   // ':'-separated numa nodes
@@ -264,7 +288,7 @@ private:
   NumaConfig(EmptyNodeTag) :
     highestCpuIndex(0)
   {
-    
+
   }
 
   // Returns true if successful
@@ -425,6 +449,8 @@ private:
   std::vector<std::unique_ptr<T>> instances;
 
   void replicate_from(const T& source) {
+    std::cout << "Replicating...\n";
+
     instances.clear();
 
     const NumaConfig& cfg = get_numa_config();
