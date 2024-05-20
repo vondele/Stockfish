@@ -31,6 +31,7 @@
 #include <utility>
 #include <limits>
 #include <iostream>
+#include <sstream>
 
 #if defined(__linux__)
 # include <sched.h>
@@ -42,6 +43,8 @@
 #endif
 
 #include "misc.h"
+
+#if defined(_WIN32)
 
 inline std::string GetLastErrorAsString()
 {
@@ -65,6 +68,20 @@ inline std::string GetLastErrorAsString()
     LocalFree(messageBuffer);
             
     return message;
+}
+
+#endif
+
+inline int get_current_cpu() {
+
+#if defined(__linux__)
+  unsigned int c, n;
+  getcpu(&c, &n);
+  return c;
+#elif defined(_WIN32)
+  return GetCurrentProcessorNumber();
+#endif
+
 }
 
 namespace Stockfish {
@@ -94,7 +111,7 @@ public:
 
 #if defined(__linux__)
 
-    const std::istringstream ss = get_system_command_output("lscpu -e=cpu,node");
+    std::istringstream ss(get_system_command_output("lscpu -e=cpu,node"));
 
     // skip the list header
     ss.ignore('\n');
@@ -218,7 +235,7 @@ public:
     if (mask == nullptr)
         exit(EXIT_FAILURE);
 
-    const size_t masksize = CPU_ALLOC_SIZE(num_cpus);
+    const size_t masksize = CPU_ALLOC_SIZE(highestCpuIndex + 1);
 
     CPU_ZERO_S(masksize, mask);
     
@@ -283,9 +300,9 @@ public:
   template <typename FuncT>
   void execute_on_numa_node(NumaIndex n, FuncT&& f) const {
     std::thread th([this, &f, n](){
-      std::cout << "before bind on node " << n << ": " << GetCurrentProcessorNumber() << '\n';
+      std::cout << "before bind on node " << n << ": " << get_current_cpu() << '\n';
       bind_current_thread_to_numa_node(n);
-      std::cout << "after bind: " << GetCurrentProcessorNumber() << '\n';
+      std::cout << "after bind: " << get_current_cpu() << '\n';
       std::forward<FuncT>(f)();
     });
 
