@@ -34,6 +34,7 @@
 #include <sstream>
 
 #if defined(__linux__)
+# define _GNU_SOURCE
 # include <sched.h>
 #elif defined(_WIN32)
 # if !defined(NOMINMAX)
