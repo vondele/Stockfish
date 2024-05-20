@@ -24,6 +24,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -73,6 +74,30 @@ using AlignedPtr = std::unique_ptr<T, AlignedDeleter<T>>;
 template<typename T>
 using LargePagePtr = std::unique_ptr<T, LargePageDeleter<T>>;
 
+struct PipeDeleter {
+    void operator()(FILE* file) const {
+        if (file != nullptr) {
+            pclose(file);
+        }
+    }
+};
+
+#if defined(__linux__)
+
+std::string get_system_command_output(const std::string& command) {
+    std::unique_ptr<FILE, FileDeleter> pipe(popen(command.c_str(), "r"));
+    if (!pipe) 
+        std::exit(EXIT_FAILURE);
+
+    std::string result;
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+        result += buffer;
+
+    return result;
+}
+
+#endif
 
 void dbg_hit_on(bool cond, int slot = 0);
 void dbg_mean_of(int64_t value, int slot = 0);

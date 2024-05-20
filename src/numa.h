@@ -94,7 +94,21 @@ public:
 
 #if defined(__linux__)
 
-    // TODO: parse lscpu
+    const std::istringstream ss = get_system_command_output("lscpu -e=cpu,node");
+
+    // skip the list header
+    ss.ignore('\n');
+
+    for(;;) {
+      CpuIndex c;
+      NumaIndex n;
+
+      ss >> c >> n;
+
+      if (ss) {
+        cfg.add_cpu_to_node(n, c);
+      }
+    }
 
 #elif defined(_WIN32)
 
