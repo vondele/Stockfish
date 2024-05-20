@@ -123,9 +123,10 @@ public:
 
       ss >> c >> n;
 
-      if (ss) {
-        cfg.add_cpu_to_node(n, c);
-      }
+      if (!ss)
+        break;
+
+      cfg.add_cpu_to_node(n, c);
     }
 
 #elif defined(_WIN32)
