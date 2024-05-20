@@ -85,7 +85,7 @@ struct PipeDeleter {
 #if defined(__linux__)
 
 std::string get_system_command_output(const std::string& command) {
-    std::unique_ptr<FILE, FileDeleter> pipe(popen(command.c_str(), "r"));
+    std::unique_ptr<FILE, PipeDeleter> pipe(popen(command.c_str(), "r"));
     if (!pipe) 
         std::exit(EXIT_FAILURE);
 
