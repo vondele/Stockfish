@@ -34,7 +34,9 @@
 #include <sstream>
 
 #if defined(__linux__)
-# define _GNU_SOURCE
+# if !defined(_GNU_SOURCE)
+#   define _GNU_SOURCE
+# endif
 # include <sched.h>
 #elif defined(_WIN32)
 # if !defined(NOMINMAX)
@@ -76,9 +78,7 @@ inline std::string GetLastErrorAsString()
 inline int get_current_cpu() {
 
 #if defined(__linux__)
-  unsigned int c, n;
-  getcpu(&c, &n);
-  return c;
+  return sched_getcpu();
 #elif defined(_WIN32)
   return GetCurrentProcessorNumber();
 #endif
