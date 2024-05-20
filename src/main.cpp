@@ -39,8 +39,8 @@ int main(int argc, char* argv[]) {
     std::cout << "created replicated\n";
 
     std::cout << "setting numa config\n";
-    ctx.set_numa_config(NumaConfig::from_string("0:1:2:3:4:5:6:7:8:9:10-15"));
-    //ctx.set_numa_config(NumaConfig::from_system());
+    //ctx.set_numa_config(NumaConfig::from_string("0:1:2:3:4:5:6:7:8:9:10-15"));
+    ctx.set_numa_config(NumaConfig::from_system());
     std::cout << "set numa config\n";
 
     auto d = ctx.get_numa_config().distribute_threads_among_numa_nodes(25);
