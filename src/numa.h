@@ -115,7 +115,7 @@ public:
     std::istringstream ss(get_system_command_output("lscpu -e=cpu,node"));
 
     // skip the list header
-    ss.ignore('\n');
+    ss.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     for(;;) {
       CpuIndex c;
