@@ -125,13 +125,17 @@ void Engine::set_position(const std::string& fen, const std::vector<std::string>
 // modifiers
 
 void Engine::resize_threads() { 
+    threads.wait_for_search_finished();
     threads.set({options, threads, tt, networks}, updateContext); 
-    tt.resize(options["Hash"], options["Threads"]);
+
+    // Reallocate the hash with the new threadpool size
+    threads.wait_for_search_finished();
+    tt.resize(options["Hash"], threads);
 }
 
 void Engine::set_tt_size(size_t mb) {
     wait_for_search_finished();
-    tt.resize(mb, options["Threads"]);
+    tt.resize(mb, threads);
 }
 
 void Engine::set_ponderhit(bool b) { threads.main_manager()->ponder = b; }

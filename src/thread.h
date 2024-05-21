@@ -85,6 +85,8 @@ class ThreadPool {
     }
 
     void start_thinking(const OptionsMap&, Position&, StateListPtr&, Search::LimitsType);
+    void run_on_thread(size_t threadId, std::function<void()> f);
+    size_t num_threads() const;
     void clear();
     void set(Search::SharedState, const Search::SearchManager::UpdateContext&);
 

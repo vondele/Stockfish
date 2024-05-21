@@ -185,6 +185,20 @@ void ThreadPool::clear() {
     main_manager()->tm.clear();
 }
 
+void ThreadPool::run_on_thread(size_t threadId, std::function<void()> f) {
+    assert(threads.size() > threadId);
+    threads[threadId].run_custom_job(std::move(f));
+}
+
+void ThreadPool::wait_on_thread(size_t threadId) {
+    assert(threads.size() > threadId);
+    threads[threadId].wait_for_search_finished();
+}
+
+size_t ThreadPool::num_threads() const {
+    return threads.size();
+}
+
 // Wakes up main thread waiting in idle_loop() and
 // returns immediately. Main thread will wake up other threads and start the search.
 void ThreadPool::start_thinking(const OptionsMap&  options,
