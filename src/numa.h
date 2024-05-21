@@ -123,6 +123,8 @@ public:
 
 #if defined(__linux__)
 
+    // On linux things are straightforward, since there's no processor groups and
+    // any thread can be scheduled on all processors.
     std::istringstream ss(get_system_command_output("lscpu -e=cpu,node"));
 
     // skip the list header
@@ -142,6 +144,8 @@ public:
 
 #elif defined(_WIN32)
 
+    // Since Windows 11 and Windows Server 2022 thread affinities can span
+    // processor groups and can be set as such by a new WinAPI function.
     static const bool CanAffinitySpanProcessorGroups = []() {
       HMODULE k32  = GetModuleHandle(TEXT("Kernel32.dll"));
       auto    SetThreadSelectedCpuSetMasks_f = SetThreadSelectedCpuSetMasks_t((void (*)()) GetProcAddress(k32, "SetThreadSelectedCpuSetMasks"));
@@ -190,7 +194,13 @@ public:
 
       cfg = std::move(splitCfg);
     }
-    
+
+#else
+
+    // Fallback for unsupported systems.
+    const CpuIndex numCpus = CpuIndex{std::max<CpuIndex>(1, std::thread::hardware_concurrency())};
+    cfg.add_cpu_range_to_node(NumaIndex{0}, CpuIndex{0}, numCpus-1);
+
 #endif
 
     return cfg;
