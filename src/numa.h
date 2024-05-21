@@ -43,6 +43,17 @@
 #   define NOMINMAX
 # endif
 # include <windows.h>
+
+using SetThreadSelectedCpuSetMasks_t
+                  = bool (*)(HANDLE,
+                    PGROUP_AFFINITY,
+                    USHORT);
+
+using SetThreadGroupAffinity_t
+                  = bool (*)(HANDLE, 
+                    const GROUP_AFFINITY, 
+                    PGROUP_AFFINITY);
+
 #endif
 
 #include "misc.h"
@@ -131,6 +142,12 @@ public:
 
 #elif defined(_WIN32)
 
+    static const bool CanAffinitySpanProcessorGroups = []() {
+      HMODULE k32  = GetModuleHandle(TEXT("Kernel32.dll"));
+      auto    SetThreadSelectedCpuSetMasks_f = SetThreadSelectedCpuSetMasks_t((void (*)()) GetProcAddress(k32, "SetThreadSelectedCpuSetMasks"));
+      return SetThreadSelectedCpuSetMasks_f != nullptr;
+    }();
+  
     WORD numProcGroups = GetActiveProcessorGroupCount();
     for (WORD procGroup = 0; procGroup < numProcGroups; ++procGroup) {
       for (BYTE number = 0; number < 64; ++number) {
@@ -144,6 +161,34 @@ public:
           cfg.add_cpu_to_node(nodeNumber, static_cast<CpuIndex>(procGroup) * 64 + static_cast<CpuIndex>(number));
         }
       }
+    }
+
+    // Split the NUMA nodes to be contained within a group if necessary.
+    // This is needed between Windows 10 Build 20348 and Windows 11, because
+    // the new NUMA allocation behaviour was introduced while there was
+    // still no way to set thread affinity spanning multiple processor groups.
+    // See https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support
+    if (!CanAffinitySpanProcessorGroups) {
+      NumaConfig splitCfg = empty();
+
+      NumaIndex splitNodeIndex = 0;
+      for (const auto& cpus : nodes) {
+        if (cpus.empty())
+          continue;
+
+        size_t lastProcGroupIndex = cpus[0] / 64;
+        for (CpuIndex c : cpus) {
+          const size_t procGroupIndex = c / 64;
+          if (procGroupIndex != lastProcGroupIndex) {
+            splitNodeIndex += 1;
+            lastProcGroupIndex = procGroupIndex;
+          }
+          splitCfg.add_cpu_to_node(splitNodeIndex, c);
+        }
+        splitNodeIndex += 1;
+      }
+
+      cfg = std::move(splitCfg);
     }
     
 #endif
@@ -257,14 +302,12 @@ public:
 #elif defined(_WIN32)
 
     // Requires Windows 11. No good way to set thread affinity spanning processor groups before that.
-    using SetThreadSelectedCpuSetMasks_t
-                      = bool (*)(HANDLE,
-                        PGROUP_AFFINITY,
-                        USHORT);
     HMODULE k32  = GetModuleHandle(TEXT("Kernel32.dll"));
     auto    SetThreadSelectedCpuSetMasks_f = SetThreadSelectedCpuSetMasks_t((void (*)()) GetProcAddress(k32, "SetThreadSelectedCpuSetMasks"));
+    auto    SetThreadGroupAffinity_f = SetThreadGroupAffinity_t((void (*)()) GetProcAddress(k32, "SetThreadGroupAffinity"));
 
     if (SetThreadSelectedCpuSetMasks_f != nullptr) {
+      // Only available on Windows 11 and Windows Server 2022 onwards.
       const USHORT numProcGroups = ((highestCpuIndex + 1) + 63) / 64;
       auto groupAffinities = std::make_unique<GROUP_AFFINITY[]>(numProcGroups);
       std::memset(groupAffinities.get(), 0, sizeof(GROUP_AFFINITY) * numProcGroups);
@@ -292,6 +335,47 @@ public:
         std::exit(EXIT_FAILURE);
       }
 
+      // Might not be necessary, might not be enough, we'll see.
+      SwitchToThread();
+    } else if (SetThreadGroupAffinity_f != nullptr) {
+      // On earlier windows version (since windows 7) we can't run a single thread
+      // on multiple processor groups, so we need to restrict the group.
+      // We assume the group of the first processor listed for this node.
+      // Processors from outside this group will not be assigned for this thread.
+      // Normally this won't be an issue because windows used to assign NUMA nodes
+      // such that they can't span processor groups. However, since Windows 10 Build 20348
+      // the behaviour changed, so there's a small window of versions between this and Windows 11
+      // that might exhibit problems with not all processors being utilized. 
+      // We handle this in NumaConfig::from_system by manually splitting the nodes when
+      // we detect that there's no function to set affinity spanning processor nodes.
+      // This is required because otherwise our thread distribution code may produce
+      // suboptimal results.
+      // See https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support
+      GROUP_AFFINITY affinity;
+      std::memset(&affinity, 0, sizeof(GROUP_AFFINITY));
+      affinity.Group = static_cast<WORD>(n);
+      const size_t forcedProcGroupIndex = nodes[n][0] / 64;
+      for (CpuIndex c : nodes[n]) {
+        const size_t procGroupIndex = c / 64;
+        const size_t idxWithinProcGroup = c % 64;
+        // We skip processors that are not in the same proccessor group.
+        // If everything was set up correctly this will never be an issue,
+        // but we have to account for bad NUMA node specification.
+        if (procGroupIndex != forcedProcGroupIndex)
+          continue;
+
+        affinity.Mask |= KAFFINITY(1) << idxWithinProcGroup;
+      }
+
+      HANDLE hThread = GetCurrentThread();
+
+      const BOOL status = SetThreadGroupAffinity_f(hThread, &affinity, nullptr);
+      if (status == 0) {
+        auto err = GetLastErrorAsString();
+        std::cerr << "ERR: " << err << '\n';
+        std::exit(EXIT_FAILURE);
+      }
+      
       // Might not be necessary, might not be enough, we'll see.
       SwitchToThread();
     }
