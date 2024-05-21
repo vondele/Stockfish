@@ -259,6 +259,7 @@ public:
         float bestNodeFill = std::numeric_limits<float>::max();
         for (NumaIndex n = 0; n < nodes.size(); ++n) {
           float fill = static_cast<float>(occupation[n] + 1) / static_cast<float>(nodes[n].size());
+          // NOTE: Do we want to perhaps fill the first available node up to 50% first before considering other nodes?
           if (fill < bestNodeFill) {
             bestNode = n;
             bestNodeFill = fill;
@@ -375,7 +376,7 @@ public:
         std::cerr << "ERR: " << err << '\n';
         std::exit(EXIT_FAILURE);
       }
-      
+
       // Might not be necessary, might not be enough, we'll see.
       SwitchToThread();
     }
