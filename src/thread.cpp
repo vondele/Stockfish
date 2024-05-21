@@ -97,14 +97,6 @@ void Thread::run_custom_job(std::function<void()> f) {
 
 void Thread::idle_loop() {
 
-    // If OS already scheduled us on a different group than 0 then don't overwrite
-    // the choice, eventually we are one of many one-threaded processes running on
-    // some Windows NUMA hardware, for instance in fishtest. To make it simple,
-    // just check if running threads are below a threshold, in this case, all this
-    // NUMA machinery is not needed.
-    if (nthreads > 8)
-        WinProcGroup::bind_this_thread(idx);
-
     while (true)
     {
         std::unique_lock<std::mutex> lk(mutex);
