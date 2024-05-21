@@ -81,6 +81,15 @@ void Thread::wait_for_search_finished() {
     cv.wait(lk, [&] { return !searching; });
 }
 
+void Thread::run_custom_job(std::function<void()> f) {
+    {
+        std::unique_lock<std::mutex> lk(mutex);
+        cv.wait(lk, [&] { return !searching; });
+        customJob = std::move(f);
+        searching = true;
+    }
+    cv.notify_one();
+}
 
 // Thread gets parked here, blocked on the
 // condition variable, when it has no work to do.
@@ -105,9 +114,16 @@ void Thread::idle_loop() {
         if (exit)
             return;
 
+        std::function<void()> job = std::move(customJob);
+        customJob = nullptr;
+
         lk.unlock();
 
-        worker->start_searching();
+        if (job) {
+            job();
+        } else {
+            worker->start_searching();
+        }
     }
 }
 
@@ -171,7 +187,6 @@ void ThreadPool::clear() {
     main_manager()->previousTimeReduction    = 1.0;
     main_manager()->tm.clear();
 }
-
 
 // Wakes up main thread waiting in idle_loop() and
 // returns immediately. Main thread will wake up other threads and start the search.

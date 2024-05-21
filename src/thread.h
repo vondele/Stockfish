@@ -26,6 +26,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <funcitonal>
 
 #include "position.h"
 #include "search.h"
@@ -49,10 +50,12 @@ class Thread {
 
     void   idle_loop();
     void   start_searching();
+    void   run_custom_job(std::function<void()> f);
     void   wait_for_search_finished();
     size_t id() const { return idx; }
 
     std::unique_ptr<Search::Worker> worker;
+    std::function<void()> customJob;
 
    private:
     std::mutex              mutex;
