@@ -66,14 +66,13 @@ Thread::~Thread() {
 
 // Wakes up the thread that will start the search
 void Thread::start_searching() {
-    {
-        std::unique_lock<std::mutex> lk(mutex);
-        cv.wait(lk, [&] { return !searching; });
-        searching = true;
-    } // Unlock before notifying saves a few CPU-cycles
-    cv.notify_one();  // Wake up the thread in idle_loop()
+    run_custom_job([this]() { worker->start_searching(); });
 }
 
+// Wakes up the thread that will start the search
+void Thread::clear_worker() {
+    run_custom_job([this]() { worker->clear(); });
+}
 
 // Blocks on the condition variable
 // until the thread has finished searching.
@@ -87,7 +86,7 @@ void Thread::run_custom_job(std::function<void()> f) {
     {
         std::unique_lock<std::mutex> lk(mutex);
         cv.wait(lk, [&] { return !searching; });
-        customJob = std::move(f);
+        jobFunc = std::move(f);
         searching = true;
     }
     cv.notify_one();
@@ -116,16 +115,13 @@ void Thread::idle_loop() {
         if (exit)
             return;
 
-        std::function<void()> job = std::move(customJob);
-        customJob = nullptr;
+        std::function<void()> job = std::move(jobFunc);
+        jobFunc = nullptr;
 
         lk.unlock();
 
-        if (job) {
+        if (job)
             job();
-        } else {
-            worker->start_searching();
-        }
     }
 }
 
@@ -166,21 +162,20 @@ void ThreadPool::set(Search::SharedState                         sharedState,
         clear();
 
         main_thread()->wait_for_search_finished();
-
-        // Reallocate the hash with the new threadpool size
-        sharedState.tt.resize(sharedState.options["Hash"], requested);
     }
 }
 
 
 // Sets threadPool data to initial values
 void ThreadPool::clear() {
-
-    for (Thread* th : threads)
-        th->worker->clear();
-
     if (threads.size() == 0)
         return;
+
+    for (Thread* th : threads)
+        th->clear_worker();
+
+    for (Thread* th : threads)
+        th->wait_for_search_finished();
 
     main_manager()->callsCnt                 = 0;
     main_manager()->bestPreviousScore        = VALUE_INFINITE;
@@ -233,17 +228,21 @@ void ThreadPool::start_thinking(const OptionsMap&  options,
     // be deduced from a fen string, so set() clears them and they are set from
     // setupStates->back() later. The rootState is per thread, earlier states are shared
     // since they are read-only.
-    for (Thread* th : threads)
-    {
-        th->worker->limits = limits;
-        th->worker->nodes = th->worker->tbHits = th->worker->nmpMinPly =
-          th->worker->bestMoveChanges          = 0;
-        th->worker->rootDepth = th->worker->completedDepth = 0;
-        th->worker->rootMoves                              = rootMoves;
-        th->worker->rootPos.set(pos.fen(), pos.is_chess960(), &th->worker->rootState);
-        th->worker->rootState = setupStates->back();
-        th->worker->tbConfig  = tbConfig;
+    for (Thread* th : threads) {
+        th->run_custom_job([&]() {
+            th->worker->limits = limits;
+            th->worker->nodes = th->worker->tbHits = th->worker->nmpMinPly =
+              th->worker->bestMoveChanges          = 0;
+            th->worker->rootDepth = th->worker->completedDepth = 0;
+            th->worker->rootMoves                              = rootMoves;
+            th->worker->rootPos.set(pos.fen(), pos.is_chess960(), &th->worker->rootState);
+            th->worker->rootState = setupStates->back();
+            th->worker->tbConfig  = tbConfig;
+        });
     }
+
+    for (Thread* th : threads)
+        th->wait_for_search_finished();
 
     main_thread()->start_searching();
 }

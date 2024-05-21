@@ -124,7 +124,10 @@ void Engine::set_position(const std::string& fen, const std::vector<std::string>
 
 // modifiers
 
-void Engine::resize_threads() { threads.set({options, threads, tt, networks}, updateContext); }
+void Engine::resize_threads() { 
+    threads.set({options, threads, tt, networks}, updateContext); 
+    tt.resize(options["Hash"], options["Threads"]);
+}
 
 void Engine::set_tt_size(size_t mb) {
     wait_for_search_finished();
