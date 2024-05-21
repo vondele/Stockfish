@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <initializer_list>
 #include <string>
+#include <random>
 #include <utility>
 
 #include "evaluate.h"
@@ -217,6 +218,41 @@ void Search::Worker::start_searching() {
         ponder = UCIEngine::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+
+    // if we have moves, go select randomly
+    if (bestThread->rootMoves[0].pv[0] != Move::none())
+    {
+        std::random_device                 r;
+        std::default_random_engine         e1(r());
+        std::uniform_int_distribution<int> uniform_dist(0, bestThread->rootMoves.size() - 1);
+        std::uniform_int_distribution<int> uniform_pieceType(1, 6);
+        // find a random piece type to move
+        PieceType targetType = NO_PIECE_TYPE;
+        Move      randomMove = Move::none();
+        while (targetType == NO_PIECE_TYPE)
+        {
+            // pick randomly
+            PieceType randomPiece = PieceType(uniform_pieceType(e1));
+            // see if we have it
+            for (size_t i = 0; i < bestThread->rootMoves.size(); i++)
+            {
+                auto move = bestThread->rootMoves[i].pv[0];
+                if (type_of(rootPos.piece_on(move.from_sq())) == randomPiece)
+                    targetType = randomPiece;
+            }
+        }
+        // pick random moves until it is of the right type
+        while (randomMove == Move::none())
+        {
+            int  randomIndex = uniform_dist(e1);
+            auto move        = bestThread->rootMoves[randomIndex].pv[0];
+            if (type_of(rootPos.piece_on(move.from_sq())) == targetType
+                || targetType == NO_PIECE_TYPE)
+                randomMove = move;
+        }
+        bestmove = UCIEngine::move(randomMove, rootPos.is_chess960());
+        ponder   = "";
+    }
     main_manager()->updates.onBestmove(bestmove, ponder);
 }
 
