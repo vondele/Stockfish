@@ -109,7 +109,7 @@ class Engine {
     OptionsMap           options;
     ThreadPool           threads;
     TranspositionTable   tt;
-    Eval::NNUE::Networks networks;
+    NumaReplicated<Eval::NNUE::Networks> networks;
 
     Search::SearchManager::UpdateContext updateContext;
 };

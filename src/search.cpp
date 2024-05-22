@@ -144,7 +144,7 @@ Search::Worker::Worker(SharedState&                    sharedState,
     threads(sharedState.threads),
     tt(sharedState.tt),
     networks(sharedState.networks),
-    refreshTable(networks) {
+    refreshTable(*networks) {
     clear();
 }
 
@@ -508,7 +508,7 @@ void Search::Worker::clear() {
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int((21.19 + std::log(size_t(options["Threads"])) / 2) * std::log(i));
 
-    refreshTable.clear(networks);
+    refreshTable.clear(*networks);
 }
 
 

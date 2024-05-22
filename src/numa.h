@@ -579,7 +579,24 @@ public:
 
   ~NumaReplicated() override = default;
 
-  NumaReplicated() {}
+  const T& operator[](NumaIndex n) const {
+    return *(instances[n]);
+  }
+
+  const T& operator*() const {
+    return *(instances[0]);
+  }
+
+  const T* operator->() const {
+    return instances[0].get();
+  }
+
+  template <typename FuncT>
+  void modify_and_replicate(FuncT&& f) {
+    auto source = std::move(instances[0]);
+    std::forward<FuncT>(f)(source);
+    replicate_from(std::move(*source));
+  }
 
   void on_numa_config_changed() override {
     // Use the first one as the source. It doesn't matter which one we use, because they all must

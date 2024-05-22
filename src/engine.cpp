@@ -50,7 +50,7 @@ Engine::Engine(std::string path) :
     binaryDirectory(CommandLine::get_binary_directory(path)),
     numaContext(NumaConfig::from_system()),
     states(new std::deque<StateInfo>(1)),
-    networks(NN::Networks(
+    networks(numaContext, NN::Networks(
       NN::NetworkBig({EvalFileDefaultNameBig, "None", ""}, NN::EmbeddedNNUEType::BIG),
       NN::NetworkSmall({EvalFileDefaultNameSmall, "None", ""}, NN::EmbeddedNNUEType::SMALL))) {
     pos.set(StartFEN, false, &states->back());
@@ -144,28 +144,37 @@ void Engine::set_ponderhit(bool b) { threads.main_manager()->ponder = b; }
 // network related
 
 void Engine::verify_networks() const {
-    networks.big.verify(options["EvalFile"]);
-    networks.small.verify(options["EvalFileSmall"]);
+    networks->big.verify(options["EvalFile"]);
+    networks->small.verify(options["EvalFileSmall"]);
 }
 
 void Engine::load_networks() {
-    load_big_network(options["EvalFile"]);
-    load_small_network(options["EvalFileSmall"]);
+    networks.modify_and_replicate([this](NN::Networks& networks_) {
+        networks_.big.load(binaryDirectory, options["EvalFile"]);
+        networks_.small.load(binaryDirectory, options["EvalFileSmall"]);
+    });
+    threads.clear();
 }
 
 void Engine::load_big_network(const std::string& file) {
-    networks.big.load(binaryDirectory, file);
+    networks.modify_and_replicate([this, &file](NN::Networks& networks_) {
+        networks_.big.load(binaryDirectory, file);
+    });
     threads.clear();
 }
 
 void Engine::load_small_network(const std::string& file) {
-    networks.small.load(binaryDirectory, file);
+    networks.modify_and_replicate([this, &file](NN::Networks& networks_) {
+        networks_.small.load(binaryDirectory, file);
+    });
     threads.clear();
 }
 
 void Engine::save_network(const std::pair<std::optional<std::string>, std::string> files[2]) {
-    networks.big.save(files[0].first);
-    networks.small.save(files[1].first);
+    networks.modify_and_replicate([this, &files](NN::Networks& networks_) {
+        networks_.big.save(files[0].first);
+        networks_.small.save(files[1].first);
+    });
 }
 
 // utility functions

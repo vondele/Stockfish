@@ -38,6 +38,7 @@
 #include "timeman.h"
 #include "types.h"
 #include "nnue/nnue_accumulator.h"
+#include "numa.h"
 
 namespace Stockfish {
 
@@ -136,7 +137,7 @@ struct SharedState {
     SharedState(const OptionsMap&           optionsMap,
                 ThreadPool&                 threadPool,
                 TranspositionTable&         transpositionTable,
-                const Eval::NNUE::Networks& nets) :
+                const NumaReplicated<Eval::NNUE::Networks>& nets) :
         options(optionsMap),
         threads(threadPool),
         tt(transpositionTable),
@@ -145,7 +146,7 @@ struct SharedState {
     const OptionsMap&           options;
     ThreadPool&                 threads;
     TranspositionTable&         tt;
-    const Eval::NNUE::Networks& networks;
+    const NumaReplicated<Eval::NNUE::Networks>& networks;
 };
 
 class Worker;
@@ -306,7 +307,7 @@ class Worker {
     const OptionsMap&           options;
     ThreadPool&                 threads;
     TranspositionTable&         tt;
-    const Eval::NNUE::Networks& networks;
+    const NumaReplicated<Eval::NNUE::Networks>& networks;
 
     // Used by NNUE
     Eval::NNUE::AccumulatorCaches refreshTable;
