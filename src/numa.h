@@ -519,6 +519,7 @@ private:
 // Whoever is using this does not need to know the specifics of the replication
 // machinery.
 class NumaReplicatedAccessToken {
+public:
   explicit NumaReplicatedAccessToken(NumaIndex idx) : 
     n(idx)
   {
@@ -611,7 +612,7 @@ public:
   template <typename FuncT>
   void modify_and_replicate(FuncT&& f) {
     auto source = std::move(instances[0]);
-    std::forward<FuncT>(f)(source);
+    std::forward<FuncT>(f)(*source);
     replicate_from(std::move(*source));
   }
 

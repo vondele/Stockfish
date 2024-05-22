@@ -49,7 +49,7 @@ class Thread {
     Thread(Search::SharedState&, std::unique_ptr<Search::ISearchManager>, size_t, NumaReplicatedAccessToken, std::function<void()>);
     virtual ~Thread();
 
-    void   idle_loop();
+    void   idle_loop(std::function<void()> threadInitFunc);
     void   start_searching();
     void   clear_worker();
     void   run_custom_job(std::function<void()> f);

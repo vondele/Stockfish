@@ -55,8 +55,8 @@ Thread::Thread(Search::SharedState&                    sharedState,
     // threadInitFunc may be setting processor affinity, so wait until it's done
     // before we touch any memory allocations. Run the allocations on the thread.
     // Ideally we would also allocate the SearchManager here, but that's minor.
-    run_custom_job([this, &]() {
-        worker = std::make_unique<Search::Worker>(sharedState, std::move(sm), n, token)
+    run_custom_job([this, &sharedState, &sm, n, token]() {
+        worker = std::make_unique<Search::Worker>(sharedState, std::move(sm), n, token);
     });
 
     wait_for_search_finished();
@@ -172,15 +172,15 @@ void ThreadPool::set(const NumaConfig&                           numaConfig,
         {
             const size_t threadId = threads.size();
             const NumaIndex numaId = threadToNumaNode[threadId];
-            const auto token = 
-            auto manager = NumaReplicatedAccessToken(numaId);
+            const NumaReplicatedAccessToken token(numaId);
+            auto manager = 
                 threadId == 0
-                ? std::make_unique<Search::SearchManager>(updateContext)
+                ? std::unique_ptr<Search::ISearchManager>(std::make_unique<Search::SearchManager>(updateContext))
                 : std::make_unique<Search::NullSearchManager>();
 
-            auto threadInitFunc = [&numaConfig, &threadToNumaNode, numaId]() {
+            auto threadInitFunc = [&numaConfig, &threadToNumaNode, numaId, doBindThreads]() {
                 if (doBindThreads) {
-                    numaConfig.bind_current_thread_to_numa_node(threadToNumaNode[threadId]);
+                    numaConfig.bind_current_thread_to_numa_node(numaId);
                 }
             };
 
