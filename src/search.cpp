@@ -136,9 +136,11 @@ void update_all_stats(const Position& pos,
 
 Search::Worker::Worker(SharedState&                    sharedState,
                        std::unique_ptr<ISearchManager> sm,
-                       size_t                          thread_id) :
+                       size_t                          thread_id,
+                       NumaReplicatedAccessToken       token) :
     // Unpack the SharedState struct into member variables
     thread_idx(thread_id),
+    numaAccessToken(token),
     manager(std::move(sm)),
     options(sharedState.options),
     threads(sharedState.threads),

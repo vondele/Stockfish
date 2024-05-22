@@ -515,6 +515,23 @@ private:
   }
 };
 
+// We want to abstract the purpose of storing the numa node index somewhat.
+// Whoever is using this does not need to know the specifics of the replication
+// machinery.
+class NumaReplicatedAccessToken {
+  explicit NumaReplicatedAccessToken(NumaIndex idx) : 
+    n(idx)
+  {
+  }
+
+  NumaIndex get_numa_index() const {
+    return n;
+  }
+
+private:
+  NumaIndex n;
+};
+
 // We force boxing with a unique_ptr. If this becomes an issue due to added indirection we
 // may need to add an option for a custom boxing type.
 // When the NUMA config changes the value stored at the index 0 is replicated to other nodes.
@@ -579,8 +596,8 @@ public:
 
   ~NumaReplicated() override = default;
 
-  const T& operator[](NumaIndex n) const {
-    return *(instances[n]);
+  const T& operator[](NumaReplicatedAccessToken token) const {
+    return *(instances[token.get_numa_index()]);
   }
 
   const T& operator*() const {

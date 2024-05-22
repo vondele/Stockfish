@@ -31,6 +31,7 @@
 #include "position.h"
 #include "search.h"
 #include "thread_win32_osx.h"
+#include "numa.h"
 
 namespace Stockfish {
 
@@ -45,7 +46,7 @@ using Value = int;
 // the search is finished, it goes back to idle_loop() waiting for a new signal.
 class Thread {
    public:
-    Thread(Search::SharedState&, std::unique_ptr<Search::ISearchManager>, size_t);
+    Thread(Search::SharedState&, std::unique_ptr<Search::ISearchManager>, size_t, NumaReplicatedAccessToken, std::function<void()>);
     virtual ~Thread();
 
     void   idle_loop();
@@ -64,6 +65,7 @@ class Thread {
     size_t                  idx, nthreads;
     bool                    exit = false, searching = true;  // Set before starting std::thread
     NativeThread            stdThread;
+    NumaReplicatedAccessToken numaAccessToken;
 };
 
 
@@ -89,7 +91,7 @@ class ThreadPool {
     void wait_on_thread(size_t threadId);
     size_t num_threads() const;
     void clear();
-    void set(Search::SharedState, const Search::SearchManager::UpdateContext&);
+    void set(const NumaConfig& numaConfig, Search::SharedState, const Search::SearchManager::UpdateContext&);
 
     Search::SearchManager* main_manager();
     Thread*                main_thread() const { return threads.front(); }

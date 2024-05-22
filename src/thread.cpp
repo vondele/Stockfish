@@ -42,11 +42,22 @@ namespace Stockfish {
 // in idle_loop(). Note that 'searching' and 'exit' should be already set.
 Thread::Thread(Search::SharedState&                    sharedState,
                std::unique_ptr<Search::ISearchManager> sm,
-               size_t                                  n) :
-    worker(std::make_unique<Search::Worker>(sharedState, std::move(sm), n)),
+               size_t                                  n,
+               NumaReplicatedAccessToken               token,
+               std::function<void()>                   threadInitFunc) :
     idx(n),
     nthreads(sharedState.options["Threads"]),
-    stdThread(&Thread::idle_loop, this) {
+    stdThread(&Thread::idle_loop, this, std::move(threadInitFunc)),
+    numaAccessToken(token) {
+
+    wait_for_search_finished();
+
+    // threadInitFunc may be setting processor affinity, so wait until it's done
+    // before we touch any memory allocations. Run the allocations on the thread.
+    // Ideally we would also allocate the SearchManager here, but that's minor.
+    run_custom_job([this, &]() {
+        worker = std::make_unique<Search::Worker>(sharedState, std::move(sm), n, token)
+    });
 
     wait_for_search_finished();
 }
@@ -95,7 +106,9 @@ void Thread::run_custom_job(std::function<void()> f) {
 // Thread gets parked here, blocked on the
 // condition variable, when it has no work to do.
 
-void Thread::idle_loop() {
+void Thread::idle_loop(std::function<void()> threadInitFunc) {
+    threadInitFunc();
+    threadInitFunc = nullptr; // release the memory for this function as it will no longer be used
 
     while (true)
     {
@@ -127,7 +140,8 @@ uint64_t ThreadPool::tb_hits() const { return accumulate(&Search::Worker::tbHits
 // Creates/destroys threads to match the requested number.
 // Created and launched threads will immediately go to sleep in idle_loop.
 // Upon resizing, threads are recreated to allow for binding if necessary.
-void ThreadPool::set(Search::SharedState                         sharedState,
+void ThreadPool::set(const NumaConfig&                           numaConfig,
+                     Search::SharedState                         sharedState,
                      const Search::SearchManager::UpdateContext& updateContext) {
 
     if (threads.size() > 0)  // destroy any existing thread(s)
@@ -140,15 +154,37 @@ void ThreadPool::set(Search::SharedState                         sharedState,
 
     const size_t requested = sharedState.options["Threads"];
 
+    const auto threadToNumaNode = numaConfig.distribute_threads_among_numa_nodes(requested);
+
+    // Binding threads may be problematic when there's multiple NUMA nodes and
+    // multiple Stockfish instances running. In particular, if each instance
+    // runs a single thread then they would all be mapped to the first NUMA node.
+    // This is undesirable, and so the default behaviour (i.e. when the user does not
+    // change the NumaConfig UCI setting) is to not bind the threads to processors
+    // unless we know for sure that we span NUMA nodes and replication is required.
+    const bool doBindThreads = 
+           (sharedState.options["NumaConfig"] != "auto" || requested > (std::thread::hardware_concurrency() / 2))
+        && (numaConfig.requires_memory_replication());
+
     if (requested > 0)  // create new thread(s)
     {
-        auto manager = std::make_unique<Search::SearchManager>(updateContext);
-        threads.push_back(new Thread(sharedState, std::move(manager), 0));
-
         while (threads.size() < requested)
         {
-            auto null_manager = std::make_unique<Search::NullSearchManager>();
-            threads.push_back(new Thread(sharedState, std::move(null_manager), threads.size()));
+            const size_t threadId = threads.size();
+            const NumaIndex numaId = threadToNumaNode[threadId];
+            const auto token = 
+            auto manager = NumaReplicatedAccessToken(numaId);
+                threadId == 0
+                ? std::make_unique<Search::SearchManager>(updateContext)
+                : std::make_unique<Search::NullSearchManager>();
+
+            auto threadInitFunc = [&numaConfig, &threadToNumaNode, numaId]() {
+                if (doBindThreads) {
+                    numaConfig.bind_current_thread_to_numa_node(threadToNumaNode[threadId]);
+                }
+            };
+
+            threads.push_back(new Thread(sharedState, std::move(manager), threadId, token, std::move(threadInitFunc)));
         }
 
         clear();
