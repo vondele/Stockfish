@@ -60,6 +60,8 @@ UCIEngine::UCIEngine(int argc, char** argv) :
 
     options["Debug Log File"] << Option("", [](const Option& o) { start_logger(o); });
 
+    options["NumaConfig"] << Option("auto", [this](const Option& o) { engine.set_numa_config_from_option(o); });
+
     options["Threads"] << Option(1, 1, 1024, [this](const Option&) { engine.resize_threads(); });
 
     options["Hash"] << Option(16, 1, MaxHashMB, [this](const Option& o) { engine.set_tt_size(o); });
