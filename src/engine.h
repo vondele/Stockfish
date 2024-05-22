@@ -35,6 +35,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "ucioption.h"
+#include "numa.h"
 
 namespace Stockfish {
 
@@ -47,6 +48,13 @@ class Engine {
     using InfoIter  = Search::InfoIteration;
 
     Engine(std::string path = "");
+
+    // Can't be movable due to components holding backreferences to fields
+    Engine(const Engine&) = delete;
+    Engine(Engine&&) = delete;
+    Engine& operator=(const Engine&) = delete;
+    Engine& operator=(Engine&&) = delete;
+
     ~Engine() { wait_for_search_finished(); }
 
     std::uint64_t perft(const std::string& fen, Depth depth, bool isChess960);
@@ -91,6 +99,8 @@ class Engine {
 
    private:
     const std::string binaryDirectory;
+
+    NumaReplicationContext numaContext;
 
     Position     pos;
     StateListPtr states;

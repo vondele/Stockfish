@@ -51,7 +51,7 @@ using SetThreadSelectedCpuSetMasks_t
 
 using SetThreadGroupAffinity_t
                   = bool (*)(HANDLE, 
-                    const GROUP_AFFINITY, 
+                    const GROUP_AFFINITY*, 
                     PGROUP_AFFINITY);
 
 #endif
@@ -177,11 +177,11 @@ public:
       NumaConfig splitCfg = empty();
 
       NumaIndex splitNodeIndex = 0;
-      for (const auto& cpus : nodes) {
+      for (const auto& cpus : cfg.nodes) {
         if (cpus.empty())
           continue;
 
-        size_t lastProcGroupIndex = cpus[0] / 64;
+        size_t lastProcGroupIndex = *(cpus.begin()) / 64;
         for (CpuIndex c : cpus) {
           const size_t procGroupIndex = c / 64;
           if (procGroupIndex != lastProcGroupIndex) {
@@ -372,7 +372,8 @@ public:
       GROUP_AFFINITY affinity;
       std::memset(&affinity, 0, sizeof(GROUP_AFFINITY));
       affinity.Group = static_cast<WORD>(n);
-      const size_t forcedProcGroupIndex = nodes[n][0] / 64;
+      // We use an ordered set so we're guaranteed to get the smallest cpu number here.
+      const size_t forcedProcGroupIndex = *(nodes[n].begin()) / 64;
       for (CpuIndex c : nodes[n]) {
         const size_t procGroupIndex = c / 64;
         const size_t idxWithinProcGroup = c % 64;
@@ -614,7 +615,10 @@ private:
 
 class NumaReplicationContext {
 public:
-  NumaReplicationContext() {}
+  NumaReplicationContext(NumaConfig&& cfg) :
+    config(std::move(cfg))
+  {
+  }
 
   NumaReplicationContext(const NumaReplicationContext&) = delete;
   NumaReplicationContext(NumaReplicationContext&&) = delete;
@@ -663,21 +667,21 @@ private:
   std::map<size_t, NumaReplicatedBase*> trackedReplicatedObjects;
 };
 
-NumaReplicatedBase::NumaReplicatedBase(NumaReplicationContext& ctx) :
+inline NumaReplicatedBase::NumaReplicatedBase(NumaReplicationContext& ctx) :
   context(&ctx),
   uniqueId(get_next_unique_id()) 
 {
   context->attach(this);
 }
 
-NumaReplicatedBase::NumaReplicatedBase(NumaReplicatedBase&& other) noexcept : 
+inline NumaReplicatedBase::NumaReplicatedBase(NumaReplicatedBase&& other) noexcept : 
   context(std::exchange(other.context, nullptr)),
   uniqueId(std::exchange(other.uniqueId, InvalidUniqueId))
 {
   context->move_attached(&other, this);
 }
 
-NumaReplicatedBase& NumaReplicatedBase::operator=(NumaReplicatedBase&& other) noexcept
+inline NumaReplicatedBase& NumaReplicatedBase::operator=(NumaReplicatedBase&& other) noexcept
 {
   context = std::exchange(other.context, nullptr);
   uniqueId = std::exchange(other.uniqueId, InvalidUniqueId);
@@ -687,12 +691,12 @@ NumaReplicatedBase& NumaReplicatedBase::operator=(NumaReplicatedBase&& other) no
   return *this;
 }
 
-NumaReplicatedBase::~NumaReplicatedBase() {
+inline NumaReplicatedBase::~NumaReplicatedBase() {
   if (context != nullptr)
     context->detach(this);
 }
 
-const NumaConfig& NumaReplicatedBase::get_numa_config() const {
+inline const NumaConfig& NumaReplicatedBase::get_numa_config() const {
   return context->get_numa_config();
 }
 

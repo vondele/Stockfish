@@ -29,26 +29,6 @@
 using namespace Stockfish;
 
 int main(int argc, char* argv[]) {
-
-    std::cout << "creating context\n";
-    NumaReplicationContext ctx;
-    std::cout << "created context\n";
-
-    std::cout << "creating replicated\n";
-    NumaReplicated<int> r(ctx);
-    std::cout << "created replicated\n";
-
-    std::cout << "setting numa config\n";
-    //ctx.set_numa_config(NumaConfig::from_string("0:1:2:3:4:5:6:7:8:9:10-15"));
-    ctx.set_numa_config(NumaConfig::from_system());
-    std::cout << "set numa config\n";
-
-    auto d = ctx.get_numa_config().distribute_threads_among_numa_nodes(25);
-    for (auto v : d) std::cout << v << ' ';
-    std::cout << '\n';
-
-    return 0;
-
     std::cout << engine_info() << std::endl;
 
     Bitboards::init();

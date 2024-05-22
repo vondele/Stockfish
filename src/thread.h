@@ -26,7 +26,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
-#include <funcitonal>
+#include <functional>
 
 #include "position.h"
 #include "search.h"
@@ -86,6 +86,7 @@ class ThreadPool {
 
     void start_thinking(const OptionsMap&, Position&, StateListPtr&, Search::LimitsType);
     void run_on_thread(size_t threadId, std::function<void()> f);
+    void wait_on_thread(size_t threadId);
     size_t num_threads() const;
     void clear();
     void set(Search::SharedState, const Search::SearchManager::UpdateContext&);

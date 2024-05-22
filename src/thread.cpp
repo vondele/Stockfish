@@ -179,12 +179,12 @@ void ThreadPool::clear() {
 
 void ThreadPool::run_on_thread(size_t threadId, std::function<void()> f) {
     assert(threads.size() > threadId);
-    threads[threadId].run_custom_job(std::move(f));
+    threads[threadId]->run_custom_job(std::move(f));
 }
 
 void ThreadPool::wait_on_thread(size_t threadId) {
     assert(threads.size() > threadId);
-    threads[threadId].wait_for_search_finished();
+    threads[threadId]->wait_for_search_finished();
 }
 
 size_t ThreadPool::num_threads() const {

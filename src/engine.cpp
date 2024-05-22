@@ -48,6 +48,7 @@ constexpr auto StartFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 
 
 Engine::Engine(std::string path) :
     binaryDirectory(CommandLine::get_binary_directory(path)),
+    numaContext(NumaConfig::from_system()),
     states(new std::deque<StateInfo>(1)),
     networks(NN::Networks(
       NN::NetworkBig({EvalFileDefaultNameBig, "None", ""}, NN::EmbeddedNNUEType::BIG),
@@ -74,7 +75,7 @@ void Engine::stop() { threads.stop = true; }
 void Engine::search_clear() {
     wait_for_search_finished();
 
-    tt.clear(options["Threads"]);
+    tt.clear(threads);
     threads.clear();
 
     // @TODO wont work with multiple instances
