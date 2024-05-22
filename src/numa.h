@@ -106,7 +106,8 @@ using NumaIndex = size_t;
 class NumaConfig {
 public:
   NumaConfig() :
-    highestCpuIndex(0)
+    highestCpuIndex(0),
+    isPhysicallySingleNode(false)
   {
     const CpuIndex numCpus = CpuIndex{std::max<CpuIndex>(1, std::thread::hardware_concurrency())};
     std::cout << "creating numa config with " << numCpus << " cpus\n";
@@ -203,6 +204,8 @@ public:
 
 #endif
 
+    cfg.isPhysicallySingleNode = cfg.nodes.size() == 1;
+
     return cfg;
   }
 
@@ -253,6 +256,14 @@ public:
 
   CpuIndex num_cpus() const {
     return nodeByCpu.size(); 
+  }
+
+  bool requires_memory_replication() const {
+    // Even though replication is not strictly necessary when
+    // we only have a single physical NUMA node while the user
+    // specifies multiple, we force replication because we assume
+    // the user knows better and that's why they are using a custom mapping.
+    return !isPhysicallySingleNode || nodes.size() > 1;
   }
 
   std::vector<NumaIndex> distribute_threads_among_numa_nodes(CpuIndex numThreads) const {
@@ -411,10 +422,18 @@ private:
   std::map<CpuIndex, NumaIndex> nodeByCpu;
   CpuIndex highestCpuIndex;
 
+  // When we read the system's NUMA configuration we can know for certain
+  // that the system only has a single NUMA node. This can be used to prevent
+  // unnecessary copying on such systems, reducing worst case memory usage 
+  // and speeding up initialization, which is the vast majority of
+  // machines Stockfish is being ran on.
+  bool isPhysicallySingleNode;
+
   struct EmptyNodeTag {};
 
   NumaConfig(EmptyNodeTag) :
-    highestCpuIndex(0)
+    highestCpuIndex(0),
+    isPhysicallySingleNode(false)
   {
 
   }
@@ -514,11 +533,11 @@ public:
     replicate_from(T{});
   }
 
-  NumaReplicated(NumaReplicationContext& ctx, const T& source) :
+  NumaReplicated(NumaReplicationContext& ctx, T&& source) :
     NumaReplicatedBase(ctx),
     replicatorFunc([](const T& src) -> T { return src; }) 
   {
-    replicate_from(source);
+    replicate_from(std::move(source));
   }
 
   template <typename FuncT>
@@ -530,11 +549,11 @@ public:
   }
 
   template <typename FuncT>
-  NumaReplicated(NumaReplicationContext& ctx, const T& source, FuncT&& func) :
+  NumaReplicated(NumaReplicationContext& ctx, T&& source, FuncT&& func) :
     NumaReplicatedBase(ctx),
     replicatorFunc(std::forward<FuncT>(func)) 
   {
-    replicate_from(source);
+    replicate_from(std::move(source));
   }
 
   NumaReplicated(const NumaReplicated&) = delete;
@@ -555,8 +574,8 @@ public:
     return *this;
   }
 
-  NumaReplicated& operator=(const T& source) {
-    replicate_from(source);
+  NumaReplicated& operator=(T&& source) {
+    replicate_from(std::move(source));
 
     return *this;
   }
@@ -569,21 +588,30 @@ public:
     // Use the first one as the source. It doesn't matter which one we use, because they all must
     // be identical, but the first one is guaranteed to exist.
     auto source = std::move(instances[0]);
-    replicate_from(*source);
+    replicate_from(std::move(*source));
   }
 
 private:
   ReplicatorFuncType replicatorFunc;
   std::vector<std::unique_ptr<T>> instances;
 
-  void replicate_from(const T& source) {
+  void replicate_from(T&& source) {
     std::cout << "Replicating...\n";
 
     instances.clear();
 
     const NumaConfig& cfg = get_numa_config();
-    for (NumaIndex n = 0; n < cfg.num_numa_nodes(); ++n) {
-      cfg.execute_on_numa_node(n, [this, &source](){ instances.emplace_back(std::make_unique<T>(replicatorFunc(source))); });
+    if (cfg.requires_memory_replication()) {
+      for (NumaIndex n = 0; n < cfg.num_numa_nodes(); ++n) {
+        cfg.execute_on_numa_node(n, [this, &source](){ instances.emplace_back(std::make_unique<T>(replicatorFunc(source))); });
+      }
+    } else {
+      for (NumaIndex n = 0; n + 1 < cfg.num_numa_nodes(); ++n) {
+        instances.emplace_back(std::make_unique<T>(replicatorFunc(source)));
+      }
+      // We take advantage of the fact that replication is not required
+      // and reuse the source value, avoiding one copy operation.
+      instances.emplace_back(std::make_unique<T>(std::move(source)));
     }
   }
 };
