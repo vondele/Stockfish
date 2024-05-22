@@ -107,7 +107,7 @@ class NumaConfig {
 public:
   NumaConfig() :
     highestCpuIndex(0),
-    isPhysicallySingleNode(false)
+    requiresMemoryReplication(false)
   {
     const CpuIndex numCpus = CpuIndex{std::max<CpuIndex>(1, std::thread::hardware_concurrency())};
     std::cout << "creating numa config with " << numCpus << " cpus\n";
@@ -204,7 +204,7 @@ public:
 
 #endif
 
-    cfg.isPhysicallySingleNode = cfg.nodes.size() == 1;
+    cfg.requiresMemoryReplication = cfg.nodes.size() != 1;
 
     return cfg;
   }
@@ -259,11 +259,7 @@ public:
   }
 
   bool requires_memory_replication() const {
-    // Even though replication is not strictly necessary when
-    // we only have a single physical NUMA node while the user
-    // specifies multiple, we force replication because we assume
-    // the user knows better and that's why they are using a custom mapping.
-    return !isPhysicallySingleNode || nodes.size() > 1;
+    return requiresMemoryReplication;
   }
 
   std::vector<NumaIndex> distribute_threads_among_numa_nodes(CpuIndex numThreads) const {
@@ -427,13 +423,13 @@ private:
   // unnecessary copying on such systems, reducing worst case memory usage 
   // and speeding up initialization, which is the vast majority of
   // machines Stockfish is being ran on.
-  bool isPhysicallySingleNode;
+  bool requiresMemoryReplication;
 
   struct EmptyNodeTag {};
 
   NumaConfig(EmptyNodeTag) :
     highestCpuIndex(0),
-    isPhysicallySingleNode(false)
+    requiresMemoryReplication(true)
   {
 
   }
