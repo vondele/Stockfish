@@ -770,7 +770,7 @@ Value Search::Worker::search(
     if (eval < alpha - 465 - futilityMargin * depth * 33 / 32)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
-        if (value < alpha)
+        if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
             return value;
     }
 
