@@ -1922,7 +1922,7 @@ void SearchManager::check_time(Search::Worker& worker) {
         worker.threads.stop = worker.threads.abortedSearch = true;
 }
 
-void SearchManager::pv(const Search::Worker&     worker,
+void SearchManager::pv(Search::Worker&     worker,
                        const ThreadPool&         threads,
                        const TranspositionTable& tt,
                        Depth                     depth) const {
@@ -1963,6 +1963,28 @@ void SearchManager::pv(const Search::Worker&     worker,
         auto bound = rootMoves[i].scoreLowerbound
                      ? "lowerbound"
                      : (rootMoves[i].scoreUpperbound ? "upperbound" : "");
+
+#ifndef NDEBUG
+        // Verify a mate score has an associated PV that
+        // leads to mate in the expected number of moves.
+        if (std::abs(v) >= VALUE_MATE_IN_MAX_PLY && !rootMoves[i].scoreLowerbound
+            && !rootMoves[i].scoreUpperbound)
+        {
+            StateInfo st[MAX_PLY];
+            auto&     matePv = rootMoves[i].pv;
+            // PV has the expected length
+            assert(VALUE_MATE == matePv.size() + std::abs(v));
+
+            auto&     pvPos    = worker.rootPos;
+            for (size_t j = 0; j < matePv.size(); j++)
+                pvPos.do_move(matePv[j], st[j]);
+            // PV end is mate
+            assert(pvPos.checkers() && MoveList<LEGAL>(pvPos).size() == 0);
+            for (size_t j = matePv.size(); j > 0; j--)
+                pvPos.undo_move(matePv[j-1]);
+        }
+#endif
+
 
         InfoFull info;
 
