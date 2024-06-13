@@ -34,7 +34,6 @@ jobs:
         run: |
           python matecheck.py --engine /home/runner/work/Stockfish/Stockfish/Stockfish/src/stockfish --epdFile mates2000.epd --nodes 100000 | tee matecheckout.out
           grep -A100 'Using' matecheckout.out > matecheckmessage.txt
-          pwd
 
       - name: Comment on PR
         uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # @v2.5.0
