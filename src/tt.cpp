@@ -96,7 +96,7 @@ void TTEntry::save(
         move16 = m;
 
     if (std::abs(v) > VALUE_MATE_IN_MAX_PLY)
-        d = std::min(MAX_PLY - 1, d + 6);
+        d = std::min(MAX_PLY - 1, d + 3);
 
     // Overwrite less valuable entries (cheapest checks first)
     if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4
