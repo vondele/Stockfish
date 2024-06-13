@@ -12,16 +12,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          path: Stockfish
+        working-directory: Stockfish
         run: |
           cd src
           make -j profile-build
 
       - name: Checkout matetrack repo and install deps
         uses: actions/checkout@v4
-        with: 
+        with:
           repository: vondele/matetrack
           path: matetrack
           ref: 67aef3528629a8a5e167ba8ea65e75f47a932ee9
+        working-directory: matetrack
         run: |
           pip install -r requirements.txt
 
