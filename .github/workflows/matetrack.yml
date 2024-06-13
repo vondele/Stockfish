@@ -30,8 +30,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run matetrack
+        working-directory: matetrack
         run: |
-          python matecheck.py --engine $GITHUB_WORKSPACE/Stockfish/src/stockfish --epdFile mates2000.epd --nodes 100000 | tee matecheckout.out
+          python matecheck.py --engine ~/Stockfish/src/stockfish --epdFile mates2000.epd --nodes 100000 | tee matecheckout.out
           grep -A100 'Using' matecheckout.out > matecheckmessage.txt
 
       - name: Comment on PR
