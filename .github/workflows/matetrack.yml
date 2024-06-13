@@ -33,15 +33,4 @@ jobs:
         working-directory: matetrack
         run: |
           python matecheck.py --engine /home/runner/work/Stockfish/Stockfish/Stockfish/src/stockfish --epdFile mates2000.epd --nodes 100000 | tee matecheckout.out
-          grep -A100 'Using' matecheckout.out > matecheckmessage.txt
-
-      - name: Comment on PR
-        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # @v2.5.0
-        with:
-          filePath:   /home/runner/work/Stockfish/Stockfish/matetrack/matecheckmessage.txt
-        if: github.event_name == 'pull_request'
-
-      - name: Fail on matetrack issues
-        working-directory: matetrack
-        run: |
-          grep -v "issues were detected" matecheckmessage.txt > /dev/null
+          ! grep "issues were detected" matecheckout.out
