@@ -96,7 +96,7 @@ void TTEntry::save(
         move16 = m;
 
     // Overwrite less valuable entries (cheapest checks first)
-    if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4 + 2 * (std::abs(value16) > VALUE_TB_WIN_IN_MAX_PLY)
+    if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4 + 2 * (std::abs(value16) > 10 * PawnValue)
         || relative_age(generation8))
     {
         assert(d > DEPTH_ENTRY_OFFSET);
