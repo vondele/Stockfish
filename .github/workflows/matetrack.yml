@@ -13,7 +13,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           path: Stockfish
-        working-directory: Stockfish
 
       - name: build SF
         working-directory: Stockfish/src
