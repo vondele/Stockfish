@@ -119,7 +119,10 @@ void UCIEngine::loop() {
         else if (token == "go")
             go(is);
         else if (token == "position")
+        {
             position(is);
+            engine.search_clear();
+        }
         else if (token == "ucinewgame")
             engine.search_clear();
         else if (token == "isready")
@@ -446,6 +449,7 @@ void UCIEngine::on_update_no_moves(const Engine::InfoShort& info) {
 }
 
 void UCIEngine::on_update_full(const Engine::InfoFull& info, bool showWDL) {
+
     std::stringstream ss;
 
     ss << "info";
@@ -471,6 +475,8 @@ void UCIEngine::on_update_full(const Engine::InfoFull& info, bool showWDL) {
 }
 
 void UCIEngine::on_iter(const Engine::InfoIter& info) {
+
+    return;
     std::stringstream ss;
 
     ss << "info";
