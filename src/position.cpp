@@ -1158,7 +1158,7 @@ bool Position::has_repeated() const {
 
 // Tests if the position has a move which draws by repetition,
 // or an earlier position has a move that directly reaches the current position.
-bool Position::has_game_cycle(int ply) const {
+bool Position::has_game_cycle(int ply) {
 
     int j;
 
@@ -1166,6 +1166,18 @@ bool Position::has_game_cycle(int ply) const {
 
     if (end < 3)
         return false;
+
+
+    // verification code, let just generate all moves and see if we find a draw
+    bool isDraw = false;
+    StateInfo stlocal;
+    for (const auto& m : MoveList<LEGAL>(*this))
+    {
+       do_move(m, stlocal);
+       // only 3 folds, copied from is_draw
+       isDraw = isDraw || (stlocal.repetition && stlocal.repetition < ply+1);
+       undo_move(m);
+    };
 
     Key        originalKey = st->key;
     StateInfo* stp         = st->previous;
@@ -1184,7 +1196,10 @@ bool Position::has_game_cycle(int ply) const {
             if (!((between_bb(s1, s2) ^ s2) & pieces()))
             {
                 if (ply > i)
+                {
+                    if (!isDraw) std::cout << "Surprise 1! " << (*this).fen() << std::endl;
                     return true;
+                }
 
                 // For nodes before or at the root, check that the move is a
                 // repetition rather than a move to the current position.
@@ -1195,7 +1210,10 @@ bool Position::has_game_cycle(int ply) const {
 
                 // For repetitions before or at the root, require one more
                 if (stp->repetition)
+                {
+                    if (!isDraw) std::cout << "Surprise 2! " << (*this).fen() << std::endl;
                     return true;
+                }
             }
         }
     }
