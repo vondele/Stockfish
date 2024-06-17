@@ -1192,21 +1192,25 @@ bool Position::has_game_cycle(int ply) {
             Move   move = cuckooMove[j];
             Square s1   = move.from_sq();
             Square s2   = move.to_sq();
+            if (empty(s1))
+                move = Move(s2,s1);
 
             if (!((between_bb(s1, s2) ^ s2) & pieces()))
             {
-                if (ply > i)
-                {
-                    if (!isDraw) std::cout << "Surprise 1! " << (*this).fen() << std::endl;
-                    return true;
-                }
-
                 // For nodes before or at the root, check that the move is a
                 // repetition rather than a move to the current position.
                 // In the cuckoo table, both moves Rc1c5 and Rc5c1 are stored in
                 // the same location, so we have to select which square to check.
                 if (color_of(piece_on(empty(s1) ? s2 : s1)) != side_to_move())
                     continue;
+
+                if (ply > i)
+                {
+                    if (!isDraw) std::cout << "Surprise 1! " << (*this).fen() << std::endl;
+                    if (!pseudo_legal(move) || !legal(move)) std::cout << "not legal: " << UCIEngine::move(move, false) << std::endl;
+
+                    return true;
+                }
 
                 // For repetitions before or at the root, require one more
                 if (stp->repetition)
@@ -1217,6 +1221,8 @@ bool Position::has_game_cycle(int ply) {
             }
         }
     }
+
+    if (isDraw) std::cout << "Surprise 3! " << (*this).fen() << std::endl;
     return false;
 }
 
