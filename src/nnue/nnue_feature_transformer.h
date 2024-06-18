@@ -629,11 +629,17 @@ class FeatureTransformer {
             {
                 const IndexType offset = HalfDimensions * index;
                 for (IndexType j = 0; j < HalfDimensions; ++j)
+                {
+                    FTrcount+=sizeof(WeightType);
                     (st->*accPtr).accumulation[Perspective][j] -= weights[offset + j];
+                }
 
                 for (std::size_t k = 0; k < PSQTBuckets; ++k)
+                {
+                    FTrcount+=sizeof(PSQTWeightType);
                     (st->*accPtr).psqtAccumulation[Perspective][k] -=
                       psqtWeights[index * PSQTBuckets + k];
+                }
             }
 
             // Difference calculation for the activated features
@@ -641,11 +647,17 @@ class FeatureTransformer {
             {
                 const IndexType offset = HalfDimensions * index;
                 for (IndexType j = 0; j < HalfDimensions; ++j)
+                {
+                    FTrcount+=sizeof(WeightType);
                     (st->*accPtr).accumulation[Perspective][j] += weights[offset + j];
+                }
 
                 for (std::size_t k = 0; k < PSQTBuckets; ++k)
+                {
+                    FTrcount+=sizeof(PSQTWeightType);
                     (st->*accPtr).psqtAccumulation[Perspective][k] +=
                       psqtWeights[index * PSQTBuckets + k];
+                }
             }
         }
 #endif

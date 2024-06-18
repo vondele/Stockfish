@@ -37,6 +37,10 @@
 
 namespace Stockfish {
 
+std::size_t Eval::NNUE::FTrcount = 0;
+std::size_t Eval::NNUE::Lrcount = 0;
+std::size_t Eval::NNUE::Evalcount = 0;
+
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
@@ -62,6 +66,9 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     int  simpleEval = simple_eval(pos, pos.side_to_move());
     bool smallNet   = use_smallnet(pos);
     int  v;
+
+    smallNet = false;
+    Stockfish::Eval::NNUE::Evalcount++;
 
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
                                        : networks.big.evaluate(pos, &caches.big);

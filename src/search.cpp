@@ -219,6 +219,9 @@ void Search::Worker::start_searching() {
         ponder = UCIEngine::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+
+    std::cout << "EvalCount " << Stockfish::Eval::NNUE::Evalcount << " FTrcount " << Stockfish::Eval::NNUE::FTrcount << " Lrcount " << Stockfish::Eval::NNUE::Lrcount << std::endl;
+
     main_manager()->updates.onBestmove(bestmove, ponder);
 }
 

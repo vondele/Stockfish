@@ -123,7 +123,10 @@ static void affine_transform_non_ssse3(std::int32_t*       output,
             const std::int8_t* w  = &weights[i];
             const int          in = input[i];
             for (IndexType j = 0; j < OutputDimensions; ++j)
+            {
+                Stockfish::Eval::NNUE::Lrcount+=sizeof(std::int8_t);
                 output[j] += w[j * PaddedInputDimensions] * in;
+            }
         }
     #endif
 }

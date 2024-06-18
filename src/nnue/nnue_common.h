@@ -48,6 +48,10 @@
 
 namespace Stockfish::Eval::NNUE {
 
+extern std::size_t FTrcount;
+extern std::size_t Lrcount;
+extern std::size_t Evalcount;
+
 // Version of the evaluation file
 constexpr std::uint32_t Version = 0x7AF32F20u;
 
