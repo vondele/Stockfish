@@ -536,7 +536,8 @@ Value Search::Worker::search(
 
     // Check if we have an upcoming move that draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
-    if (!rootNode && alpha < VALUE_DRAW + 1 && pos.has_game_cycle(ss->ply))
+    Move threeFoldMove = Move::none();
+    if (!rootNode && alpha < VALUE_DRAW + 1 && (threeFoldMove = pos.has_game_cycle(ss->ply)))
     {
         alpha = VALUE_DRAW + 1;
         if (alpha >= beta)
@@ -1412,7 +1413,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
 
     // Check if we have an upcoming move that draws by repetition, or if
     // the opponent had an alternative move earlier to this position. (~1 Elo)
-    if (alpha < VALUE_DRAW + 1 && pos.has_game_cycle(ss->ply))
+    Move threeFoldMove = Move::none();
+    if (alpha < VALUE_DRAW + 1 && (threeFoldMove = pos.has_game_cycle(ss->ply)))
     {
         alpha = VALUE_DRAW + 1;
         if (alpha >= beta)

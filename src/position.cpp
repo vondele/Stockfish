@@ -1158,14 +1158,10 @@ bool Position::has_repeated() const {
 
 // Tests if the position has a move which draws by repetition,
 // or an earlier position has a move that directly reaches the current position.
-bool Position::has_game_cycle(int ply) const {
+Move Position::has_game_cycle(int ply) const {
 
-    int j;
 
     int end = std::min(st->rule50, st->pliesFromNull);
-
-    if (end < 3)
-        return false;
 
     Key        originalKey = st->key;
     StateInfo* stp         = st->previous;
@@ -1175,31 +1171,21 @@ bool Position::has_game_cycle(int ply) const {
         stp = stp->previous->previous;
 
         Key moveKey = originalKey ^ stp->key;
+        int j;
         if ((j = H1(moveKey), cuckoo[j] == moveKey) || (j = H2(moveKey), cuckoo[j] == moveKey))
         {
             Move   move = cuckooMove[j];
             Square s1   = move.from_sq();
             Square s2   = move.to_sq();
+            if (empty(s1))
+                std::swap(s1, s2);
 
-            // In the cuckoo table, both moves Rc1c5 and Rc5c1 are stored in
-            // the same location, so we have to select which square to check.
-            if (color_of(piece_on(empty(s1) ? s2 : s1)) != side_to_move())
-                continue;
-
-            if (!((between_bb(s1, s2) ^ s2) & pieces()))
-            {
-                // For nodes before or at the root, check that the move is a
-                // repetition rather than a move to the current position.
-                if (ply > i)
-                    return true;
-
-                // For repetitions before or at the root, require one more
-                if (stp->repetition)
-                    return true;
-            }
+            if (color_of(piece_on(s1)) == side_to_move() && (ply > i || stp->repetition)
+                && !((between_bb(s1, s2) ^ s2) & pieces()))
+                return Move(s1, s2);
         }
     }
-    return false;
+    return Move::none();
 }
 
 
