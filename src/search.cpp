@@ -1922,7 +1922,7 @@ void SearchManager::check_time(Search::Worker& worker) {
         worker.threads.stop = worker.threads.abortedSearch = true;
 }
 
-void SearchManager::pv(Search::Worker&     worker,
+void SearchManager::pv(Search::Worker&           worker,
                        const ThreadPool&         threads,
                        const TranspositionTable& tt,
                        Depth                     depth) const {
@@ -1975,13 +1975,45 @@ void SearchManager::pv(Search::Worker&     worker,
             // PV has the expected length
             assert(VALUE_MATE == matePv.size() + std::abs(v));
 
-            auto&     pvPos    = worker.rootPos;
+            auto& pvPos = worker.rootPos;
             for (size_t j = 0; j < matePv.size(); j++)
                 pvPos.do_move(matePv[j], st[j]);
             // PV end is mate
             assert(pvPos.checkers() && MoveList<LEGAL>(pvPos).size() == 0);
             for (size_t j = matePv.size(); j > 0; j--)
-                pvPos.undo_move(matePv[j-1]);
+                pvPos.undo_move(matePv[j - 1]);
+        }
+        else if (
+          std::abs(v) >= VALUE_TB_WIN_IN_MAX_PLY && !rootMoves[i].scoreLowerbound
+          && !rootMoves[i]
+                .scoreUpperbound)  // Verify consistency with TB, under the assumption all TB files have been provided
+        {
+            StateInfo st[MAX_PLY];
+            auto&     TBPv = rootMoves[i].pv;
+
+            auto& pvPos     = worker.rootPos;
+            bool  inTB      = pvPos.count<ALL_PIECES>() <= Tablebases::MaxCardinality;
+            int   pliesToTB = 0;
+
+            for (size_t j = 0; j < TBPv.size(); j++)
+            {
+                pvPos.do_move(TBPv[j], st[j]);
+                if (!inTB)
+                {
+                    pliesToTB = j + 1;
+                    inTB      = pvPos.count<ALL_PIECES>() <= Tablebases::MaxCardinality;
+                }
+            }
+
+            int distance = VALUE_TB - std::abs(v);
+            sync_cout << "info PV length: " << TBPv.size() << " plies to TB " << pliesToTB
+                      << " from score " << distance << " PV in TB: " << inTB << " actual " << pv
+                      << sync_endl;
+            assert(inTB);
+            assert(pliesToTB == distance);
+
+            for (size_t j = TBPv.size(); j > 0; j--)
+                pvPos.undo_move(TBPv[j - 1]);
         }
 #endif
 
