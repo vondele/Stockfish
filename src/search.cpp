@@ -1998,10 +1998,18 @@ void SearchManager::pv(Search::Worker&           worker,
             for (size_t j = 0; j < TBPv.size(); j++)
             {
                 pvPos.do_move(TBPv[j], st[j]);
-                if (!inTB)
+                if (!inTB) // Now we enter a TB position
                 {
                     pliesToTB = j + 1;
                     inTB      = pvPos.count<ALL_PIECES>() <= Tablebases::MaxCardinality;
+
+                    // try to check if we indeed entered a decisive TB positions
+                    if (inTB && !pvPos.can_castle(ANY_CASTLING))
+                    {
+                       TB::ProbeState err;
+                       TB::WDLScore   TBwdl = Tablebases::probe_wdl(pvPos, &err);
+                       assert(err == TB::ProbeState::FAIL || std::abs(TBwdl)>1); // winning position or missing files
+                    }
                 }
             }
 
