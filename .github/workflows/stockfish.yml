@@ -13,7 +13,8 @@ on:
       - tools
 jobs:
   Prerelease:
-    if: github.repository == 'official-stockfish/Stockfish' && (github.ref == 'refs/heads/master' || (startsWith(github.ref_name, 'sf_') && github.ref_type == 'tag'))
+    #if: github.repository == 'official-stockfish/Stockfish' && (github.ref == 'refs/heads/master' || (startsWith(github.ref_name, 'sf_') && github.ref_type == 'tag'))
+    if: (github.ref == 'refs/heads/master' || (startsWith(github.ref_name, 'sf_') && github.ref_type == 'tag'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,13 +96,13 @@ jobs:
   Games:
     uses: ./.github/workflows/games.yml
   Binaries:
-    if: github.repository == 'official-stockfish/Stockfish'
+    #if: github.repository == 'official-stockfish/Stockfish'
     needs: [Matrix, Prerelease, Compilation]
     uses: ./.github/workflows/upload_binaries.yml
     with:
       matrix: ${{ needs.Matrix.outputs.matrix }}
   ARM_Binaries:
-    if: github.repository == 'official-stockfish/Stockfish'
+    #if: github.repository == 'official-stockfish/Stockfish'
     needs: [Matrix, Prerelease, ARMCompilation]
     uses: ./.github/workflows/upload_binaries.yml
     with:
