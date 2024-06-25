@@ -1155,6 +1155,21 @@ bool Position::has_repeated() const {
     return false;
 }
 
+// verification code for has_game_cycle
+bool Position::verified_has_game_cycle(int ply) {
+    bool      isDraw = false;
+    StateInfo stlocal;
+    for (const auto& m : MoveList<LEGAL>(*this))
+    {
+        do_move(m, stlocal);
+        // only 3 folds, copied from is_draw
+        isDraw = isDraw || (stlocal.repetition && stlocal.repetition < ply + 1);
+        undo_move(m);
+    };
+
+    return isDraw;
+}
+
 
 // Tests if the position has a move which draws by repetition,
 // or an earlier position has a move that directly reaches the current position.
@@ -1169,10 +1184,16 @@ bool Position::has_game_cycle(int ply) const {
 
     Key        originalKey = st->key;
     StateInfo* stp         = st->previous;
+    Key        other       = originalKey ^ stp->key ^ Zobrist::side;
 
     for (int i = 3; i <= end; i += 2)
     {
-        stp = stp->previous->previous;
+        stp = stp->previous;
+        other ^= stp->key ^ stp->previous->key ^ Zobrist::side;
+        stp = stp->previous;
+
+        if (other != 0)
+            continue;
 
         Key moveKey = originalKey ^ stp->key;
         if ((j = H1(moveKey), cuckoo[j] == moveKey) || (j = H2(moveKey), cuckoo[j] == moveKey))
@@ -1181,19 +1202,19 @@ bool Position::has_game_cycle(int ply) const {
             Square s1   = move.from_sq();
             Square s2   = move.to_sq();
 
+            // if (empty(s1))
+            //     move = Move(s2, s1);
+
             if (!((between_bb(s1, s2) ^ s2) & pieces()))
             {
                 if (ply > i)
+                {
+                    // dbg_hit_on(!pseudo_legal(move) || !legal(move)); Hit #0: Total 12047 Hits 0 Hit Rate (%) 0
                     return true;
+                }
 
                 // For nodes before or at the root, check that the move is a
                 // repetition rather than a move to the current position.
-                // In the cuckoo table, both moves Rc1c5 and Rc5c1 are stored in
-                // the same location, so we have to select which square to check.
-                if (color_of(piece_on(empty(s1) ? s2 : s1)) != side_to_move())
-                    continue;
-
-                // For repetitions before or at the root, require one more
                 if (stp->repetition)
                     return true;
             }

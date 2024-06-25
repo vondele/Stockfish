@@ -156,6 +156,7 @@ class Position {
     int   game_ply() const;
     bool  is_chess960() const;
     bool  is_draw(int ply) const;
+    bool  verified_has_game_cycle(int ply);
     bool  has_game_cycle(int ply) const;
     bool  has_repeated() const;
     int   rule50_count() const;
