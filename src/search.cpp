@@ -50,7 +50,7 @@ namespace Stockfish {
 
 namespace TB = Tablebases;
 
-int a1=109, a2=40, a3=59, a4=186, a5=285, a6=20, a7=1524, a8=707, a9=260, a10=2073,
+int a1=109, a2=40, a3=59, a4=186, a5=285, a6=20, a7=1524, a8=707, a9=260, a10=2073, aCorrHist=4990,
 
 b1=9, b2=10182, b3=127, b4=86, b5=1193, b6=56, b7=1926,
 
@@ -78,6 +78,7 @@ TUNE(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
      h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h12,
      i1, i2, i3, i4, i5, i6, i7, i8);
 
+TUNE(SetRange(1, 2*aCorrHist), aCorrHist);
 TUNE(SetRange(1, 2*b2), b2);
 TUNE(SetRange(1, 2*c8), c8);
 TUNE(SetRange(1, 2*c12), c12);
@@ -110,7 +111,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 // Add correctionHistory value to raw staticEval and guarantee evaluation does not hit the tablebase range
 Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
     auto cv = w.correctionHistory[pos.side_to_move()][pawn_structure_index<Correction>(pos)];
-    v += cv / 10;
+    v += cv * std::abs(cv) / aCorrHist;
     return std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
 
