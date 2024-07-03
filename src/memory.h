@@ -47,7 +47,7 @@ void memory_deleter(T* ptr, FREE_FUNC free_func) {
 
     // Explicitly needed to call the destructor
     if constexpr (!std::is_trivially_destructible_v<T>)
-        ptr->~T();
+            ptr->~T();
 
     free_func(ptr);
     return;
