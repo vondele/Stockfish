@@ -2015,7 +2015,7 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
 
     pos.do_move(pv[0], st);
 
-    auto [ttHit, ttData, ttWriter] = tt.probe(pos.key());
+    auto [ttHit, ttData, ttWriter]  = tt.probe(pos.key());
     if (ttHit)
     {
         if (MoveList<LEGAL>(pos).contains(ttData.move))
