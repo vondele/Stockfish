@@ -1128,14 +1128,14 @@ bool Position::see_ge(Move m, int threshold) const {
 
 // Tests whether the position is drawn by 50-move rule
 // or by repetition. It does not detect stalemates.
-bool Position::is_draw(int ply) const {
+bool Position::is_draw() const {
 
     if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size()))
         return true;
 
     // Return a draw score if a position repeats once earlier but strictly
     // after the root, or repeats twice before or at the root.
-    return st->repetition && st->repetition < ply;
+    return st->repetition < 0;
 }
 
 
@@ -1158,7 +1158,7 @@ bool Position::has_repeated() const {
 
 // Tests if the position has a move which draws by repetition.
 // This function accurately matches the outcome of is_draw() over all legal moves.
-bool Position::upcoming_repetition(int ply) const {
+bool Position::upcoming_repetition() const {
 
     int j;
 
@@ -1189,9 +1189,6 @@ bool Position::upcoming_repetition(int ply) const {
 
             if (!((between_bb(s1, s2) ^ s2) & pieces()))
             {
-                if (ply > i)
-                    return true;
-
                 // For nodes before or at the root, check that the move is a
                 // repetition rather than a move to the current position.
                 if (stp->repetition)

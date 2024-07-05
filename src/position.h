@@ -155,8 +155,8 @@ class Position {
     Color side_to_move() const;
     int   game_ply() const;
     bool  is_chess960() const;
-    bool  is_draw(int ply) const;
-    bool  upcoming_repetition(int ply) const;
+    bool  is_draw() const;
+    bool  upcoming_repetition() const;
     bool  has_repeated() const;
     int   rule50_count() const;
     Value non_pawn_material(Color c) const;

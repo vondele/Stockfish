@@ -535,7 +535,7 @@ Value Search::Worker::search(
     depth = std::min(depth, MAX_PLY - 1);
 
     // Check if we have an upcoming move that draws by repetition.
-    if (!rootNode && alpha < VALUE_DRAW && pos.upcoming_repetition(ss->ply))
+    if (!rootNode && alpha < VALUE_DRAW && pos.upcoming_repetition())
     {
         alpha = value_draw(this->nodes);
         if (alpha >= beta)
@@ -581,7 +581,7 @@ Value Search::Worker::search(
     if (!rootNode)
     {
         // Step 2. Check for aborted search and immediate draw
-        if (threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply)
+        if (threads.stop.load(std::memory_order_relaxed) || pos.is_draw()
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck)
                    ? evaluate(networks[numaAccessToken], pos, refreshTable,
@@ -1447,7 +1447,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     assert(depth <= 0);
 
     // Check if we have an upcoming move that draws by repetition. (~1 Elo)
-    if (alpha < VALUE_DRAW && pos.upcoming_repetition(ss->ply))
+    if (alpha < VALUE_DRAW && pos.upcoming_repetition())
     {
         alpha = value_draw(this->nodes);
         if (alpha >= beta)
@@ -1482,7 +1482,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
         thisThread->selDepth = ss->ply + 1;
 
     // Step 2. Check for an immediate draw or maximum ply reached
-    if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
+    if (pos.is_draw() || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !ss->inCheck)
                ? evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
                : VALUE_DRAW;
