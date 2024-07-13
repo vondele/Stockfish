@@ -65,7 +65,7 @@ struct Stack {
     int             ply;
     Move            currentMove;
     Move            excludedMove;
-    Move            killers[2];
+    Move            killer;
     Value           staticEval;
     int             statScore;
     int             moveCount;
@@ -202,10 +202,10 @@ class SearchManager: public ISearchManager {
 
     void check_time(Search::Worker& worker) override;
 
-    void pv(const Search::Worker&     worker,
+    void pv(Search::Worker&           worker,
             const ThreadPool&         threads,
             const TranspositionTable& tt,
-            Depth                     depth) const;
+            Depth                     depth);
 
     Stockfish::TimeManagement tm;
     double                    originalTimeAdjust;
@@ -236,8 +236,8 @@ class Worker {
    public:
     Worker(SharedState&, std::unique_ptr<ISearchManager>, size_t, NumaReplicatedAccessToken);
 
-    // Called at instantiation to initialize Reductions tables
-    // Reset histories, usually before a new game
+    // Called at instantiation to initialize reductions tables.
+    // Reset histories, usually before a new game.
     void clear();
 
     // Called when the program receives the UCI 'go' command.
@@ -247,7 +247,6 @@ class Worker {
     bool is_mainthread() const { return threadIdx == 0; }
 
     // Public because they need to be updatable by the stats
-    CounterMoveHistory    counterMoves;
     ButterflyHistory      mainHistory;
     CapturePieceToHistory captureHistory;
     ContinuationHistory   continuationHistory[2][2];
@@ -257,7 +256,7 @@ class Worker {
    private:
     void iterative_deepening();
 
-    // Main search function for both PV and non-PV nodes
+    // This is the main search function, for both PV and non-PV nodes
     template<NodeType nodeType>
     Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
@@ -267,8 +266,7 @@ class Worker {
 
     Depth reduction(bool i, Depth d, int mn, int delta) const;
 
-    // Get a pointer to the search manager, only allowed to be called by the
-    // main thread.
+    // Pointer to the search manager, only allowed to be called by the main thread
     SearchManager* main_manager() const {
         assert(threadIdx == 0);
         return static_cast<SearchManager*>(manager.get());

@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iterator>
 #include <utility>
 
 #include "bitboard.h"
@@ -35,7 +34,7 @@ enum Stages {
     MAIN_TT,
     CAPTURE_INIT,
     GOOD_CAPTURE,
-    REFUTATION,
+    KILLER,
     QUIET_INIT,
     GOOD_QUIET,
     BAD_CAPTURE,
@@ -59,8 +58,8 @@ enum Stages {
     QCHECK
 };
 
-// Sort moves in descending order up to and including
-// a given limit. The order of moves smaller than the limit is left unspecified.
+// Sort moves in descending order up to and including a given limit.
+// The order of moves smaller than the limit is left unspecified.
 void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
@@ -91,15 +90,14 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
-                       Move                         cm,
-                       const Move*                  killers) :
+                       Move                         km) :
     pos(p),
     mainHistory(mh),
     captureHistory(cph),
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}},
+    killer{km, 0},
     depth(d) {
     assert(d > 0);
 
@@ -126,8 +124,8 @@ MovePicker::MovePicker(const Position&              p,
     stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) + !(ttm && pos.pseudo_legal(ttm));
 }
 
-// Constructor for ProbCut: we generate captures with SEE greater
-// than or equal to the given threshold.
+// Constructor for ProbCut: we generate captures with SEE greater than or equal
+// to the given threshold.
 MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceToHistory* cph) :
     pos(p),
     captureHistory(cph),
@@ -269,23 +267,17 @@ top:
             }))
             return *(cur - 1);
 
-        // Prepare the pointers to loop over the refutations array
-        cur      = std::begin(refutations);
-        endMoves = std::end(refutations);
-
-        // If the countermove is the same as a killer, skip it
-        if (refutations[0] == refutations[2] || refutations[1] == refutations[2])
-            --endMoves;
-
         ++stage;
         [[fallthrough]];
 
-    case REFUTATION :
-        if (select<Next>([&]() {
-                return *cur != Move::none() && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
-            }))
-            return *(cur - 1);
+    case KILLER :
+        // increment it before so if we aren't stuck here indefinitely
         ++stage;
+
+        if (killer != ttMove && killer != Move::none() && !pos.capture_stage(killer)
+            && pos.pseudo_legal(killer))
+            return killer;
+
         [[fallthrough]];
 
     case QUIET_INIT :
@@ -302,9 +294,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select<Next>([&]() {
-                return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
-            }))
+        if (!skipQuiets && select<Next>([&]() { return *cur != killer; }))
         {
             if ((cur - 1)->value > -7998 || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
@@ -333,9 +323,7 @@ top:
 
     case BAD_QUIET :
         if (!skipQuiets)
-            return select<Next>([&]() {
-                return *cur != refutations[0] && *cur != refutations[1] && *cur != refutations[2];
-            });
+            return select<Next>([&]() { return *cur != killer; });
 
         return Move::none();
 
