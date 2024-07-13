@@ -54,7 +54,7 @@ namespace Stockfish {
 
 namespace TB = Tablebases;
 
-int a1=122, a2=37, a3=64, a4=190, a5=108, a7=1596, a8=736, a9=268, a10=2044, aCorrHist=5073,
+int a1=122, a2=37, a3=64, a4=190, a5=110, a7=1636, a8=812, a9=268, a10=2087, aCorrHist=5073,
 
 b1=50, b2=13424, b3=125, b4=89, b8=700, b5=1188, b6=58, b7=1862,
 
@@ -68,7 +68,9 @@ f1=36, f2=54, f3=76, f4=293, f5=195, f6=107, f7=259, f8=260, f9=98, f10=16,
 
 g1=3994, g2=4664, g3=10898, g3_b=10, g4=35,
 
-h1=14, h2=114, h3=116, h4=123, h5=8, h6=64, h7=108, h8=153, h9=76, h10=100, h11=50, h12=274,
+h1=14, h2=114, h3=116, h4=123, h5=8, h6=64, h7=108, h8=153, h9=76, h10=100, h11=49, h12=281,
+
+h13=105, h14=208,
 
 i1=299, i2=4643, i3=83, i4=1274, i5=746, i6=1293, i8=52;
 
@@ -89,6 +91,8 @@ TUNE(SetRange(1, 2*c12), c12);
 TUNE(SetRange(1, 2*e9), e9);
 TUNE(SetRange(1, 2*g3), g3);
 TUNE(SetRange(1, 2*h10), h10);
+TUNE(SetRange(1, 2*h13), h13);
+TUNE(SetRange(1, 2*h14), h14);
 
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -828,7 +832,7 @@ Value Search::Worker::search(
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
-        return beta + (eval - beta) / 3;
+        return beta + (eval - beta) / 4;
 
     // Step 9. Null move search with verification search (~35 Elo)
     if (!PvNode && (ss - 1)->currentMove != Move::null() && (ss - 1)->statScore < c9
@@ -1410,9 +1414,9 @@ moves_loop:  // When in check, search starts here
         bonus += std::clamp(-(ss - 1)->statScore / h10, -h11, h12);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 100);
+                                      stat_bonus(depth) * bonus / h13);
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 200;
+          << stat_bonus(depth) * bonus / h14;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
