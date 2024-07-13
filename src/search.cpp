@@ -54,33 +54,33 @@ namespace Stockfish {
 
 namespace TB = Tablebases;
 
-int a1=109, a2=40, a3=59, a4=186, a5=285, a6=20, a7=1524, a8=707, a9=260, a10=2073, aCorrHist=4990,
+int a1=122, a2=37, a3=64, a4=190, a5=108, a7=1596, a8=736, a9=268, a10=2044, aCorrHist=5073,
 
-b1=9, b2=10182, b3=127, b4=86, b5=1193, b6=56, b7=1926,
+b1=90, b2=10424, b3=125, b4=89, b8=700, b5=1188, b6=58, b7=1862,
 
-c1=10, c2=1590, c3=1371, c4=800, c5=512, c6=293, c7=13, c8=263, c9=14369, c10=21, c11=393, c12=197,
+c1=10, c2=1664, c3=1471, c4=752, c5=494, c6=290, c7=13, c8=260, c9=14389, c10=21, c11=390, c12=202,
 
-d1=8, d2=177, d3=57, d4=388,
+d1=7, d2=184, d3=53, d4=390,
 
-e1=50, e2=7, e3=294, e4=246, e5=180, e6=163, e7=163, e8=3899, e9=4040, e10=51, e11=135, e12=56, e13=140, e14=12, e15=24,
+e2=7, e3=285, e4=251, e5=182, e6=166, e7=168, e8=4165, e9=3853, e10=51, e11=143, e12=52, e13=135, e14=12, e15=24,
 
-f1=35, f2=52, f3=80, f4=290, f5=200, f6=107, f7=247, f8=278, f9=99, f10=18,
+f1=36, f2=54, f3=76, f4=293, f5=195, f6=107, f7=259, f8=260, f9=98, f10=16,
 
-g1=3922, g2=4747, g3=11125, g4=35,
+g1=3994, g2=4664, g3=10898, g3_b=10, g4=35,
 
-h1=13, h2=113, h3=118, h4=119, h5=8, h6=64, h7=107, h8=147, h9=75, h10=8000, h11=100, h12=250,
+h1=14, h2=114, h3=116, h4=123, h5=8, h6=64, h7=108, h8=153, h9=76, h10=100, h11=50, h12=274,
 
-i1=294, i2=4452, i3=74, i4=1236, i5=746, i6=1326, i7=164, i8=51;
+i1=299, i2=4643, i3=83, i4=1274, i5=746, i6=1293, i8=52;
 
-TUNE(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
-     b1, b3, b4, b5, b6, b7,
+TUNE(a1, a2, a3, a4, a5, a7, a8, a9, a10,
+     b1, b3, b4, b8, b5, b6, b7,
      c1, c2, c3, c4, c5, c6, c7, c9, c10, c11,
      d1, d2, d3, d4,
-     e1, e2, e3, e4, e5, e6, e7, e8, e10, e11, e12, e13, e14, e15,
+     e2, e3, e4, e5, e6, e7, e8, e10, e11, e12, e13, e14, e15,
      f1, f2, f3, f4, f5, f6, f7, f8, f9, f10,
-     g1, g2, g4,
-     h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h12,
-     i1, i2, i3, i4, i5, i6, i7, i8);
+     g1, g2, g3_b, g4,
+     h1, h2, h3, h4, h5, h6, h7, h8, h9, h11, h12,
+     i1, i2, i3, i4, i5, i6, i8);
 
 TUNE(SetRange(1, 2*aCorrHist), aCorrHist);
 TUNE(SetRange(1, 2*b2), b2);
@@ -88,7 +88,7 @@ TUNE(SetRange(1, 2*c8), c8);
 TUNE(SetRange(1, 2*c12), c12);
 TUNE(SetRange(1, 2*e9), e9);
 TUNE(SetRange(1, 2*g3), g3);
-TUNE(SetRange(1, 2*h11), h11);
+TUNE(SetRange(1, 2*h10), h10);
 
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -124,7 +124,7 @@ Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::clamp(a4 * d - a5, a6, a7); }
+int stat_bonus(Depth d) { return std::min(a4 * d - a5, a7); }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d) { return (d < 4 ? a8 * d - a9 : a10); }
@@ -357,7 +357,7 @@ void Search::Worker::iterative_deepening() {
 
             // Reset aspiration window starting size
             Value avg = rootMoves[pvIdx].averageScore;
-            delta     = b1 + avg * avg / b2;
+            delta     = b1 / 10 + avg * avg / b2;
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
