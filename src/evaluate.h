@@ -43,12 +43,12 @@ struct AccumulatorCaches;
 
 std::string trace(Position& pos, const Eval::NNUE::Networks& networks);
 
-int   simple_eval(const Position& pos, Color c);
-bool  use_smallnet(const Position& pos);
-Value evaluate(const NNUE::Networks&          networks,
-               const Position&                pos,
-               Eval::NNUE::AccumulatorCaches& caches,
-               int                            optimism);
+int                     simple_eval(const Position& pos, Color c);
+std::tuple<bool, Value> use_smallnet(const Position& pos);
+Value                   evaluate(const NNUE::Networks&          networks,
+                                 const Position&                pos,
+                                 Eval::NNUE::AccumulatorCaches& caches,
+                                 int                            optimism);
 }  // namespace Eval
 
 }  // namespace Stockfish

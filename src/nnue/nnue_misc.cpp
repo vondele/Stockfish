@@ -46,7 +46,8 @@ constexpr std::string_view PieceToChar(" PNBRQK  pnbrqk");
 void hint_common_parent_position(const Position&    pos,
                                  const Networks&    networks,
                                  AccumulatorCaches& caches) {
-    if (Eval::use_smallnet(pos))
+    auto [smallNet, _] = Eval::use_smallnet(pos);
+    if (smallNet)
         networks.small.hint_common_access(pos, &caches.small);
     else
         networks.big.hint_common_access(pos, &caches.big);
@@ -132,9 +133,8 @@ trace(Position& pos, const Eval::NNUE::Networks& networks, Eval::NNUE::Accumulat
 
     // We estimate the value of each piece by doing a differential evaluation from
     // the current base eval, simulating the removal of the piece from its square.
-    auto [psqt, positional] = networks.big.evaluate(pos, &caches.big);
-    Value base              = psqt + positional;
-    base                    = pos.side_to_move() == WHITE ? base : -base;
+    Value base = networks.big.evaluate(pos, &caches.big);
+    base       = pos.side_to_move() == WHITE ? base : -base;
 
     for (File f = FILE_A; f <= FILE_H; ++f)
         for (Rank r = RANK_1; r <= RANK_8; ++r)
@@ -150,10 +150,9 @@ trace(Position& pos, const Eval::NNUE::Networks& networks, Eval::NNUE::Accumulat
                 pos.remove_piece(sq);
                 st->accumulatorBig.computed[WHITE] = st->accumulatorBig.computed[BLACK] = false;
 
-                std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
-                Value eval                 = psqt + positional;
-                eval                       = pos.side_to_move() == WHITE ? eval : -eval;
-                v                          = base - eval;
+                Value eval = networks.big.evaluate(pos, &caches.big);
+                eval       = pos.side_to_move() == WHITE ? eval : -eval;
+                v          = base - eval;
 
                 pos.put_piece(pc, sq);
                 st->accumulatorBig.computed[WHITE] = st->accumulatorBig.computed[BLACK] = false;
