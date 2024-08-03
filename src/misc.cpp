@@ -419,7 +419,7 @@ void prefetch(const void* addr) {
     #if defined(_MSC_VER)
     _mm_prefetch((char const*) addr, _MM_HINT_T0);
     #else
-    __builtin_prefetch(addr);
+    __builtin_prefetch(addr, 1, 1);
     #endif
 }
 
