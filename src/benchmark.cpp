@@ -436,30 +436,48 @@ std::vector<std::string> setup_bench(const std::string& currentFen, std::istream
     return list;
 }
 
-std::pair<std::vector<std::string>, std::vector<std::string>> setup_benchmark(std::istream& is, int numThreads, int ttSizeMiB, int msPerMove) {
+std::pair<std::vector<std::string>, std::vector<std::string>> setup_benchmark(std::istream& is, int numThreads, int ttSizeMiB, int desiredMsPerMoveAtMove10) {
 
     std::vector<std::string> optionsList;
     std::vector<std::string> list;
     std::string              go, token;
 
     // Assign default values to missing arguments
-    std::string ttSize    = (is >> token) ? token : std::to_string(ttSizeMiB);
-    std::string threads   = (is >> token) ? token : std::to_string(numThreads);
-    std::string limit     = (is >> token) ? token : std::to_string(msPerMove);
+    int ttSize;
+    int threads;
+    int time;
 
-    go = "go movetime " + limit;
+    if (!(is >> ttSize))
+        ttSize = ttSizeMiB;
 
-    optionsList.emplace_back("setoption name Threads value " + threads);
-    optionsList.emplace_back("setoption name Hash value " + ttSize);
+    if (!(is >> threads))
+        threads = numThreads;
+
+    if (!(is >> time))
+        time = desiredMsPerMoveAtMove10;
+
+    optionsList.emplace_back("setoption name Threads value " + std::to_string(threads));
+    optionsList.emplace_back("setoption name Hash value " + std::to_string(ttSize));
     optionsList.emplace_back("setoption name UCI_Chess960 value false");
 
     for (const auto& game : BenchmarkPositions)
     {
         list.emplace_back("ucinewgame");
+        int ply = 1;
         for (const std::string& fen : game)
         {
             list.emplace_back("position fen " + fen);
+
+            // time per move is fit roughly based on LTC games
+            // seconds = 50/{ply+15}
+            // ms = 50000/{ply+15}
+            // with this fit 10th move gets 2000ms
+            // adjust for desired 10th move time
+            int correctedTime = static_cast<int>((50000.0 / (static_cast<double>(ply) + 15.0)) * (static_cast<double>(time) / 2000.0));
+            go = "go movetime " + std::to_string(correctedTime);
             list.emplace_back(go);
+
+            ply += 1;
         }
     }
 

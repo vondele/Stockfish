@@ -297,7 +297,7 @@ void UCIEngine::benchmark(std::istream& args) {
     static constexpr int TT_SIZE_PER_THREAD = 256;
 
     // MS_PER_MOVE is chosen such that the full test lasts roughly 5 minutes.
-    static constexpr int MS_PER_MOVE = 1000;
+    static constexpr int MS_PER_MOVE_AT_MOVE_10 = 1500;
 
     // Probably not very important for a test this long, but include for completeness and sanity.
     static constexpr int NUM_WARMUP_POSITIONS = 3;
@@ -316,7 +316,7 @@ void UCIEngine::benchmark(std::istream& args) {
 
     const int numThreads = get_hardware_concurrency();
     const int ttSize = TT_SIZE_PER_THREAD * numThreads;
-    auto [optionsList, list] = Benchmark::setup_benchmark(args, numThreads, ttSize, MS_PER_MOVE);
+    auto [optionsList, list] = Benchmark::setup_benchmark(args, numThreads, ttSize, MS_PER_MOVE_AT_MOVE_10);
 
     num = count_if(list.begin(), list.end(),
                    [](const std::string& s) { return s.find("go ") == 0; });
