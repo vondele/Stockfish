@@ -26,7 +26,7 @@
 namespace Stockfish::Benchmark {
 
 std::vector<std::string> setup_bench(const std::string&, std::istream&);
-std::vector<std::string> setup_benchmark(std::istream&, int);
+std::vector<std::string> setup_benchmark(std::istream&, int numThreads, int ttSizeMiB, int msPerMove);
 
 }  // namespace Stockfish
 

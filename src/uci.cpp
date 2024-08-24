@@ -288,6 +288,9 @@ void UCIEngine::bench(std::istream& args) {
 }
 
 void UCIEngine::benchmark(std::istream& args) {
+    static constexpr int TT_SIZE_PER_THREAD = 256;
+    static constexpr int MS_PER_MOVE = 50;
+
     std::string token;
     uint64_t    num, nodes = 0, cnt = 1;
     uint64_t    nodesSearched = 0;
@@ -298,7 +301,9 @@ void UCIEngine::benchmark(std::istream& args) {
         on_update_full(i, options["UCI_ShowWDL"]);
     });
 
-    std::vector<std::string> list = Benchmark::setup_benchmark(args, get_hardware_concurrency());
+    const int numThreads = get_hardware_concurrency();
+    const int ttSize = TT_SIZE_PER_THREAD * numThreads;
+    std::vector<std::string> list = Benchmark::setup_benchmark(args, numThreads, ttSize, MS_PER_MOVE);
 
     num = count_if(list.begin(), list.end(),
                    [](const std::string& s) { return s.find("go ") == 0; });
@@ -315,20 +320,17 @@ void UCIEngine::benchmark(std::istream& args) {
             std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
                       << std::endl;
 
+            Search::LimitsType limits = parse_limits(is);
+
             TimePoint elapsed = now();
-
-            if (token == "go")
-            {
-                Search::LimitsType limits = parse_limits(is);
-
-                engine.go(limits);
-                engine.wait_for_search_finished();
-
-                nodes += nodesSearched;
-                nodesSearched = 0;
-            }
+            
+            engine.go(limits);
+            engine.wait_for_search_finished();
 
             totalTime += now() - elapsed;
+
+            nodes += nodesSearched;
+            nodesSearched = 0;
         }
         else if (token == "setoption")
             setoption(is);
@@ -345,7 +347,13 @@ void UCIEngine::benchmark(std::istream& args) {
     dbg_print();
 
     std::cerr << "\n==========================="
-              << "\nNodes/second    : " << 1000 * nodes / totalTime << std::endl;
+              << "\nVersion                    : " << engine_version_info()
+              // "\nCompiled by                : "
+              << compiler_info()
+              << "Large pages                : " << (has_large_pages() ? "yes" : "no")
+              << "\nThread count               : " << numThreads
+              << "\nTT size [MiB]              : " << ttSize
+              << "\nNodes/second               : " << 1000 * nodes / totalTime << std::endl;
 
     // reset callback, to not capture a dangling reference to nodesSearched
     engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });

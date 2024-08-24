@@ -436,15 +436,15 @@ std::vector<std::string> setup_bench(const std::string& currentFen, std::istream
     return list;
 }
 
-std::vector<std::string> setup_benchmark(std::istream& is, int defaultThreads) {
+std::vector<std::string> setup_benchmark(std::istream& is, int numThreads, int ttSizeMiB, int msPerMove) {
 
     std::vector<std::string> list;
     std::string              go, token;
 
     // Assign default values to missing arguments
-    std::string ttSize    = (is >> token) ? token : "8192";
-    std::string threads   = (is >> token) ? token : std::to_string(defaultThreads);
-    std::string limit     = (is >> token) ? token : "1000";
+    std::string ttSize    = (is >> token) ? token : std::to_string(ttSizeMiB);
+    std::string threads   = (is >> token) ? token : std::to_string(numThreads);
+    std::string limit     = (is >> token) ? token : std::to_string(msPerMove);
 
     go = "go movetime " + limit;
 
