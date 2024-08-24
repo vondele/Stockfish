@@ -234,7 +234,7 @@ Network<Arch, Transformer>::evaluate(const Position&                         pos
 
 
 template<typename Arch, typename Transformer>
-void Network<Arch, Transformer>::verify(std::string evalfilePath) const {
+void Network<Arch, Transformer>::verify(std::string evalfilePath, bool silent) const {
     if (evalfilePath.empty())
         evalfilePath = evalFile.defaultName;
 
@@ -258,11 +258,14 @@ void Network<Arch, Transformer>::verify(std::string evalfilePath) const {
         exit(EXIT_FAILURE);
     }
 
-    size_t size = sizeof(*featureTransformer) + sizeof(Arch) * LayerStacks;
-    sync_cout << "info string NNUE evaluation using " << evalfilePath << " ("
-              << size / (1024 * 1024) << "MiB, (" << featureTransformer->InputDimensions << ", "
-              << network[0].TransformedFeatureDimensions << ", " << network[0].FC_0_OUTPUTS << ", "
-              << network[0].FC_1_OUTPUTS << ", 1))" << sync_endl;
+    if (!silent)
+    {
+        size_t size = sizeof(*featureTransformer) + sizeof(Arch) * LayerStacks;
+        sync_cout << "info string NNUE evaluation using " << evalfilePath << " ("
+                << size / (1024 * 1024) << "MiB, (" << featureTransformer->InputDimensions << ", "
+                << network[0].TransformedFeatureDimensions << ", " << network[0].FC_0_OUTPUTS << ", "
+                << network[0].FC_1_OUTPUTS << ", 1))" << sync_endl;
+    }
 }
 
 

@@ -69,6 +69,10 @@ UCIEngine::UCIEngine(int argc, char** argv) :
             print_info_string(*str);
     });
 
+    init_search_update_listeners();
+}
+
+void UCIEngine::init_search_update_listeners() {
     engine.set_on_iter([](const auto& i) { on_iter(i); });
     engine.set_on_update_no_moves([](const auto& i) { on_update_no_moves(i); });
     engine.set_on_update_full(
@@ -215,7 +219,7 @@ void UCIEngine::go(std::istringstream& is) {
     if (limits.perft)
         perft(limits);
     else
-        engine.go(limits);
+        engine.go(limits, false);
 }
 
 void UCIEngine::bench(std::istream& args) {
@@ -253,7 +257,7 @@ void UCIEngine::bench(std::istream& args) {
                     nodesSearched = perft(limits);
                 else
                 {
-                    engine.go(limits);
+                    engine.go(limits, false);
                     engine.wait_for_search_finished();
                 }
 
@@ -294,12 +298,14 @@ void UCIEngine::benchmark(std::istream& args) {
     std::string token;
     uint64_t    num, nodes = 0, cnt = 1;
     uint64_t    nodesSearched = 0;
-    const auto& options       = engine.get_options();
 
     engine.set_on_update_full([&](const auto& i) {
         nodesSearched = i.nodes;
-        on_update_full(i, options["UCI_ShowWDL"]);
     });
+
+    engine.set_on_iter([](const auto&) {});
+    engine.set_on_update_no_moves([](const auto&) {});
+    engine.set_on_bestmove([](const auto&, const auto&) {});
 
     const int numThreads = get_hardware_concurrency();
     const int ttSize = TT_SIZE_PER_THREAD * numThreads;
@@ -316,15 +322,16 @@ void UCIEngine::benchmark(std::istream& args) {
         is >> std::skipws >> token;
 
         if (token == "go")
-        {
-            std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
-                      << std::endl;
+        {   
+            // One new line is produced by the search, so omit it here
+            std::cerr << "\nPosition " << cnt++ << '/' << num << ": " << engine.fen();
 
             Search::LimitsType limits = parse_limits(is);
 
             TimePoint elapsed = now();
             
-            engine.go(limits);
+            // Run with silenced network verification
+            engine.go(limits, true);
             engine.wait_for_search_finished();
 
             totalTime += now() - elapsed;
@@ -355,8 +362,7 @@ void UCIEngine::benchmark(std::istream& args) {
               << "\nTT size [MiB]              : " << ttSize
               << "\nNodes/second               : " << 1000 * nodes / totalTime << std::endl;
 
-    // reset callback, to not capture a dangling reference to nodesSearched
-    engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });
+    init_search_update_listeners();
 }
 
 void UCIEngine::setoption(std::istringstream& is) {
