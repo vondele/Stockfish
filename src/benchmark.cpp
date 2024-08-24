@@ -436,8 +436,9 @@ std::vector<std::string> setup_bench(const std::string& currentFen, std::istream
     return list;
 }
 
-std::vector<std::string> setup_benchmark(std::istream& is, int numThreads, int ttSizeMiB, int msPerMove) {
+std::pair<std::vector<std::string>, std::vector<std::string>> setup_benchmark(std::istream& is, int numThreads, int ttSizeMiB, int msPerMove) {
 
+    std::vector<std::string> optionsList;
     std::vector<std::string> list;
     std::string              go, token;
 
@@ -448,9 +449,9 @@ std::vector<std::string> setup_benchmark(std::istream& is, int numThreads, int t
 
     go = "go movetime " + limit;
 
-    list.emplace_back("setoption name Threads value " + threads);
-    list.emplace_back("setoption name Hash value " + ttSize);
-    list.emplace_back("setoption name UCI_Chess960 value false");
+    optionsList.emplace_back("setoption name Threads value " + threads);
+    optionsList.emplace_back("setoption name Hash value " + ttSize);
+    optionsList.emplace_back("setoption name UCI_Chess960 value false");
 
     for (const auto& game : BenchmarkPositions)
     {
@@ -462,7 +463,7 @@ std::vector<std::string> setup_benchmark(std::istream& is, int numThreads, int t
         }
     }
 
-    return list;
+    return { optionsList, list };
 }
 
 }  // namespace Stockfish

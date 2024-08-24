@@ -22,11 +22,12 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace Stockfish::Benchmark {
 
 std::vector<std::string> setup_bench(const std::string&, std::istream&);
-std::vector<std::string> setup_benchmark(std::istream&, int numThreads, int ttSizeMiB, int msPerMove);
+std::pair<std::vector<std::string>, std::vector<std::string>> setup_benchmark(std::istream&, int numThreads, int ttSizeMiB, int msPerMove);
 
 }  // namespace Stockfish
 

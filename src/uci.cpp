@@ -299,6 +299,9 @@ void UCIEngine::benchmark(std::istream& args) {
     // MS_PER_MOVE is chosen such that the full test lasts roughly 5 minutes.
     static constexpr int MS_PER_MOVE = 1000;
 
+    // Probably not very important for a test this long, but include for completeness and sanity.
+    static constexpr int NUM_WARMUP_POSITIONS = 3;
+
     std::string token;
     uint64_t    num, nodes = 0, cnt = 1;
     uint64_t    nodesSearched = 0;
@@ -313,12 +316,60 @@ void UCIEngine::benchmark(std::istream& args) {
 
     const int numThreads = get_hardware_concurrency();
     const int ttSize = TT_SIZE_PER_THREAD * numThreads;
-    std::vector<std::string> list = Benchmark::setup_benchmark(args, numThreads, ttSize, MS_PER_MOVE);
+    auto [optionsList, list] = Benchmark::setup_benchmark(args, numThreads, ttSize, MS_PER_MOVE);
 
     num = count_if(list.begin(), list.end(),
                    [](const std::string& s) { return s.find("go ") == 0; });
 
     TimePoint totalTime = 0;
+
+    // Set options once at the start.
+    for (const auto& cmd : optionsList)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+        setoption(is);
+    }
+
+    // Warmup
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+
+        if (token == "go")
+        {   
+            // One new line is produced by the search, so omit it here
+            std::cerr << "\nWarmup position " << cnt++ << '/' << NUM_WARMUP_POSITIONS << ": " << engine.fen();
+
+            Search::LimitsType limits = parse_limits(is);
+
+            TimePoint elapsed = now();
+            
+            // Run with silenced network verification
+            engine.go(limits, true);
+            engine.wait_for_search_finished();
+
+            totalTime += now() - elapsed;
+
+            nodes += nodesSearched;
+            nodesSearched = 0;
+        }
+        else if (token == "position")
+            position(is);
+        else if (token == "ucinewgame")
+        {
+            engine.search_clear();  // search_clear may take a while
+        }
+
+        if (cnt > NUM_WARMUP_POSITIONS)
+            break;
+    }
+
+    cnt = 1;
+    nodes = 0;
+
+    engine.search_clear();  // search_clear may take a while
 
     for (const auto& cmd : list)
     {
@@ -343,8 +394,6 @@ void UCIEngine::benchmark(std::istream& args) {
             nodes += nodesSearched;
             nodesSearched = 0;
         }
-        else if (token == "setoption")
-            setoption(is);
         else if (token == "position")
             position(is);
         else if (token == "ucinewgame")
