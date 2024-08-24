@@ -133,7 +133,7 @@ void UCIEngine::loop() {
             engine.flip();
         else if (token == "bench")
             bench(is);
-        else if (token == "benchmark")
+        else if (token == "perf")
             benchmark(is);
         else if (token == "d")
             sync_cout << engine.visualize() << sync_endl;
