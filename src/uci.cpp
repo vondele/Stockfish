@@ -292,14 +292,18 @@ void UCIEngine::bench(std::istream& args) {
 }
 
 void UCIEngine::benchmark(std::istream& args) {
+    // TT_SIZE_PER_THREAD is chosen such that roughly half of the hash is used all positions
+    // for the current sequence have been searched.
     static constexpr int TT_SIZE_PER_THREAD = 256;
-    static constexpr int MS_PER_MOVE = 50;
+
+    // MS_PER_MOVE is chosen such that the full test lasts roughly 5 minutes.
+    static constexpr int MS_PER_MOVE = 1000;
 
     std::string token;
     uint64_t    num, nodes = 0, cnt = 1;
     uint64_t    nodesSearched = 0;
 
-    engine.set_on_update_full([&](const auto& i) {
+    engine.set_on_update_full([&](const Engine::InfoFull& i) {
         nodesSearched = i.nodes;
     });
 
