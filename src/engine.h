@@ -60,7 +60,7 @@ class Engine {
     std::uint64_t perft(const std::string& fen, Depth depth, bool isChess960);
 
     // non blocking call to start searching
-    void go(Search::LimitsType&);
+    void go(Search::LimitsType&, bool silentVerifyNetworks);
     // non blocking call to stop searching
     void stop();
 
@@ -84,7 +84,7 @@ class Engine {
 
     // network related
 
-    void verify_networks() const;
+    void verify_networks(bool silent) const;
     void load_networks();
     void load_big_network(const std::string& file);
     void load_small_network(const std::string& file);

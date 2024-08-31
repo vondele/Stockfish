@@ -69,6 +69,10 @@ UCIEngine::UCIEngine(int argc, char** argv) :
             print_info_string(*str);
     });
 
+    init_search_update_listeners();
+}
+
+void UCIEngine::init_search_update_listeners() {
     engine.set_on_iter([](const auto& i) { on_iter(i); });
     engine.set_on_update_no_moves([](const auto& i) { on_update_no_moves(i); });
     engine.set_on_update_full(
@@ -133,6 +137,8 @@ void UCIEngine::loop() {
             engine.flip();
         else if (token == "bench")
             bench(is);
+        else if (token == "perf")
+            benchmark(is);
         else if (token == "d")
             sync_cout << engine.visualize() << sync_endl;
         else if (token == "eval")
@@ -213,7 +219,7 @@ void UCIEngine::go(std::istringstream& is) {
     if (limits.perft)
         perft(limits);
     else
-        engine.go(limits);
+        engine.go(limits, false);
 }
 
 void UCIEngine::bench(std::istream& args) {
@@ -251,7 +257,7 @@ void UCIEngine::bench(std::istream& args) {
                     nodesSearched = perft(limits);
                 else
                 {
-                    engine.go(limits);
+                    engine.go(limits, false);
                     engine.wait_for_search_finished();
                 }
 
@@ -285,6 +291,132 @@ void UCIEngine::bench(std::istream& args) {
     engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });
 }
 
+void UCIEngine::benchmark(std::istream& args) {
+    // TT_SIZE_PER_THREAD is chosen such that roughly half of the hash is used all positions
+    // for the current sequence have been searched.
+    static constexpr int TT_SIZE_PER_THREAD = 256;
+
+    // MS_PER_MOVE is chosen such that the full test lasts roughly 5 minutes.
+    static constexpr int MS_PER_MOVE_AT_MOVE_10 = 1500;
+
+    // Probably not very important for a test this long, but include for completeness and sanity.
+    static constexpr int NUM_WARMUP_POSITIONS = 3;
+
+    std::string token;
+    uint64_t    num, nodes = 0, cnt = 1;
+    uint64_t    nodesSearched = 0;
+
+    engine.set_on_update_full([&](const Engine::InfoFull& i) {
+        nodesSearched = i.nodes;
+    });
+
+    engine.set_on_iter([](const auto&) {});
+    engine.set_on_update_no_moves([](const auto&) {});
+    engine.set_on_bestmove([](const auto&, const auto&) {});
+
+    const int numThreads = get_hardware_concurrency();
+    const int ttSize = TT_SIZE_PER_THREAD * numThreads;
+    auto [optionsList, list] = Benchmark::setup_benchmark(args, numThreads, ttSize, MS_PER_MOVE_AT_MOVE_10);
+
+    num = count_if(list.begin(), list.end(),
+                   [](const std::string& s) { return s.find("go ") == 0; });
+
+    TimePoint totalTime = 0;
+
+    // Set options once at the start.
+    for (const auto& cmd : optionsList)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+        setoption(is);
+    }
+
+    // Warmup
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+
+        if (token == "go")
+        {   
+            // One new line is produced by the search, so omit it here
+            std::cerr << "\nWarmup position " << cnt++ << '/' << NUM_WARMUP_POSITIONS << ": " << engine.fen();
+
+            Search::LimitsType limits = parse_limits(is);
+
+            TimePoint elapsed = now();
+            
+            // Run with silenced network verification
+            engine.go(limits, true);
+            engine.wait_for_search_finished();
+
+            totalTime += now() - elapsed;
+
+            nodes += nodesSearched;
+            nodesSearched = 0;
+        }
+        else if (token == "position")
+            position(is);
+        else if (token == "ucinewgame")
+        {
+            engine.search_clear();  // search_clear may take a while
+        }
+
+        if (cnt > NUM_WARMUP_POSITIONS)
+            break;
+    }
+
+    cnt = 1;
+    nodes = 0;
+
+    engine.search_clear();  // search_clear may take a while
+
+    for (const auto& cmd : list)
+    {
+        std::istringstream is(cmd);
+        is >> std::skipws >> token;
+
+        if (token == "go")
+        {   
+            // One new line is produced by the search, so omit it here
+            std::cerr << "\nPosition " << cnt++ << '/' << num << ": " << engine.fen();
+
+            Search::LimitsType limits = parse_limits(is);
+
+            TimePoint elapsed = now();
+            
+            // Run with silenced network verification
+            engine.go(limits, true);
+            engine.wait_for_search_finished();
+
+            totalTime += now() - elapsed;
+
+            nodes += nodesSearched;
+            nodesSearched = 0;
+        }
+        else if (token == "position")
+            position(is);
+        else if (token == "ucinewgame")
+        {
+            engine.search_clear();  // search_clear may take a while
+        }
+    }
+
+    totalTime = std::max<TimePoint>(totalTime, 1);  // Ensure positivity to avoid a 'divide by zero'
+
+    dbg_print();
+
+    std::cerr << "\n==========================="
+              << "\nVersion                    : " << engine_version_info()
+              // "\nCompiled by                : "
+              << compiler_info()
+              << "Large pages                : " << (has_large_pages() ? "yes" : "no")
+              << "\nThread count               : " << numThreads
+              << "\nTT size [MiB]              : " << ttSize
+              << "\nNodes/second               : " << 1000 * nodes / totalTime << std::endl;
+
+    init_search_update_listeners();
+}
 
 void UCIEngine::setoption(std::istringstream& is) {
     engine.wait_for_search_finished();

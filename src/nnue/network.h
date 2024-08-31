@@ -68,7 +68,7 @@ class Network {
     void hint_common_access(const Position&                         pos,
                             AccumulatorCaches::Cache<FTDimensions>* cache) const;
 
-    void          verify(std::string evalfilePath) const;
+    void          verify(std::string evalfilePath, bool silent) const;
     NnueEvalTrace trace_evaluate(const Position&                         pos,
                                  AccumulatorCaches::Cache<FTDimensions>* cache) const;
 

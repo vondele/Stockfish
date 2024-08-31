@@ -116,14 +116,14 @@ Engine::Engine(std::string path) :
 }
 
 std::uint64_t Engine::perft(const std::string& fen, Depth depth, bool isChess960) {
-    verify_networks();
+    verify_networks(false);
 
     return Benchmark::perft(fen, depth, isChess960);
 }
 
-void Engine::go(Search::LimitsType& limits) {
+void Engine::go(Search::LimitsType& limits, bool silentVerifyNetworks) {
     assert(limits.perft == 0);
-    verify_networks();
+    verify_networks(silentVerifyNetworks);
     limits.capSq = capSq;
 
     threads.start_thinking(options, pos, states, limits);
@@ -225,9 +225,9 @@ void Engine::set_ponderhit(bool b) { threads.main_manager()->ponder = b; }
 
 // network related
 
-void Engine::verify_networks() const {
-    networks->big.verify(options["EvalFile"]);
-    networks->small.verify(options["EvalFileSmall"]);
+void Engine::verify_networks(bool silent) const {
+    networks->big.verify(options["EvalFile"], silent);
+    networks->small.verify(options["EvalFileSmall"], silent);
 }
 
 void Engine::load_networks() {
@@ -267,7 +267,7 @@ void Engine::trace_eval() const {
     Position     p;
     p.set(pos.fen(), options["UCI_Chess960"], &trace_states->back());
 
-    verify_networks();
+    verify_networks(false);
 
     sync_cout << "\n" << Eval::trace(p, *networks) << sync_endl;
 }
