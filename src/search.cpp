@@ -563,6 +563,14 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     Piece movedPiece;
 
+    int   legalMovesCount = MAX_MOVES;
+    auto countLegal = [&legalMovesCount, &pos]() {
+      if (legalMovesCount == MAX_MOVES)
+          legalMovesCount = MoveList<LEGAL>(pos).size();
+      return legalMovesCount;
+    };
+
+
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
 
@@ -791,7 +799,8 @@ Value Search::Worker::search(
     // Step 9. Null move search with verification search (~35 Elo)
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
         && ss->staticEval >= beta - 23 * depth + 400 && !excludedMove && pos.non_pawn_material(us)
-        && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY)
+        && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY
+        && (depth < 15 || countLegal() > depth / 3 + 5))
     {
         assert(eval - beta >= 0);
 
