@@ -800,7 +800,7 @@ Value Search::Worker::search(
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
         && ss->staticEval >= beta - 23 * depth + 400 && !excludedMove && pos.non_pawn_material(us)
         && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY
-        && (depth < 18 || 14 * countLegal() > 4 * depth + 53))
+        && (depth < 17 || 12 * countLegal() > 4 * depth + 61))
     {
         assert(eval - beta >= 0);
 
