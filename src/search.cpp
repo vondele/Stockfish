@@ -791,7 +791,8 @@ Value Search::Worker::search(
     // Step 9. Null move search with verification search (~35 Elo)
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
         && ss->staticEval >= beta - 23 * depth + 400 && !excludedMove && pos.non_pawn_material(us)
-        && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY)
+        && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY
+        && (depth < 20 || int(MoveList<NON_EVASIONS>(pos).size()) * 4 > depth + 12))
     {
         assert(eval - beta >= 0);
 
