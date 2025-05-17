@@ -292,14 +292,13 @@ class AffineTransform {
 #endif
     }
 
-    void update(OutputType*  biases_ptr __attribute__((aligned(64))),
-                std::int8_t* weights_ptr __attribute__((aligned(64)))) {
+    void update(OutputType* biases_ptr, std::int8_t* weights_ptr) {
         weights = weights_ptr;
         biases  = biases_ptr;
     }
 
-    void update_w(std::int8_t* weights_ptr __attribute__((aligned(64)))) { weights = weights_ptr; }
-    void update_b(OutputType* biases_ptr __attribute__((aligned(64)))) { biases = biases_ptr; }
+    void update_w(std::int8_t* weights_ptr) { weights = weights_ptr; }
+    void update_b(OutputType* biases_ptr) { biases = biases_ptr; }
 
 
    private:
