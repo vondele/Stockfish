@@ -31,7 +31,6 @@
 
 #include "../memory.h"
 #include "../types.h"
-#include "net.h"
 #include "nnue_accumulator.h"
 #include "nnue_architecture.h"
 #include "nnue_feature_transformer.h"

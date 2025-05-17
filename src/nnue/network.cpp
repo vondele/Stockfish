@@ -399,13 +399,9 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
             size_t psqtWeightsOffset = biasesOffset + sizeof(nettype::FeatureBiases);
 
 
-            // featureTransformer->biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
-            // featureTransformer->weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
-            // featureTransformer->psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
-
-            featureTransformer->update(reinterpret_cast<int16_t*>(data + biasesOffset),
-                                       reinterpret_cast<int16_t*>(data + weightsOffset),
-                                       reinterpret_cast<int32_t*>(data + psqtWeightsOffset));
+            featureTransformer->biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
+            featureTransformer->weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
+            featureTransformer->psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
 
             ASSERT_ALIGNED(data + biasesOffset, 64);
             ASSERT_ALIGNED(data + weightsOffset, 64);
@@ -526,11 +522,9 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
               read_little_endian<int8_t>(stream);
     }
 
-    // featureTransformer->biases      = nnueParams->FeatureBiases;
-    // featureTransformer->weights     = nnueParams->FeatureWeights;
-    // featureTransformer->psqtWeights = nnueParams->PsqtWeights;
-    featureTransformer->update(nnueParams->FeatureBiases, nnueParams->FeatureWeights,
-                               nnueParams->PsqtWeights);
+    featureTransformer->biases      = nnueParams->FeatureBiases;
+    featureTransformer->weights     = nnueParams->FeatureWeights;
+    featureTransformer->psqtWeights = nnueParams->PsqtWeights;
 
     for (std::size_t i = 0; i < LayerStacks; ++i)
     {

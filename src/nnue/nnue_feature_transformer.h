@@ -399,8 +399,11 @@ class FeatureTransformer {
     std::int32_t transform(const Position&                           pos,
                            AccumulatorStack&                         accumulatorStack,
                            AccumulatorCaches::Cache<HalfDimensions>* cache,
-                           OutputType*                               output,
+                           OutputType*                               param_output,
                            int                                       bucket) const {
+
+        OutputType* output =
+          reinterpret_cast<OutputType*>(__builtin_assume_aligned(param_output, 64));
 
         accumulatorStack.evaluate(pos, *this, *cache);
         const auto& accumulatorState = accumulatorStack.latest();
@@ -429,6 +432,7 @@ class FeatureTransformer {
             const vec_t* in0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[p]][0]));
             const vec_t* in1 =
               reinterpret_cast<const vec_t*>(&(accumulation[perspectives[p]][HalfDimensions / 2]));
+
             vec_t* out = reinterpret_cast<vec_t*>(output + offset);
 
             // Per the NNUE architecture, here we want to multiply pairs of

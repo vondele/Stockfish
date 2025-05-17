@@ -241,11 +241,15 @@ struct AccumulatorUpdateContext {
              std::enable_if_t<is_all_same_v<IndexType, Ts...>, bool> = true>
     void apply(const Ts... indices) {
         auto to_weight_vector = [&](const IndexType index) {
-            return &featureTransformer.weights[index * Dimensions];
+            auto* weights = reinterpret_cast<WeightType*>(
+              __builtin_assume_aligned(&featureTransformer.weights[index * Dimensions], 64));
+            return weights;
         };
 
         auto to_psqt_weight_vector = [&](const IndexType index) {
-            return &featureTransformer.psqtWeights[index * PSQTBuckets];
+            auto* weights = reinterpret_cast<PSQTWeightType*>(
+              __builtin_assume_aligned(&featureTransformer.psqtWeights[index * PSQTBuckets], 64));
+            return weights;
         };
 
         fused_row_reduce<Vec16Wrapper, Dimensions, ops...>(
