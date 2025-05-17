@@ -22,10 +22,20 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <fcntl.h>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <memory>
 #include <new>
+#include <string>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <type_traits>
+#include <unistd.h>
 #include <utility>
+#include <vector>
 
 #include "types.h"
 
@@ -211,6 +221,200 @@ T* align_ptr_up(T* ptr) {
       reinterpret_cast<char*>((ptrint + (Alignment - 1)) / Alignment * Alignment));
 }
 
+
+namespace fs = std::filesystem;
+
+template<typename T>
+class SharedMemoryManager {
+   private:
+    std::string m_path;
+    size_t      m_elementCount;
+    T*          m_data;
+    int         m_fd;
+    size_t      m_size;
+    bool        m_isOwner;
+    bool        m_isInitialized;
+
+    bool createDirectoryStructure(const std::string& path) {
+        // todo error
+        fs::create_directories(path);
+        return true;
+    }
+
+    std::string buildPath(const std::string& username, const std::string& shaVersion) {
+        std::string baseDir = "/dev/shm/" + username + "/sf-shared-net/";
+
+        char numaBuf[64] = {0};
+        // todo get numa
+        int numaNode = 0;
+        snprintf(numaBuf, sizeof(numaBuf), "numa%d", numaNode);
+
+        return baseDir + numaBuf + "/" + shaVersion + "/data";
+    }
+
+   public:
+    SharedMemoryManager() :
+        m_data(nullptr),
+        m_fd(-1),
+        m_size(0),
+        m_isOwner(false),
+        m_isInitialized(false) {}
+
+    ~SharedMemoryManager() { cleanup(); }
+
+    bool isInitialized() const { return m_isInitialized; }
+
+    bool checkExists(const std::string& username, const std::string& shaVersion) {
+        std::string path    = buildPath(username, shaVersion);
+        std::string dirPath = path.substr(0, path.find_last_of('/'));
+        return fs::exists(path);
+    }
+
+    bool
+    readExisting(const std::string& username, const std::string& shaVersion, size_t elementCount) {
+        if (m_isInitialized)
+        {
+            return true;  // Already initialized
+        }
+
+        m_path              = buildPath(username, shaVersion);
+        std::string dirPath = m_path.substr(0, m_path.find_last_of('/'));
+
+        if (!fs::exists(m_path))
+        {
+            std::cerr << "Shared memory file does not exist: " << m_path << std::endl;
+            return false;
+        }
+
+        m_elementCount = elementCount;
+        m_size         = elementCount * sizeof(T);
+
+        m_fd = open(m_path.c_str(), O_RDWR, 0660);
+        if (m_fd == -1)
+        {
+            std::cerr << "Failed to open existing shared memory file: " << strerror(errno)
+                      << std::endl;
+            return false;
+        }
+
+        // Map the existing file
+        m_data =
+          static_cast<T*>(mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
+        if (m_data == MAP_FAILED)
+        {
+            std::cerr << "Failed to map shared memory: " << strerror(errno) << std::endl;
+            close(m_fd);
+            m_fd = -1;
+            return false;
+        }
+
+        m_isOwner       = false;
+        m_isInitialized = true;
+        return true;
+    }
+
+    bool init(const std::string& username,
+              const std::string& shaVersion,
+              const T*           sourceArray,
+              size_t             elementCount) {
+
+        if (m_isInitialized)
+        {
+            // Already initialized
+            return true;
+        }
+
+        m_elementCount = elementCount;
+        m_size         = elementCount * sizeof(T);
+        m_path         = buildPath(username, shaVersion);
+
+        std::string dirPath = m_path.substr(0, m_path.find_last_of('/'));
+        if (!createDirectoryStructure(dirPath))
+        {
+            return false;
+        }
+
+        bool exists = fs::exists(m_path);
+
+        m_fd = open(m_path.c_str(), O_RDWR | (exists ? 0 : O_CREAT), 0660);
+        if (m_fd == -1)
+        {
+            std::cerr << "Failed to open shared memory file: " << strerror(errno) << std::endl;
+            return false;
+        }
+
+        if (!exists)
+        {
+            if (ftruncate(m_fd, m_size) == -1)
+            {
+                std::cerr << "Failed to set size of shared memory file: " << strerror(errno)
+                          << std::endl;
+                close(m_fd);
+                m_fd = -1;
+                return false;
+            }
+            m_isOwner = true;
+        }
+
+        m_data =
+          static_cast<T*>(mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
+        if (m_data == MAP_FAILED)
+        {
+            std::cerr << "Failed to map shared memory: " << strerror(errno) << std::endl;
+            close(m_fd);
+            m_fd = -1;
+            return false;
+        }
+
+        if (m_isOwner && sourceArray != nullptr)
+        {
+            std::memcpy(m_data, sourceArray, m_size);
+
+            if (msync(m_data, m_size, MS_SYNC) == -1)
+            {
+                std::cerr << "Failed to sync shared memory: " << strerror(errno) << std::endl;
+            }
+        }
+
+        m_isInitialized = true;
+        return true;
+    }
+
+    T* data() const {
+        if (!m_isInitialized)
+        {
+            std::cerr << "Warning: Accessing data() on uninitialized SharedMemoryManager"
+                      << std::endl;
+            return nullptr;
+        }
+        return m_data;
+    }
+
+    size_t size() const { return m_elementCount; }
+
+    void cleanup() {
+        if (m_data != nullptr && m_data != MAP_FAILED)
+        {
+            munmap(m_data, m_size);
+            m_data = nullptr;
+        }
+
+        if (m_fd != -1)
+        {
+            close(m_fd);
+            m_fd = -1;
+        }
+
+        if (m_isOwner)
+        {
+            // todo: when to remove?
+        }
+
+        m_isInitialized = false;
+    }
+
+    bool isOwner() const { return m_isOwner; }
+};
 
 }  // namespace Stockfish
 

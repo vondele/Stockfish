@@ -280,11 +280,11 @@ inline void write_leb_128(std::ostream& stream, const IntType* values, std::size
 }
 
 template<typename T, std::size_t N>
-class ArrayWrapper {
-   private:
+struct ArrayWrapper {
+//    private:
     T (*arrayPtr)[N];
 
-   public:
+//    public:
     // explicit ArrayWrapper(T (*ptr)[N]) :
     //     arrayPtr(ptr) {}
 

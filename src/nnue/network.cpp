@@ -80,11 +80,16 @@ EmbeddedNNUE get_embedded(EmbeddedNNUEType type) {
         return EmbeddedNNUE(gEmbeddedNNUESmallData, gEmbeddedNNUESmallEnd, gEmbeddedNNUESmallSize);
 }
 
+
 }
 
 
 namespace Stockfish::Eval::NNUE {
 
+
+namespace {
+SharedMemoryManager<char> manager[2];
+}
 
 namespace Detail {
 
@@ -370,16 +375,125 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
     if (hashValue != Network::hash)
         return std::nullopt;
 
-    nnueParams = std::make_unique<
-      Net<Transformer::OutputDimensions, Arch::FC_0_OUTPUTS, Arch::FC_1_OUTPUTS>>();
+    using nettype = Net<Transformer::OutputDimensions, Arch::FC_0_OUTPUTS, Arch::FC_1_OUTPUTS>;
+    constexpr auto netsize = sizeof(nettype);
 
-    auto HalfDimensions  = Transformer::OutputDimensions;
-    auto InputDimensions = Transformer::InputDimensions;
+    std::string username   = getenv("USER") ? getenv("USER") : "default_user";
+    std::string shaVersion = std::to_string(hashValue);
+
+    nnueParams = std::make_unique<nettype>();
+
+
+    constexpr auto HalfDimensions  = Transformer::OutputDimensions;
+    constexpr auto InputDimensions = Transformer::InputDimensions;
+
+    std::cout << "Loading " << username << " " << shaVersion << std::endl;
+
+    if (manager[int(embeddedType)].checkExists(username, shaVersion))
+    {
+        std::cout << "Loading from shared memory" << std::endl;
+        if (manager[int(embeddedType)].readExisting(username, shaVersion, netsize))
+        {
+            std::cout << "Shared memory loaded successfully" << std::endl;
+            char* data = manager[int(embeddedType)].data();
+
+            size_t weightsOffset     = 0;
+            size_t biasesOffset      = weightsOffset + sizeof(nettype::FeatureWeights);
+            size_t psqtWeightsOffset = biasesOffset + sizeof(nettype::FeatureBiases);
+
+            // auto biases = featureTransformer->biases.data();
+
+            featureTransformer->biases.arrayPtr =
+              reinterpret_cast<int16_t (*)[HalfDimensions]>(data + biasesOffset);
+            featureTransformer->weights.arrayPtr =
+              reinterpret_cast<int16_t (*)[HalfDimensions * InputDimensions]>(data + weightsOffset);
+            featureTransformer->psqtWeights.arrayPtr =
+              reinterpret_cast<int32_t (*)[PSQTBuckets * InputDimensions]>(data
+                                                                           + psqtWeightsOffset);
+
+            size_t layerOffset = psqtWeightsOffset + sizeof(nettype::PsqtWeights);
+
+            for (std::size_t i = 0; i < LayerStacks; ++i)
+            {
+                // read l1 weights
+                auto l1weightsOffset = layerOffset;
+
+                network[i].fc_0.weights.arrayPtr = reinterpret_cast<
+                  int8_t (*)[Arch::L1Type::OutputDimensions * Arch::L1Type::PaddedInputDimensions]>(
+                  data + l1weightsOffset);
+
+                layerOffset += sizeof(nettype::L1Weights[i]);
+            }
+
+            for (std::size_t i = 0; i < LayerStacks; ++i)
+            {
+                // read l1 biases
+                auto l1biasesOffset = layerOffset;
+
+                network[i].fc_0.biases.arrayPtr =
+                  reinterpret_cast<int32_t (*)[Arch::L1Type::OutputDimensions]>(data
+                                                                                + l1biasesOffset);
+
+                layerOffset += sizeof(nettype::L1Biases[i]);
+            }
+
+            for (std::size_t i = 0; i < LayerStacks; ++i)
+            {
+                // read l2 weights
+                auto l2weightsOffset = layerOffset;
+
+                network[i].fc_1.weights.arrayPtr = reinterpret_cast<
+                  int8_t (*)[Arch::L2Type::OutputDimensions * Arch::L2Type::PaddedInputDimensions]>(
+                  data + l2weightsOffset);
+
+                layerOffset += sizeof(nettype::L2Weights[i]);
+            }
+
+            for (std::size_t i = 0; i < LayerStacks; ++i)
+            {
+                // read l2 biases
+                auto l2biasesOffset = layerOffset;
+
+                network[i].fc_1.biases.arrayPtr =
+                  reinterpret_cast<int32_t (*)[Arch::L2Type::OutputDimensions]>(data
+                                                                                + l2biasesOffset);
+
+                layerOffset += sizeof(nettype::L2Biases[i]);
+            }
+
+            for (std::size_t i = 0; i < LayerStacks; ++i)
+            {
+                // read l3 weights
+                auto l3weightsOffset = layerOffset;
+
+                network[i].fc_2.weights.arrayPtr = reinterpret_cast<
+                  int8_t (*)[Arch::L3Type::OutputDimensions * Arch::L3Type::PaddedInputDimensions]>(
+                  data + l3weightsOffset);
+
+                layerOffset += sizeof(nettype::L3Weights[i]);
+            }
+
+            for (std::size_t i = 0; i < LayerStacks; ++i)
+            {
+                // read l3 biases
+                auto l3biasesOffset = layerOffset;
+
+                network[i].fc_2.biases.arrayPtr =
+                  reinterpret_cast<int32_t (*)[Arch::L3Type::OutputDimensions]>(data
+                                                                                + l3biasesOffset);
+
+                layerOffset += sizeof(nettype::L3Biases[i]);
+            }
+        }
+
+        return netDescription;
+    }
+
+    std::cout << "Loading from file" << std::endl;
 
 
     std::uint32_t header;
     header = read_little_endian<std::uint32_t>(stream);
-
 
     read_leb_128<int16_t>(stream, nnueParams->FeatureBiases, HalfDimensions);
     read_leb_128<int16_t>(stream, nnueParams->FeatureWeights, HalfDimensions * InputDimensions);
@@ -420,8 +534,6 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
               read_little_endian<int8_t>(stream);
     }
 
-    // update
-
     featureTransformer->biases.update(&(nnueParams->FeatureBiases));
     featureTransformer->weights.update(&(nnueParams->FeatureWeights));
     featureTransformer->psqtWeights.update(&(nnueParams->PsqtWeights));
@@ -437,6 +549,21 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
         network[i].fc_2.biases.update(&(nnueParams->L3Biases)[i]);
         network[i].fc_2.weights.update(&(nnueParams->L3Weights)[i]);
     }
+
+    // update
+
+
+    std::cout << "Loading from file done" << std::endl;
+    std::cout << "Saving to shared memory" << std::endl;
+
+
+    auto buffer = new char[netsize];
+
+    std::memcpy(buffer, nnueParams.get(), netsize);
+
+    manager[int(embeddedType)].init(username, shaVersion, buffer, netsize);
+
+    delete[] buffer;
 
     return netDescription;
 }
