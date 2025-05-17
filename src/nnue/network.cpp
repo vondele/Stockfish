@@ -381,9 +381,6 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
     std::string username   = getenv("USER") ? getenv("USER") : "default_user";
     std::string shaVersion = std::to_string(hashValue);
 
-    nnueParams = std::make_unique<nettype>();
-
-
     constexpr auto HalfDimensions  = Transformer::OutputDimensions;
     constexpr auto InputDimensions = Transformer::InputDimensions;
 
@@ -401,7 +398,6 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
             size_t biasesOffset      = weightsOffset + sizeof(nettype::FeatureWeights);
             size_t psqtWeightsOffset = biasesOffset + sizeof(nettype::FeatureBiases);
 
-            // auto biases = featureTransformer->biases.data();
 
             featureTransformer->biases.arrayPtr =
               reinterpret_cast<int16_t (*)[HalfDimensions]>(data + biasesOffset);
@@ -491,6 +487,7 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
 
     std::cout << "Loading from file" << std::endl;
 
+    nnueParams = std::make_unique<nettype>();
 
     std::uint32_t header;
     header = read_little_endian<std::uint32_t>(stream);
