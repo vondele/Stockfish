@@ -279,6 +279,25 @@ inline void write_leb_128(std::ostream& stream, const IntType* values, std::size
     flush();
 }
 
+template<typename T, std::size_t N>
+class ArrayWrapper {
+   private:
+    T (*arrayPtr)[N];
+
+   public:
+    // explicit ArrayWrapper(T (*ptr)[N]) :
+    //     arrayPtr(ptr) {}
+
+    T*       data() { return *arrayPtr; }
+    const T* data() const { return *arrayPtr; }
+
+    void update(T (*ptr)[N]) { arrayPtr = ptr; }
+
+    T& operator[](std::size_t index) { return (*arrayPtr)[index]; }
+
+    const T& operator[](std::size_t index) const { return (*arrayPtr)[index]; }
+};
+
 }  // namespace Stockfish::Eval::NNUE
 
 #endif  // #ifndef NNUE_COMMON_H_INCLUDED

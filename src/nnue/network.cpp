@@ -103,8 +103,9 @@ bool read_parameters(std::istream& stream, T& reference) {
 template<typename T>
 bool write_parameters(std::ostream& stream, T& reference) {
 
-    write_little_endian<std::uint32_t>(stream, T::get_hash_value());
-    return reference.write_parameters(stream);
+    // write_little_endian<std::uint32_t>(stream, T::get_hash_value());
+    // return reference.write_parameters(stream);
+    return true;
 }
 
 }  // namespace Detail
@@ -360,9 +361,84 @@ bool Network<Arch, Transformer>::save(std::ostream&      stream,
 template<typename Arch, typename Transformer>
 std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream) {
     initialize();
-    std::string description;
+    std::string netDescription;
 
-    return read_parameters(stream, description) ? std::make_optional(description) : std::nullopt;
+
+    std::uint32_t hashValue;
+    if (!read_header(stream, &hashValue, &netDescription))
+        return std::nullopt;
+    if (hashValue != Network::hash)
+        return std::nullopt;
+
+    nnueParams = std::make_unique<
+      Net<Transformer::OutputDimensions, Arch::FC_0_OUTPUTS, Arch::FC_1_OUTPUTS>>();
+
+    auto HalfDimensions  = Transformer::OutputDimensions;
+    auto InputDimensions = Transformer::InputDimensions;
+
+
+    std::uint32_t header;
+    header = read_little_endian<std::uint32_t>(stream);
+
+
+    read_leb_128<int16_t>(stream, nnueParams->FeatureBiases, HalfDimensions);
+    read_leb_128<int16_t>(stream, nnueParams->FeatureWeights, HalfDimensions * InputDimensions);
+    read_leb_128<int32_t>(stream, nnueParams->PsqtWeights, PSQTBuckets * InputDimensions);
+
+    Transformer::permute_weights(nnueParams->FeatureBiases, nnueParams->FeatureWeights);
+    Transformer::scale_weights(nnueParams->FeatureBiases, nnueParams->FeatureWeights, true);
+
+    for (std::size_t k = 0; k < LayerStacks; ++k)
+    {
+        auto OutputDimensions      = Arch::L1Type::OutputDimensions;
+        auto PaddedInputDimensions = Arch::L1Type::PaddedInputDimensions;
+
+        header = read_little_endian<std::uint32_t>(stream);
+
+        // fc0
+        read_little_endian<int32_t>(stream, nnueParams->L1Biases[k], OutputDimensions);
+        for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+            nnueParams->L1Weights[k][Arch::L1Type::get_weight_index(i)] =
+              read_little_endian<int8_t>(stream);
+
+        OutputDimensions      = Arch::L2Type::OutputDimensions;
+        PaddedInputDimensions = Arch::L2Type::PaddedInputDimensions;
+
+        // fc1
+        read_little_endian<int32_t>(stream, nnueParams->L2Biases[k], OutputDimensions);
+        for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+            nnueParams->L2Weights[k][Arch::L2Type::get_weight_index(i)] =
+              read_little_endian<int8_t>(stream);
+
+        OutputDimensions      = Arch::L3Type::OutputDimensions;
+        PaddedInputDimensions = Arch::L3Type::PaddedInputDimensions;
+
+        // fc2
+        read_little_endian<int32_t>(stream, nnueParams->L3Biases[k], OutputDimensions);
+        for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+            nnueParams->L3Weights[k][Arch::L3Type::get_weight_index(i)] =
+              read_little_endian<int8_t>(stream);
+    }
+
+    // update
+
+    featureTransformer->biases.update(&(nnueParams->FeatureBiases));
+    featureTransformer->weights.update(&(nnueParams->FeatureWeights));
+    featureTransformer->psqtWeights.update(&(nnueParams->PsqtWeights));
+
+    for (std::size_t i = 0; i < LayerStacks; ++i)
+    {
+        network[i].fc_0.biases.update(&(nnueParams->L1Biases)[i]);
+        network[i].fc_0.weights.update(&(nnueParams->L1Weights)[i]);
+
+        network[i].fc_1.biases.update(&(nnueParams->L2Biases)[i]);
+        network[i].fc_1.weights.update(&(nnueParams->L2Weights)[i]);
+
+        network[i].fc_2.biases.update(&(nnueParams->L3Biases)[i]);
+        network[i].fc_2.weights.update(&(nnueParams->L3Weights)[i]);
+    }
+
+    return netDescription;
 }
 
 
@@ -400,35 +476,37 @@ bool Network<Arch, Transformer>::write_header(std::ostream&      stream,
 template<typename Arch, typename Transformer>
 bool Network<Arch, Transformer>::read_parameters(std::istream& stream,
                                                  std::string&  netDescription) const {
-    std::uint32_t hashValue;
-    if (!read_header(stream, &hashValue, &netDescription))
-        return false;
-    if (hashValue != Network::hash)
-        return false;
-    if (!Detail::read_parameters(stream, *featureTransformer))
-        return false;
-    for (std::size_t i = 0; i < LayerStacks; ++i)
-    {
-        if (!Detail::read_parameters(stream, network[i]))
-            return false;
-    }
-    return stream && stream.peek() == std::ios::traits_type::eof();
+    // std::uint32_t hashValue;
+    // if (!read_header(stream, &hashValue, &netDescription))
+    //     return false;
+    // if (hashValue != Network::hash)
+    //     return false;f
+    // if (!Detail::read_parameters(stream, *featureTransformer))
+    //     return false;
+    // for (std::size_t i = 0; i < LayerStacks; ++i)
+    // {
+    //     if (!Detail::read_parameters(stream, network[i]))
+    //         return false;
+    // }
+    // return stream && stream.peek() == std::ios::traits_type::eof();
+    return true;
 }
 
 
 template<typename Arch, typename Transformer>
 bool Network<Arch, Transformer>::write_parameters(std::ostream&      stream,
                                                   const std::string& netDescription) const {
-    if (!write_header(stream, Network::hash, netDescription))
-        return false;
-    if (!Detail::write_parameters(stream, *featureTransformer))
-        return false;
-    for (std::size_t i = 0; i < LayerStacks; ++i)
-    {
-        if (!Detail::write_parameters(stream, network[i]))
-            return false;
-    }
-    return bool(stream);
+    // if (!write_header(stream, Network::hash, netDescription))
+    //     return false;
+    // if (!Detail::write_parameters(stream, *featureTransformer))
+    //     return false;
+    // for (std::size_t i = 0; i < LayerStacks; ++i)
+    // {
+    //     if (!Detail::write_parameters(stream, network[i]))
+    //         return false;
+    // }
+    // return bool(stream);
+    return true;
 }
 
 // Explicit template instantiations

@@ -164,23 +164,23 @@ class AffineTransform {
     }
 
     // Read network parameters
-    bool read_parameters(std::istream& stream) {
-        read_little_endian<BiasType>(stream, biases, OutputDimensions);
-        for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
-            weights[get_weight_index(i)] = read_little_endian<WeightType>(stream);
+    // bool read_parameters(std::istream& stream) {
+    //     read_little_endian<BiasType>(stream, biases, OutputDimensions);
+    //     for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+    //         weights[get_weight_index(i)] = read_little_endian<WeightType>(stream);
 
-        return !stream.fail();
-    }
+    //     return !stream.fail();
+    // }
 
-    // Write network parameters
-    bool write_parameters(std::ostream& stream) const {
-        write_little_endian<BiasType>(stream, biases, OutputDimensions);
+    // // Write network parameters
+    // bool write_parameters(std::ostream& stream) const {
+    //     write_little_endian<BiasType>(stream, biases, OutputDimensions);
 
-        for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
-            write_little_endian<WeightType>(stream, weights[get_weight_index(i)]);
+    //     for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
+    //         write_little_endian<WeightType>(stream, weights[get_weight_index(i)]);
 
-        return !stream.fail();
-    }
+    //     return !stream.fail();
+    // }
     // Forward propagation
     void propagate(const InputType* input, OutputType* output) const {
 
@@ -216,7 +216,7 @@ class AffineTransform {
             constexpr IndexType NumRegs   = OutputDimensions / OutputSimdWidth;
 
             const auto   input32 = reinterpret_cast<const std::int32_t*>(input);
-            const vec_t* biasvec = reinterpret_cast<const vec_t*>(biases);
+            const vec_t* biasvec = reinterpret_cast<const vec_t*>(biases.data());
             vec_t        acc[NumRegs];
             for (IndexType k = 0; k < NumRegs; ++k)
                 acc[k] = biasvec[k];
@@ -289,12 +289,14 @@ class AffineTransform {
 #endif
     }
 
-   private:
+   public:
     using BiasType   = OutputType;
     using WeightType = std::int8_t;
 
-    alignas(CacheLineSize) BiasType biases[OutputDimensions];
-    alignas(CacheLineSize) WeightType weights[OutputDimensions * PaddedInputDimensions];
+    // BiasType (*biases)[OutputDimensions];
+    // WeightType (*weights)[OutputDimensions * PaddedInputDimensions];
+    ArrayWrapper<BiasType, OutputDimensions>                           biases;
+    ArrayWrapper<WeightType, OutputDimensions * PaddedInputDimensions> weights;
 };
 
 }  // namespace Stockfish::Eval::NNUE::Layers

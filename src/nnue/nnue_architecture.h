@@ -55,6 +55,11 @@ struct NetworkArchitecture {
     static constexpr int       FC_0_OUTPUTS                 = L2;
     static constexpr int       FC_1_OUTPUTS                 = L3;
 
+    using L1Type =
+      Layers::AffineTransformSparseInput<TransformedFeatureDimensions, FC_0_OUTPUTS + 1>;
+    using L2Type = Layers::AffineTransform<FC_0_OUTPUTS * 2, FC_1_OUTPUTS>;
+    using L3Type = Layers::AffineTransform<FC_1_OUTPUTS, 1>;
+
     Layers::AffineTransformSparseInput<TransformedFeatureDimensions, FC_0_OUTPUTS + 1> fc_0;
     Layers::SqrClippedReLU<FC_0_OUTPUTS + 1>                                           ac_sqr_0;
     Layers::ClippedReLU<FC_0_OUTPUTS + 1>                                              ac_0;

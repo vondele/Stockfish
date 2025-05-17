@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -30,6 +31,7 @@
 
 #include "../memory.h"
 #include "../types.h"
+#include "net.h"
 #include "nnue_accumulator.h"
 #include "nnue_architecture.h"
 #include "nnue_feature_transformer.h"
@@ -47,6 +49,22 @@ enum class EmbeddedNNUEType {
 };
 
 using NetworkOutput = std::tuple<Value, Value>;
+
+template<int L1, int L2, int L3>
+struct Net {
+    alignas(64) int16_t FeatureWeights[FeatureSet::Dimensions * L1];
+    alignas(64) int16_t FeatureBiases[L1];
+    alignas(64) int32_t PsqtWeights[FeatureSet::Dimensions * PSQTBuckets];
+
+    alignas(64) int8_t L1Weights[8][L1 * (L2 + 1)];
+    alignas(64) int32_t L1Biases[8][L2 + 1];
+
+    alignas(64) int8_t L2Weights[8][(L2 + 1) * 2 * L3];
+    alignas(64) int32_t L2Biases[8][L3];
+
+    alignas(64) int8_t L3Weights[8][L3];
+    alignas(64) int32_t L3Biases[8][1];
+};
 
 template<typename Arch, typename Transformer>
 class Network {
@@ -99,6 +117,9 @@ class Network {
 
     EvalFile         evalFile;
     EmbeddedNNUEType embeddedType;
+
+    std::unique_ptr<Net<Transformer::OutputDimensions, Arch::FC_0_OUTPUTS, Arch::FC_1_OUTPUTS>>
+      nnueParams;
 
     // Hash value of evaluation function structure
     static constexpr std::uint32_t hash = Transformer::get_hash_value() ^ Arch::get_hash_value();
