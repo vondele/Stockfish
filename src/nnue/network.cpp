@@ -89,6 +89,7 @@ namespace Stockfish::Eval::NNUE {
 
 namespace {
 SharedMemoryManager<char> manager[2];
+
 }
 
 namespace Detail {
@@ -120,13 +121,15 @@ Network<Arch, Transformer>::Network(const Network<Arch, Transformer>& other) :
     evalFile(other.evalFile),
     embeddedType(other.embeddedType) {
 
-    if (other.featureTransformer)
-        featureTransformer = make_unique_large_page<Transformer>(*other.featureTransformer);
+    // if (other.featureTransformer)
+    featureTransformer = other.featureTransformer;
+    // featureTransformer = make_unique_large_page<Transformer>(*other.featureTransformer);
 
-    network = make_unique_aligned<Arch[]>(LayerStacks);
+    // network = make_unique_aligned<Arch[]>(LayerStacks);
 
-    if (!other.network)
-        return;
+
+    // if (!other.network)
+    //     return;
 
     for (std::size_t i = 0; i < LayerStacks; ++i)
         network[i] = other.network[i];
@@ -138,13 +141,14 @@ Network<Arch, Transformer>::operator=(const Network<Arch, Transformer>& other) {
     evalFile     = other.evalFile;
     embeddedType = other.embeddedType;
 
-    if (other.featureTransformer)
-        featureTransformer = make_unique_large_page<Transformer>(*other.featureTransformer);
+    // if (other.featureTransformer)
+    featureTransformer = other.featureTransformer;
+    // featureTransformer = make_unique_large_page<Transformer>(*other.featureTransformer);
 
-    network = make_unique_aligned<Arch[]>(LayerStacks);
+    // network = make_unique_aligned<Arch[]>(LayerStacks);
 
-    if (!other.network)
-        return *this;
+    // if (!other.network)
+    //     return *this;
 
     for (std::size_t i = 0; i < LayerStacks; ++i)
         network[i] = other.network[i];
@@ -228,7 +232,7 @@ Network<Arch, Transformer>::evaluate(const Position&                         pos
 
     const int  bucket = (pos.count<ALL_PIECES>() - 1) / 4;
     const auto psqt =
-      featureTransformer->transform(pos, accumulatorStack, cache, transformedFeatures, bucket);
+      featureTransformer.transform(pos, accumulatorStack, cache, transformedFeatures, bucket);
     const auto positional = network[bucket].propagate(transformedFeatures);
     return {static_cast<Value>(psqt / OutputScale), static_cast<Value>(positional / OutputScale)};
 }
@@ -265,9 +269,9 @@ void Network<Arch, Transformer>::verify(std::string                             
 
     if (f)
     {
-        size_t size = sizeof(*featureTransformer) + sizeof(Arch) * LayerStacks;
+        size_t size = sizeof(featureTransformer) + sizeof(Arch) * LayerStacks;
         f("NNUE evaluation using " + evalfilePath + " (" + std::to_string(size / (1024 * 1024))
-          + "MiB, (" + std::to_string(featureTransformer->InputDimensions) + ", "
+          + "MiB, (" + std::to_string(featureTransformer.InputDimensions) + ", "
           + std::to_string(network[0].TransformedFeatureDimensions) + ", "
           + std::to_string(network[0].FC_0_OUTPUTS) + ", " + std::to_string(network[0].FC_1_OUTPUTS)
           + ", 1))");
@@ -293,7 +297,7 @@ Network<Arch, Transformer>::trace_evaluate(const Position&                      
     for (IndexType bucket = 0; bucket < LayerStacks; ++bucket)
     {
         const auto materialist =
-          featureTransformer->transform(pos, accumulatorStack, cache, transformedFeatures, bucket);
+          featureTransformer.transform(pos, accumulatorStack, cache, transformedFeatures, bucket);
         const auto positional = network[bucket].propagate(transformedFeatures);
 
         t.psqt[bucket]       = static_cast<Value>(materialist / OutputScale);
@@ -347,8 +351,8 @@ void Network<Arch, Transformer>::load_internal() {
 
 template<typename Arch, typename Transformer>
 void Network<Arch, Transformer>::initialize() {
-    featureTransformer = make_unique_large_page<Transformer>();
-    network            = make_unique_aligned<Arch[]>(LayerStacks);
+    // featureTransformer = make_unique_large_page<Transformer>();
+    // network            = make_unique_aligned<Arch[]>(LayerStacks);
 }
 
 
@@ -399,9 +403,9 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
             size_t psqtWeightsOffset = biasesOffset + sizeof(nettype::FeatureBiases);
 
 
-            featureTransformer->biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
-            featureTransformer->weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
-            featureTransformer->psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
+            featureTransformer.biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
+            featureTransformer.weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
+            featureTransformer.psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
 
             ASSERT_ALIGNED(data + biasesOffset, 64);
             ASSERT_ALIGNED(data + weightsOffset, 64);
@@ -522,9 +526,9 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
               read_little_endian<int8_t>(stream);
     }
 
-    featureTransformer->biases      = nnueParams->FeatureBiases;
-    featureTransformer->weights     = nnueParams->FeatureWeights;
-    featureTransformer->psqtWeights = nnueParams->PsqtWeights;
+    featureTransformer.biases      = nnueParams->FeatureBiases;
+    featureTransformer.weights     = nnueParams->FeatureWeights;
+    featureTransformer.psqtWeights = nnueParams->PsqtWeights;
 
     for (std::size_t i = 0; i < LayerStacks; ++i)
     {

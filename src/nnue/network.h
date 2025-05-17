@@ -111,10 +111,10 @@ class Network {
     bool write_parameters(std::ostream&, const std::string&) const;
 
     // Input feature converter
-    LargePagePtr<Transformer> featureTransformer;
+    Transformer featureTransformer;
 
     // Evaluation function
-    AlignedPtr<Arch[]> network;
+    Arch network[8];
 
     EvalFile         evalFile;
     EmbeddedNNUEType embeddedType;
