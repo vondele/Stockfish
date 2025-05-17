@@ -522,16 +522,18 @@ class FeatureTransformer {
         return psqt;
     }  // end of function transform()
 
-   public:
-    // BiasType (*biases)[HalfDimensions];
-    // WeightType (*weights)[HalfDimensions * InputDimensions];
-    // PSQTWeightType (*psqtWeights)[InputDimensions * PSQTBuckets];
-    // ArrayWrapper<BiasType, HalfDimensions>                      biases;
-    alignas(64) BiasType* biases __attribute__((aligned(64)));
-    alignas(64) WeightType* weights __attribute__((aligned(64)));
-    alignas(64) PSQTWeightType* psqtWeights __attribute__((aligned(64)));
-    // ArrayWrapper<WeightType, HalfDimensions * InputDimensions>  weights;
-    // ArrayWrapper<PSQTWeightType, InputDimensions * PSQTBuckets> psqtWeights;
+
+    void update(BiasType*       biases_ptr __attribute__((aligned(64))),
+                WeightType*     weights_ptr __attribute__((aligned(64))),
+                PSQTWeightType* psqtWeights_ptr __attribute__((aligned(64)))) {
+        weights     = weights_ptr;
+        biases      = biases_ptr;
+        psqtWeights = psqtWeights_ptr;
+    }
+
+    const BiasType*       biases;
+    const WeightType*     weights;
+    const PSQTWeightType* psqtWeights;
 };
 
 }  // namespace Stockfish::Eval::NNUE

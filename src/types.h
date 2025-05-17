@@ -435,7 +435,6 @@ struct is_all_same {
 template<typename... Ts>
 constexpr auto is_all_same_v = is_all_same<Ts...>::value;
 
-
 }  // namespace Stockfish
 
 #endif  // #ifndef TYPES_H_INCLUDED

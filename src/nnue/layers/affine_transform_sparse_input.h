@@ -293,16 +293,21 @@ class AffineTransformSparseInput {
 #endif
     }
 
-   public:
+
+    void update(OutputType* biases_ptr __attribute__((aligned(64))), std::int8_t* weights_ptr __attribute__((aligned(64)))) {
+        weights = weights_ptr;
+        biases  = biases_ptr;
+    }
+
+    void update_w(std::int8_t* weights_ptr __attribute__((aligned(64)))) { weights = weights_ptr; }
+    void update_b(OutputType* biases_ptr __attribute__((aligned(64)))) { biases = biases_ptr; }
+
+   private:
     using BiasType   = OutputType;
     using WeightType = std::int8_t;
 
-    // BiasType (*biases)[OutputDimensions];
-    // WeightType (*weights)[OutputDimensions * PaddedInputDimensions];
-    // ArrayWrapper<BiasType, OutputDimensions>                           biases;
-    // ArrayWrapper<WeightType, OutputDimensions * PaddedInputDimensions> weights;
-    alignas(64) BiasType* biases __attribute__((aligned(64)));
-    alignas(64) WeightType* weights __attribute__((aligned(64)));
+    const BiasType*   biases;
+    const WeightType* weights;
 };
 
 }  // namespace Stockfish::Eval::NNUE::Layers

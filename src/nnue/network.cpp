@@ -399,10 +399,13 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
             size_t psqtWeightsOffset = biasesOffset + sizeof(nettype::FeatureBiases);
 
 
-            featureTransformer->biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
-            featureTransformer->weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
-            featureTransformer->psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
+            // featureTransformer->biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
+            // featureTransformer->weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
+            // featureTransformer->psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
 
+            featureTransformer->update(reinterpret_cast<int16_t*>(data + biasesOffset),
+                                       reinterpret_cast<int16_t*>(data + weightsOffset),
+                                       reinterpret_cast<int32_t*>(data + psqtWeightsOffset));
 
             ASSERT_ALIGNED(data + biasesOffset, 64);
             ASSERT_ALIGNED(data + weightsOffset, 64);
@@ -417,7 +420,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
                 if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
                     layerOffset += 64 - (layerOffset % 64);
                 ASSERT_ALIGNED(data + layerOffset, 64);
-                network[i].fc_0.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                // network[i].fc_0.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                network[i].fc_0.update_w(reinterpret_cast<int8_t*>(data + layerOffset));
 
                 layerOffset += sizeof(nettype::Layers[i].L1Weights);
 
@@ -426,7 +430,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
                     layerOffset += 64 - (layerOffset % 64);
                 ASSERT_ALIGNED(data + layerOffset, 64);
 
-                network[i].fc_0.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                // network[i].fc_0.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                network[i].fc_0.update_b(reinterpret_cast<int32_t*>(data + layerOffset));
 
                 layerOffset += sizeof(nettype::Layers[i].L1Biases);
 
@@ -435,7 +440,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
                     layerOffset += 64 - (layerOffset % 64);
                 ASSERT_ALIGNED(data + layerOffset, 64);
 
-                network[i].fc_1.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                // network[i].fc_1.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                network[i].fc_1.update_w(reinterpret_cast<int8_t*>(data + layerOffset));
 
 
                 layerOffset += sizeof(nettype::Layers[i].L2Weights);
@@ -446,7 +452,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
                 ASSERT_ALIGNED(data + layerOffset, 64);
 
 
-                network[i].fc_1.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                // network[i].fc_1.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                network[i].fc_1.update_b(reinterpret_cast<int32_t*>(data + layerOffset));
                 layerOffset += sizeof(nettype::Layers[i].L2Biases);
 
                 // auto l3weightsOffset = layerOffset;
@@ -454,7 +461,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
                     layerOffset += 64 - (layerOffset % 64);
                 ASSERT_ALIGNED(data + layerOffset, 64);
 
-                network[i].fc_2.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                // network[i].fc_2.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                network[i].fc_2.update_w(reinterpret_cast<int8_t*>(data + layerOffset));
                 layerOffset += sizeof(nettype::Layers[i].L3Weights);
 
                 // auto l3biasesOffset = layerOffset;
@@ -462,7 +470,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
                     layerOffset += 64 - (layerOffset % 64);
                 ASSERT_ALIGNED(data + layerOffset, 64);
 
-                network[i].fc_2.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                // network[i].fc_2.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                network[i].fc_2.update_b(reinterpret_cast<int32_t*>(data + layerOffset));
 
                 layerOffset += sizeof(nettype::Layers[i].L3Biases);
             }
@@ -517,20 +526,30 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
               read_little_endian<int8_t>(stream);
     }
 
-    featureTransformer->biases      = nnueParams->FeatureBiases;
-    featureTransformer->weights     = nnueParams->FeatureWeights;
-    featureTransformer->psqtWeights = nnueParams->PsqtWeights;
+    // featureTransformer->biases      = nnueParams->FeatureBiases;
+    // featureTransformer->weights     = nnueParams->FeatureWeights;
+    // featureTransformer->psqtWeights = nnueParams->PsqtWeights;
+    featureTransformer->update(nnueParams->FeatureBiases, nnueParams->FeatureWeights,
+                               nnueParams->PsqtWeights);
 
     for (std::size_t i = 0; i < LayerStacks; ++i)
     {
-        network[i].fc_0.biases  = nnueParams->Layers[i].L1Biases;
-        network[i].fc_0.weights = nnueParams->Layers[i].L1Weights;
+        // network[i].fc_0.biases  = nnueParams->Layers[i].L1Biases;
+        // network[i].fc_0.weights = nnueParams->Layers[i].L1Weights;
+        network[i].fc_0.update_w(nnueParams->Layers[i].L1Weights);
+        network[i].fc_0.update_b(nnueParams->Layers[i].L1Biases);
 
-        network[i].fc_1.biases  = nnueParams->Layers[i].L2Biases;
-        network[i].fc_1.weights = nnueParams->Layers[i].L2Weights;
+        // network[i].fc_1.biases  = nnueParams->Layers[i].L2Biases;
+        // network[i].fc_1.weights = nnueParams->Layers[i].L2Weights;
 
-        network[i].fc_2.biases  = nnueParams->Layers[i].L3Biases;
-        network[i].fc_2.weights = nnueParams->Layers[i].L3Weights;
+        network[i].fc_1.update_w(nnueParams->Layers[i].L2Weights);
+        network[i].fc_1.update_b(nnueParams->Layers[i].L2Biases);
+
+        // network[i].fc_2.biases  = nnueParams->Layers[i].L3Biases;
+        // network[i].fc_2.weights = nnueParams->Layers[i].L3Weights;
+
+        network[i].fc_2.update_w(nnueParams->Layers[i].L3Weights);
+        network[i].fc_2.update_b(nnueParams->Layers[i].L3Biases);
     }
 
     // update
