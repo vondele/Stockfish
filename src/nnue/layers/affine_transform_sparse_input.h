@@ -294,7 +294,8 @@ class AffineTransformSparseInput {
     }
 
 
-    void update(OutputType* biases_ptr __attribute__((aligned(64))), std::int8_t* weights_ptr __attribute__((aligned(64)))) {
+    void update(OutputType*  biases_ptr __attribute__((aligned(64))),
+                std::int8_t* weights_ptr __attribute__((aligned(64)))) {
         weights = weights_ptr;
         biases  = biases_ptr;
     }
