@@ -399,86 +399,72 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
             size_t psqtWeightsOffset = biasesOffset + sizeof(nettype::FeatureBiases);
 
 
-            featureTransformer->biases.arrayPtr =
-              reinterpret_cast<int16_t (*)[HalfDimensions]>(data + biasesOffset);
-            featureTransformer->weights.arrayPtr =
-              reinterpret_cast<int16_t (*)[HalfDimensions * InputDimensions]>(data + weightsOffset);
-            featureTransformer->psqtWeights.arrayPtr =
-              reinterpret_cast<int32_t (*)[PSQTBuckets * InputDimensions]>(data
-                                                                           + psqtWeightsOffset);
+            featureTransformer->biases      = reinterpret_cast<int16_t*>(data + biasesOffset);
+            featureTransformer->weights     = reinterpret_cast<int16_t*>(data + weightsOffset);
+            featureTransformer->psqtWeights = reinterpret_cast<int32_t*>(data + psqtWeightsOffset);
+
+
+            ASSERT_ALIGNED(data + biasesOffset, 64);
+            ASSERT_ALIGNED(data + weightsOffset, 64);
+            ASSERT_ALIGNED(data + psqtWeightsOffset, 64);
+
 
             size_t layerOffset = psqtWeightsOffset + sizeof(nettype::PsqtWeights);
-
             for (std::size_t i = 0; i < LayerStacks; ++i)
             {
-                // read l1 weights
-                auto l1weightsOffset = layerOffset;
+                // l1 w, l1 b, l2 w, l2 b, l3 w, l3 b
+                // auto l1weightsOffset = layerOffset;
+                if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
+                    layerOffset += 64 - (layerOffset % 64);
+                ASSERT_ALIGNED(data + layerOffset, 64);
+                network[i].fc_0.weights = reinterpret_cast<int8_t*>(data + layerOffset);
 
-                network[i].fc_0.weights.arrayPtr = reinterpret_cast<
-                  int8_t (*)[Arch::L1Type::OutputDimensions * Arch::L1Type::PaddedInputDimensions]>(
-                  data + l1weightsOffset);
+                layerOffset += sizeof(nettype::Layers[i].L1Weights);
 
-                layerOffset += sizeof(nettype::L1Weights[i]);
-            }
+                // auto l1biasesOffset = layerOffset;
+                if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
+                    layerOffset += 64 - (layerOffset % 64);
+                ASSERT_ALIGNED(data + layerOffset, 64);
 
-            for (std::size_t i = 0; i < LayerStacks; ++i)
-            {
-                // read l1 biases
-                auto l1biasesOffset = layerOffset;
+                network[i].fc_0.biases = reinterpret_cast<int32_t*>(data + layerOffset);
 
-                network[i].fc_0.biases.arrayPtr =
-                  reinterpret_cast<int32_t (*)[Arch::L1Type::OutputDimensions]>(data
-                                                                                + l1biasesOffset);
+                layerOffset += sizeof(nettype::Layers[i].L1Biases);
 
-                layerOffset += sizeof(nettype::L1Biases[i]);
-            }
+                // auto l2weightsOffset = layerOffset;
+                if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
+                    layerOffset += 64 - (layerOffset % 64);
+                ASSERT_ALIGNED(data + layerOffset, 64);
 
-            for (std::size_t i = 0; i < LayerStacks; ++i)
-            {
-                // read l2 weights
-                auto l2weightsOffset = layerOffset;
+                network[i].fc_1.weights = reinterpret_cast<int8_t*>(data + layerOffset);
 
-                network[i].fc_1.weights.arrayPtr = reinterpret_cast<
-                  int8_t (*)[Arch::L2Type::OutputDimensions * Arch::L2Type::PaddedInputDimensions]>(
-                  data + l2weightsOffset);
 
-                layerOffset += sizeof(nettype::L2Weights[i]);
-            }
+                layerOffset += sizeof(nettype::Layers[i].L2Weights);
 
-            for (std::size_t i = 0; i < LayerStacks; ++i)
-            {
-                // read l2 biases
-                auto l2biasesOffset = layerOffset;
+                // auto l2biasesOffset = layerOffset;
+                if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
+                    layerOffset += 64 - (layerOffset % 64);
+                ASSERT_ALIGNED(data + layerOffset, 64);
 
-                network[i].fc_1.biases.arrayPtr =
-                  reinterpret_cast<int32_t (*)[Arch::L2Type::OutputDimensions]>(data
-                                                                                + l2biasesOffset);
 
-                layerOffset += sizeof(nettype::L2Biases[i]);
-            }
+                network[i].fc_1.biases = reinterpret_cast<int32_t*>(data + layerOffset);
+                layerOffset += sizeof(nettype::Layers[i].L2Biases);
 
-            for (std::size_t i = 0; i < LayerStacks; ++i)
-            {
-                // read l3 weights
-                auto l3weightsOffset = layerOffset;
+                // auto l3weightsOffset = layerOffset;
+                if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
+                    layerOffset += 64 - (layerOffset % 64);
+                ASSERT_ALIGNED(data + layerOffset, 64);
 
-                network[i].fc_2.weights.arrayPtr = reinterpret_cast<
-                  int8_t (*)[Arch::L3Type::OutputDimensions * Arch::L3Type::PaddedInputDimensions]>(
-                  data + l3weightsOffset);
+                network[i].fc_2.weights = reinterpret_cast<int8_t*>(data + layerOffset);
+                layerOffset += sizeof(nettype::Layers[i].L3Weights);
 
-                layerOffset += sizeof(nettype::L3Weights[i]);
-            }
+                // auto l3biasesOffset = layerOffset;
+                if (reinterpret_cast<uintptr_t>(data + layerOffset) % 64 != 0)
+                    layerOffset += 64 - (layerOffset % 64);
+                ASSERT_ALIGNED(data + layerOffset, 64);
 
-            for (std::size_t i = 0; i < LayerStacks; ++i)
-            {
-                // read l3 biases
-                auto l3biasesOffset = layerOffset;
+                network[i].fc_2.biases = reinterpret_cast<int32_t*>(data + layerOffset);
 
-                network[i].fc_2.biases.arrayPtr =
-                  reinterpret_cast<int32_t (*)[Arch::L3Type::OutputDimensions]>(data
-                                                                                + l3biasesOffset);
-
-                layerOffset += sizeof(nettype::L3Biases[i]);
+                layerOffset += sizeof(nettype::Layers[i].L3Biases);
             }
         }
 
@@ -507,44 +493,44 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
         header = read_little_endian<std::uint32_t>(stream);
 
         // fc0
-        read_little_endian<int32_t>(stream, nnueParams->L1Biases[k], OutputDimensions);
+        read_little_endian<int32_t>(stream, nnueParams->Layers[k].L1Biases, OutputDimensions);
         for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
-            nnueParams->L1Weights[k][Arch::L1Type::get_weight_index(i)] =
+            nnueParams->Layers[k].L1Weights[Arch::L1Type::get_weight_index(i)] =
               read_little_endian<int8_t>(stream);
 
         OutputDimensions      = Arch::L2Type::OutputDimensions;
         PaddedInputDimensions = Arch::L2Type::PaddedInputDimensions;
 
         // fc1
-        read_little_endian<int32_t>(stream, nnueParams->L2Biases[k], OutputDimensions);
+        read_little_endian<int32_t>(stream, nnueParams->Layers[k].L2Biases, OutputDimensions);
         for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
-            nnueParams->L2Weights[k][Arch::L2Type::get_weight_index(i)] =
+            nnueParams->Layers[k].L2Weights[Arch::L2Type::get_weight_index(i)] =
               read_little_endian<int8_t>(stream);
 
         OutputDimensions      = Arch::L3Type::OutputDimensions;
         PaddedInputDimensions = Arch::L3Type::PaddedInputDimensions;
 
         // fc2
-        read_little_endian<int32_t>(stream, nnueParams->L3Biases[k], OutputDimensions);
+        read_little_endian<int32_t>(stream, nnueParams->Layers[k].L3Biases, OutputDimensions);
         for (IndexType i = 0; i < OutputDimensions * PaddedInputDimensions; ++i)
-            nnueParams->L3Weights[k][Arch::L3Type::get_weight_index(i)] =
+            nnueParams->Layers[k].L3Weights[Arch::L3Type::get_weight_index(i)] =
               read_little_endian<int8_t>(stream);
     }
 
-    featureTransformer->biases.update(&(nnueParams->FeatureBiases));
-    featureTransformer->weights.update(&(nnueParams->FeatureWeights));
-    featureTransformer->psqtWeights.update(&(nnueParams->PsqtWeights));
+    featureTransformer->biases      = nnueParams->FeatureBiases;
+    featureTransformer->weights     = nnueParams->FeatureWeights;
+    featureTransformer->psqtWeights = nnueParams->PsqtWeights;
 
     for (std::size_t i = 0; i < LayerStacks; ++i)
     {
-        network[i].fc_0.biases.update(&(nnueParams->L1Biases)[i]);
-        network[i].fc_0.weights.update(&(nnueParams->L1Weights)[i]);
+        network[i].fc_0.biases  = nnueParams->Layers[i].L1Biases;
+        network[i].fc_0.weights = nnueParams->Layers[i].L1Weights;
 
-        network[i].fc_1.biases.update(&(nnueParams->L2Biases)[i]);
-        network[i].fc_1.weights.update(&(nnueParams->L2Weights)[i]);
+        network[i].fc_1.biases  = nnueParams->Layers[i].L2Biases;
+        network[i].fc_1.weights = nnueParams->Layers[i].L2Weights;
 
-        network[i].fc_2.biases.update(&(nnueParams->L3Biases)[i]);
-        network[i].fc_2.weights.update(&(nnueParams->L3Weights)[i]);
+        network[i].fc_2.biases  = nnueParams->Layers[i].L3Biases;
+        network[i].fc_2.weights = nnueParams->Layers[i].L3Weights;
     }
 
     // update
@@ -554,13 +540,117 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
     std::cout << "Saving to shared memory" << std::endl;
 
 
-    auto buffer = new char[netsize];
+    // auto buffer = new char[netsize];
 
-    std::memcpy(buffer, nnueParams.get(), netsize);
+    // std::memcpy(buffer, nnueParams.get(), netsize);
 
-    manager[int(embeddedType)].init(username, shaVersion, buffer, netsize);
+    // std::cout << "Size of the buffer: " << netsize << std::endl;
 
-    delete[] buffer;
+    // manager[int(embeddedType)].init(username, shaVersion, buffer, netsize);
+
+    // delete[] buffer;
+
+
+    std::vector<char> buffer;
+
+    // copy featureweights
+    buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->FeatureWeights),
+                  reinterpret_cast<char*>(nnueParams->FeatureWeights)
+                    + sizeof(nnueParams->FeatureWeights));
+
+    // make sure biases offset is multiple of 64, and padd with zeros if it isnt
+    if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+    {
+        buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+    }
+
+    // copy featurebiases
+    buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->FeatureBiases),
+                  reinterpret_cast<char*>(nnueParams->FeatureBiases)
+                    + sizeof(nnueParams->FeatureBiases));
+
+    // make sure psqtweights offset is multiple of 64, and padd with zeros if it isnt
+    if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+    {
+        buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+    }
+
+    // copy psqtweights
+    buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->PsqtWeights),
+                  reinterpret_cast<char*>(nnueParams->PsqtWeights)
+                    + sizeof(nnueParams->PsqtWeights));
+
+    // copy layers
+    for (std::size_t i = 0; i < LayerStacks; ++i)
+    {
+        if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+        {
+            // std::cout << "Padding l1 weights"
+            //           << (64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64)) << std::endl;
+            buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+        }
+
+        // copy l1weights
+        buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->Layers[i].L1Weights),
+                      reinterpret_cast<char*>(nnueParams->Layers[i].L1Weights)
+                        + sizeof(nnueParams->Layers[i].L1Weights));
+
+        if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+        {
+            // std::cout << "Padding l1 biases"
+            //           << (64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64)) << std::endl;
+            buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+        }
+        // copy l1biases
+        buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->Layers[i].L1Biases),
+                      reinterpret_cast<char*>(nnueParams->Layers[i].L1Biases)
+                        + sizeof(nnueParams->Layers[i].L1Biases));
+        if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+        {
+            // std::cout << "Padding l2 weights"
+            //           << (64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64)) << std::endl;
+            buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+        }
+        // copy l2weights
+        buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->Layers[i].L2Weights),
+                      reinterpret_cast<char*>(nnueParams->Layers[i].L2Weights)
+                        + sizeof(nnueParams->Layers[i].L2Weights));
+        if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+        {
+            // std::cout << "Padding l2 biases"
+            //           << (64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64)) << std::endl;
+            buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+        }
+        // copy l2biases
+        buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->Layers[i].L2Biases),
+                      reinterpret_cast<char*>(nnueParams->Layers[i].L2Biases)
+                        + sizeof(nnueParams->Layers[i].L2Biases));
+        if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+        {
+            // std::cout << "Padding l3 weights"
+            //           << (64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64)) << std::endl;
+            buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+        }
+        // copy l3weights
+        buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->Layers[i].L3Weights),
+                      reinterpret_cast<char*>(nnueParams->Layers[i].L3Weights)
+                        + sizeof(nnueParams->Layers[i].L3Weights));
+        if (reinterpret_cast<uintptr_t>(buffer.size()) % 64 != 0)
+        {
+            // std::cout << "Padding l3 biases"
+            //           << (64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64)) << std::endl;
+            buffer.insert(buffer.end(), 64 - (reinterpret_cast<uintptr_t>(buffer.size()) % 64), 0);
+        }
+        // copy l3biases
+        buffer.insert(buffer.end(), reinterpret_cast<char*>(nnueParams->Layers[i].L3Biases),
+                      reinterpret_cast<char*>(nnueParams->Layers[i].L3Biases)
+                        + sizeof(nnueParams->Layers[i].L3Biases));
+    }
+
+
+    std::cout << "Size of the buffer: " << netsize << " " << buffer.size() << std::endl;
+
+    manager[int(embeddedType)].init(username, shaVersion, buffer.data(), buffer.size());
 
     return netDescription;
 }
@@ -609,7 +699,7 @@ bool Network<Arch, Transformer>::read_parameters(std::istream& stream,
     //     return false;
     // for (std::size_t i = 0; i < LayerStacks; ++i)
     // {
-    //     if (!Detail::read_parameters(stream, network[i]))
+    //     if (!Detail::read_parameters(stream, Layers[i].network))
     //         return false;
     // }
     // return stream && stream.peek() == std::ios::traits_type::eof();
@@ -626,7 +716,7 @@ bool Network<Arch, Transformer>::write_parameters(std::ostream&      stream,
     //     return false;
     // for (std::size_t i = 0; i < LayerStacks; ++i)
     // {
-    //     if (!Detail::write_parameters(stream, network[i]))
+    //     if (!Detail::write_parameters(stream, Layers[i].network))
     //         return false;
     // }
     // return bool(stream);

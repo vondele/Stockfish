@@ -56,14 +56,16 @@ struct Net {
     alignas(64) int16_t FeatureBiases[L1];
     alignas(64) int32_t PsqtWeights[FeatureSet::Dimensions * PSQTBuckets];
 
-    alignas(64) int8_t L1Weights[8][L1 * (L2 + 1)];
-    alignas(64) int32_t L1Biases[8][L2 + 1];
+    struct Layers {
+        alignas(64) int8_t L1Weights[L1 * (L2 + 1)];
+        alignas(64) int32_t L1Biases[L2 + 1];
 
-    alignas(64) int8_t L2Weights[8][(L2 + 1) * 2 * L3];
-    alignas(64) int32_t L2Biases[8][L3];
+        alignas(64) int8_t L2Weights[(L2 + 1) * 2 * L3];
+        alignas(64) int32_t L2Biases[L3];
 
-    alignas(64) int8_t L3Weights[8][L3];
-    alignas(64) int32_t L3Biases[8][1];
+        alignas(64) int8_t L3Weights[L3];
+        alignas(64) int32_t L3Biases[1];
+    } Layers[8];
 };
 
 template<typename Arch, typename Transformer>

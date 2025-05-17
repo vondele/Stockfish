@@ -526,9 +526,12 @@ class FeatureTransformer {
     // BiasType (*biases)[HalfDimensions];
     // WeightType (*weights)[HalfDimensions * InputDimensions];
     // PSQTWeightType (*psqtWeights)[InputDimensions * PSQTBuckets];
-    ArrayWrapper<BiasType, HalfDimensions>                      biases;
-    ArrayWrapper<WeightType, HalfDimensions * InputDimensions>  weights;
-    ArrayWrapper<PSQTWeightType, InputDimensions * PSQTBuckets> psqtWeights;
+    // ArrayWrapper<BiasType, HalfDimensions>                      biases;
+    alignas(64) BiasType* biases __attribute__((aligned(64)));
+    alignas(64) WeightType* weights __attribute__((aligned(64)));
+    alignas(64) PSQTWeightType* psqtWeights __attribute__((aligned(64)));
+    // ArrayWrapper<WeightType, HalfDimensions * InputDimensions>  weights;
+    // ArrayWrapper<PSQTWeightType, InputDimensions * PSQTBuckets> psqtWeights;
 };
 
 }  // namespace Stockfish::Eval::NNUE

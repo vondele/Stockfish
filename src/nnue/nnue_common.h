@@ -279,23 +279,34 @@ inline void write_leb_128(std::ostream& stream, const IntType* values, std::size
     flush();
 }
 
+#ifndef FORCE_INLINE
+    #if defined(_MSC_VER)  // Microsoft Visual C++
+        #define FORCE_INLINE __forceinline
+    #elif defined(__GNUC__) || defined(__clang__)  // GCC and Clang
+        #define FORCE_INLINE inline __attribute__((always_inline))
+    #else  // Generic fallback
+        #define FORCE_INLINE inline
+    #endif
+#endif
+
 template<typename T, std::size_t N>
 struct ArrayWrapper {
     //    private:
-    const T (*arrayPtr)[N];
-
+    const T (*arrayPtr)[N] __attribute__((aligned(64)));
     //    public:
     // explicit ArrayWrapper(T (*ptr)[N]) :
     //     arrayPtr(ptr) {}
 
     // T*       data() { return *arrayPtr; }
-    const T* data() const { return *arrayPtr; }
+    FORCE_INLINE __attribute__((aligned(64))) const T* data() const { return *arrayPtr; }
 
-    void update(T (*ptr)[N]) { arrayPtr = ptr; }
+    FORCE_INLINE void update(T (*ptr)[N]) { arrayPtr = ptr; }
 
     // T& operator[](std::size_t index) { return (*arrayPtr)[index]; }
 
-    const T& operator[](std::size_t index) const { return (*arrayPtr)[index]; }
+    FORCE_INLINE __attribute__((aligned(64))) const T& operator[](std::size_t index) const {
+        return (*arrayPtr)[index];
+    }
 };
 
 }  // namespace Stockfish::Eval::NNUE

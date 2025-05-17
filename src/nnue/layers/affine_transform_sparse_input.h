@@ -266,7 +266,7 @@ class AffineTransformSparseInput {
         // Find indices of nonzero 32-bit blocks
         find_nnz<NumChunks>(input32, nnz, count);
 
-        const outvec_t* biasvec = reinterpret_cast<const outvec_t*>(biases.data());
+        const outvec_t* biasvec = reinterpret_cast<const outvec_t*>(biases);
         outvec_t        acc[NumRegs];
         for (IndexType k = 0; k < NumRegs; ++k)
             acc[k] = biasvec[k];
@@ -299,8 +299,10 @@ class AffineTransformSparseInput {
 
     // BiasType (*biases)[OutputDimensions];
     // WeightType (*weights)[OutputDimensions * PaddedInputDimensions];
-    ArrayWrapper<BiasType, OutputDimensions>                           biases;
-    ArrayWrapper<WeightType, OutputDimensions * PaddedInputDimensions> weights;
+    // ArrayWrapper<BiasType, OutputDimensions>                           biases;
+    // ArrayWrapper<WeightType, OutputDimensions * PaddedInputDimensions> weights;
+    alignas(64) BiasType* biases __attribute__((aligned(64)));
+    alignas(64) WeightType* weights __attribute__((aligned(64)));
 };
 
 }  // namespace Stockfish::Eval::NNUE::Layers

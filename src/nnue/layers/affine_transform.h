@@ -216,7 +216,7 @@ class AffineTransform {
             constexpr IndexType NumRegs   = OutputDimensions / OutputSimdWidth;
 
             const auto   input32 = reinterpret_cast<const std::int32_t*>(input);
-            const vec_t* biasvec = reinterpret_cast<const vec_t*>(biases.data());
+            const vec_t* biasvec = reinterpret_cast<const vec_t*>(biases);
             vec_t        acc[NumRegs];
             for (IndexType k = 0; k < NumRegs; ++k)
                 acc[k] = biasvec[k];
@@ -295,8 +295,10 @@ class AffineTransform {
 
     // BiasType (*biases)[OutputDimensions];
     // WeightType (*weights)[OutputDimensions * PaddedInputDimensions];
-    ArrayWrapper<BiasType, OutputDimensions>                           biases;
-    ArrayWrapper<WeightType, OutputDimensions * PaddedInputDimensions> weights;
+    // ArrayWrapper<BiasType, OutputDimensions>                           biases;
+    // ArrayWrapper<WeightType, OutputDimensions * PaddedInputDimensions> weights;
+    alignas(64) BiasType* biases __attribute__((aligned(64)));
+    alignas(64) WeightType* weights __attribute__((aligned(64)));
 };
 
 }  // namespace Stockfish::Eval::NNUE::Layers

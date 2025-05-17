@@ -229,7 +229,7 @@ class SharedMemoryManager {
    private:
     std::string m_path;
     size_t      m_elementCount;
-    T*          m_data;
+    T*          m_data __attribute__((aligned(64)));
     int         m_fd;
     size_t      m_size;
     bool        m_isOwner;
