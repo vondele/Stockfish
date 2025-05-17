@@ -298,8 +298,8 @@ class SharedMemoryManager {
         }
 
         // Map the existing file
-        m_data =
-          static_cast<T*>(mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
+        m_data = static_cast<T*>(
+          mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_POPULATE, m_fd, 0));
         if (m_data == MAP_FAILED)
         {
             std::cerr << "Failed to map shared memory: " << strerror(errno) << std::endl;
@@ -307,6 +307,11 @@ class SharedMemoryManager {
             m_fd = -1;
             return false;
         }
+
+        madvise(m_data, m_size, MADV_SEQUENTIAL);
+        madvise(m_data, m_size, MADV_WILLNEED);
+        madvise(m_data, m_size, MADV_HUGEPAGE);
+        mlock(m_data, m_size);
 
         m_isOwner       = false;
         m_isInitialized = true;
