@@ -287,7 +287,7 @@ class SharedMemoryManager {
 
         m_name = buildShmName(username, shaVersion);
 
-        m_fd = shm_open(m_name.c_str(), O_RDWR, 0660);
+        m_fd = shm_open(m_name.c_str(), O_RDONLY, 0444);
         if (m_fd == -1)
         {
             std::cerr << "Failed to open existing shared memory object: " << strerror(errno)
@@ -298,8 +298,7 @@ class SharedMemoryManager {
         m_elementCount = elementCount;
         m_size         = elementCount * sizeof(T);
 
-        m_data =
-          static_cast<T*>(mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
+        m_data = static_cast<T*>(mmap(nullptr, m_size, PROT_READ, MAP_SHARED, m_fd, 0));
         if (m_data == MAP_FAILED)
         {
             std::cerr << "Failed to map shared memory: " << strerror(errno) << std::endl;
