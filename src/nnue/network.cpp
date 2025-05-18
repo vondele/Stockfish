@@ -312,7 +312,7 @@ template<typename Arch, typename Transformer>
 void Network<Arch, Transformer>::load_user_net(const std::string& dir,
                                                const std::string& evalfilePath) {
     std::ifstream stream(dir + evalfilePath, std::ios::binary);
-    auto          description = load(stream);
+    auto          description = load(stream, evalfilePath);
 
     if (description.has_value())
     {
@@ -339,7 +339,9 @@ void Network<Arch, Transformer>::load_internal() {
                         size_t(embedded.size));
 
     std::istream stream(&buffer);
-    auto         description = load(stream);
+    auto         description =
+      load(stream, embeddedType == EmbeddedNNUEType::BIG ? EvalFileDefaultNameBig
+                                                         : EvalFileDefaultNameSmall);
 
     if (description.has_value())
     {
@@ -368,7 +370,8 @@ bool Network<Arch, Transformer>::save(std::ostream&      stream,
 
 
 template<typename Arch, typename Transformer>
-std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream) {
+std::optional<std::string> Network<Arch, Transformer>::load(std::istream&      stream,
+                                                            const std::string& evalfilePath) {
     initialize();
     std::string netDescription;
 
@@ -383,7 +386,7 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
     constexpr auto netsize = sizeof(nettype);
 
     std::string username   = getenv("USER") ? getenv("USER") : "default_user";
-    std::string shaVersion = std::to_string(hashValue);
+    std::string shaVersion = evalfilePath;
 
     constexpr auto HalfDimensions  = Transformer::OutputDimensions;
     constexpr auto InputDimensions = Transformer::InputDimensions;
@@ -394,54 +397,60 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
 start:
     if (manager[int(embeddedType)].check_exists(username, shaVersion))
     {
-        std::cout << "Loading from shared memory" << std::endl;
-        if (manager[int(embeddedType)].read_existing(username, shaVersion, netsize))
+        if (!manager[int(embeddedType)].read_existing(username, shaVersion, netsize))
         {
-            std::cout << "Shared memory loaded successfully" << std::endl;
-            char* data = manager[int(embeddedType)].data();
-
-            size_t offset              = 0;
-            featureTransformer.weights = reinterpret_cast<int16_t*>(data + offset);
-            offset += sizeof(nettype::FeatureWeights);
-
-            featureTransformer.biases = reinterpret_cast<int16_t*>(data + offset);
-            offset += sizeof(nettype::FeatureBiases);
-
-            featureTransformer.psqtWeights = reinterpret_cast<int32_t*>(data + offset);
-            offset += sizeof(nettype::PsqtWeights);
-
-            ASSERT_ALIGNED(featureTransformer.weights, 64);
-            ASSERT_ALIGNED(featureTransformer.biases, 64);
-            ASSERT_ALIGNED(featureTransformer.psqtWeights, 64);
-
-            for (std::size_t i = 0; i < LayerStacks; ++i)
-            {
-                auto align64 = [&offset, data]() {
-                    // Align to 64-byte boundary
-                    offset = (offset + 63) & ~63;
-                    ASSERT_ALIGNED(data + offset, 64);
-                    return data + offset;
-                };
-
-                network[i].fc_0.update_w(reinterpret_cast<int8_t*>(align64()));
-                offset += sizeof(nettype::Layers[i].L1Weights);
-
-                network[i].fc_0.update_b(reinterpret_cast<int32_t*>(align64()));
-                offset += sizeof(nettype::Layers[i].L1Biases);
-
-                network[i].fc_1.update_w(reinterpret_cast<int8_t*>(align64()));
-                offset += sizeof(nettype::Layers[i].L2Weights);
-
-                network[i].fc_1.update_b(reinterpret_cast<int32_t*>(align64()));
-                offset += sizeof(nettype::Layers[i].L2Biases);
-
-                network[i].fc_2.update_w(reinterpret_cast<int8_t*>(align64()));
-                offset += sizeof(nettype::Layers[i].L3Weights);
-
-                network[i].fc_2.update_b(reinterpret_cast<int32_t*>(align64()));
-                offset += sizeof(nettype::Layers[i].L3Biases);
-            }
+            std::cerr << "Failed to read existing shared memory object: " << strerror(errno)
+                      << std::endl;
+            return std::nullopt;
         }
+
+        std::cout << "Loading from shared memory" << std::endl;
+
+        char* data = manager[int(embeddedType)].data();
+
+        size_t offset              = 0;
+        featureTransformer.weights = reinterpret_cast<int16_t*>(data + offset);
+        offset += sizeof(nettype::FeatureWeights);
+
+        featureTransformer.biases = reinterpret_cast<int16_t*>(data + offset);
+        offset += sizeof(nettype::FeatureBiases);
+
+        featureTransformer.psqtWeights = reinterpret_cast<int32_t*>(data + offset);
+        offset += sizeof(nettype::PsqtWeights);
+
+        ASSERT_ALIGNED(featureTransformer.weights, 64);
+        ASSERT_ALIGNED(featureTransformer.biases, 64);
+        ASSERT_ALIGNED(featureTransformer.psqtWeights, 64);
+
+        for (std::size_t i = 0; i < LayerStacks; ++i)
+        {
+            auto align64 = [&offset, data]() {
+                // Align to 64-byte boundary
+                offset = (offset + 63) & ~63;
+                ASSERT_ALIGNED(data + offset, 64);
+                return data + offset;
+            };
+
+            network[i].fc_0.update_w(reinterpret_cast<int8_t*>(align64()));
+            offset += sizeof(nettype::Layers[i].L1Weights);
+
+            network[i].fc_0.update_b(reinterpret_cast<int32_t*>(align64()));
+            offset += sizeof(nettype::Layers[i].L1Biases);
+
+            network[i].fc_1.update_w(reinterpret_cast<int8_t*>(align64()));
+            offset += sizeof(nettype::Layers[i].L2Weights);
+
+            network[i].fc_1.update_b(reinterpret_cast<int32_t*>(align64()));
+            offset += sizeof(nettype::Layers[i].L2Biases);
+
+            network[i].fc_2.update_w(reinterpret_cast<int8_t*>(align64()));
+            offset += sizeof(nettype::Layers[i].L3Weights);
+
+            network[i].fc_2.update_b(reinterpret_cast<int32_t*>(align64()));
+            offset += sizeof(nettype::Layers[i].L3Biases);
+        }
+
+        std::cout << "Shared memory loaded successfully" << std::endl;
 
         return netDescription;
     }

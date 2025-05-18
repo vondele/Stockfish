@@ -102,7 +102,7 @@ class Network {
     void initialize();
 
     bool                       save(std::ostream&, const std::string&, const std::string&) const;
-    std::optional<std::string> load(std::istream&);
+    std::optional<std::string> load(std::istream&, const std::string& evalfilePath);
 
     bool read_header(std::istream&, std::uint32_t*, std::string*) const;
     bool write_header(std::ostream&, std::uint32_t, const std::string&) const;

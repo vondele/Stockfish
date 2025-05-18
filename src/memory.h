@@ -235,6 +235,15 @@ class SharedMemoryManager {
     bool        isOwner;
     bool        isInit;
 
+    static std::string createHashString(const std::string& input) {
+        size_t hash = std::hash<std::string>{}(input);
+
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0') << hash;
+
+        return ss.str();
+    }
+
     static std::string build_shm_name(const std::string& username, const std::string& shaVersion) {
         std::string baseSegment = username + "_sf-shared-net_";
 
@@ -243,14 +252,12 @@ class SharedMemoryManager {
         int  numaNode    = 0;  // todo get numa
         snprintf(numaBuf, sizeof(numaBuf), "numa%d", numaNode);
 
-        std::string shm_name = "/" + baseSegment + numaBuf + "_" + shaVersion + "_data";
+        std::string shm_name = baseSegment + numaBuf + "_" + shaVersion + "_data";
+        std::string hash     = "/" + createHashString(shm_name);
 
-        if (shm_name.length() > 255)
-        {
-            shm_name = shm_name.substr(0, 255);
-        }
+        assert(hash.size() <= 31);
 
-        return shm_name;
+        return hash;
     }
 
    public:
@@ -305,8 +312,7 @@ class SharedMemoryManager {
             return false;
         }
 
-        isOwner = false;
-        isInit  = true;
+        isInit = true;
         return true;
     }
 
@@ -398,6 +404,8 @@ class SharedMemoryManager {
             close(fd);
             fd = -1;
         }
+
+        isInit = false;
     }
 
     void cleanup() {
