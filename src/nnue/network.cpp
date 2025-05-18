@@ -390,10 +390,10 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
 
     std::cout << "Loading " << username << " " << shaVersion << std::endl;
 
-    if (manager[int(embeddedType)].checkExists(username, shaVersion))
+    if (manager[int(embeddedType)].check_exists(username, shaVersion))
     {
         std::cout << "Loading from shared memory" << std::endl;
-        if (manager[int(embeddedType)].readExisting(username, shaVersion, netsize))
+        if (manager[int(embeddedType)].read_existing(username, shaVersion, netsize))
         {
             std::cout << "Shared memory loaded successfully" << std::endl;
             char* data = manager[int(embeddedType)].data();
@@ -484,8 +484,9 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
 
     nnueParams = std::make_unique<nettype>();
 
-    std::uint32_t header;
-    header = read_little_endian<std::uint32_t>(stream);
+    // std::uint32_t header;
+    // header =
+    read_little_endian<std::uint32_t>(stream);
 
     read_leb_128<int16_t>(stream, nnueParams->FeatureBiases, HalfDimensions);
     read_leb_128<int16_t>(stream, nnueParams->FeatureWeights, HalfDimensions * InputDimensions);
@@ -499,7 +500,8 @@ std::optional<std::string> Network<Arch, Transformer>::load(std::istream& stream
         auto OutputDimensions      = Arch::L1Type::OutputDimensions;
         auto PaddedInputDimensions = Arch::L1Type::PaddedInputDimensions;
 
-        header = read_little_endian<std::uint32_t>(stream);
+        //header =
+        read_little_endian<std::uint32_t>(stream);
 
         // fc0
         read_little_endian<int32_t>(stream, nnueParams->Layers[k].L1Biases, OutputDimensions);
