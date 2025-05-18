@@ -386,6 +386,20 @@ class SharedMemoryManager {
 
     size_t size() const { return elementCount; }
 
+    void close_mmap() {
+        if (mmapAddr != nullptr && mmapAddr != MAP_FAILED)
+        {
+            munmap(mmapAddr, mmapSize);
+            mmapAddr = nullptr;
+        }
+
+        if (fd != -1)
+        {
+            close(fd);
+            fd = -1;
+        }
+    }
+
     void cleanup() {
         if (mmapAddr != nullptr && mmapAddr != MAP_FAILED)
         {

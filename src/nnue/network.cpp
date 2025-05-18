@@ -551,6 +551,7 @@ start:
     std::cout << "Size of the buffer: " << netsize << " " << buffer.size() << std::endl;
 
     manager[int(embeddedType)].init(username, shaVersion, buffer.data(), buffer.size());
+    manager[int(embeddedType)].close_mmap();
 
     jumped = true;
     goto start;
