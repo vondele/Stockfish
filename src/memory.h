@@ -227,7 +227,7 @@ namespace fs = std::filesystem;
 template<typename T>
 class SharedMemoryManager {
    private:
-    std::string m_path;
+    std::string m_name;
     size_t      m_elementCount;
     T*          m_data;
     int         m_fd;
@@ -235,21 +235,22 @@ class SharedMemoryManager {
     bool        m_isOwner;
     bool        m_isInitialized;
 
-    bool createDirectoryStructure(const std::string& path) {
-        // todo error
-        fs::create_directories(path);
-        return true;
-    }
+    std::string buildShmName(const std::string& username, const std::string& shaVersion) {
+        std::string baseSegment = username + "_sf-shared-net_";
 
-    std::string buildPath(const std::string& username, const std::string& shaVersion) {
-        std::string baseDir = "/dev/shm/" + username + "/sf-shared-net/";
-
+        // Add NUMA node info
         char numaBuf[64] = {0};
-        // todo get numa
-        int numaNode = 0;
+        int  numaNode    = 0;  // todo get numa
         snprintf(numaBuf, sizeof(numaBuf), "numa%d", numaNode);
 
-        return baseDir + numaBuf + "/" + shaVersion + "/data";
+        std::string name = "/" + baseSegment + numaBuf + "_" + shaVersion + "_data";
+
+        if (name.length() > 255)
+        {
+            name = name.substr(0, 255);
+        }
+
+        return name;
     }
 
    public:
@@ -265,39 +266,38 @@ class SharedMemoryManager {
     bool isInitialized() const { return m_isInitialized; }
 
     bool checkExists(const std::string& username, const std::string& shaVersion) {
-        std::string path    = buildPath(username, shaVersion);
-        std::string dirPath = path.substr(0, path.find_last_of('/'));
-        return fs::exists(path);
+        std::string name = buildShmName(username, shaVersion);
+
+        int fd = shm_open(name.c_str(), O_RDONLY, 0);
+        if (fd == -1)
+        {
+            return false;
+        }
+
+        close(fd);
+        return true;
     }
 
     bool
     readExisting(const std::string& username, const std::string& shaVersion, size_t elementCount) {
         if (m_isInitialized)
         {
-            return true;  // Already initialized
+            return true;
         }
 
-        m_path              = buildPath(username, shaVersion);
-        std::string dirPath = m_path.substr(0, m_path.find_last_of('/'));
+        m_name = buildShmName(username, shaVersion);
 
-        if (!fs::exists(m_path))
+        m_fd = shm_open(m_name.c_str(), O_RDWR, 0660);
+        if (m_fd == -1)
         {
-            std::cerr << "Shared memory file does not exist: " << m_path << std::endl;
+            std::cerr << "Failed to open existing shared memory object: " << strerror(errno)
+                      << std::endl;
             return false;
         }
 
         m_elementCount = elementCount;
         m_size         = elementCount * sizeof(T);
 
-        m_fd = open(m_path.c_str(), O_RDWR, 0660);
-        if (m_fd == -1)
-        {
-            std::cerr << "Failed to open existing shared memory file: " << strerror(errno)
-                      << std::endl;
-            return false;
-        }
-
-        // Map the existing file
         m_data =
           static_cast<T*>(mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
         if (m_data == MAP_FAILED)
@@ -307,11 +307,6 @@ class SharedMemoryManager {
             m_fd = -1;
             return false;
         }
-
-        madvise(m_data, m_size, MADV_SEQUENTIAL);
-        madvise(m_data, m_size, MADV_WILLNEED);
-        madvise(m_data, m_size, MADV_HUGEPAGE);
-        mlock(m_data, m_size);
 
         m_isOwner       = false;
         m_isInitialized = true;
@@ -325,26 +320,19 @@ class SharedMemoryManager {
 
         if (m_isInitialized)
         {
-            // Already initialized
             return true;
         }
 
         m_elementCount = elementCount;
         m_size         = elementCount * sizeof(T);
-        m_path         = buildPath(username, shaVersion);
+        m_name         = buildShmName(username, shaVersion);
 
-        std::string dirPath = m_path.substr(0, m_path.find_last_of('/'));
-        if (!createDirectoryStructure(dirPath))
-        {
-            return false;
-        }
+        bool exists = checkExists(username, shaVersion);
 
-        bool exists = fs::exists(m_path);
-
-        m_fd = open(m_path.c_str(), O_RDWR | (exists ? 0 : O_CREAT), 0660);
+        m_fd = shm_open(m_name.c_str(), O_RDWR | (exists ? 0 : O_CREAT), 0660);
         if (m_fd == -1)
         {
-            std::cerr << "Failed to open shared memory file: " << strerror(errno) << std::endl;
+            std::cerr << "Failed to open shared memory object: " << strerror(errno) << std::endl;
             return false;
         }
 
@@ -352,7 +340,7 @@ class SharedMemoryManager {
         {
             if (ftruncate(m_fd, m_size) == -1)
             {
-                std::cerr << "Failed to set size of shared memory file: " << strerror(errno)
+                std::cerr << "Failed to set size of shared memory object: " << strerror(errno)
                           << std::endl;
                 close(m_fd);
                 m_fd = -1;
@@ -370,6 +358,10 @@ class SharedMemoryManager {
             m_fd = -1;
             return false;
         }
+
+        // madvise(m_data, m_size, MADV_WILLNEED);
+        // madvise(m_data, m_size, MADV_HUGEPAGE);
+        // mlock(m_data, m_size);
 
         if (m_isOwner && sourceArray != nullptr)
         {
@@ -410,9 +402,9 @@ class SharedMemoryManager {
             m_fd = -1;
         }
 
-        if (m_isOwner)
+        if (m_isOwner && !m_name.empty())
         {
-            // todo: when to remove?
+            shm_unlink(m_name.c_str());
         }
 
         m_isInitialized = false;
