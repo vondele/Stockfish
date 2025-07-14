@@ -47,7 +47,7 @@ int Eval::simple_eval(const Position& pos) {
 }
 
 int smallNetThreshold = 962;
-TUNE(smallNetThreshold, 850, 1050);
+TUNE(SetRange(850, 1050), smallNetThreshold);
 
 bool Eval::use_smallnet(const Position& pos) {
     return std::abs(simple_eval(pos)) > smallNetThreshold;
