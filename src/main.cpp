@@ -35,11 +35,11 @@ int main(int argc, char* argv[]) {
     Position::init();
     Eval::NNUE::Features::init_threat_offsets();
 
-    UCIEngine uci(argc, argv);
+    auto uci = std::make_unique<UCIEngine>(argc, argv);
 
-    Tune::init(uci.engine_options());
+    Tune::init(uci->engine_options());
 
-    uci.loop();
+    uci->loop();
 
     return 0;
 }
