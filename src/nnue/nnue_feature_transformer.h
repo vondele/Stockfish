@@ -208,12 +208,18 @@ class FeatureTransformer {
     }
 
     // Write network parameters
+<<<<<<< HEAD
     // TODO: Fix this
     bool write_parameters(std::ostream& stream) {
+=======
+    bool write_parameters(std::ostream& stream) const {
+        auto copy = *this;
+>>>>>>> 00562ca7b2 (const correct write)
 
-        unpermute_weights();
-        scale_weights(false);
+        copy.unpermute_weights();
+        copy.scale_weights(false);
 
+<<<<<<< HEAD
         write_leb_128<BiasType>(stream, biases, HalfDimensions);
         write_leb_128<WeightType>(stream, threatWeights, HalfDimensions * ThreatInputDimensions);
         write_leb_128<WeightType>(stream, weights, HalfDimensions * InputDimensions);
@@ -221,6 +227,12 @@ class FeatureTransformer {
 
         permute_weights();
         scale_weights(true);
+=======
+        write_leb_128<BiasType>(stream, copy.biases, HalfDimensions);
+        write_leb_128<WeightType>(stream, copy.weights, HalfDimensions * InputDimensions);
+        write_leb_128<PSQTWeightType>(stream, copy.psqtWeights, PSQTBuckets * InputDimensions);
+        
+>>>>>>> 00562ca7b2 (const correct write)
         return !stream.fail();
     }
 
