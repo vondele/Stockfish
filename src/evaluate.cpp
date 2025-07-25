@@ -48,6 +48,38 @@ int Eval::simple_eval(const Position& pos) {
 
 bool Eval::use_smallnet(const Position& pos) { return std::abs(simple_eval(pos)) > 962; }
 
+int CorneredBishop = 150;
+TUNE(CorneredBishop);
+
+Value Eval::fix_FRC(const Position& pos) {
+
+  constexpr Bitboard Corners =  1ULL << SQ_A1 | 1ULL << SQ_H1 | 1ULL << SQ_A8 | 1ULL << SQ_H8;
+
+  if (!(pos.pieces(BISHOP) & Corners))
+      return VALUE_ZERO;
+
+  int correction = 0;
+
+  if (   pos.piece_on(SQ_A1) == W_BISHOP
+      && pos.piece_on(SQ_B2) == W_PAWN)
+      correction -= CorneredBishop;
+
+  if (   pos.piece_on(SQ_H1) == W_BISHOP
+      && pos.piece_on(SQ_G2) == W_PAWN)
+      correction -= CorneredBishop;
+
+  if (   pos.piece_on(SQ_A8) == B_BISHOP
+      && pos.piece_on(SQ_B7) == B_PAWN)
+      correction += CorneredBishop;
+
+  if (   pos.piece_on(SQ_H8) == B_BISHOP
+      && pos.piece_on(SQ_G7) == B_PAWN)
+      correction += CorneredBishop;
+
+  return pos.side_to_move() == WHITE ?  Value(correction)
+                                     : -Value(correction);
+}
+
 // Evaluate is the evaluator for the outer world. It returns a static evaluation
 // of the position from the point of view of the side to move.
 Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
@@ -82,6 +114,8 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Damp down the evaluation linearly when shuffling
     v -= v * pos.rule50_count() / 212;
+
+    if (pos.is_chess960()) v += fix_FRC(pos);
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
