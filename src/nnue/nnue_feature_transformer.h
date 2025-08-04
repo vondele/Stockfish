@@ -214,11 +214,15 @@ class FeatureTransformer {
 =======
     bool write_parameters(std::ostream& stream) const {
 <<<<<<< HEAD
+<<<<<<< HEAD
         auto copy = *this;
 >>>>>>> 00562ca7b2 (const correct write)
 =======
         auto copy = std::make_unique<FeatureTransformer>(*this);
 >>>>>>> 88c9170923 (fix uninitialized value and stack allocation)
+=======
+        std::unique_ptr<FeatureTransformer> copy = std::make_unique<FeatureTransformer>(*this);
+>>>>>>> c2cd0aa1e1 (Avoid copy on stack, fails on macos)
 
         copy->unpermute_weights();
         copy->scale_weights(false);
