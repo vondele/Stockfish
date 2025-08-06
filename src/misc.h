@@ -297,31 +297,28 @@ inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
 }
 
 
-template <typename T>
+template<typename T>
 inline void hash_combine(std::size_t& seed, const T& v) {
     std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-template <>
+template<>
 inline void hash_combine(std::size_t& seed, const std::size_t& v) {
-    seed ^= v + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-template <typename T>
+template<typename T>
 inline std::size_t get_raw_data_hash(const T& value) {
     return std::hash<std::string_view>{}(
-        std::string_view(
-            reinterpret_cast<const char*>(&value),
-            sizeof(value)
-        )
-    );
+      std::string_view(reinterpret_cast<const char*>(&value), sizeof(value)));
 }
 
-template <std::size_t Capacity>
+template<std::size_t Capacity>
 class FixedString {
-public:
-    FixedString() : length_(0) {
+   public:
+    FixedString() :
+        length_(0) {
         data_[0] = '\0';
     }
 
@@ -330,7 +327,7 @@ public:
         if (len > Capacity)
             std::terminate();
         std::memcpy(data_, str, len);
-        length_ = len;
+        length_        = len;
         data_[length_] = '\0';
     }
 
@@ -338,7 +335,7 @@ public:
         if (str.size() > Capacity)
             std::terminate();
         std::memcpy(data_, str.data(), str.size());
-        length_ = str.size();
+        length_        = str.size();
         data_[length_] = '\0';
     }
 
@@ -348,13 +345,9 @@ public:
     const char* c_str() const { return data_; }
     const char* data() const { return data_; }
 
-    char& operator[](std::size_t i) {
-        return data_[i];
-    }
+    char& operator[](std::size_t i) { return data_[i]; }
 
-    const char& operator[](std::size_t i) const {
-        return data_[i];
-    }
+    const char& operator[](std::size_t i) const { return data_[i]; }
 
     FixedString& operator+=(const char* str) {
         size_t len = std::strlen(str);
@@ -366,35 +359,29 @@ public:
         return *this;
     }
 
-    FixedString& operator+=(const FixedString& other) {
-        return (*this += other.c_str());
-    }
+    FixedString& operator+=(const FixedString& other) { return (*this += other.c_str()); }
 
-    operator std::string() const {
-        return std::string(data_, length_);
-    }
+    operator std::string() const { return std::string(data_, length_); }
 
-    operator std::string_view() const {
-        return std::string_view(data_, length_);
-    }
+    operator std::string_view() const { return std::string_view(data_, length_); }
 
-    template <typename T>
+    template<typename T>
     bool operator==(const T& other) const noexcept {
-        return (std::string_view)(*this) == other;
+        return (std::string_view) (*this) == other;
     }
 
-    template <typename T>
+    template<typename T>
     bool operator!=(const T& other) const noexcept {
-        return (std::string_view)(*this) == other;
+        return (std::string_view) (*this) == other;
     }
 
     void clear() {
-        length_ = 0;
+        length_  = 0;
         data_[0] = '\0';
     }
 
-private:
-    char data_[Capacity + 1]; // +1 for null terminator
+   private:
+    char        data_[Capacity + 1];  // +1 for null terminator
     std::size_t length_;
 };
 
@@ -442,10 +429,10 @@ void move_to_front(std::vector<T>& vec, Predicate pred) {
 
 }  // namespace Stockfish
 
-template <std::size_t N>
+template<std::size_t N>
 struct std::hash<Stockfish::FixedString<N>> {
     std::size_t operator()(const Stockfish::FixedString<N>& fstr) const noexcept {
-        return std::hash<std::string_view>{}((std::string_view)fstr);
+        return std::hash<std::string_view>{}((std::string_view) fstr);
     }
 };
 
