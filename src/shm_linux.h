@@ -296,6 +296,14 @@ class SharedMemory: public detail::SharedMemoryBase {
             return false;
         }
 
+
+        int r = posix_fallocate(fd_, 0, total_size_);
+        if (r != 0)
+        {
+            sem_post(sem_);
+            return false;
+        }
+
         // Map the memory
         auto flags  = PROT_READ | PROT_WRITE;
         mapped_ptr_ = mmap(nullptr, total_size_, flags, MAP_SHARED, fd_, 0);
