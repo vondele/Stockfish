@@ -267,6 +267,7 @@ class AffineTransformSparseInput {
         using outvec_t = int32x4_t;
         #define vec_set_32(a) vreinterpretq_s8_u32(vdupq_n_u32(a))
         #define vec_add_dpbusd_32 SIMD::dotprod_m128_add_dpbusd_epi32
+        #define vec_add_32(a, b) vaddq_s32(a, b)
     #elif defined(USE_NEON)
         using invec_t  = int8x16_t;
         using outvec_t = int32x4_t;
@@ -279,13 +280,13 @@ class AffineTransformSparseInput {
         // If we're using high-latency dot product instructions, split the accumulators
         // to create 3 separate dependency chains and merge at the end
         constexpr IndexType NumRegs =
-    #if defined(USE_VNNI)
+    #if defined(USE_VNNI) || defined(USE_NEON_DOTPROD)
           3 * NumAccums;
     #else
           NumAccums;
     #endif
-        std::uint16_t       nnz[NumChunks];
-        IndexType           count;
+        std::uint16_t nnz[NumChunks];
+        IndexType     count;
 
         const auto input32 = reinterpret_cast<const std::int32_t*>(input);
 
@@ -302,7 +303,7 @@ class AffineTransformSparseInput {
 
         // convince GCC to not do weird pointer arithmetic in the following loop
         const std::int8_t* weights_cp = weights;
-    #if defined(USE_VNNI)
+    #if defined(USE_VNNI) || defined(USE_NEON_DOTPROD)
         for (IndexType k = NumAccums; k < NumRegs; ++k)
             acc[k] = vec_zero();
 
@@ -314,12 +315,12 @@ class AffineTransformSparseInput {
             const invec_t        in0 = vec_set_32(input32[i0]);
             const invec_t        in1 = vec_set_32(input32[i1]);
             const invec_t        in2 = vec_set_32(input32[i2]);
-            const auto col0 =
-                reinterpret_cast<const invec_t*>(&weights_cp[i0 * OutputDimensions * ChunkSize]);
+            const auto           col0 =
+              reinterpret_cast<const invec_t*>(&weights_cp[i0 * OutputDimensions * ChunkSize]);
             const auto col1 =
-                reinterpret_cast<const invec_t*>(&weights_cp[i1 * OutputDimensions * ChunkSize]);
+              reinterpret_cast<const invec_t*>(&weights_cp[i1 * OutputDimensions * ChunkSize]);
             const auto col2 =
-                reinterpret_cast<const invec_t*>(&weights_cp[i2 * OutputDimensions * ChunkSize]);
+              reinterpret_cast<const invec_t*>(&weights_cp[i2 * OutputDimensions * ChunkSize]);
             for (IndexType k = 0; k < NumAccums; ++k)
             {
                 vec_add_dpbusd_32(acc[k], in0, col0[k]);
@@ -332,8 +333,8 @@ class AffineTransformSparseInput {
     #endif
         while (start < end)
         {
-            const std::ptrdiff_t i   = *start++;
-            const invec_t        in  = vec_set_32(input32[i]);
+            const std::ptrdiff_t i  = *start++;
+            const invec_t        in = vec_set_32(input32[i]);
             const auto           col =
               reinterpret_cast<const invec_t*>(&weights_cp[i * OutputDimensions * ChunkSize]);
             for (IndexType k = 0; k < NumAccums; ++k)
