@@ -40,7 +40,7 @@ using ThreatFeatureSet = Features::FullThreats;
 using PSQFeatureSet    = Features::HalfKAv2_hm;
 
 // Number of input feature dimensions after conversion
-constexpr IndexType TransformedFeatureDimensionsBig = 768;
+constexpr IndexType TransformedFeatureDimensionsBig = 1280;
 constexpr int       L2Big                           = 15;
 constexpr int       L3Big                           = 32;
 
