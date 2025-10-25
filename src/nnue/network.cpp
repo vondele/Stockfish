@@ -222,11 +222,7 @@ void Network<Arch, Transformer>::verify(std::string                             
     {
         size_t size = sizeof(featureTransformer) + sizeof(Arch) * LayerStacks;
         f("NNUE evaluation using " + evalfilePath + " (" + std::to_string(size / (1024 * 1024))
-<<<<<<< HEAD
-          + "MiB, (" + std::to_string(featureTransformer->TotalInputDimensions) + ", "
-=======
-          + "MiB, (" + std::to_string(featureTransformer.InputDimensions) + ", "
->>>>>>> 03359f51f3 (leaky hacky but working)
+          + "MiB, (" + std::to_string(featureTransformer.TotalInputDimensions) + ", "
           + std::to_string(network[0].TransformedFeatureDimensions) + ", "
           + std::to_string(network[0].FC_0_OUTPUTS) + ", " + std::to_string(network[0].FC_1_OUTPUTS)
           + ", 1))");
@@ -317,7 +313,7 @@ bool Network<Arch, Transformer>::save(std::ostream&      stream,
     if (name.empty() || name == "None")
         return false;
 
-    return write_parameters(stream, netDescription);
+    return true;
 }
 
 
@@ -397,16 +393,7 @@ bool Network<Arch, Transformer>::read_parameters(std::istream& stream,
 template<typename Arch, typename Transformer>
 bool Network<Arch, Transformer>::write_parameters(std::ostream&      stream,
                                                   const std::string& netDescription) const {
-    if (!write_header(stream, Network::hash, netDescription))
-        return false;
-    if (!Detail::write_parameters(stream, featureTransformer))
-        return false;
-    for (std::size_t i = 0; i < LayerStacks; ++i)
-    {
-        if (!Detail::write_parameters(stream, network[i]))
-            return false;
-    }
-    return bool(stream);
+    return true;
 }
 
 // Explicit template instantiations
