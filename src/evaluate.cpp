@@ -86,6 +86,12 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
+    /*
+    std::cout << "IN EVALUATE: v=" << UCIEngine::to_cp(v, pos) << " Key: " << std::hex
+              << std::uppercase << std::setfill('0') << std::setw(16) << pos.key()
+              << std::setfill(' ') << std::dec << std::endl;
+    */
+
     return v;
 }
 

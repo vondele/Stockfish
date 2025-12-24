@@ -1747,7 +1747,7 @@ TimePoint Search::Worker::elapsed_time() const { return main_manager()->tm.elaps
 
 Value Search::Worker::evaluate(const Position& pos) {
     return Eval::evaluate(networks[numaAccessToken], pos, accumulatorStack, refreshTable,
-                          optimism[pos.side_to_move()]);
+                          0 * optimism[pos.side_to_move()]);
 }
 
 namespace {
@@ -2127,6 +2127,7 @@ void SearchManager::pv(Search::Worker&           worker,
         Depth d = updated ? depth : std::max(1, depth - 1);
         Value v = updated ? rootMoves[i].uciScore : rootMoves[i].previousScore;
 
+
         if (v == -VALUE_INFINITE)
             v = VALUE_ZERO;
 
@@ -2140,9 +2141,23 @@ void SearchManager::pv(Search::Worker&           worker,
             && ((!rootMoves[i].scoreLowerbound && !rootMoves[i].scoreUpperbound) || isExact))
             syzygy_extend_pv(worker.options, worker.limits, pos, rootMoves[i], v);
 
+        // std::cout << "IN PV GENERATION\n";
         std::string pv;
+        Value       staticEval = pos.checkers() ? VALUE_ZERO : worker.evaluate(pos);
+        pv += std::to_string(UCIEngine::to_cp(staticEval, pos)) + " ";
+        std::list<StateInfo> sts;
+
         for (Move m : rootMoves[i].pv)
+        {
+            auto& tmpSI = sts.emplace_back();
+            worker.do_move(pos, m, tmpSI, nullptr);
             pv += UCIEngine::move(m, pos.is_chess960()) + " ";
+            staticEval = pos.checkers() ? VALUE_ZERO : worker.evaluate(pos);
+            pv += std::to_string(UCIEngine::to_cp(staticEval, pos)) + " ";
+        }
+
+        for (auto it = rootMoves[i].pv.rbegin(); it != rootMoves[i].pv.rend(); ++it)
+            worker.undo_move(pos, *it);
 
         // Remove last whitespace
         if (!pv.empty())
