@@ -27,6 +27,8 @@
 #include <memory>
 #include <sstream>
 #include <tuple>
+#include <random>
+#include <thread>
 
 #include "nnue/network.h"
 #include "nnue/nnue_misc.h"
@@ -58,6 +60,12 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     assert(!pos.checkers());
 
+    thread_local std::mt19937 rng{std::random_device{}()
+                                  ^ (std::hash<std::thread::id>{}(std::this_thread::get_id()))};
+
+    static std::uniform_int_distribution<int> dist(-10, 10);
+    int                                       noise = dist(rng);
+
     bool smallNet           = use_smallnet(pos);
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, accumulators, caches.small)
                                        : networks.big.evaluate(pos, accumulators, caches.big);
@@ -82,6 +90,8 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Damp down the evaluation linearly when shuffling
     v -= v * pos.rule50_count() / 199;
+
+    v += noise;
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);

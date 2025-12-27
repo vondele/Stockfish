@@ -313,7 +313,7 @@ void Search::Worker::iterative_deepening() {
     lowPlyHistory.fill(97);
 
     // Iterative deepening loop until requested to stop or the target depth is reached
-    while (++rootDepth < MAX_PLY && !threads.stop
+    while (++rootDepth < 2 && !threads.stop
            && !(limits.depth && mainThread && rootDepth > limits.depth))
     {
         // Age out PV variability metric
