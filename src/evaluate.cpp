@@ -60,11 +60,12 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     assert(!pos.checkers());
 
-    thread_local std::mt19937 rng{std::random_device{}()
-                                  ^ (std::hash<std::thread::id>{}(std::this_thread::get_id()))};
+    thread_local std::mt19937 rng{static_cast<std::mt19937::result_type>(
+      std::random_device{}() ^ (std::hash<std::thread::id>{}(std::this_thread::get_id())))};
 
     static std::uniform_int_distribution<int> dist(-10, 10);
     int                                       noise = dist(rng);
+    return noise + simple_eval(pos);
 
     bool smallNet           = use_smallnet(pos);
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, accumulators, caches.small)
