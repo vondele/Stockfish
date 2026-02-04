@@ -671,7 +671,7 @@ endif
 ### 3.3 Optimization
 ifeq ($(optimize),yes)
 
-	CXXFLAGS += -O3 -funroll-loops
+	CXXFLAGS += -O3 -funroll-loops -falign-functions=64 -falign-jumps=64
 
 	ifeq ($(comp),gcc)
 		ifeq ($(OS), Android)
