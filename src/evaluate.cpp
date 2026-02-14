@@ -36,15 +36,6 @@
 
 namespace Stockfish {
 
-// Returns a static, purely materialistic evaluation of the position from
-// the point of view of the side to move. It can be divided by PawnValue to get
-// an approximation of the material advantage on the board in terms of pawns.
-int Eval::simple_eval(const Position& pos) {
-    Color c = pos.side_to_move();
-    return PawnValue * (pos.count<PAWN>(c) - pos.count<PAWN>(~c)) + pos.non_pawn_material(c)
-         - pos.non_pawn_material(~c);
-}
-
 // Evaluate is the evaluator for the outer world. It returns a static evaluation
 // of the position from the point of view of the side to move.
 Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
@@ -55,8 +46,13 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     assert(!pos.checkers());
 
-    int  simpleEval = simple_eval(pos);
-    bool smallNet   = std::abs(simpleEval) > 962;
+    Color c          = pos.side_to_move();
+    Value matUs      = PawnValue * pos.count<PAWN>(c) + pos.non_pawn_material(c);
+    Value matThem    = PawnValue * pos.count<PAWN>(~c) + pos.non_pawn_material(~c);
+    Value simpleEval = matUs - matThem;
+    Value matTotal   = matUs + matThem;
+
+    bool smallNet = std::abs(simpleEval) > 962;
 
     Value nnue = smallNet ? networks.small.evaluate(pos, accumulators, caches.small)
                           : networks.big.evaluate(pos, accumulators, caches.big);
@@ -68,13 +64,9 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
         smallNet = false;
     }
 
-    // Blend optimism and eval with nnue complexity
-    int nnueComplexity = std::abs(2 * simpleEval - nnue);
-    optimism += optimism * nnueComplexity / 476;
-    nnue -= nnue * nnueComplexity / 18236;
-
-    int material = 534 * pos.count<PAWN>() + pos.non_pawn_material();
-    int v        = (nnue * (77871 + material) + optimism * (7191 + material)) / 77871;
+    int v = (nnue * (514 + 36 * simpleEval / 4096 + 117 * matTotal / 16384)
+             + optimism * (102 - 705 * simpleEval / 4096 + 241 * matTotal / 16384))
+          / 512;
 
     // Damp down the evaluation linearly when shuffling
     v -= v * pos.rule50_count() / 199;
