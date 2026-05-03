@@ -24,7 +24,7 @@ jobs:
         with:
           repository: vondele/matetrack
           path: matetrack
-          ref: 6c8405fac9028ca66a077f5c96c918fec0ef8d1d
+          ref: 4895ae6b0c11942a463d2b745bd8b416cd0a25f4
           persist-credentials: false
 
       - name: matetrack install deps
@@ -58,6 +58,18 @@ jobs:
         run: |
           python matecheck.py --syzygyPath 3-4-5-wdl/:3-4-5-dtz/ --engine /home/runner/work/Stockfish/Stockfish/Stockfish/src/stockfish --epdFile mates2000.epd --nodes 100000 --threads 4 | tee matecheck4.out
           ! grep "issues were detected" matecheck4.out > /dev/null
+
+      - name: Run matetrack th1 on KRvK endgame
+        working-directory: matetrack
+        run: |
+          tail -n 20 KRvK_1000pv.epd > KRvK_short.epd
+          python matecheck.py --engine /home/runner/work/Stockfish/Stockfish/Stockfish/src/stockfish --epdFile KRvK_short.epd --mate 0 --threads 1 --nodes 5000000 --hash 128 | tee matecheckKRvK.out
+          ! grep "issues were detected" matecheckKRvK.out > /dev/null
+          fmates=$(grep "Found mates:" matecheckKRvK.out | awk '{print $3}')
+          if [ "$fmates" -le "10" ]; then
+             echo "Too few mates were found in trivial endgame KRvK: $bmates" >&2
+             exit 1
+          fi
 
       - name: Run matetrack th4 gameplay
         working-directory: matetrack
