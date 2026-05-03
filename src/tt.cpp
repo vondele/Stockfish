@@ -107,8 +107,7 @@ void TTEntry::save(
         value16   = int16_t(v);
         eval16    = int16_t(ev);
     }
-    else if (depth8 + DEPTH_NONE >= 5
-             && Bound((genBound8 & BOUND_MASK) >> BOUND_SHIFT) != BOUND_EXACT)
+    else if (depth8 + DEPTH_NONE >= 5)
         depth8--;
 }
 
