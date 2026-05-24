@@ -856,7 +856,7 @@ Value Search::Worker::search(
              && is_valid(ttData.value) && ttData.bound != BOUND_EXACT
              && ttData.bound & (ttData.value >= beta ? BOUND_UPPER : BOUND_LOWER) && depth > 5)
     {  // If a window-bound mismatch is the only reason cutoff failed, penalize the now-useless tte
-        ttWriter.penalize(1);
+        ttWriter.penalize();
     }
 
     // Step 6. Tablebases probe
