@@ -320,6 +320,93 @@ class MultiArray {
     constexpr void swap(MultiArray<T, Size, Sizes...>& other) noexcept { data_.swap(other.data_); }
 };
 
+// Wrapper around std::atomic<T> which uses relaxed accesses or plain
+// accesses, depending on the config.
+template<typename T>
+class SloppyAtomic {
+    static constexpr bool UseAtomic =
+#ifdef USE_SLOPPY_ATOMICS
+      sizeof(T) > sizeof(size_t);
+#else
+      true;
+#endif
+
+   public:
+    SloppyAtomic() = default;
+    SloppyAtomic(T val) :
+        inner(val) {}
+    SloppyAtomic(const SloppyAtomic& a) :
+        inner(static_cast<T>(a)) {}
+
+    T operator=(T val) {
+        if constexpr (UseAtomic)
+            inner.store(val, std::memory_order_relaxed);
+        else
+            inner = val;
+        return val;
+    }
+
+    SloppyAtomic& operator=(const SloppyAtomic& a) {
+        *this = static_cast<T>(a);
+        return *this;
+    }
+
+    operator T() const {
+        if constexpr (UseAtomic)
+            return inner.load(std::memory_order_relaxed);
+        else
+            return inner;
+    }
+
+    SloppyAtomic& operator+=(int val) {
+        *this = *this + val;
+        return *this;
+    }
+
+    SloppyAtomic& operator++() {
+        *this += 1;
+        return *this;
+    }
+
+    SloppyAtomic& operator--() {
+        *this -= 1;
+        return *this;
+    }
+
+    T operator++(int) {
+        T val = *this;
+        *this = val + 1;
+        return val;
+    }
+
+    T operator--(int) {
+        T val = *this;
+        *this = val - 1;
+        return val;
+    }
+
+    SloppyAtomic& operator-=(int val) {
+        *this = *this - val;
+        return *this;
+    }
+
+    T load(std::memory_order order) {
+        if constexpr (UseAtomic)
+            return inner.load(order);
+        else
+            return inner;
+    }
+
+    void store(T val, std::memory_order order) {
+        if constexpr (UseAtomic)
+            inner.store(val, order);
+        else
+            inner = val;
+    }
+
+   private:
+    std::conditional_t<UseAtomic, std::atomic<T>, T> inner;
+};
 
 // xorshift64star Pseudo-Random Number Generator
 // This class is based on original code written and dedicated

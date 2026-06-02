@@ -52,27 +52,17 @@ static_assert((CORRHIST_BASE_SIZE & (CORRHIST_BASE_SIZE - 1)) == 0,
 // the entry. The first template parameter T is the base type of the array,
 // and the second template parameter D limits the range of updates in [-D, D]
 // when we update values with the << operator
-template<typename T, int D, bool Atomic = false>
+template<typename T, int D, bool Shared = false>
 struct StatsEntry {
     static_assert(std::is_arithmetic_v<T>, "Not an arithmetic type");
 
    private:
-    std::conditional_t<Atomic, std::atomic<T>, T> entry;
+    std::conditional_t<Shared, SloppyAtomic<T>, T> entry;
 
    public:
-    void operator=(const T& v) {
-        if constexpr (Atomic)
-            entry.store(v, std::memory_order_relaxed);
-        else
-            entry = v;
-    }
+    void operator=(const T& v) { entry = v; }
 
-    operator T() const {
-        if constexpr (Atomic)
-            return entry.load(std::memory_order_relaxed);
-        else
-            return entry;
-    }
+    operator T() const { return entry; }
 
     void operator<<(int bonus) {
         // Make sure that bonus is in range [-D, D]

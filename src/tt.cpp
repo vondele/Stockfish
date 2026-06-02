@@ -80,12 +80,12 @@ struct TTEntry {
     friend class TranspositionTable;
     friend struct TTWriter;
 
-    uint16_t key16;
-    uint8_t  depth8;
-    uint8_t  genBound8;
-    Move     move16;
-    int16_t  value16;
-    int16_t  eval16;
+    SloppyAtomic<uint16_t> key16;
+    SloppyAtomic<uint8_t>  depth8;
+    SloppyAtomic<uint8_t>  genBound8;
+    SloppyAtomic<Move>     move16;
+    SloppyAtomic<int16_t>  value16;
+    SloppyAtomic<int16_t>  eval16;
 };
 
 // Populates the TTEntry with a new node's data, possibly
@@ -211,7 +211,7 @@ void TranspositionTable::clear(ThreadPool& threads) {
             const size_t start  = stride * i;
             const size_t len    = i + 1 != threadCount ? stride : clusterCount - start;
 
-            std::memset(&table[start], 0, len * sizeof(Cluster));
+            std::memset(static_cast<void*>(&table[start]), 0, len * sizeof(Cluster));
         });
     }
 
