@@ -8,7 +8,6 @@ import fnmatch
 
 from testing import (
     EPD,
-    TSAN,
     Stockfish as Engine,
     MiniTestFramework,
     OrderedClassMembers,
