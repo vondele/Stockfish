@@ -322,12 +322,15 @@ class MultiArray {
 };
 
 // Wrapper around std::atomic<T> which uses relaxed accesses or plain
-// accesses, depending on the config.
+// accesses, depending on the config. Intended use is e.g. wasm where
+// the overhead of atomic instructions can be significant, and we only
+// require non-tearing for the updates, while ensuring we use relaxed
+// accesses otherwise.
 template<typename T>
 class SloppyAtomic {
     static constexpr bool UseAtomic =
 #ifdef USE_SLOPPY_ATOMICS
-      sizeof(T) > sizeof(size_t);
+      !std::atomic<T>::is_always_lock_free || sizeof(T) > sizeof(size_t);
 #else
       true;
 #endif
@@ -360,38 +363,43 @@ class SloppyAtomic {
     }
 
     SloppyAtomic& operator+=(int val) {
-        *this = *this + val;
+        T res = this->load(std::memory_order_relaxed) + val;
+        this->store(res, std::memory_order_relaxed);
         return *this;
     }
 
     SloppyAtomic& operator++() {
-        *this += 1;
+        T res = this->load(std::memory_order_relaxed) + 1;
+        this->store(res, std::memory_order_relaxed);
         return *this;
     }
 
     SloppyAtomic& operator--() {
-        *this -= 1;
+        T res = this->load(std::memory_order_relaxed) - 1;
+        this->store(res, std::memory_order_relaxed);
         return *this;
     }
 
     T operator++(int) {
-        T val = *this;
-        *this = val + 1;
+        T val = this->load(std::memory_order_relaxed);
+        this->store(val + 1, std::memory_order_relaxed);
         return val;
     }
 
     T operator--(int) {
-        T val = *this;
-        *this = val - 1;
+        T val = this->load(std::memory_order_relaxed);
+        this->store(val - 1, std::memory_order_relaxed);
         return val;
     }
 
     SloppyAtomic& operator-=(int val) {
-        *this = *this - val;
+        T res = this->load(std::memory_order_relaxed) - val;
+        this->store(res, std::memory_order_relaxed);
         return *this;
     }
 
     T load(std::memory_order order) {
+        assert(order == std::memory_order_relaxed);
         if constexpr (UseAtomic)
             return inner.load(order);
         else
@@ -399,6 +407,7 @@ class SloppyAtomic {
     }
 
     void store(T val, std::memory_order order) {
+        assert(order == std::memory_order_relaxed);
         if constexpr (UseAtomic)
             inner.store(val, order);
         else
