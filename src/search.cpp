@@ -1312,7 +1312,7 @@ moves_loop:  // When in check, search starts here
 
         // For first picked move (ttMove) reduce reduction
         else if (move == ttData.move)
-            r = std::max(0, r - 2016);
+            r -= 2016;
 
         if (capture)
             ss->statScore = 809 * int(PieceValue[pos.captured_piece()]) / 128
