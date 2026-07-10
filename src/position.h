@@ -180,9 +180,9 @@ class Position {
     bool  dtz_is_dtm() const;  // Pawnless && (3-men || 4-men-minors-only)
 
     // Position consistency check, for debugging
-    bool pos_is_ok() const;
-    bool material_key_is_ok() const;
-    void flip();
+    bool                            pos_is_ok() const;
+    bool                            material_key_is_ok() const;
+    std::optional<PositionSetError> flip();
 
     StateInfo* state() const;
 
