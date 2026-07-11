@@ -995,8 +995,8 @@ Value Search::Worker::search(
     {
         assert((ss - 1)->currentMove != Move::null());
 
-        // Null move dynamic reduction based on depth and evaluation margin
-        Depth R = 7 + depth / 3 + std::max(0, (ss->staticEval - beta) / 256);
+        // Null move dynamic reduction based on depth and evaluation margin, clamp for mate performance
+        Depth R = 7 + depth / 3 + std::clamp((ss->staticEval - beta) / 256, 0, 2);
         do_null_move(pos, st, ss);
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
