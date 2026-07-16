@@ -745,8 +745,16 @@ bool Position::pseudo_legal(const Move m) const {
     else if (!(attacks_bb(type_of(pc), from, pieces()) & to))
         return false;
 
-    if (checkers())
-        return MoveList<EVASIONS>(*this).contains(m);
+    if (checkers() && type_of(pc) != KING)
+    {
+        // In double check, only a king move can evade
+        if (more_than_one(checkers()))
+            return false;
+
+        // The move must block the check or capture the checker
+        if (!(between_bb(square<KING>(us), lsb(checkers())) & to))
+            return false;
+    }
 
     return true;
 }
