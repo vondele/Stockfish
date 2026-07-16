@@ -45,18 +45,16 @@ void HalfKAv2_hm::write_indices(const std::array<Piece, SQUARE_NB>& oldPieces,
     const __m512i vecOldPieces = _mm512_loadu_si512(oldPieces.data());
     const __m512i vecNewPieces = _mm512_loadu_si512(newPieces.data());
 
-    alignas(64) static constexpr u16 psiTable[COLOR_NB][16] = {
-      {PS_NONE, PS_W_PAWN, PS_W_KNIGHT, PS_W_BISHOP, PS_W_ROOK, PS_W_QUEEN, PS_KING, PS_NONE,
-       PS_NONE, PS_B_PAWN, PS_B_KNIGHT, PS_B_BISHOP, PS_B_ROOK, PS_B_QUEEN, PS_KING, PS_NONE},
-      {PS_NONE, PS_B_PAWN, PS_B_KNIGHT, PS_B_BISHOP, PS_B_ROOK, PS_B_QUEEN, PS_KING, PS_NONE,
-       PS_NONE, PS_W_PAWN, PS_W_KNIGHT, PS_W_BISHOP, PS_W_ROOK, PS_W_QUEEN, PS_KING, PS_NONE}};
-
+    // PieceSquareIndex and KingBuckets are multiples of 64, while s and orient
+    // use only the low six bits. Therefore no carry crosses bit 6, and
+    // (s ^ orient) + psi[pc] + bucket == s ^ (psi[pc] + bucket + orient),
+    // allowing the orientation to be folded into the per-piece lookup offset.
     const u16     flip   = 56 * perspective;
-    const __m512i orient = _mm512_set1_epi16((u16) OrientTBL[ksq] ^ flip);
+    const u16     orient = u16(OrientTBL[ksq]) ^ flip;
     const __m512i psi =
-      _mm512_castsi256_si512(_mm256_loadu_si256((const __m256i*) psiTable[perspective]));
-    const __m512i psi_plus_bucket =
-      _mm512_add_epi16(psi, _mm512_set1_epi16((u16) KingBuckets[int(ksq) ^ flip]));
+      _mm512_castsi256_si512(_mm256_loadu_si256((const __m256i*) PieceSquareIndex[perspective]));
+    const __m512i psi_plus_offset =
+      _mm512_add_epi16(psi, _mm512_set1_epi16(u16(KingBuckets[int(ksq) ^ flip] + orient)));
 
     __m512i removed_squares = _mm512_maskz_compress_epi8(removedBB, AllSquares);
     __m512i added_squares   = _mm512_maskz_compress_epi8(addedBB, AllSquares);
@@ -69,11 +67,9 @@ void HalfKAv2_hm::write_indices(const std::array<Piece, SQUARE_NB>& oldPieces,
     added_pieces    = _mm512_cvtepi8_epi16(_mm512_castsi512_si256(added_pieces));
 
     const __m512i removed_indices =
-      _mm512_or_si512(_mm512_xor_si512(removed_squares, orient),
-                      _mm512_permutexvar_epi16(removed_pieces, psi_plus_bucket));
+      _mm512_xor_si512(removed_squares, _mm512_permutexvar_epi16(removed_pieces, psi_plus_offset));
     const __m512i added_indices =
-      _mm512_or_si512(_mm512_xor_si512(added_squares, orient),
-                      _mm512_permutexvar_epi16(added_pieces, psi_plus_bucket));
+      _mm512_xor_si512(added_squares, _mm512_permutexvar_epi16(added_pieces, psi_plus_offset));
 
     _mm512_storeu_si512(write_removed,
                         _mm512_cvtepu16_epi32(_mm512_castsi512_si256(removed_indices)));

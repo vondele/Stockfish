@@ -48,7 +48,7 @@ class HalfKAv2_hm {
         PS_NB       = 11 * SQUARE_NB
     };
 
-    static constexpr IndexType PieceSquareIndex[COLOR_NB][PIECE_NB] = {
+    alignas(64) static constexpr u16 PieceSquareIndex[COLOR_NB][PIECE_NB] = {
       // Convention: W - us, B - them
       // Viewed from other side, W and B are reversed
       {PS_NONE, PS_W_PAWN, PS_W_KNIGHT, PS_W_BISHOP, PS_W_ROOK, PS_W_QUEEN, PS_KING, PS_NONE,
