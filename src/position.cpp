@@ -469,12 +469,13 @@ void Position::set_check_info() const {
     update_slider_blockers(WHITE);
     update_slider_blockers(BLACK);
 
-    Square ksq = square<KING>(~sideToMove);
+    Square ksq                              = square<KING>(~sideToMove);
+    const auto [bishopAttacks, rookAttacks] = both_attacks_bb(ksq, pieces());
 
     st->checkSquares[PAWN]   = attacks_bb<PAWN>(ksq, ~sideToMove);
     st->checkSquares[KNIGHT] = attacks_bb<KNIGHT>(ksq);
-    st->checkSquares[BISHOP] = attacks_bb<BISHOP>(ksq, pieces());
-    st->checkSquares[ROOK]   = attacks_bb<ROOK>(ksq, pieces());
+    st->checkSquares[BISHOP] = bishopAttacks;
+    st->checkSquares[ROOK]   = rookAttacks;
     st->checkSquares[QUEEN]  = st->checkSquares[BISHOP] | st->checkSquares[ROOK];
     st->checkSquares[KING]   = 0;
 }
@@ -641,8 +642,9 @@ void Position::update_slider_blockers(Color c) const {
 // Slider attacks use the occupied bitboard to indicate occupancy.
 Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
 
-    return (attacks_bb<ROOK>(s, occupied) & pieces(ROOK, QUEEN))
-         | (attacks_bb<BISHOP>(s, occupied) & pieces(BISHOP, QUEEN))
+    const auto [bishopAttacks, rookAttacks] = both_attacks_bb(s, occupied);
+
+    return (rookAttacks & pieces(ROOK, QUEEN)) | (bishopAttacks & pieces(BISHOP, QUEEN))
          | (attacks_bb<PAWN>(s, BLACK) & pieces(WHITE, PAWN))
          | (attacks_bb<PAWN>(s, WHITE) & pieces(BLACK, PAWN))
          | (attacks_bb<KNIGHT>(s) & pieces(KNIGHT)) | (attacks_bb<KING>(s) & pieces(KING));
@@ -789,12 +791,12 @@ bool Position::gives_check(Move m) const {
     // checks and ordinary discovered check, so the only case we need to handle
     // is the unusual case of a discovered check through the captured pawn.
     case EN_PASSANT : {
-        Square   capsq = make_square(file_of(to), rank_of(from));
-        Bitboard b     = (pieces() ^ from ^ capsq) | to;
+        Square   capsq                          = make_square(file_of(to), rank_of(from));
+        Bitboard b                              = (pieces() ^ from ^ capsq) | to;
+        const auto [bishopAttacks, rookAttacks] = both_attacks_bb(square<KING>(~sideToMove), b);
 
-        return (attacks_bb<ROOK>(square<KING>(~sideToMove), b) & pieces(sideToMove, QUEEN, ROOK))
-             | (attacks_bb<BISHOP>(square<KING>(~sideToMove), b)
-                & pieces(sideToMove, QUEEN, BISHOP));
+        return (rookAttacks & pieces(sideToMove, QUEEN, ROOK))
+             | (bishopAttacks & pieces(sideToMove, QUEEN, BISHOP));
     }
     default :  //CASTLING
     {
@@ -1189,8 +1191,9 @@ void Position::update_piece_threats(Piece               pc,
     const Bitboard occupied     = pieces();
     const Bitboard rookQueens   = pieces(ROOK, QUEEN);
     const Bitboard bishopQueens = pieces(BISHOP, QUEEN);
-    const Bitboard rAttacks     = attacks_bb<ROOK>(s, occupied);
-    const Bitboard bAttacks     = attacks_bb<BISHOP>(s, occupied);
+    const auto     attacks      = both_attacks_bb(s, occupied);
+    const Bitboard bAttacks     = attacks.first;
+    const Bitboard rAttacks     = attacks.second;
     const Bitboard occupiedNoK  = occupied ^ pieces(KING);
 
     Bitboard sliders       = (rookQueens & rAttacks) | (bishopQueens & bAttacks);
@@ -1508,8 +1511,9 @@ bool Position::see_ge(Move m, int threshold) const {
             assert(swap >= res);
             occupied ^= least_significant_square_bb(bb);
 
-            attackers |= (attacks_bb<BISHOP>(to, occupied) & pieces(BISHOP, QUEEN))
-                       | (attacks_bb<ROOK>(to, occupied) & pieces(ROOK, QUEEN));
+            const auto [bishopAttacks, rookAttacks] = both_attacks_bb(to, occupied);
+            attackers |=
+              (bishopAttacks & pieces(BISHOP, QUEEN)) | (rookAttacks & pieces(ROOK, QUEEN));
         }
 
         else  // KING

@@ -24,15 +24,17 @@
 
 namespace Stockfish::Attacks {
 
-namespace {
+#ifdef USE_DUAL_HYPERBOLA_QUINT
+alignas(64) DualMagic DualMagics[SQUARE_NB];
+#endif
 
 Bitboard LineBB[SQUARE_NB][SQUARE_NB];
 Bitboard BetweenBB[SQUARE_NB][SQUARE_NB];
 Bitboard RayPassBB[SQUARE_NB][SQUARE_NB];
 
-#ifdef USE_DUAL_HYPERBOLA_QUINT
-alignas(64) DualMagic DualMagics[SQUARE_NB];
-#else
+namespace {
+
+#ifndef USE_DUAL_HYPERBOLA_QUINT
 alignas(64) Magic Magics[SQUARE_NB][2];
 #endif
 
@@ -187,28 +189,11 @@ void init() {
     }
 }
 
-#ifdef USE_DUAL_HYPERBOLA_QUINT
-const DualMagic& dual_magic(Square s) { return DualMagics[s]; }
-#else
+#ifndef USE_DUAL_HYPERBOLA_QUINT
 const Magic& magic(Square s, PieceType pt) {
     assert((pt == BISHOP || pt == ROOK) && is_ok(s));
     return Magics[s][pt - BISHOP];
 }
 #endif
-
-Bitboard line_bb(Square s1, Square s2) {
-    assert(is_ok(s1) && is_ok(s2));
-    return LineBB[s1][s2];
-}
-
-Bitboard between_bb(Square s1, Square s2) {
-    assert(is_ok(s1) && is_ok(s2));
-    return BetweenBB[s1][s2];
-}
-
-Bitboard ray_pass_bb(Square s1, Square s2) {
-    assert(is_ok(s1) && is_ok(s2));
-    return RayPassBB[s1][s2];
-}
 
 }  // namespace Stockfish::Attacks
