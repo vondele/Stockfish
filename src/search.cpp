@@ -978,7 +978,8 @@ Value Search::Worker::search(
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
-    if (!ss->ttPv && depth < 19 && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta)
+    if (!ss->ttPv && eval >= beta && (!ttData.move || ttCapture)
+        && depth < (is_likely_loss(beta) || is_likely_win(eval) ? 9 : 19) && !is_loss(beta)
         && !is_win(eval))
     {
         Value futilityMult = std::min(45 + depth * 4, 85);
@@ -994,7 +995,7 @@ Value Search::Worker::search(
 
     // Step 9. Null move search with verification search
     if (cutNode && ss->staticEval >= beta - 13 * depth - 47 * improving + 365 && !excludedMove
-        && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && beta >= -2000)
+        && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && !is_likely_loss(beta))
     {
         assert((ss - 1)->currentMove != Move::null());
 
