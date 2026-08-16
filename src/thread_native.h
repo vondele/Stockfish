@@ -23,7 +23,10 @@
     #include <thread>
 #else
     #include <pthread.h>
+    #include <cstdlib>
+    #include <cstring>
     #include <functional>
+    #include <iostream>
     #include <utility>
 
     #include "misc.h"
@@ -69,7 +72,14 @@ class NativeThread {
             return nullptr;
         };
 
-        pthread_create(&thread, attr, start_routine, func);
+        const int rc = pthread_create(&thread, attr, start_routine, func);
+        pthread_attr_destroy(attr);
+
+        if (rc != 0)
+        {
+            std::cerr << "Failed to create a thread: " << std::strerror(rc) << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
     }
 
     void join() { pthread_join(thread, nullptr); }
