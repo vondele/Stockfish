@@ -40,9 +40,13 @@
 #include "syzygy/tbprobe.h"  // for Stockfish::Depth
 #include "thread.h"
 #include "tt.h"
+#include "types.h"
 #include "ucioption.h"
 
 namespace Stockfish {
+
+constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
+extern int    MaxThreads;
 
 class Engine {
    public:
