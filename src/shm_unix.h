@@ -124,6 +124,80 @@ struct UniqueFd {
     int fd_ = -1;
 };
 
+// A joinable thread whose FAILURE TO START IS A RETURN VALUE.
+//
+// std::thread's constructor throws std::system_error when the host will not
+// give out a thread -- EAGAIN under a low RLIMIT_NPROC, which is the whole
+// scenario SharedMemoryBackendFallback exists to survive. The engine is built
+// -fno-exceptions and SharedMemory::open is noexcept, so that throw is
+// std::terminate, taken before open() can return false and let the fallback do
+// its job. pthread_create reports the same condition as an errno.
+//
+// The callable is heap-owned and deleted by the thread itself, so a move-only
+// capture set works here where std::function would not.
+class JoinableThread {
+    pthread_t handle_{};
+    bool      running_ = false;
+
+   public:
+    JoinableThread() noexcept                        = default;
+    JoinableThread(const JoinableThread&)            = delete;
+    JoinableThread& operator=(const JoinableThread&) = delete;
+    JoinableThread(JoinableThread&& other) noexcept { swap(other); }
+    JoinableThread& operator=(JoinableThread&& other) noexcept {
+        swap(other);
+        return *this;
+    }
+
+    // The owner joins explicitly, after closing the shutdown pipe. Reaching
+    // here still running means nobody did, and detaching is the only answer
+    // that neither blocks forever nor terminates the way std::thread would.
+    ~JoinableThread() noexcept {
+        if (running_)
+            pthread_detach(handle_);
+    }
+
+    void swap(JoinableThread& other) noexcept {
+        std::swap(handle_, other.handle_);
+        std::swap(running_, other.running_);
+    }
+
+    template<typename F>
+    [[nodiscard]] bool start(F&& body) noexcept {
+        using Body = std::decay_t<F>;
+
+        auto* owned = new (std::nothrow) Body(std::forward<F>(body));
+        if (owned == nullptr)
+            return false;
+
+        auto trampoline = [](void* p) -> void* {
+            Body* b = static_cast<Body*>(p);
+            (*b)();
+            delete b;
+            return nullptr;
+        };
+
+        if (pthread_create(&handle_, nullptr, +trampoline, owned) != 0)
+        {
+            delete owned;
+            return false;
+        }
+
+        running_ = true;
+        return true;
+    }
+
+    bool joinable() const noexcept { return running_; }
+
+    void join() noexcept {
+        if (running_)
+        {
+            pthread_join(handle_, nullptr);
+            running_ = false;
+        }
+    }
+};
+
 struct TempRoot {
     // /tmp/stockfish-[uid], with appropriate permissions
     std::string prefix;
@@ -206,9 +280,9 @@ class SharedMemory {
     std::string init_lock_path_;
 
     // serve requests for the shared segment on this .sock
-    std::string socket_path_;
-    std::thread server_thread_;
-    UniqueFd    shutdown_;  // close to signal server thread shutdown
+    std::string    socket_path_;
+    JoinableThread server_thread_;
+    UniqueFd       shutdown_;  // close to signal server thread shutdown
 
     static std::string make_sentinel_base(const std::string& name) {
         char buf[32];
@@ -375,10 +449,9 @@ class SharedMemory {
     //  - Forwards the file descriptor fd
     //  - Exits when shutdown_receiver is hung up on
     //  - Listens on server_fd
-    static std::thread
-    make_server_thread(UniqueFd fd, UniqueFd shutdown_receiver, UniqueFd server_fd) {
-        return std::thread([fd = std::move(fd), shutdown_receiver = std::move(shutdown_receiver),
-                            server_fd = std::move(server_fd)]() {
+    static auto make_server_body(UniqueFd fd, UniqueFd shutdown_receiver, UniqueFd server_fd) {
+        return [fd = std::move(fd), shutdown_receiver = std::move(shutdown_receiver),
+                server_fd = std::move(server_fd)]() {
             enum {
                 FdServer,
                 FdShutdown,
@@ -459,7 +532,7 @@ class SharedMemory {
                     {}
                 }
             }
-        });
+        };
     }
 
    public:
@@ -559,9 +632,12 @@ class SharedMemory {
             }
 
             // Don't release the init lock until we've actually made a socket that
-            // other fishes can use.
-            server_thread_ = make_server_thread(std::move(memfd), std::move(shutdown_receiver),
-                                                std::move(server_fd));
+            // other fishes can use. A host that will not give out a thread is
+            // reported as a failed open, which is what the fallback backend is
+            // for; it is not a reason to end the process.
+            if (!server_thread_.start(make_server_body(
+                  std::move(memfd), std::move(shutdown_receiver), std::move(server_fd))))
+                return false;
         }
 
         return true;
