@@ -100,19 +100,18 @@ constexpr Bitboard file_bb(Square s) { return file_bb(file_of(s)); }
 
 
 // Moves a bitboard one or two steps as specified by the direction D
-template<Direction D>
-constexpr Bitboard shift(Bitboard b) {
-    return D == NORTH         ? b << 8
-         : D == SOUTH         ? b >> 8
-         : D == NORTH + NORTH ? b << 16
-         : D == SOUTH + SOUTH ? b >> 16
-         : D == EAST          ? (b & ~FileHBB) << 1
-         : D == WEST          ? (b & ~FileABB) >> 1
-         : D == NORTH_EAST    ? (b & ~FileHBB) << 9
-         : D == NORTH_WEST    ? (b & ~FileABB) << 7
-         : D == SOUTH_EAST    ? (b & ~FileHBB) >> 7
-         : D == SOUTH_WEST    ? (b & ~FileABB) >> 9
-                              : 0;
+inline constexpr Bitboard shift(Bitboard b, Direction dir) {
+    return dir == NORTH         ? b << 8
+         : dir == SOUTH         ? b >> 8
+         : dir == NORTH + NORTH ? b << 16
+         : dir == SOUTH + SOUTH ? b >> 16
+         : dir == EAST          ? (b & ~FileHBB) << 1
+         : dir == WEST          ? (b & ~FileABB) >> 1
+         : dir == NORTH_EAST    ? (b & ~FileHBB) << 9
+         : dir == NORTH_WEST    ? (b & ~FileABB) << 7
+         : dir == SOUTH_EAST    ? (b & ~FileHBB) >> 7
+         : dir == SOUTH_WEST    ? (b & ~FileABB) >> 9
+                                : 0;
 }
 
 
@@ -120,12 +119,12 @@ constexpr Bitboard shift(Bitboard b) {
 // from the squares in the given bitboard.
 template<Color C>
 constexpr Bitboard pawn_attacks_bb(Bitboard b) {
-    return C == WHITE ? shift<NORTH_WEST>(b) | shift<NORTH_EAST>(b)
-                      : shift<SOUTH_WEST>(b) | shift<SOUTH_EAST>(b);
+    return C == WHITE ? shift(b, NORTH_WEST) | shift(b, NORTH_EAST)
+                      : shift(b, SOUTH_WEST) | shift(b, SOUTH_EAST);
 }
 
 constexpr Bitboard pawn_single_push_bb(Color c, Bitboard b) {
-    return c == WHITE ? shift<NORTH>(b) : shift<SOUTH>(b);
+    return shift(b, c == WHITE ? NORTH : SOUTH);
 }
 
 inline constexpr auto PawnPairBB = []() {
@@ -133,7 +132,7 @@ inline constexpr auto PawnPairBB = []() {
     for (Square s = SQ_A1; s <= SQ_H8; ++s)
     {
         Bitboard file  = file_bb(s);
-        Bitboard files = file | shift<EAST>(file) | shift<WEST>(file);
+        Bitboard files = file | shift(file, EAST) | shift(file, WEST);
         result[s]      = files & ~(Rank1BB | Rank8BB) & ~square_bb(s);
     }
     return result;

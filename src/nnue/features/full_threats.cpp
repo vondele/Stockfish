@@ -213,36 +213,28 @@ void FullThreats::append_active_indices(Color perspective, const Position& pos, 
     const Bitboard minorSliderTargets = pos.pieces(PAWN, KNIGHT, BISHOP, ROOK);
     const Bitboard queenTargets       = pos.pieces(PAWN, KNIGHT, BISHOP, ROOK, QUEEN);
 
-    for (Color color : {WHITE, BLACK})
-    {
-        const Color c = Color(perspective ^ color);
-
+    auto process_pawn_attacks = [&](Color c, Direction attkDir) {
+        const Bitboard cPawns  = pos.pieces(c, PAWN);
+        Bitboard       attacks = shift(cPawns, attkDir) & pawnTargets;
+        while (attacks)
         {
-            const Piece    attacker             = make_piece(c, PAWN);
-            const Bitboard cPawns               = pos.pieces(c, PAWN);
-            auto           process_pawn_attacks = [&](Bitboard attacks, Direction attkDir) {
-                while (attacks)
-                {
-                    Square    to       = pop_lsb(attacks);
-                    Square    from     = to - attkDir;
-                    Piece     attacked = pos.piece_on(to);
-                    IndexType index = make_index(perspective, attacker, from, to, attacked, ksq);
-                    active.push_back_if_lt(index, Dimensions);
-                }
-            };
-
-            if (c == WHITE)
-            {
-                process_pawn_attacks(shift<NORTH_EAST>(cPawns) & pawnTargets, NORTH_EAST);
-                process_pawn_attacks(shift<NORTH_WEST>(cPawns) & pawnTargets, NORTH_WEST);
-            }
-            else
-            {
-                process_pawn_attacks(shift<SOUTH_WEST>(cPawns) & pawnTargets, SOUTH_WEST);
-                process_pawn_attacks(shift<SOUTH_EAST>(cPawns) & pawnTargets, SOUTH_EAST);
-            }
+            Square    to       = pop_lsb(attacks);
+            Square    from     = to - attkDir;
+            Piece     attacked = pos.piece_on(to);
+            Piece     attacker = make_piece(c, PAWN);
+            IndexType index    = make_index(perspective, attacker, from, to, attacked, ksq);
+            active.push_back_if_lt(index, Dimensions);
         }
+    };
 
+    process_pawn_attacks(WHITE, NORTH_EAST);
+    process_pawn_attacks(WHITE, NORTH_WEST);
+
+    process_pawn_attacks(BLACK, SOUTH_WEST);
+    process_pawn_attacks(BLACK, SOUTH_EAST);
+
+    for (Color c : {WHITE, BLACK})
+    {
         for (PieceType pt = KNIGHT; pt < KING; ++pt)
         {
             Piece    attacker = make_piece(c, pt);
