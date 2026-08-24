@@ -189,7 +189,7 @@ constexpr auto index_lut1 = init_index_luts();
 constexpr auto index_lut2 = index_lut2_array();
 
 // Index of a feature for a given king position and another piece on some square
-inline sf_always_inline IndexType FullThreats::make_index(
+sf_always_inline IndexType FullThreats::make_index(
   Color perspective, Piece attacker, Square from, Square to, Piece attacked, Square ksq) {
     const i8 orientation   = OrientTBL[ksq] ^ (56 * perspective);
     unsigned from_oriented = u8(from) ^ orientation;

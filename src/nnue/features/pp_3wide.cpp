@@ -46,7 +46,7 @@ static inline __m256i pp_idx_epi16(__m256i a, __m256i b) {
 }
 #endif
 
-inline sf_always_inline IndexType PP_3Wide::make_index(
+sf_always_inline IndexType PP_3Wide::make_index(
   Color perspective, Color color, Square from, Square to, Color pairedColor, Square ksq) {
     const i8 orientation   = FullThreats::OrientTBL[ksq] ^ (56 * perspective);
     unsigned from_oriented = u8(from) ^ orientation;
