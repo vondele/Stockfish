@@ -267,7 +267,7 @@ class TBFile: public std::ifstream {
 
     #ifndef _WIN32
         struct stat statbuf;
-        int         fd = ::open(fname.c_str(), O_RDONLY);
+        int         fd = ::open(fname.c_str(), O_RDONLY | O_CLOEXEC);
 
         if (fd == -1)
             return *baseAddress = nullptr, nullptr;
