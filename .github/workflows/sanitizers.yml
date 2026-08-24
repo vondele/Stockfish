@@ -52,6 +52,13 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Cache syzygy test data
+        id: cache-syzygy-test
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: tests/syzygy
+          key: syzygy-test-9b9aa13
+
       - name: Download required linux packages
         run: |
           sudo apt update
