@@ -276,9 +276,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-20 lld-20 llvm-20 g++-riscv64-linux-gnu
           echo "/usr/lib/llvm-20/bin" >> "$GITHUB_PATH"
+      - name: Cache qemu-user deb
+        id: cache-qemu
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /tmp/qemu.deb
+          key: qemu-user-9.2.1+ds-1ubuntu5_amd64
+
       - name: Install qemu
         run: |
-          curl -sL -o /tmp/qemu.deb "$QEMU_DEB"
+          if [ "${{ steps.cache-qemu.outputs.cache-hit }}" != "true" ]; then
+            curl -fsSL -o /tmp/qemu.deb "$QEMU_DEB"
+          fi
           dpkg -x /tmp/qemu.deb /tmp/qemu
           /tmp/qemu/usr/bin/qemu-riscv64 --version
           echo "/tmp/qemu/usr/bin" >> "$GITHUB_PATH"
