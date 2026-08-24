@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <deque>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -55,7 +56,14 @@ Thread::Thread(Search::SharedState&                    sharedState,
     idxInNuma(numaN),
     totalNuma(totalNumaCount),
     nthreads(sharedState.options["Threads"]),
-    stdThread(&Thread::idle_loop, this) {
+    stdThread(
+      create_native_thread(NativeThreadOptions{}.setLargeStack(true), &Thread::idle_loop, this)) {
+
+    if (!stdThread.joinable())
+    {
+        std::cerr << "Failed to create search thread\n";
+        std::exit(EXIT_FAILURE);
+    }
 
     wait_for_search_finished();
 
