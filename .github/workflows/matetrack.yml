@@ -43,6 +43,13 @@ jobs:
               matetrack/3-4-5-dtz/
            key: key-syzygy
 
+      - name: cache syzygy test data
+        id: cache-syzygy-test
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+           path: Stockfish/tests/syzygy
+           key: syzygy-test-9b9aa13
+
       - name: download syzygy 3-4-5 if needed
         working-directory: matetrack
         if: steps.cache-syzygy.outputs.cache-hit != 'true'
