@@ -71,13 +71,8 @@ void HalfKAv2_hm::write_indices(const std::array<Piece, SQUARE_NB>& oldPieces,
     const __m512i added_indices =
       _mm512_xor_si512(added_squares, _mm512_permutexvar_epi16(added_pieces, psi_plus_offset));
 
-    _mm512_storeu_si512(write_removed,
-                        _mm512_cvtepu16_epi32(_mm512_castsi512_si256(removed_indices)));
-    _mm512_storeu_si512(write_removed + 16,
-                        _mm512_cvtepu16_epi32(_mm512_extracti64x4_epi64(removed_indices, 1)));
-    _mm512_storeu_si512(write_added, _mm512_cvtepu16_epi32(_mm512_castsi512_si256(added_indices)));
-    _mm512_storeu_si512(write_added + 16,
-                        _mm512_cvtepu16_epi32(_mm512_extracti64x4_epi64(added_indices, 1)));
+    _mm512_storeu_si512(write_removed, removed_indices);
+    _mm512_storeu_si512(write_added, added_indices);
 }
 #endif
 
