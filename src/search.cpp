@@ -269,8 +269,10 @@ void Search::Worker::start_searching() {
     Move bestMove   = bestThread->rootMoves[0].pv[0];
     Move ponderMove = Move::none();
     if (bestThread->rootMoves[0].pv.size() > 1
-        || bestThread->rootMoves[0].extract_ponder_from_tt(tt, rootPos))
+        || bestThread->rootMoves[0].extract_ponder_from_tt(tt, rootPos)) {
         ponderMove = bestThread->rootMoves[0].pv[1];
+        uciPvSent = false;
+    }
 
     // Exchange info as needed
     Distributed::MoveInfo mi{bestMove.raw(), ponderMove.raw(), bestThread->rootDepth,
@@ -282,7 +284,7 @@ void Search::Worker::start_searching() {
     if (Distributed::is_root())
     {
         // Send again PV info if we have a new best thread/rank
-        if (bestThread != this || mi.rank != 0)
+        if (!uciPvSent || (bestThread != this || mi.rank != 0))
         {
             for (const auto& serializedInfoOne : serializedInfo)
             {
