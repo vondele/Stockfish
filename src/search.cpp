@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "bitboard.h"
+#include "cluster.h"
 #include "evaluate.h"
 #include "history.h"
 #include "misc.h"
@@ -206,9 +207,11 @@ void Search::Worker::start_searching() {
 
     if (rootMoves.empty())
     {
-        main_manager()->updates.onUpdateNoMoves(
-          {0, {rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW, rootPos}});
-        main_manager()->updates.onBestmove(UCIEngine::move(Move::none()), "");
+        if (Distributed::is_root()) {
+            main_manager()->updates.onUpdateNoMoves(
+              {0, {rootPos.checkers() ? -VALUE_MATE : VALUE_DRAW, rootPos}});
+            main_manager()->updates.onBestmove(UCIEngine::move(Move::none()), "");
+        }
         return;
     }
 
@@ -222,11 +225,16 @@ void Search::Worker::start_searching() {
     // GUI sends a "stop" or "ponderhit" command. We therefore simply wait here
     // until the GUI sends one of those commands.
     while (!threads.stop && (main_manager()->ponder || limits.infinite))
-    {}
+    {
+        Distributed::signals_poll(threads);
+    }
 
     // Stop the threads if not already stopped (also raise the stop if "ponderhit"
     // just reset threads.ponder).
     threads.stop = true;
+
+    // Signal and synchronize all other ranks
+    Distributed::signals_sync(threads);
 
     // Wait until all threads have finished
     threads.wait_for_search_finished();
@@ -234,8 +242,7 @@ void Search::Worker::start_searching() {
     // When playing in 'nodes as time' mode, subtract the searched nodes from
     // the available ones before exiting.
     if (limits.npmsec)
-        main_manager()->tm.advance_nodes_time(threads.nodes_searched()
-                                              - limits.inc[rootPos.side_to_move()]);
+        main_manager()->tm.advance_nodes_time(Distributed::nodes_searched(threads));
 
     Worker* bestThread = this;
     Skill   skill =
@@ -247,21 +254,53 @@ void Search::Worker::start_searching() {
     main_manager()->bestPreviousScore        = bestThread->rootMoves[0].score;
     main_manager()->bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
 
-    if (bestThread->rootMoves[0].pv.size() == 1
-        && bestThread->rootMoves[0].extract_ponder_from_tt(tt, rootPos))
-        uciPvSent = false;
+    // Temporarily switch out onUpdateFull to capture the PV information that we need,
+    // so that we can exchange it through MPI. (We may end up not actually printing
+    // it out.)
+    auto oldOnUpdateFull = std::move(main_manager()->updates.onUpdateFull);
+    std::vector<std::vector<char>> serializedInfo;  // One for each MultiPV.
+    main_manager()->updates.onUpdateFull = [&](const InfoFull& info) {
+        serializedInfo.push_back(info.serialize());
+    };
+    main_manager()->output_pv(*bestThread, threads, tt, bestThread->rootDepth);
+    assert(!serializedInfo.empty());
+    main_manager()->updates.onUpdateFull = std::move(oldOnUpdateFull);
 
-    // Send PV info if it has changed since last output in iterative_deepening()
-    if (!uciPvSent || bestThread != this)
-        main_manager()->output_pv(*bestThread, threads, tt, bestThread->rootDepth);
+    Move bestMove   = bestThread->rootMoves[0].pv[0];
+    Move ponderMove = Move::none();
+    if (bestThread->rootMoves[0].pv.size() > 1
+        || bestThread->rootMoves[0].extract_ponder_from_tt(tt, rootPos))
+        ponderMove = bestThread->rootMoves[0].pv[1];
 
-    // In rare cases, output_pv() may change the ponder move through syzygy_extend_pv()
-    std::string ponder;
-    if (bestThread->rootMoves[0].pv.size() > 1)
-        ponder = UCIEngine::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+    // Exchange info as needed
+    Distributed::MoveInfo mi{bestMove.raw(), ponderMove.raw(), bestThread->rootDepth,
+                             bestThread->rootMoves[0].score, Distributed::rank()};
+    Distributed::pick_moves(mi, serializedInfo);
 
-    auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
-    main_manager()->updates.onBestmove(bestmove, ponder);
+    main_manager()->bestPreviousScore = static_cast<Value>(mi.score);
+
+    if (Distributed::is_root())
+    {
+        // Send again PV info if we have a new best thread/rank
+        if (bestThread != this || mi.rank != 0)
+        {
+            for (const auto& serializedInfoOne : serializedInfo)
+            {
+                Search::InfoFull info = Search::InfoFull::unserialize(serializedInfoOne);
+                main_manager()->updates.onUpdateFull(info);
+            }
+        }
+
+        bestMove   = static_cast<Move>(mi.move);
+        ponderMove = static_cast<Move>(mi.ponder);
+        
+        std::string ponder;
+        if (ponderMove != Move::none())
+            ponder = UCIEngine::move(ponderMove, rootPos.is_chess960());
+
+        auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+        main_manager()->updates.onBestmove(bestmove, ponder);
+    }
 }
 
 // Main iterative deepening loop. It calls search() repeatedly with increasing
@@ -331,7 +370,7 @@ bool Search::Worker::iterative_deepening() {
 
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (rootDepth + 1 < MAX_PLY && !threads.stop
-           && !(limits.depth && mainThread && rootDepth >= limits.depth))
+           && !(limits.depth && mainThread && Distributed::is_root() && rootDepth >= limits.depth))
     {
         rootDepth++;
 
@@ -411,9 +450,9 @@ bool Search::Worker::iterative_deepening() {
                 // When failing high/low give some update before a re-search. To avoid
                 // excessive output that could hang GUIs like Fritz 19, only start
                 // at nodes > 10M (rather than depth N, which can be reached quickly).
-                if (mainThread && multiPV == 1 && (bestValue <= alpha || bestValue >= beta)
+                if (mainThread && Distributed::is_root() && multiPV == 1 && (bestValue <= alpha || bestValue >= beta)
                     && nodes > NODES_LIMIT_OUTPUT)
-                    main_manager()->output_pv(*this, threads, tt, rootDepth);
+                    Distributed::cluster_info(threads, rootDepth, elapsed());
 
                 // In case of failing low/high increase aspiration window and re-search,
                 // otherwise exit the loop.
@@ -492,9 +531,10 @@ bool Search::Worker::iterative_deepening() {
             // Sort the PV lines searched so far and update the GUI
             std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
 
-            if (mainThread && !threads.stop && (pvIdx + 1 == multiPV || nodes > NODES_LIMIT_OUTPUT))
+            if (Distributed::is_root() && mainThread && !threads.stop && (pvIdx + 1 == multiPV || nodes > NODES_LIMIT_OUTPUT))
             {
                 main_manager()->output_pv(*this, threads, tt, rootDepth);
+                Distributed::cluster_info(threads, rootDepth, elapsed() + 1);
                 uciPvSent = (pvIdx + 1 == multiPV);
             }
 
@@ -850,8 +890,8 @@ Value Search::Worker::search(
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
         // Static evaluation is saved as it was before adjustment by correction history
-        ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
-                       unadjustedStaticEval, tt.generation());
+        Distributed::save(tt, threads, this, ttWriter, posKey, VALUE_NONE, ss->ttPv, BOUND_NONE,
+                          DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval, tt.generation());
     }
 
     // Set up the improving flag, which is true if current static evaluation is
@@ -954,9 +994,9 @@ Value Search::Worker::search(
 
                 if (b == BOUND_EXACT || (b == BOUND_LOWER ? value >= beta : value <= alpha))
                 {
-                    ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
-                                   std::min(MAX_PLY - 1, depth + 6), Move::none(), VALUE_NONE,
-                                   tt.generation());
+                    Distributed::save(
+                      tt, threads, this, ttWriter, posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
+                      std::min(MAX_PLY - 1, depth + 6), Move::none(), VALUE_NONE, tt.generation());
 
                     return value;
                 }
@@ -1086,8 +1126,9 @@ Value Search::Worker::search(
             if (value >= probCutBeta)
             {
                 // Save ProbCut data into transposition table
-                ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
-                               probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
+                Distributed::save(tt, threads, this, ttWriter, posKey, value_to_tt(value, ss->ply),
+                                  ss->ttPv, BOUND_LOWER, probCutDepth + 1, move,
+                                  unadjustedStaticEval, tt.generation());
 
                 if (!is_decisive(value))
                     return value - (probCutBeta - beta);
@@ -1136,7 +1177,7 @@ moves_loop:  // When in check, search starts here
 
         ss->moveCount = ++moveCount;
 
-        if (rootNode && is_mainthread() && nodes > NODES_LIMIT_OUTPUT)
+        if (rootNode && Distributed::is_root() && is_mainthread() && nodes > NODES_LIMIT_OUTPUT)
         {
             main_manager()->updates.onIter(
               {depth, UCIEngine::move(move, pos.is_chess960()), moveCount + pvIdx});
@@ -1619,12 +1660,13 @@ moves_loop:  // When in check, search starts here
     // Step 24. Write gathered information in transposition table. Note that the
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && pvIdx))
-        ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
-                       bestValue >= beta    ? BOUND_LOWER
-                       : PvNode && bestMove ? BOUND_EXACT
-                                            : BOUND_UPPER,
-                       moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
-                       unadjustedStaticEval, tt.generation());
+        Distributed::save(tt, threads, this, ttWriter, posKey, value_to_tt(bestValue, ss->ply),
+                          ss->ttPv,
+                          bestValue >= beta    ? BOUND_LOWER
+                          : PvNode && bestMove ? BOUND_EXACT
+                                               : BOUND_UPPER,
+                          moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
+                          unadjustedStaticEval, tt.generation());
 
     // Adjust correction history if the best move is not a capture and
     // the error direction matches whether we are above/below bounds.
@@ -1748,8 +1790,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 bestValue = (441 * bestValue + 583 * beta) / 1024;
 
             if (!ss->ttHit)
-                ttWriter.write(posKey, VALUE_NONE, false, BOUND_LOWER, DEPTH_UNSEARCHED,
-                               Move::none(), unadjustedStaticEval, tt.generation());
+                Distributed::save(tt, threads, this, ttWriter, posKey,
+                                  VALUE_NONE, false, BOUND_LOWER,
+                                  DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
+                                  tt.generation());
             return bestValue;
         }
 
@@ -1873,9 +1917,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 10. Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
-    ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
-                   bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
-                   unadjustedStaticEval, tt.generation());
+    Distributed::save(tt, threads, this, ttWriter, posKey, value_to_tt(bestValue, ss->ply), pvHit,
+                      bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
+                      unadjustedStaticEval, tt.generation());
 
     // The search is now complete
     assert(-VALUE_INFINITE < bestValue && bestValue < VALUE_INFINITE);
@@ -1892,7 +1936,7 @@ int Search::Worker::reduction(bool i, Depth d, int mn, int delta) const {
 // instead. This function is called to check whether the search should be
 // stopped based on predefined thresholds like time limits or nodes searched.
 TimePoint Search::Worker::elapsed() const {
-    return main_manager()->tm.elapsed([this]() { return threads.nodes_searched(); });
+    return main_manager()->tm.elapsed([this]() { return Distributed::nodes_searched(threads); });
 }
 
 
@@ -2110,8 +2154,9 @@ void SearchManager::check_time(Search::Worker& worker) {
 
     static TimePoint lastInfoTime = now();
 
-    TimePoint elapsed = tm.elapsed([&worker]() { return worker.threads.nodes_searched(); });
-    TimePoint tick    = worker.limits.startTime + elapsed;
+    TimePoint elapsed =
+      tm.elapsed([&worker]() { return Distributed::nodes_searched(worker.threads); });
+    TimePoint tick = worker.limits.startTime + elapsed;
 
     if (tick - lastInfoTime >= 1000)
     {
@@ -2119,13 +2164,17 @@ void SearchManager::check_time(Search::Worker& worker) {
         dbg_print();
     }
 
+    // poll on MPI signals
+    Distributed::signals_poll(worker.threads);
+
     // We should not stop pondering until told so by the GUI
     if (ponder)
         return;
 
     if ((worker.limits.use_time_management() && (elapsed > tm.maximum() || stopOnPonderhit))
         || (worker.limits.movetime && elapsed >= worker.limits.movetime)
-        || (worker.limits.nodes && worker.threads.nodes_searched() >= worker.limits.nodes))
+        || (worker.limits.nodes
+             && Distributed::nodes_searched(worker.threads) >= worker.limits.nodes))
         worker.threads.stop = true;
 }
 
@@ -2275,11 +2324,11 @@ void SearchManager::output_pv(Search::Worker&           worker,
                               const TranspositionTable& tt,
                               Depth                     depth) {
 
-    const auto nodes     = threads.nodes_searched();
+    const auto nodes     = Distributed::nodes_searched(threads);
     auto&      rootMoves = worker.rootMoves;
     auto&      pos       = worker.rootPos;
     usize      multiPV   = std::min(usize(worker.options["MultiPV"]), rootMoves.size());
-    u64        tbHits    = threads.tb_hits() + (worker.tbConfig.rootInTB ? rootMoves.size() : 0);
+    u64        tbHits    = Distributed::tb_hits(threads) + (worker.tbConfig.rootInTB ? rootMoves.size() : 0);
 
     for (usize i = 0; i < multiPV; ++i)
     {
@@ -2365,5 +2414,75 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
     return pv.size() > 1;
 }
 
+std::vector<char> Search::InfoFull::serialize() const {
+    std::vector<char> vec;
+    vec.resize(sizeof(*this) + 3 * sizeof(usize) + wdl.size() + bound.size() + pv.size());
+    char* ptr = vec.data();
+
+    // The base struct.
+    memcpy(ptr, this, sizeof(*this));
+    ptr += sizeof(*this);
+
+    // All string lengths.
+    usize wdl_len = wdl.size();
+    memcpy(ptr, &wdl_len, sizeof(wdl_len));
+    ptr += sizeof(wdl_len);
+
+    usize bound_len = bound.size();
+    memcpy(ptr, &bound_len, sizeof(bound_len));
+    ptr += sizeof(bound_len);
+
+    usize pv_len = pv.size();
+    memcpy(ptr, &pv_len, sizeof(pv_len));
+    ptr += sizeof(pv_len);
+
+    // The string data itself.
+    memcpy(ptr, wdl.data(), wdl_len);
+    ptr += wdl_len;
+
+    memcpy(ptr, bound.data(), bound_len);
+    ptr += bound_len;
+
+    memcpy(ptr, pv.data(), pv_len);
+    ptr += pv_len;
+
+    assert(ptr == vec.data() + vec.size());
+    return vec;
+}
+
+InfoFull Search::InfoFull::unserialize(const std::vector<char>& buf) {
+    InfoFull    info;
+    const char* ptr = buf.data();
+
+    // The base struct.
+    memcpy(&info, ptr, sizeof(info));
+    ptr += sizeof(info);
+
+    // All string lengths.
+    usize wdl_len;
+    memcpy(&wdl_len, ptr, sizeof(wdl_len));
+    ptr += sizeof(wdl_len);
+
+    usize bound_len;
+    memcpy(&bound_len, ptr, sizeof(bound_len));
+    ptr += sizeof(bound_len);
+
+    usize pv_len;
+    memcpy(&pv_len, ptr, sizeof(pv_len));
+    ptr += sizeof(pv_len);
+
+    // The string data itself.
+    info.wdl = std::string_view(ptr, wdl_len);
+    ptr += wdl_len;
+
+    info.bound = std::string_view(ptr, bound_len);
+    ptr += bound_len;
+
+    info.pv = std::string_view(ptr, pv_len);
+    ptr += pv_len;
+
+    assert(ptr == buf.data() + buf.size());
+    return info;
+}
 
 }  // namespace Stockfish

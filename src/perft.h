@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <variant>
 
+#include "cluster.h"
 #include "movegen.h"
 #include "position.h"
 #include "types.h"
@@ -50,7 +51,7 @@ u64 perft(Position& pos, Depth depth) {
             nodes += cnt;
             pos.undo_move(m);
         }
-        if (Root)
+        if (Root && Distributed::is_root())
             sync_cout << UCIEngine::move(m, pos.is_chess960()) << ": " << cnt << sync_endl;
     }
     return nodes;

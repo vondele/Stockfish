@@ -22,6 +22,7 @@
 
 #include <limits>
 
+#include "cluster.h"
 #include "misc.h"
 
 namespace Stockfish {

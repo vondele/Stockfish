@@ -32,8 +32,10 @@
 #include <utility>
 
 #include "bitboard.h"
+#include "cluster.h"
 #include "history.h"
 #include "memory.h"
+#include "misc.h"
 #include "movegen.h"
 #include "search.h"
 #include "syzygy/tbprobe.h"
@@ -151,15 +153,16 @@ Search::SearchManager* ThreadPool::main_manager() { return main_thread()->worker
 
 u64 ThreadPool::nodes_searched() const { return accumulate(&Search::Worker::nodes); }
 u64 ThreadPool::tb_hits() const { return accumulate(&Search::Worker::tbHits); }
+u64 ThreadPool::TT_saves() const { return accumulate(&Search::Worker::TTsaves); }
 
 static usize next_power_of_two(u64 count) { return count > 1 ? (2ULL << msb(count - 1)) : 1; }
 
 // Creates/destroys threads to match the requested number.
 // Created and launched threads will immediately go to sleep in idle_loop.
 // Upon resizing, threads are recreated to allow for binding if necessary.
-void ThreadPool::set(const NumaConfig&                           numaConfig,
-                     Search::SharedState                         sharedState,
-                     const Search::SearchManager::UpdateContext& updateContext) {
+void ThreadPool::set(const NumaConfig&                     numaConfig,
+                     Search::SharedState                   sharedState,
+                     Search::SearchManager::UpdateContext& updateContext) {
 
     if (threads.size() > 0)  // destroy any existing thread(s)
     {
@@ -350,6 +353,8 @@ void ThreadPool::start_thinking(const OptionsMap&  options,
 
     for (auto&& th : threads)
         th->wait_for_search_finished();
+
+    Distributed::signals_init();
 
     main_thread()->start_searching();
 }

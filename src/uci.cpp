@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "benchmark.h"
+#include "cluster.h"
 #include "engine.h"
 #include "memory.h"
 #include "movegen.h"
@@ -101,7 +102,8 @@ void UCIEngine::loop() {
     do
     {
         if (cli.argc == 1
-            && !getline(std::cin, cmd))  // Wait for an input or an end-of-file (EOF) indication
+            && !Distributed::getline(std::cin,
+                                     cmd))  // Wait for an input or an end-of-file (EOF) indication
             cmd = "quit";
 
         currentCmd = cmd;
@@ -120,7 +122,7 @@ void UCIEngine::loop() {
         else if (token == "ponderhit")
             engine.set_ponderhit(false);
 
-        else if (token == "uci")
+        else if (token == "uci" && Distributed::is_root())
         {
             sync_cout << "id name " << engine_info(true) << "\n"
                       << engine.get_options() << sync_endl;
@@ -141,7 +143,7 @@ void UCIEngine::loop() {
             position(is);
         else if (token == "ucinewgame")
             engine.search_clear();
-        else if (token == "isready")
+        else if (token == "isready" && Distributed::is_root())
             sync_cout << "readyok" << sync_endl;
 
         // Add custom non-UCI commands, mainly for debugging purposes.
@@ -156,13 +158,13 @@ void UCIEngine::loop() {
             bench(is);
         else if (token == BenchmarkCommand)
             benchmark(is);
-        else if (token == "d")
+        else if (token == "d" && Distributed::is_root())
             sync_cout << engine.visualize() << sync_endl;
-        else if (token == "eval")
+        else if (token == "eval" && Distributed::is_root())
             engine.trace_eval();
-        else if (token == "compiler")
+        else if (token == "compiler" && Distributed::is_root())
             sync_cout << compiler_info() << sync_endl;
-        else if (token == "export_net")
+        else if (token == "export_net" && Distributed::is_root())
         {
             std::optional<std::filesystem::path> file;
             std::string                          filename;
@@ -172,7 +174,7 @@ void UCIEngine::loop() {
 
             engine.save_network(file);
         }
-        else if (token == "--help" || token == "help" || token == "--license" || token == "license")
+        else if ((token == "--help" || token == "help" || token == "--license" || token == "license") && Distributed::is_root())
             sync_cout
               << "\nStockfish is a powerful chess engine for playing and analyzing."
                  "\nIt is released as free software licensed under the GNU GPLv3 License."
@@ -181,7 +183,7 @@ void UCIEngine::loop() {
                  "\nFor any further information, visit https://github.com/official-stockfish/Stockfish#readme"
                  "\nor read the corresponding README.md and Copying.txt files distributed along with this program.\n"
               << sync_endl;
-        else if (!token.empty() && token[0] != '#')
+        else if (!token.empty() && token[0] != '#' && Distributed::is_root())
             sync_cout << "Unknown command: '" << cmd << "'. Type help for more information."
                       << sync_endl;
 
@@ -270,8 +272,9 @@ void UCIEngine::bench(std::istream& args) {
 
         if (token == "go" || token == "eval")
         {
-            std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
-                      << std::endl;
+            if (Distributed::is_root())
+                std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
+                          << std::endl;
             if (token == "go")
             {
                 Search::LimitsType limits = parse_limits(is);
@@ -287,7 +290,7 @@ void UCIEngine::bench(std::istream& args) {
                 nodes += nodesSearched;
                 nodesSearched = 0;
             }
-            else
+            else if (Distributed::is_root())
                 engine.trace_eval();
         }
         else if (token == "setoption")
@@ -305,10 +308,11 @@ void UCIEngine::bench(std::istream& args) {
 
     dbg_print();
 
-    std::cerr << "\n==========================="    //
-              << "\nTotal time (ms) : " << elapsed  //
-              << "\nNodes searched  : " << nodes    //
-              << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
+    if (Distributed::is_root())
+        std::cerr << "\n==========================="    //
+                  << "\nTotal time (ms) : " << elapsed  //
+                  << "\nNodes searched  : " << nodes    //
+                  << "\nNodes/second    : " << 1000 * nodes / elapsed << std::endl;
 
     // reset callback, to not capture a dangling reference to nodesSearched
     engine.set_on_update_full([&](const auto& i) { on_update_full(i, options["UCI_ShowWDL"]); });
@@ -491,7 +495,8 @@ u64 UCIEngine::perft(const Search::LimitsType& limits) {
         terminate_on_critical_error(err->what());
 
     auto nodes = std::get<u64>(result);
-    sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
+    if (Distributed::is_root())
+        sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
     return nodes;
 }
 

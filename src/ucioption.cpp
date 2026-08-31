@@ -27,6 +27,7 @@
 #include <sstream>
 #include <utility>
 
+#include "cluster.h"
 #include "misc.h"
 
 namespace Stockfish {
@@ -55,7 +56,7 @@ void OptionsMap::setoption(std::istringstream& is) {
 
     if (options_map.count(name))
         options_map[name] = value;
-    else
+    else if (Distributed::is_root())
         sync_cout << "No such option: " << name << sync_endl;
 }
 

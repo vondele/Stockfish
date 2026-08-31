@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "memory.h"
+#include "movepick.h"
 #include "misc.h"
 #include "numa.h"
 #include "position.h"
@@ -136,14 +137,14 @@ class ThreadPool {
     void  wait_on_thread(usize threadId);
     usize num_threads() const;
     void  clear();
-    void  set(const NumaConfig& numaConfig,
-              Search::SharedState,
-              const Search::SearchManager::UpdateContext&);
+    void
+    set(const NumaConfig& numaConfig, Search::SharedState, Search::SearchManager::UpdateContext&);
 
     Search::SearchManager* main_manager();
     Thread*                main_thread() const { return threads.front().get(); }
     u64                    nodes_searched() const;
     u64                    tb_hits() const;
+    u64                    TT_saves() const;
     Thread*                get_best_thread() const;
     void                   start_searching();
     void                   wait_for_search_finished() const;

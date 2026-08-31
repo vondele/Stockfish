@@ -41,6 +41,7 @@
 
 #include "../attacks.h"
 #include "../bitboard.h"
+#include "../cluster.h"
 #include "../misc.h"
 #include "../movegen.h"
 #include "../position.h"
@@ -558,8 +559,9 @@ class TBTables {
     }
 
     void info() const {
-        sync_cout << "info string Found " << foundWDLFiles << " WDL and " << foundDTZFiles
-                  << " DTZ tablebase files (up to " << MaxCardinality << "-man)." << sync_endl;
+        if (Distributed::is_root())
+            sync_cout << "info string Found " << foundWDLFiles << " WDL and " << foundDTZFiles
+                      << " DTZ tablebase files (up to " << MaxCardinality << "-man)." << sync_endl;
     }
 
     void add(const std::vector<PieceType>& pieces);

@@ -30,6 +30,7 @@
 #define INCBIN_SILENCE_BITCODE_WARNING
 #include "../incbin/incbin.h"
 
+#include "../cluster.h"
 #include "../evaluate.h"
 #include "../misc.h"
 #include "../position.h"
@@ -191,12 +192,13 @@ void Network::verify(const std::function<void(std::string_view)>& f,
     if (f)
     {
         usize size = sizeof(featureTransformer) + sizeof(NetworkArchitecture) * LayerStacks;
-        f("NNUE evaluation using " + evalfilePath.string() + " ("
-          + std::to_string(size / (1024 * 1024)) + "MiB, ("
-          + std::to_string(featureTransformer.InputDimensions) + ", "
-          + std::to_string(network[0].TransformedFeatureDimensions) + ", "
-          + std::to_string(network[0].FC_0_OUTPUTS) + ", " + std::to_string(network[0].FC_1_OUTPUTS)
-          + ", 1))");
+        if (Distributed::is_root())
+            f("NNUE evaluation using " + evalfilePath.string() + " ("
+              + std::to_string(size / (1024 * 1024)) + "MiB, ("
+              + std::to_string(featureTransformer.InputDimensions) + ", "
+              + std::to_string(network[0].TransformedFeatureDimensions) + ", "
+              + std::to_string(network[0].FC_0_OUTPUTS) + ", " + std::to_string(network[0].FC_1_OUTPUTS)
+              + ", 1))");
     }
 }
 

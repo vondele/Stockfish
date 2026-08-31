@@ -26,11 +26,13 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
 #include <vector>
 #include <cstring>
 
+#include "cluster.h"
 #include "history.h"
 #include "misc.h"
 #include "nnue/nnue_accumulator.h"
@@ -179,7 +181,9 @@ struct LimitsType {
         ponderMode                                  = false;
     }
 
-    bool use_time_management() const { return time[WHITE] || time[BLACK]; }
+    bool use_time_management() const {
+        return Distributed::is_root() && (time[WHITE] || time[BLACK]);
+    }
 
     std::vector<std::string> searchmoves;
     TimePoint                time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
@@ -236,6 +240,14 @@ struct InfoFull: InfoShort {
     usize            tbHits;
     std::string_view pv;
     int              hashfull;
+
+    std::vector<char> serialize() const;
+
+    // NOTE: The returned InfoFull will contain string_views that point
+    // into the given buffer, so it must live (and not be reallocated)
+    // (and not be reallocated) for at least as long as you want to
+    // access fields in the InfoFull.
+    static InfoFull unserialize(const std::vector<char>& buf);
 };
 
 struct InfoIteration {
@@ -291,7 +303,7 @@ class SearchManager: public ISearchManager {
     };
 
 
-    SearchManager(const UpdateContext& updateContext) :
+    SearchManager(UpdateContext& updateContext) :
         updates(updateContext) {}
 
     void check_time(Search::Worker& worker) override;
@@ -312,7 +324,7 @@ class SearchManager: public ISearchManager {
     Value                bestPreviousAverageScore;
     bool                 stopOnPonderhit;
 
-    const UpdateContext& updates;
+    UpdateContext& updates;
 };
 
 class NullSearchManager: public ISearchManager {
@@ -350,6 +362,28 @@ class Worker {
 
     CapturePieceToHistory           captureHistory;
     CorrectionHistory<Continuation> continuationCorrectionHistory;
+
+#ifdef USE_MPI
+    struct {
+        std::mutex                                     mutex;
+        Distributed::TTCache<Distributed::TTCacheSize> buffer = {};
+    } ttCache;
+#endif
+
+    RelaxedAtomic<u64> TTsaves;
+
+    friend void Distributed::save(TranspositionTable&,
+                                  ThreadPool&,
+                                  Search::Worker*,
+                                  TTWriter ttWriter,
+                                  Key      k,
+                                  Value    v,
+                                  bool     PvHit,
+                                  Bound    b,
+                                  Depth    d,
+                                  Move     m,
+                                  Value    ev,
+                                  u8       generation8);
 
     TTMoveHistory    ttMoveHistory;
     SharedHistories& sharedHistory;

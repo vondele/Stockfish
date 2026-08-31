@@ -37,7 +37,9 @@ __attribute__((used)) // keep main alive
 #endif
 
 int main(int argc, char* argv[]) {
-    std::cout << engine_info() << std::endl;
+    Distributed::init();
+    if (Distributed::is_root())
+        std::cout << engine_info() << std::endl;
 
     Attacks::init();
     Position::init();
@@ -48,6 +50,8 @@ int main(int argc, char* argv[]) {
     Tune::init(uci->engine_options());
 
     uci->loop();
+
+    Distributed::finalize();
 
     return 0;
 }
