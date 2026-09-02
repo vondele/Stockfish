@@ -2016,7 +2016,7 @@ void update_all_stats(const Position& pos,
 // the current move and the moves played in previous plies.
 void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
     static constexpr std::array<ConthistBonus, 6> conthist_bonuses = {
-      {{1, 1040}, {2, 780}, {3, 290}, {4, 502}, {5, 132}, {6, 418}}};
+      {{1, 520}, {2, 390}, {3, 145}, {4, 251}, {5, 66}, {6, 209}}};
 
     // Multipliers for positive history consistency
     constexpr int CMHCMultipliers[] = {94, 103, 110, 106, 119, 126, 121};
@@ -2035,7 +2035,7 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
                 positiveCount++;
 
             int multiplier = CMHCMultipliers[positiveCount];
-            historyEntry << (bonus * weight * multiplier / 131072) + 73 * (i < 2);
+            historyEntry << bonus * weight * multiplier / 65536 + 73 * (i < 2);
         }
     }
 }
