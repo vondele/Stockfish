@@ -385,6 +385,7 @@ bool Search::Worker::iterative_deepening() {
 
             // matetrack exp73: hoisted seekMate condition (unchanged), fixed
             // for this iteration and available to search()
+            // Do not tune these values. They are not intended for playing strength.
             seekMate =
               std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
 
