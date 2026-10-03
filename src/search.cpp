@@ -740,8 +740,8 @@ Value Search::Worker::search(
 
     assert(rootDepth);
     // Do not tune these values. They are not intended for playing strength.
-    const bool seekMate =
-      std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
+    // Control build for strength testing: seekMate hard-coded to false.
+    const bool seekMate = false;
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
