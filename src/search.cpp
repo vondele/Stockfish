@@ -383,8 +383,6 @@ bool Search::Worker::iterative_deepening() {
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
-            // matetrack exp73: hoisted seekMate condition (unchanged), fixed
-            // for this iteration and available to search()
             // Do not tune these values. They are not intended for playing strength.
             seekMate =
               std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
@@ -448,12 +446,7 @@ bool Search::Worker::iterative_deepening() {
                 else
                     break;
 
-                // matetrack exp52: when seeking a mate, widen the aspiration
-                // window 4x faster on fails instead of using a full window
-                if (seekMate)
-                    delta += 3 * delta;
-                else
-                    delta += 47 * delta / 128;
+                delta += (seekMate ? 384 : 47) * delta / 128;
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
@@ -1036,7 +1029,6 @@ Value Search::Worker::search(
     }
 
     // Step 10. Null move search with verification search
-    // matetrack exp53: halve the null move reduction when seeking a mate
     if (cutNode
         && ss->staticEval + 50 * ss->priorNMPFailHigh >= beta - 13 * depth - 47 * improving + 365
         && !excludedMove && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && beta >= -2000)
@@ -1045,8 +1037,7 @@ Value Search::Worker::search(
 
         // Null move dynamic reduction based on depth
         Depth R = 7 + depth / 3 + std::max((ss->staticEval - beta) / 256, 0);
-        if (seekMate)
-            R = (R + 1) / 2;
+        R -= seekMate * R / 2;
         do_null_move(pos, st, ss);
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
@@ -1136,7 +1127,6 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
 
     // Step 13. A small ProbCut idea
-    // matetrack exp21: skip the small probcut when seeking a mate
     probCutBeta = beta + 428;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value) && !seekMate)
@@ -1396,14 +1386,9 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
-        // matetrack exp29: when seeking a mate, reduce all non-checking moves
-        // harder to focus the node budget on forcing moves
-        if (seekMate && !givesCheck && r > 0)
-            r += r / 4;
-
-        // matetrack exp45: when seeking a mate, reduce checking moves less
-        if (seekMate && givesCheck && r > 0)
-            r -= r / 4;
+        // When seeking a mate, reduce non-checking moves more and checking moves less
+        if (seekMate && r > 0)
+            r += (givesCheck ? -r : r) / 4;
 
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
