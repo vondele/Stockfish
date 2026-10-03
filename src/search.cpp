@@ -1397,6 +1397,11 @@ moves_loop:  // When in check, search starts here
         if (allNode)
             r += r * 276 / (256 * depth + 268);
 
+        // matetrack exp29: when seeking a mate, reduce all non-checking moves
+        // harder to focus the node budget on forcing moves
+        if (seekMate && !givesCheck && r > 0)
+            r += r / 4;
+
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
