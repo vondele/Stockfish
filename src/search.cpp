@@ -383,6 +383,11 @@ bool Search::Worker::iterative_deepening() {
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
+            // matetrack exp73: hoisted seekMate condition (unchanged), fixed
+            // for this iteration and available to search()
+            seekMate =
+              std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
+
             // Adjust optimism based on root move's averageScore
             optimism[us]  = 114 * avg / (std::abs(avg) + 85);
             optimism[~us] = -optimism[us];
@@ -444,8 +449,7 @@ bool Search::Worker::iterative_deepening() {
 
                 // matetrack exp52: when seeking a mate, widen the aspiration
                 // window 4x faster on fails instead of using a full window
-                // (hoisted seekMate condition, unchanged)
-                if (std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth))
+                if (seekMate)
                     delta += 3 * delta;
                 else
                     delta += 47 * delta / 128;
@@ -743,11 +747,6 @@ Value Search::Worker::search(
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
     const bool     allNode  = !(PvNode || cutNode);
-
-    assert(rootDepth);
-    // Do not tune these values. They are not intended for playing strength.
-    const bool seekMate =
-      std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
