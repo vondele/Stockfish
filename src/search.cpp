@@ -1402,6 +1402,10 @@ moves_loop:  // When in check, search starts here
         if (seekMate && !givesCheck && r > 0)
             r += r / 4;
 
+        // matetrack exp45: when seeking a mate, reduce checking moves less
+        if (seekMate && givesCheck && r > 0)
+            r -= r / 4;
+
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
