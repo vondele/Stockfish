@@ -1348,11 +1348,11 @@ moves_loop:  // When in check, search starts here
         // Add extension to new depth
         newDepth += extension;
 
-        // matetrack exp50: when seeking a mate, do not dive into qsearch with
-        // a move for which the TT has a decisive score; floor at depth 2
+        // matetrack exp64: when seeking a mate, do not dive into qsearch with
+        // a move for which the TT has a decisive score; floor at depth 3
         if (seekMate && move == ttData.move && is_valid(ttData.value) && is_decisive(ttData.value)
             && ttData.depth > 0)
-            newDepth = std::max(newDepth, 2);
+            newDepth = std::max(newDepth, 3);
 
         // Step 18. Compute and apply late moves reductions/extensions (LMR)
 
