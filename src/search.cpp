@@ -383,14 +383,6 @@ bool Search::Worker::iterative_deepening() {
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
-            // matetrack exp12: when seeking a mate, use a full aspiration
-            // window (hoisted seekMate condition, unchanged)
-            if (std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth))
-            {
-                alpha = -VALUE_INFINITE;
-                beta  = VALUE_INFINITE;
-            }
-
             // Adjust optimism based on root move's averageScore
             optimism[us]  = 114 * avg / (std::abs(avg) + 85);
             optimism[~us] = -optimism[us];
@@ -450,7 +442,13 @@ bool Search::Worker::iterative_deepening() {
                 else
                     break;
 
-                delta += 47 * delta / 128;
+                // matetrack exp52: when seeking a mate, widen the aspiration
+                // window 4x faster on fails instead of using a full window
+                // (hoisted seekMate condition, unchanged)
+                if (std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth))
+                    delta += 3 * delta;
+                else
+                    delta += 47 * delta / 128;
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
