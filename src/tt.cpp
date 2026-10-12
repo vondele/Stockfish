@@ -40,15 +40,19 @@ namespace Stockfish {
 // corrupted TT entries can produce false mate announcements.
 //   SF_TT_FUZZ_MODE=off|save|probe  (save: poison stored values, probe: fabricate hits)
 //   SF_TT_FUZZ_P=<probability>      SF_TT_FUZZ_SEED=<n>  SF_TT_FUZZ_DIR=loss|win|both
+// Defaults when the environment is unset: save mode, p=0.1, both directions
+// (the round-1 configuration that triggered the most plausible false mate
+// announcements). Set SF_TT_FUZZ_MODE=off to disable.
 struct TTFuzz {
-    int    mode = 0;  // 0 off, 1 save, 2 probe
-    double p    = 0.0;
+    int    mode = 1;  // 0 off, 1 save, 2 probe
+    double p    = 0.1;
     int    dir  = 0;  // 0 both, 1 loss, 2 win
     u64    seed = 0x9E3779B97F4A7C15ULL;
 
     TTFuzz() {
         if (const char* e = std::getenv("SF_TT_FUZZ_MODE"))
         {
+            mode = 0;
             if (!strcmp(e, "save"))
                 mode = 1;
             else if (!strcmp(e, "probe"))
@@ -60,6 +64,7 @@ struct TTFuzz {
             seed ^= std::strtoull(e, nullptr, 10) * 0xBF58476D1CE4E5B9ULL;
         if (const char* e = std::getenv("SF_TT_FUZZ_DIR"))
         {
+            dir = 0;
             if (!strcmp(e, "loss"))
                 dir = 1;
             else if (!strcmp(e, "win"))
