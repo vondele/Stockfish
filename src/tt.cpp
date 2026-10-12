@@ -19,7 +19,9 @@
 #include "tt.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -32,6 +34,65 @@
 #include "thread.h"
 
 namespace Stockfish {
+
+// Local triage: TT fuzzer for the matetrack false-mate investigation
+// (local only, never push). Injects quasi-random mate scores to test whether
+// corrupted TT entries can produce false mate announcements.
+//   SF_TT_FUZZ_MODE=off|save|probe  (save: poison stored values, probe: fabricate hits)
+//   SF_TT_FUZZ_P=<probability>      SF_TT_FUZZ_SEED=<n>  SF_TT_FUZZ_DIR=loss|win|both
+struct TTFuzz {
+    int    mode = 0;  // 0 off, 1 save, 2 probe
+    double p    = 0.0;
+    int    dir  = 0;  // 0 both, 1 loss, 2 win
+    u64    seed = 0x9E3779B97F4A7C15ULL;
+
+    TTFuzz() {
+        if (const char* e = std::getenv("SF_TT_FUZZ_MODE"))
+        {
+            if (!strcmp(e, "save"))
+                mode = 1;
+            else if (!strcmp(e, "probe"))
+                mode = 2;
+        }
+        if (const char* e = std::getenv("SF_TT_FUZZ_P"))
+            p = std::atof(e);
+        if (const char* e = std::getenv("SF_TT_FUZZ_SEED"))
+            seed ^= std::strtoull(e, nullptr, 10) * 0xBF58476D1CE4E5B9ULL;
+        if (const char* e = std::getenv("SF_TT_FUZZ_DIR"))
+        {
+            if (!strcmp(e, "loss"))
+                dir = 1;
+            else if (!strcmp(e, "win"))
+                dir = 2;
+        }
+    }
+};
+
+const TTFuzz     ttFuzz;
+std::atomic<u64> ttFuzzCount{0};
+const bool       ttFuzzAtexitReg = std::atexit([] {
+    if (u64 n = ttFuzzCount.load(std::memory_order_relaxed))
+        std::fprintf(stderr, "TT_FUZZ injections=%llu\n", (unsigned long long) n);
+});
+
+inline u64 ttFuzzNext() {
+    thread_local u64 s = ttFuzz.seed ^ ((uintptr_t) &s * 0x2545F4914F6CDD1DULL);
+    s ^= s << 13;
+    s ^= s >> 7;
+    s ^= s << 17;
+    return s;
+}
+
+inline bool ttFuzzRoll() {
+    return ttFuzz.p >= 1.0 || ttFuzzNext() < u64(ttFuzz.p * 18446744073709551616.0);
+}
+
+inline Value ttFuzzPoison() {
+    u64  r    = ttFuzzNext();
+    int  j    = int(r % 21);  // mate distance 0..20 plies, stored form
+    bool loss = ttFuzz.dir == 1 || (ttFuzz.dir == 0 && ((r >> 32) & 1));
+    return loss ? Value(-VALUE_MATE + j) : Value(VALUE_MATE - j);
+}
 
 
 // TTEntry struct is the 10 bytes transposition table entry, defined as:
@@ -149,6 +210,11 @@ TTWriter::TTWriter(TTEntry* tte) :
 // Wrapper around TTEntry::save()
 void TTWriter::write(
   Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, u8 curr_generation) {
+    if (ttFuzz.mode == 1 && is_valid(v) && ttFuzzRoll())
+    {
+        v = ttFuzzPoison();
+        ttFuzzCount.fetch_add(1, std::memory_order_relaxed);
+    }
     entry->save(k, v, pv, b, d, m, ev, curr_generation);
 }
 
@@ -268,6 +334,18 @@ u8 TranspositionTable::generation() const { return generation8; }
 // TTEntry to be replaced later. The value of an entry is its depth minus 8 times
 // its relative age.
 std::tuple<bool, TTData, TTWriter> TranspositionTable::probe(const Key key) const {
+
+    if (ttFuzz.mode == 2 && ttFuzzRoll())
+    {
+        u64   r    = ttFuzzNext();
+        Bound bnd  = ttFuzz.dir == 2 ? (r & 1 ? BOUND_LOWER : BOUND_EXACT)
+                    : ttFuzz.dir == 1 ? (r & 1 ? BOUND_UPPER : BOUND_EXACT)
+                                      : Bound(1 + (r >> 8) % 3);
+        Depth dep  = Depth(4 + (r >> 16) % 24);
+        TTData d   = TTData{Move::none(), ttFuzzPoison(), VALUE_NONE, dep, bnd, false};
+        ttFuzzCount.fetch_add(1, std::memory_order_relaxed);
+        return {true, d, TTWriter(first_entry(key))};
+    }
 
     TTEntry* const tte   = first_entry(key);
     const u16      key16 = u16(key);  // Use the low 16 bits as key inside the cluster
