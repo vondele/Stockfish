@@ -914,8 +914,7 @@ Value Search::Worker::search(
             // For high rule50 counts don't produce transposition table cutoffs.
             if (pos.rule50_count() < 96 && !is_loss(ttData.value))
             {
-                if (depth >= 7 && ttData.move && pos.legal(ttData.move)
-                    && !is_decisive(ttData.value))
+                if (depth >= 7 && ttData.move && pos.legal(ttData.move))
                 {
                     pos.do_move(ttData.move, st);
                     Key nextPosKey                             = pos.key();
