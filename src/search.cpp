@@ -912,10 +912,9 @@ Value Search::Worker::search(
 
             // Partial workaround for the graph history interaction problem.
             // For high rule50 counts don't produce transposition table cutoffs.
-            if (pos.rule50_count() < 96)
+            if (pos.rule50_count() < 96 && !is_decisive(ttData.value))
             {
-                if (depth >= 7 && ttData.move && pos.legal(ttData.move)
-                    && !is_decisive(ttData.value))
+                if (depth >= 7 && ttData.move && pos.legal(ttData.move))
                 {
                     pos.do_move(ttData.move, st);
                     Key nextPosKey                             = pos.key();
