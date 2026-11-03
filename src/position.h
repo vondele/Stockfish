@@ -64,6 +64,7 @@ struct StateInfo {
     Bitboard   threats[PIECE_TYPE_NB];
     Piece      capturedPiece;
     int        repetition;
+    std::array<uint8_t, 32> piecePlacement;
 };
 
 

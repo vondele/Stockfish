@@ -59,6 +59,22 @@ constexpr std::string_view PieceToChar(" PNBRQK  pnbrqk");
 
 static constexpr Piece Pieces[] = {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
                                    B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING};
+
+// Nibble packing: byte j holds square j in the low nibble and square j+32 in the high nibble
+inline std::array<uint8_t, 32> pack_pieces(const std::array<Piece, SQUARE_NB>& b) {
+    std::array<uint8_t, 32> p;
+    for (int j = 0; j < 32; ++j)
+        p[j] = uint8_t(b[j] | (b[j + 32] << 4));
+    return p;
+}
+
+inline void swap_nibble(std::array<uint8_t, 32>& p, Square s1, Square s2) {
+    int i1 = int(s1) & 31, sh1 = int(s1) < 32 ? 0 : 4;
+    int i2 = int(s2) & 31, sh2 = int(s2) < 32 ? 0 : 4;
+    uint8_t v1 = (p[i1] >> sh1) & 0xF, v2 = (p[i2] >> sh2) & 0xF;
+    p[i1] = uint8_t((p[i1] & ~(0xF << sh1)) | (v2 << sh1));
+    p[i2] = uint8_t((p[i2] & ~(0xF << sh2)) | (v1 << sh2));
+}
 }  // namespace
 
 
@@ -540,6 +556,8 @@ void Position::set_state() const {
 
     st->key ^= Zobrist::castling[st->castlingRights];
     st->materialKey = compute_material_key();
+
+    st->piecePlacement = pack_pieces(board);
 }
 
 Key Position::compute_material_key() const {
@@ -1014,6 +1032,8 @@ void Position::do_move(
     // Update king attacks used for fast check detection
     set_extra_bitboards();
 
+    st->piecePlacement = pack_pieces(board);
+
     // Calculate the repetition info. It is the ply distance from the previous
     // occurrence of the same position, negative in the 3-fold case, or zero
     // if the position was not repeated.
@@ -1025,7 +1045,7 @@ void Position::do_move(
         for (int i = 4; i <= end; i += 2)
         {
             stp = stp->previous->previous;
-            if (stp->key == st->key)
+            if (stp->key == st->key && stp->piecePlacement == st->piecePlacement)
             {
                 st->repetition = stp->repetition ? -i : i;
                 break;
@@ -1518,13 +1538,19 @@ bool Position::upcoming_repetition(int ply) const {
 
             if (!((between_bb(s1, s2) ^ s2) & pieces()))
             {
-                if (ply > i)
-                    return true;
+                auto b = st->piecePlacement;
+                swap_nibble(b, s1, s2);
 
-                // For nodes before or at the root, check that the move is a
-                // repetition rather than a move to the current position.
-                if (stp->repetition)
-                    return true;
+                if (b == stp->piecePlacement)
+                {
+                    if (ply > i)
+                        return true;
+
+                    // For nodes before or at the root, check that the move is a
+                    // repetition rather than a move to the current position.
+                    if (stp->repetition)
+                        return true;
+                }
             }
         }
     }
