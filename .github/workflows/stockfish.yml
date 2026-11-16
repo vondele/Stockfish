@@ -53,7 +53,7 @@ jobs:
           COMMIT_SHA=$(git rev-parse HEAD | cut -c 1-8)
           COMMIT_DATE=$(git show -s --date=format:'%Y%m%d' --format=%cd HEAD)
 
-          if [[ "${{ github.ref_name }}" == 'master' && "$CHANGES" == '0' && "$OFFICIAL_RELEASE" == 'false' ]]; then
+          if [[ "${GITHUB_REF_NAME}" == 'master' && "$CHANGES" == '0' && "$OFFICIAL_RELEASE" == 'false' ]]; then
             echo "release_name=Stockfish dev-$COMMIT_DATE-$COMMIT_SHA" >> $GITHUB_OUTPUT
             echo "release_tag=stockfish-dev-$COMMIT_DATE-$COMMIT_SHA" >> $GITHUB_OUTPUT
           else
@@ -83,7 +83,7 @@ jobs:
         if: steps.prerelease_metadata.outputs.release_tag != '' && env.COMMIT_SHA_TAG != 'null'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete "${{ env.COMMIT_SHA_TAG }}" --repo "${{ github.repository }}" --cleanup-tag
+        run: gh release delete "${COMMIT_SHA_TAG}" --repo "${{ github.repository }}" --cleanup-tag
 
       - name: Create Draft Prerelease
         if: steps.prerelease_metadata.outputs.release_tag != ''
@@ -131,51 +131,51 @@ jobs:
   # Testing Jobs
   IWYU:
     name: IWYU
-    uses: ./.github/workflows/iwyu.yml
+    uses: $/.github/workflows/iwyu.yml
   Sanitizers:
     name: Sanitizers
     if: ${{ always() }}
-    uses: ./.github/workflows/sanitizers.yml
+    uses: $/.github/workflows/sanitizers.yml
   Tests:
     name: Tests
     if: ${{ always() }}
-    uses: ./.github/workflows/tests.yml
+    uses: $/.github/workflows/tests.yml
   Matetrack:
     name: Matetrack
     if: ${{ always() }}
-    uses: ./.github/workflows/matetrack.yml
+    uses: $/.github/workflows/matetrack.yml
   Games:
     name: Games
     if: ${{ always() }}
-    uses: ./.github/workflows/games.yml
+    uses: $/.github/workflows/games.yml
   CompilerCheck:
     name: Compiler check
     if: ${{ always() }}
-    uses: ./.github/workflows/avx2_compilers.yml
+    uses: $/.github/workflows/avx2_compilers.yml
   MSVC:
     name: MSVC
     if: ${{ always() }}
-    uses: ./.github/workflows/msvc.yml
+    uses: $/.github/workflows/msvc.yml
   WASMCompilation:
     name: WASM compilation
     if: ${{ always() }}
-    uses: ./.github/workflows/wasm_compilation.yml
+    uses: $/.github/workflows/wasm_compilation.yml
   # Release Jobs
   ARMCompilation:
     name: Android builds
     needs: [Matrix, Sanitizers, Tests, Matetrack, Games, CompilerCheck]
-    uses: ./.github/workflows/arm_compilation.yml
+    uses: $/.github/workflows/arm_compilation.yml
     with:
       matrix: ${{ needs.Matrix.outputs.arm_matrix }}
   UniversalCompilation:
     name: "Universal builds"
     needs: [Matrix, Sanitizers, Tests, Matetrack, Games, CompilerCheck]
-    uses: ./.github/workflows/universal_compilation.yml
+    uses: $/.github/workflows/universal_compilation.yml
   DevBinaries:
     if: github.repository == 'official-stockfish/Stockfish'
     name: Universal uploads
     needs: [Prerelease, Matrix, UniversalCompilation]
-    uses: ./.github/workflows/upload_binaries.yml
+    uses: $/.github/workflows/upload_binaries.yml
     with:
       matrix: ${{ needs.Matrix.outputs.universal_matrix }}
       release_tag: ${{ needs.Prerelease.outputs.release_tag }}
@@ -188,7 +188,7 @@ jobs:
     if: github.repository == 'official-stockfish/Stockfish'
     name: Android uploads
     needs: [Prerelease, Matrix, ARMCompilation]
-    uses: ./.github/workflows/upload_binaries.yml
+    uses: $/.github/workflows/upload_binaries.yml
     with:
       matrix: ${{ needs.Matrix.outputs.arm_matrix }}
       release_tag: ${{ needs.Prerelease.outputs.release_tag }}
@@ -207,4 +207,5 @@ jobs:
       - name: Publish Draft Prerelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release edit "${{ needs.Prerelease.outputs.release_tag }}" --repo "${{ github.repository }}" --draft=false --prerelease
+          NEEDS_PRERELEASE_OUTPUTS_RELEASE_TAG: ${{ needs.Prerelease.outputs.release_tag }}
+        run: gh release edit "${NEEDS_PRERELEASE_OUTPUTS_RELEASE_TAG}" --repo "${{ github.repository }}" --draft=false --prerelease

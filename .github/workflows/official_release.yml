@@ -50,7 +50,7 @@ jobs:
           RELEASE_TAG: ${{ inputs.release_tag }}
           RELEASE_TITLE: ${{ inputs.release_title }}
         run: |
-          if [[ "${{ github.ref_name }}" != 'master' ]]; then
+          if [[ "${GITHUB_REF_NAME}" != 'master' ]]; then
             echo 'Official releases must be dispatched from master.'
             exit 1
           fi
@@ -67,42 +67,49 @@ jobs:
 
       - name: Compute release metadata
         id: release_metadata
-        run: echo "release_tag=${{ inputs.release_tag }}" >> $GITHUB_OUTPUT
+        run: echo "release_tag=${INPUTS_RELEASE_TAG}" >> $GITHUB_OUTPUT
+        env:
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag }}
 
       - name: Ensure tag does not already exist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release view "${{ inputs.release_tag }}" >/dev/null 2>&1 && { echo 'Release already exists for this tag.'; exit 1; } || true
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: gh release view "${INPUTS_RELEASE_TAG}" >/dev/null 2>&1 && { echo 'Release already exists for this tag.'; exit 1; } || true
 
       - name: Ensure git tag does not already exist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh api "repos/${{ github.repository }}/git/ref/tags/${{ inputs.release_tag }}" >/dev/null 2>&1 && { echo 'Tag already exists.'; exit 1; } || true
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: gh api "repos/${{ github.repository }}/git/ref/tags/${INPUTS_RELEASE_TAG}" >/dev/null 2>&1 && { echo 'Tag already exists.'; exit 1; } || true
 
       - name: Create official release tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh api "repos/${{ github.repository }}/git/refs" -f ref="refs/tags/${{ inputs.release_tag }}" -f sha="${{ github.sha }}"
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: gh api "repos/${{ github.repository }}/git/refs" -f ref="refs/tags/${INPUTS_RELEASE_TAG}" -f sha="${{ github.sha }}"
 
       - name: Create draft official release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ inputs.release_tag }}" --draft --title "${{ inputs.release_title }}" --notes ''
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag }}
+          INPUTS_RELEASE_TITLE: ${{ inputs.release_title }}
+        run: gh release create "${INPUTS_RELEASE_TAG}" --draft --title "${INPUTS_RELEASE_TITLE}" --notes ''
 
   UniversalCompilation:
     needs: [Matrix]
-    uses: ./.github/workflows/universal_compilation.yml
+    uses: $/.github/workflows/universal_compilation.yml
 
   ARMCompilation:
     needs: [Matrix]
-    uses: ./.github/workflows/arm_compilation.yml
+    uses: $/.github/workflows/arm_compilation.yml
     with:
       matrix: ${{ needs.Matrix.outputs.arm_matrix }}
 
   OfficialBinaries:
     if: github.repository == 'official-stockfish/Stockfish'
     needs: [OfficialReleaseDraft, Matrix, UniversalCompilation]
-    uses: ./.github/workflows/upload_binaries.yml
+    uses: $/.github/workflows/upload_binaries.yml
     with:
       matrix: ${{ needs.Matrix.outputs.universal_matrix }}
       release_tag: ${{ needs.OfficialReleaseDraft.outputs.release_tag }}
@@ -115,7 +122,7 @@ jobs:
   OfficialARMBinaries:
     if: github.repository == 'official-stockfish/Stockfish'
     needs: [OfficialReleaseDraft, Matrix, ARMCompilation]
-    uses: ./.github/workflows/upload_binaries.yml
+    uses: $/.github/workflows/upload_binaries.yml
     with:
       matrix: ${{ needs.Matrix.outputs.arm_matrix }}
       release_tag: ${{ needs.OfficialReleaseDraft.outputs.release_tag }}

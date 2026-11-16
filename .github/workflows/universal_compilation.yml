@@ -285,12 +285,14 @@ jobs:
 
       - name: Install qemu
         run: |
-          if [ "${{ steps.cache-qemu.outputs.cache-hit }}" != "true" ]; then
+          if [ "${STEPS_CACHE_QEMU_OUTPUTS_CACHE_HIT}" != "true" ]; then
             curl -fsSL -o /tmp/qemu.deb "$QEMU_DEB"
           fi
           dpkg -x /tmp/qemu.deb /tmp/qemu
           /tmp/qemu/usr/bin/qemu-riscv64 --version
           echo "/tmp/qemu/usr/bin" >> "$GITHUB_PATH"
+        env:
+          STEPS_CACHE_QEMU_OUTPUTS_CACHE_HIT: ${{ steps.cache-qemu.outputs.cache-hit }}
       - name: Build universal binary
         run: |
           make -j4 -C src ARCH=riscv64-universal build \

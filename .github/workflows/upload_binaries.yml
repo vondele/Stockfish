@@ -52,7 +52,7 @@ jobs:
 
       - name: Copy files
         run: |
-          mv "${{ matrix.config.simple_name }} ${{ matrix.binaries }}" stockfish-workflow
+          mv "${MATRIX_CONFIG_SIMPLE_NAME} ${MATRIX_BINARIES}" stockfish-workflow
           cd stockfish-workflow
           cp -r src ../stockfish/
           cp -r scripts ../stockfish/
@@ -63,12 +63,17 @@ jobs:
           cp CITATION.cff ../stockfish/
           cp README.md ../stockfish/
           cp CONTRIBUTING.md ../stockfish/
+        env:
+          MATRIX_CONFIG_SIMPLE_NAME: ${{ matrix.config.simple_name }}
+          MATRIX_BINARIES: ${{ matrix.binaries }}
 
       - name: Create tar
         if: ${{ startsWith(matrix.config.archive_ext, 'tar') }}
         run: |
           chmod +x ./stockfish/stockfish-$NAME-$BINARY$EXT
-          tar -cavf stockfish-$NAME-$BINARY."${{ matrix.config.archive_ext }}" stockfish
+          tar -cavf stockfish-$NAME-$BINARY."${MATRIX_CONFIG_ARCHIVE_EXT}" stockfish
+        env:
+          MATRIX_CONFIG_ARCHIVE_EXT: ${{ matrix.config.archive_ext }}
 
       - name: Create zip
         if: ${{ matrix.config.archive_ext == 'zip' }}
