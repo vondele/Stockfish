@@ -1043,7 +1043,7 @@ Value Search::Worker::search(
         // Null move dynamic reduction based on depth
         // Odd threads reduce one ply less
         Depth R =
-          7 + depth / 3 + std::clamp((ss->staticEval - beta) / 256, 0, 3) - int(threadIdx & 1);
+          7 + depth / 3 + std::clamp((ss->staticEval - beta) / 256, 0, 4) - int(threadIdx & 1);
         R -= seekMate * R / 2;
         do_null_move(pos, st, ss);
 
