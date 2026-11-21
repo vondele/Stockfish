@@ -274,26 +274,33 @@ class TestInteractive(metaclass=OrderedClassMembers):
         self.stockfish.send_command("position startpos")
         self.stockfish.send_command("go depth 9")
 
-        depth = 1
+        target_depth = 9
+        depth = 0
         repeated = False
 
         def callback(output):
             nonlocal depth, repeated
 
-            regex = rf"info depth {depth} seldepth \d+ multipv \d+ score cp -?\d+ wdl \d+ \d+ \d+ nodes \d+ nps \d+ hashfull \d+ tbhits \d+ time \d+ pv"
-
             if output.startswith("info depth"):
-                # The final depth may see a second PV printed, if a ponder move
-                # was extracted from the TT.
-                if (depth == 10 and not repeated and re.search(r"^info depth 9 .* pv \S+ \S+$", output)):                
+                match = re.match(r"info depth (\d+) ", output)
+                assert match
+                new_depth = int(match.group(1))
+
+                regex = rf"info depth {new_depth} seldepth \d+ multipv \d+ score cp -?\d+ wdl \d+ \d+ \d+ nodes \d+ nps \d+ hashfull \d+ tbhits \d+ time \d+ pv"
+                assert re.match(regex, output)
+
+                # The depth must increase by one with each iteration. The only
+                # exception is the final iteration's info line, which may be
+                # repeated once, with its PV extended by the ponder move
+                # extracted from the TT.
+                if not repeated and new_depth == depth == target_depth:
                     repeated = True
-                    return False
-                if not re.match(regex, output):
-                    assert False
-                depth += 1
+                else:
+                    assert new_depth == depth + 1
+                    depth = new_depth
 
             if output.startswith("bestmove"):
-                assert depth == 10
+                assert depth == target_depth
                 return True
 
             return False
